@@ -16,7 +16,7 @@ import {
   type Answer,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, asc, and, or, count, avg, sum, like, inArray } from "drizzle-orm";
+import { eq, desc, asc, and, or, count, avg, sum, like, inArray, sql } from "drizzle-orm";
 
 export interface IStorage {
   // User operations - mandatory for Replit Auth
@@ -39,9 +39,14 @@ export interface IStorage {
   // Exam operations
   createExam(exam: InsertExam): Promise<Exam>;
   getExams(instructorId: string, status?: string): Promise<Exam[]>;
+  getActiveExamsForStudents(): Promise<Exam[]>;
   getExamById(id: number): Promise<Exam | undefined>;
   updateExam(id: number, updates: Partial<InsertExam>): Promise<Exam>;
   deleteExam(id: number): Promise<void>;
+  
+  // Role management
+  updateUserRole(userId: string, role: "instructor" | "student"): Promise<User>;
+  getAllUsers(): Promise<User[]>;
   
   // Exam Questions operations
   addQuestionToExam(examId: number, questionId: number, order: number, points: number): Promise<void>;
@@ -178,7 +183,7 @@ export class DatabaseStorage implements IStorage {
   async incrementQuestionUsage(id: number): Promise<void> {
     await db
       .update(questions)
-      .set({ usageCount: sql`usage_count + 1` })
+      .set({ usageCount: sql`${questions.usageCount} + 1` })
       .where(eq(questions.id, id));
   }
 
@@ -201,6 +206,22 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(exams)
       .where(and(...conditions))
+      .orderBy(desc(exams.createdAt));
+  }
+
+  async getActiveExamsForStudents(): Promise<Exam[]> {
+    return db
+      .select()
+      .from(exams)
+      .where(eq(exams.status, 'active'))
+      .orderBy(desc(exams.createdAt));
+  }
+
+  async getActiveExamsForStudents(): Promise<Exam[]> {
+    return db
+      .select()
+      .from(exams)
+      .where(eq(exams.status, 'active'))
       .orderBy(desc(exams.createdAt));
   }
 
@@ -237,12 +258,21 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getExamQuestions(examId: number): Promise<(ExamQuestion & { question: Question })[]> {
-    return db
-      .select()
+    const results = await db
+      .select({
+        id: examQuestions.id,
+        examId: examQuestions.examId,
+        questionId: examQuestions.questionId,
+        order: examQuestions.order,
+        points: examQuestions.points,
+        question: questions,
+      })
       .from(examQuestions)
       .innerJoin(questions, eq(examQuestions.questionId, questions.id))
       .where(eq(examQuestions.examId, examId))
       .orderBy(asc(examQuestions.order));
+    
+    return results as (ExamQuestion & { question: Question })[];
   }
 
   async removeQuestionFromExam(examId: number, questionId: number): Promise<void> {
@@ -415,6 +445,23 @@ export class DatabaseStorage implements IStorage {
       totalStudents: studentCount.length,
       pendingGrading: Number(pendingCount.count),
     };
+  }
+
+  // Role management
+  async updateUserRole(userId: string, role: "instructor" | "student"): Promise<User> {
+    const [user] = await db
+      .update(users)
+      .set({ role, updatedAt: new Date() })
+      .where(eq(users.id, userId))
+      .returning();
+    return user;
+  }
+
+  async getAllUsers(): Promise<User[]> {
+    return db
+      .select()
+      .from(users)
+      .orderBy(asc(users.email));
   }
 }
 

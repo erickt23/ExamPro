@@ -33,13 +33,23 @@ export default function Landing() {
             Create, manage, and grade exams with ease. Support for multiple question types, 
             advanced analytics, and role-based access for instructors and students.
           </p>
-          <Button 
-            size="lg"
-            onClick={() => window.location.href = '/api/login'}
-            className="bg-primary hover:bg-primary/90 text-lg px-8 py-3"
-          >
-            Get Started
-          </Button>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button 
+              size="lg"
+              onClick={() => window.location.href = '/api/login'}
+              className="bg-primary hover:bg-primary/90 text-lg px-8 py-3"
+            >
+              Get Started
+            </Button>
+            <Button 
+              variant="outline" 
+              size="lg"
+              onClick={() => window.location.href = '/admin'}
+              className="text-lg px-8 py-3"
+            >
+              Role Management
+            </Button>
+          </div>
         </div>
 
         {/* Features Grid */}

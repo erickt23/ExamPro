@@ -15,6 +15,7 @@ import InstructorStudents from "@/pages/instructor/students";
 import StudentDashboard from "@/pages/student/dashboard";
 import StudentExams from "@/pages/student/exams";
 import StudentGrades from "@/pages/student/grades";
+import AdminPage from "@/pages/admin";
 
 function Router() {
   const { user, isAuthenticated, isLoading } = useAuth();
@@ -59,6 +60,7 @@ function Router() {
           <Route path="/grades" component={StudentGrades} />
         </>
       )}
+      <Route path="/admin" component={AdminPage} />
       <Route component={NotFound} />
     </Switch>
   );
