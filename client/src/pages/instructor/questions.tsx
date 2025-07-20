@@ -30,9 +30,9 @@ export default function InstructorQuestions() {
   const { isAuthenticated, isLoading } = useAuth();
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [filters, setFilters] = useState({
-    subject: "",
-    questionType: "",
-    difficulty: "",
+    subject: "all",
+    questionType: "all",
+    difficulty: "all",
     search: ""
   });
 
@@ -55,9 +55,9 @@ export default function InstructorQuestions() {
     queryKey: ["/api/questions", filters],
     queryFn: async () => {
       const params = new URLSearchParams();
-      if (filters.subject) params.append('subject', filters.subject);
-      if (filters.questionType) params.append('questionType', filters.questionType);
-      if (filters.difficulty) params.append('difficulty', filters.difficulty);
+      if (filters.subject && filters.subject !== 'all') params.append('subject', filters.subject);
+      if (filters.questionType && filters.questionType !== 'all') params.append('questionType', filters.questionType);
+      if (filters.difficulty && filters.difficulty !== 'all') params.append('difficulty', filters.difficulty);
       if (filters.search) params.append('search', filters.search);
       
       const response = await fetch(`/api/questions?${params}`);
@@ -166,7 +166,7 @@ export default function InstructorQuestions() {
                         <SelectValue placeholder="All Subjects" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">All Subjects</SelectItem>
+                        <SelectItem value="all">All Subjects</SelectItem>
                         <SelectItem value="Mathematics">Mathematics</SelectItem>
                         <SelectItem value="Physics">Physics</SelectItem>
                         <SelectItem value="Chemistry">Chemistry</SelectItem>
@@ -181,7 +181,7 @@ export default function InstructorQuestions() {
                         <SelectValue placeholder="All Types" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">All Types</SelectItem>
+                        <SelectItem value="all">All Types</SelectItem>
                         <SelectItem value="multiple_choice">Multiple Choice</SelectItem>
                         <SelectItem value="short_answer">Short Answer</SelectItem>
                         <SelectItem value="essay">Essay</SelectItem>
@@ -196,7 +196,7 @@ export default function InstructorQuestions() {
                         <SelectValue placeholder="All Levels" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">All Levels</SelectItem>
+                        <SelectItem value="all">All Levels</SelectItem>
                         <SelectItem value="easy">Easy</SelectItem>
                         <SelectItem value="medium">Medium</SelectItem>
                         <SelectItem value="hard">Hard</SelectItem>
