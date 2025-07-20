@@ -22,7 +22,8 @@ import {
   Trash2,
   Eye,
   Calendar,
-  History
+  History,
+  BookOpen
 } from "lucide-react";
 
 export default function InstructorQuestions() {
