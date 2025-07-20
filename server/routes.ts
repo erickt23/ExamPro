@@ -421,12 +421,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const targetUserId = req.params.id;
       const { role } = req.body;
       
+      console.log(`Role update request: User ${userId} updating ${targetUserId} to role ${role}`);
+      
       if (!role || !['instructor', 'student'].includes(role)) {
         return res.status(400).json({ message: "Invalid role" });
       }
       
       // For testing - allow any user to update roles
       const updatedUser = await storage.updateUserRole(targetUserId, role);
+      console.log(`Role updated successfully: ${JSON.stringify(updatedUser)}`);
       res.json(updatedUser);
     } catch (error) {
       console.error("Error updating user role:", error);
