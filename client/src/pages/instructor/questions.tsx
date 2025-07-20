@@ -1,0 +1,317 @@
+import { useState, useEffect } from "react";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
+import { isUnauthorizedError } from "@/lib/authUtils";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import Navbar from "@/components/layout/navbar";
+import Sidebar from "@/components/layout/sidebar";
+import CreateQuestionModal from "@/components/modals/create-question-modal";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { 
+  Plus,
+  Search,
+  Filter,
+  Edit,
+  Copy,
+  Trash2,
+  Eye,
+  Calendar,
+  History
+} from "lucide-react";
+
+export default function InstructorQuestions() {
+  const { toast } = useToast();
+  const { isAuthenticated, isLoading } = useAuth();
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [filters, setFilters] = useState({
+    subject: "",
+    questionType: "",
+    difficulty: "",
+    search: ""
+  });
+
+  // Redirect if not authenticated
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      toast({
+        title: "Unauthorized",
+        description: "You are logged out. Logging in again...",
+        variant: "destructive",
+      });
+      setTimeout(() => {
+        window.location.href = "/api/login";
+      }, 500);
+      return;
+    }
+  }, [isAuthenticated, isLoading, toast]);
+
+  const { data: questions, isLoading: questionsLoading, error } = useQuery({
+    queryKey: ["/api/questions", filters],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      if (filters.subject) params.append('subject', filters.subject);
+      if (filters.questionType) params.append('questionType', filters.questionType);
+      if (filters.difficulty) params.append('difficulty', filters.difficulty);
+      if (filters.search) params.append('search', filters.search);
+      
+      const response = await fetch(`/api/questions?${params}`);
+      if (!response.ok) throw new Error(`${response.status}: ${response.statusText}`);
+      return response.json();
+    },
+    retry: false,
+  });
+
+  const deleteQuestionMutation = useMutation({
+    mutationFn: async (questionId: number) => {
+      await apiRequest("DELETE", `/api/questions/${questionId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/questions"] });
+      toast({
+        title: "Success",
+        description: "Question deleted successfully",
+      });
+    },
+    onError: (error: Error) => {
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
+      toast({
+        title: "Error",
+        description: "Failed to delete question",
+        variant: "destructive",
+      });
+    },
+  });
+
+  if (isLoading || !isAuthenticated) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  const getQuestionTypeColor = (type: string) => {
+    switch (type) {
+      case 'multiple_choice': return 'bg-blue-100 text-blue-800';
+      case 'short_answer': return 'bg-green-100 text-green-800';
+      case 'essay': return 'bg-orange-100 text-orange-800';
+      case 'fill_blank': return 'bg-purple-100 text-purple-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getDifficultyColor = (difficulty: string) => {
+    switch (difficulty) {
+      case 'easy': return 'bg-green-100 text-green-800';
+      case 'medium': return 'bg-yellow-100 text-yellow-800';
+      case 'hard': return 'bg-red-100 text-red-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const formatQuestionType = (type: string) => {
+    return type.replace('_', ' ').split(' ').map(word => 
+      word.charAt(0).toUpperCase() + word.slice(1)
+    ).join(' ');
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <Navbar />
+      <div className="flex">
+        <Sidebar />
+        <main className="flex-1 overflow-y-auto">
+          <div className="p-6">
+            <div className="mb-6 flex justify-between items-center">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900">Question Bank</h2>
+                <p className="text-gray-600 mt-1">Manage your collection of exam questions</p>
+              </div>
+              <Button 
+                onClick={() => setShowCreateModal(true)}
+                className="bg-primary hover:bg-primary/90"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Create Question
+              </Button>
+            </div>
+
+            {/* Filters */}
+            <Card className="mb-6">
+              <CardContent className="p-6">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <div>
+                    <Label htmlFor="subject">Subject</Label>
+                    <Select value={filters.subject} onValueChange={(value) => setFilters(prev => ({...prev, subject: value}))}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="All Subjects" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="">All Subjects</SelectItem>
+                        <SelectItem value="Mathematics">Mathematics</SelectItem>
+                        <SelectItem value="Physics">Physics</SelectItem>
+                        <SelectItem value="Chemistry">Chemistry</SelectItem>
+                        <SelectItem value="Biology">Biology</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="questionType">Question Type</Label>
+                    <Select value={filters.questionType} onValueChange={(value) => setFilters(prev => ({...prev, questionType: value}))}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="All Types" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="">All Types</SelectItem>
+                        <SelectItem value="multiple_choice">Multiple Choice</SelectItem>
+                        <SelectItem value="short_answer">Short Answer</SelectItem>
+                        <SelectItem value="essay">Essay</SelectItem>
+                        <SelectItem value="fill_blank">Fill in the Blank</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="difficulty">Difficulty</Label>
+                    <Select value={filters.difficulty} onValueChange={(value) => setFilters(prev => ({...prev, difficulty: value}))}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="All Levels" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="">All Levels</SelectItem>
+                        <SelectItem value="easy">Easy</SelectItem>
+                        <SelectItem value="medium">Medium</SelectItem>
+                        <SelectItem value="hard">Hard</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="search">Search</Label>
+                    <div className="relative">
+                      <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                      <Input
+                        placeholder="Search questions..."
+                        value={filters.search}
+                        onChange={(e) => setFilters(prev => ({...prev, search: e.target.value}))}
+                        className="pl-9"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Questions List */}
+            <Card>
+              <CardHeader>
+                <div className="flex justify-between items-center">
+                  <CardTitle>Questions ({questions?.length || 0})</CardTitle>
+                  <div className="flex items-center space-x-2">
+                    <Button variant="outline" size="sm">Export</Button>
+                    <Button variant="outline" size="sm">Import</Button>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {questionsLoading ? (
+                  <div className="space-y-4">
+                    {[...Array(3)].map((_, i) => (
+                      <div key={i} className="animate-pulse p-6 border border-gray-200 rounded-lg">
+                        <div className="h-4 bg-gray-200 rounded mb-4 w-3/4"></div>
+                        <div className="h-3 bg-gray-200 rounded mb-2 w-1/2"></div>
+                        <div className="h-3 bg-gray-200 rounded w-1/4"></div>
+                      </div>
+                    ))}
+                  </div>
+                ) : questions?.length === 0 ? (
+                  <div className="text-center py-12">
+                    <BookOpen className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <p className="text-gray-500 text-lg mb-2">No questions found</p>
+                    <p className="text-gray-400">Create your first question to get started</p>
+                  </div>
+                ) : (
+                  <div className="divide-y divide-gray-200">
+                    {questions?.map((question: any) => (
+                      <div key={question.id} className="p-6 hover:bg-gray-50">
+                        <div className="flex justify-between items-start">
+                          <div className="flex-1">
+                            <div className="flex items-center space-x-3 mb-2">
+                              <Badge className={getQuestionTypeColor(question.questionType)}>
+                                {formatQuestionType(question.questionType)}
+                              </Badge>
+                              <Badge variant="outline">{question.subject}</Badge>
+                              <Badge className={getDifficultyColor(question.difficulty)}>
+                                {question.difficulty}
+                              </Badge>
+                            </div>
+                            <h4 className="font-medium text-gray-900 mb-2">{question.title || question.questionText.substring(0, 100)}</h4>
+                            <p className="text-sm text-gray-600 mb-3 line-clamp-2">
+                              {question.questionText}
+                            </p>
+                            <div className="flex items-center space-x-4 text-sm text-gray-500">
+                              <span className="flex items-center">
+                                <Eye className="h-4 w-4 mr-1" />
+                                Used {question.usageCount} times
+                              </span>
+                              <span className="flex items-center">
+                                <Calendar className="h-4 w-4 mr-1" />
+                                Created: {new Date(question.createdAt).toLocaleDateString()}
+                              </span>
+                              <span className="flex items-center">
+                                <History className="h-4 w-4 mr-1" />
+                                Version {question.version}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="flex items-center space-x-2 ml-4">
+                            <Button variant="ghost" size="sm">
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button variant="ghost" size="sm">
+                              <Copy className="h-4 w-4" />
+                            </Button>
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              onClick={() => deleteQuestionMutation.mutate(question.id)}
+                              disabled={deleteQuestionMutation.isPending}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </main>
+      </div>
+
+      <CreateQuestionModal 
+        open={showCreateModal} 
+        onOpenChange={setShowCreateModal}
+      />
+    </div>
+  );
+}
