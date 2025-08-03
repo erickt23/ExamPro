@@ -19,7 +19,7 @@ import {
   type Answer,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, asc, and, or, count, avg, sum, like, ilike, inArray, sql } from "drizzle-orm";
+import { eq, desc, asc, and, or, count, avg, sum, like, ilike, inArray, sql, ne } from "drizzle-orm";
 
 export interface IStorage {
   // User operations - mandatory for Replit Auth
@@ -254,6 +254,12 @@ export class DatabaseStorage implements IStorage {
 
   async getExams(instructorId: string, status?: string, search?: string): Promise<Exam[]> {
     console.log('getExams called with:', { instructorId, status, search });
+    
+    // Special handling for "completed" status
+    if (status === 'completed') {
+      return this.getCompletedExams(instructorId, search);
+    }
+    
     const conditions = [eq(exams.instructorId, instructorId)];
     
     if (status) {
@@ -278,6 +284,63 @@ export class DatabaseStorage implements IStorage {
 
     console.log('Query results:', results.length, 'exams found');
     return results;
+  }
+
+  private async getCompletedExams(instructorId: string, search?: string): Promise<Exam[]> {
+    const now = new Date();
+    const conditions = [eq(exams.instructorId, instructorId)];
+
+    // Add search condition if provided
+    if (search && search.trim()) {
+      conditions.push(
+        or(
+          ilike(exams.title, `%${search.trim()}%`),
+          ilike(exams.description, `%${search.trim()}%`)
+        )!
+      );
+    }
+
+    // Get all exams for this instructor (excluding drafts)
+    const allExams = await db
+      .select()
+      .from(exams)
+      .where(and(...conditions, ne(exams.status, 'draft')))
+      .orderBy(desc(exams.createdAt));
+
+    // Filter to only completed exams
+    const completedExams = [];
+    
+    for (const exam of allExams) {
+      let isCompleted = false;
+      
+      // Check if exam is explicitly marked as completed or archived
+      if (exam.status === 'completed' || exam.status === 'archived') {
+        isCompleted = true;
+      }
+      // Check if exam has passed its deadline
+      else if (exam.availableUntil && new Date(exam.availableUntil) < now) {
+        isCompleted = true;
+      }
+      // Check if exam has submissions (students have taken it)
+      else if (exam.status === 'active') {
+        const examSubmissions = await db
+          .select({ id: submissions.id })
+          .from(submissions)
+          .where(eq(submissions.examId, exam.id))
+          .limit(1);
+        
+        if (examSubmissions.length > 0) {
+          isCompleted = true;
+        }
+      }
+      
+      if (isCompleted) {
+        completedExams.push(exam);
+      }
+    }
+
+    console.log('Completed exams found:', completedExams.length);
+    return completedExams;
   }
 
   async getActiveExamsForStudents(): Promise<Exam[]> {
