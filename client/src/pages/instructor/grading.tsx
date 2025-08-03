@@ -1,38 +1,38 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { useLocation, useRoute } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import Navbar from "@/components/layout/navbar";
 import Sidebar from "@/components/layout/sidebar";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
 import { 
-  Clock,
-  CheckCircle,
-  AlertCircle,
-  Eye,
-  Star,
-  MessageSquare
+  ArrowLeft, 
+  Clock, 
+  User, 
+  FileText, 
+  CheckCircle, 
+  Save,
+  Award
 } from "lucide-react";
 
-export default function InstructorGrading() {
+export default function GradingPage() {
+  const [match, params] = useRoute("/grading/:submissionId");
+  const submissionId = params?.submissionId;
   const { toast } = useToast();
-  const { isAuthenticated, isLoading } = useAuth();
-  const [selectedExam, setSelectedExam] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [sortBy, setSortBy] = useState("submission_date");
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const [, navigate] = useLocation();
+  const [gradingData, setGradingData] = useState<Record<number, { score: number; feedback: string }>>({});
 
   // Redirect if not authenticated
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
+    if (!authLoading && !isAuthenticated) {
       toast({
         title: "Unauthorized",
         description: "You are logged out. Logging in again...",
@@ -43,37 +43,30 @@ export default function InstructorGrading() {
       }, 500);
       return;
     }
-  }, [isAuthenticated, isLoading, toast]);
+  }, [isAuthenticated, authLoading, toast]);
 
-  const { data: exams } = useQuery({
-    queryKey: ["/api/exams"],
-    retry: false,
-  });
-
-  const { data: submissions, isLoading: submissionsLoading } = useQuery({
-    queryKey: ["/api/submissions", selectedExam, statusFilter],
+  // Fetch submission details for grading
+  const { data: submissionDetails, isLoading: submissionLoading } = useQuery({
+    queryKey: ["/api/submissions", submissionId, "grade"],
     queryFn: async () => {
-      const params = new URLSearchParams();
-      if (selectedExam) params.append('examId', selectedExam);
-      if (statusFilter !== "all") params.append('status', statusFilter);
-      
-      const response = await fetch(`/api/submissions?${params}`);
+      const response = await fetch(`/api/submissions/${submissionId}/grade`);
       if (!response.ok) throw new Error(`${response.status}: ${response.statusText}`);
       return response.json();
     },
+    enabled: !!submissionId,
     retry: false,
-    enabled: !!selectedExam,
   });
 
+  // Grade individual answer mutation
   const gradeAnswerMutation = useMutation({
     mutationFn: async ({ answerId, score, feedback }: { answerId: number; score: number; feedback: string }) => {
       await apiRequest("PUT", `/api/answers/${answerId}/grade`, { score, feedback });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/submissions"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/submissions", submissionId, "grade"] });
       toast({
         title: "Success",
-        description: "Answer graded successfully",
+        description: "Grade saved successfully",
       });
     },
     onError: (error: Error) => {
@@ -90,13 +83,93 @@ export default function InstructorGrading() {
       }
       toast({
         title: "Error",
-        description: "Failed to grade answer",
+        description: "Failed to save grade",
         variant: "destructive",
       });
     },
   });
 
-  if (isLoading || !isAuthenticated) {
+  // Finalize submission mutation
+  const finalizeSubmissionMutation = useMutation({
+    mutationFn: async () => {
+      await apiRequest("PUT", `/api/submissions/${submissionId}/finalize`, {});
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/submissions"] });
+      toast({
+        title: "Success",
+        description: "Submission graded successfully!",
+      });
+      navigate("/");
+    },
+    onError: (error: Error) => {
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
+      toast({
+        title: "Error",
+        description: "Failed to finalize submission",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleScoreChange = (answerId: number, score: string) => {
+    const numScore = parseFloat(score) || 0;
+    setGradingData(prev => ({
+      ...prev,
+      [answerId]: { ...prev[answerId], score: numScore }
+    }));
+  };
+
+  const handleFeedbackChange = (answerId: number, feedback: string) => {
+    setGradingData(prev => ({
+      ...prev,
+      [answerId]: { ...prev[answerId], feedback }
+    }));
+  };
+
+  const saveGrade = (answerId: number) => {
+    const gradeData = gradingData[answerId];
+    if (!gradeData) return;
+    
+    gradeAnswerMutation.mutate({
+      answerId,
+      score: gradeData.score,
+      feedback: gradeData.feedback
+    });
+  };
+
+  const finalizeSubmission = () => {
+    finalizeSubmissionMutation.mutate();
+  };
+
+  const formatQuestionType = (type: string | undefined) => {
+    if (!type) return 'Unknown';
+    return type.replace('_', ' ').split(' ').map(word => 
+      word.charAt(0).toUpperCase() + word.slice(1)
+    ).join(' ');
+  };
+
+  const getQuestionTypeColor = (type: string | undefined) => {
+    switch (type) {
+      case 'multiple_choice': return 'bg-blue-100 text-blue-800';
+      case 'short_answer': return 'bg-green-100 text-green-800';
+      case 'essay': return 'bg-orange-100 text-orange-800';
+      case 'fill_blank': return 'bg-purple-100 text-purple-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  if (authLoading || !isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -107,24 +180,45 @@ export default function InstructorGrading() {
     );
   }
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'graded': return 'bg-green-100 text-green-800';
-      case 'submitted': return 'bg-orange-100 text-orange-800';
-      case 'in_progress': return 'bg-blue-100 text-blue-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
+  if (!submissionId || submissionLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Navbar />
+        <div className="flex">
+          <Sidebar />
+          <main className="flex-1 overflow-y-auto">
+            <div className="flex items-center justify-center h-64">
+              <div className="text-lg">Loading submission details...</div>
+            </div>
+          </main>
+        </div>
+      </div>
+    );
+  }
 
-  const formatScore = (score: string | number, maxScore: string | number) => {
-    return `${score || 0}/${maxScore || 0}`;
-  };
+  if (!submissionDetails) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Navbar />
+        <div className="flex">
+          <Sidebar />
+          <main className="flex-1 overflow-y-auto">
+            <div className="flex items-center justify-center h-64">
+              <div className="text-lg text-red-600">Submission not found</div>
+            </div>
+          </main>
+        </div>
+      </div>
+    );
+  }
 
-  const formatTime = (minutes: number) => {
-    const hours = Math.floor(minutes / 60);
-    const mins = minutes % 60;
-    return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
-  };
+  const { submission, exam, student, answers } = submissionDetails;
+  const subjectiveAnswers = answers.filter((answer: any) => 
+    answer.question && ['essay', 'short_answer', 'fill_blank'].includes(answer.question.questionType)
+  );
+  const objectiveAnswers = answers.filter((answer: any) => 
+    answer.question && answer.question.questionType === 'multiple_choice'
+  );
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -132,179 +226,192 @@ export default function InstructorGrading() {
       <div className="flex">
         <Sidebar />
         <main className="flex-1 overflow-y-auto">
-          <div className="p-6">
-            <div className="mb-6">
-              <h2 className="text-2xl font-bold text-gray-900">Grading Center</h2>
-              <p className="text-gray-600 mt-1">Review and grade student submissions</p>
+          <div className="p-6 max-w-6xl mx-auto">
+            {/* Header */}
+            <div className="flex items-center gap-4 mb-6">
+              <Button variant="ghost" onClick={() => navigate("/")}>
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back to Dashboard
+              </Button>
+              <div className="flex-1">
+                <h1 className="text-2xl font-bold">Manual Grading</h1>
+                <p className="text-gray-600">Review and grade student submission</p>
+              </div>
+              <Badge variant="outline" className="bg-yellow-50 text-yellow-800">
+                Pending Review
+              </Badge>
             </div>
 
-            {/* Filters */}
+            {/* Submission Info */}
             <Card className="mb-6">
-              <CardContent className="p-6">
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  <div>
-                    <Label htmlFor="exam">Exam</Label>
-                    <Select value={selectedExam} onValueChange={setSelectedExam}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select an exam" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {exams?.map((exam: any) => (
-                          <SelectItem key={exam.id} value={exam.id.toString()}>
-                            {exam.title}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <FileText className="h-5 w-5" />
+                  Submission Details
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Student:</span>
+                    <span className="font-medium flex items-center gap-1">
+                      <User className="h-4 w-4" />
+                      {student.firstName} {student.lastName}
+                    </span>
                   </div>
-                  <div>
-                    <Label htmlFor="status">Status</Label>
-                    <Select value={statusFilter} onValueChange={setStatusFilter}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Submissions</SelectItem>
-                        <SelectItem value="submitted">Needs Grading</SelectItem>
-                        <SelectItem value="graded">Graded</SelectItem>
-                        <SelectItem value="in_progress">In Progress</SelectItem>
-                      </SelectContent>
-                    </Select>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Exam:</span>
+                    <span className="font-medium">{exam.title}</span>
                   </div>
-                  <div>
-                    <Label htmlFor="sort">Sort By</Label>
-                    <Select value={sortBy} onValueChange={setSortBy}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="submission_date">Submission Date</SelectItem>
-                        <SelectItem value="student_name">Student Name</SelectItem>
-                        <SelectItem value="score">Score</SelectItem>
-                        <SelectItem value="time_taken">Time Taken</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="flex items-end">
-                    <Button className="w-full">
-                      Auto-Grade MCQs
-                    </Button>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Submitted:</span>
+                    <span className="font-medium flex items-center gap-1">
+                      <Clock className="h-4 w-4" />
+                      {new Date(submission.submittedAt).toLocaleDateString()}
+                    </span>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            {/* Submissions List */}
-            {!selectedExam ? (
-              <Card>
-                <CardContent className="p-12 text-center">
-                  <CheckCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-500 text-lg mb-2">Select an exam to view submissions</p>
-                  <p className="text-gray-400">Choose an exam from the dropdown above to start grading</p>
-                </CardContent>
-              </Card>
-            ) : (
-              <Card>
+            {/* Objective Questions (Auto-graded) */}
+            {objectiveAnswers.length > 0 && (
+              <Card className="mb-6">
                 <CardHeader>
-                  <div className="flex justify-between items-center">
-                    <CardTitle>Student Submissions</CardTitle>
-                    {submissions && (
-                      <div className="flex items-center space-x-4 text-sm text-gray-600">
-                        <span>{submissions.filter((s: any) => s.status === 'submitted').length} pending review</span>
-                        <span>{submissions.length} total submissions</span>
-                      </div>
-                    )}
-                  </div>
+                  <CardTitle className="flex items-center gap-2">
+                    <CheckCircle className="h-5 w-5 text-green-600" />
+                    Auto-graded Questions ({objectiveAnswers.length})
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  {submissionsLoading ? (
-                    <div className="space-y-4">
-                      {[...Array(3)].map((_, i) => (
-                        <div key={i} className="animate-pulse p-6 border border-gray-200 rounded-lg">
-                          <div className="flex items-center space-x-4">
-                            <div className="w-10 h-10 bg-gray-200 rounded-full"></div>
-                            <div className="flex-1 space-y-2">
-                              <div className="h-4 bg-gray-200 rounded w-1/4"></div>
-                              <div className="h-3 bg-gray-200 rounded w-1/3"></div>
+                  <div className="space-y-4">
+                    {objectiveAnswers.map((answer: any) => (
+                      <div key={answer.id} className="border rounded-lg p-4">
+                        <div className="flex justify-between items-start mb-3">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <Badge className={getQuestionTypeColor(answer.question.questionType)}>
+                                {formatQuestionType(answer.question.questionType)}
+                              </Badge>
+                              <span className="text-sm text-gray-600">
+                                {parseFloat(answer.score || '0')} / {parseFloat(answer.maxScore || '0')} points
+                              </span>
                             </div>
+                            <h4 className="font-medium mb-2">{answer.question.questionText}</h4>
                           </div>
                         </div>
-                      ))}
-                    </div>
-                  ) : submissions?.length === 0 ? (
-                    <div className="text-center py-12">
-                      <AlertCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                      <p className="text-gray-500 text-lg mb-2">No submissions found</p>
-                      <p className="text-gray-400">Students haven't submitted this exam yet</p>
-                    </div>
-                  ) : (
-                    <div className="divide-y divide-gray-200">
-                      {submissions?.map((submission: any) => (
-                        <div key={submission.id} className="p-6 hover:bg-gray-50">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center space-x-4">
-                              <Avatar className="h-10 w-10">
-                                <AvatarImage src="" alt="Student" />
-                                <AvatarFallback>
-                                  {submission.studentId?.substring(0, 2).toUpperCase() || 'ST'}
-                                </AvatarFallback>
-                              </Avatar>
-                              <div>
-                                <h4 className="font-medium text-gray-900">
-                                  Student {submission.studentId}
-                                </h4>
-                                <p className="text-sm text-gray-600">
-                                  Submitted: {submission.submittedAt ? 
-                                    new Date(submission.submittedAt).toLocaleDateString() : 
-                                    'In Progress'
-                                  }
-                                </p>
-                                {submission.isLate && (
-                                  <p className="text-xs text-red-600 flex items-center mt-1">
-                                    <AlertCircle className="h-3 w-3 mr-1" />
-                                    Late submission
-                                  </p>
-                                )}
-                              </div>
-                            </div>
-                            
-                            <div className="flex items-center space-x-6">
-                              <div className="text-center">
-                                <p className="text-sm font-medium text-gray-900">Score</p>
-                                <p className="text-lg font-bold text-green-600">
-                                  {submission.totalScore ? 
-                                    formatScore(submission.totalScore, submission.maxScore) :
-                                    '--/--'
-                                  }
-                                </p>
-                              </div>
-                              <div className="text-center">
-                                <p className="text-sm font-medium text-gray-900">Time</p>
-                                <p className="text-sm text-gray-600">
-                                  {submission.timeTaken ? formatTime(submission.timeTaken) : '--'}
-                                </p>
-                              </div>
-                              <div className="text-center">
-                                <p className="text-sm font-medium text-gray-900">Status</p>
-                                <Badge className={getStatusColor(submission.status)}>
-                                  {submission.status.replace('_', ' ')}
-                                </Badge>
-                              </div>
-                              <Button 
-                                variant={submission.status === 'submitted' ? 'default' : 'outline'}
-                                size="sm"
-                              >
-                                {submission.status === 'submitted' ? 'Grade' : 'Review'}
-                              </Button>
-                            </div>
-                          </div>
+                        <div className="text-sm">
+                          <span className="text-gray-600">Selected: </span>
+                          <span className="font-medium">{answer.selectedOption}</span>
+                          <span className="text-gray-600"> | Correct: </span>
+                          <span className="font-medium">{answer.question.correctAnswer}</span>
                         </div>
-                      ))}
-                    </div>
-                  )}
+                      </div>
+                    ))}
+                  </div>
                 </CardContent>
               </Card>
             )}
+
+            {/* Subjective Questions (Manual Grading) */}
+            <Card className="mb-6">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Award className="h-5 w-5 text-orange-600" />
+                  Questions Requiring Manual Grading ({subjectiveAnswers.length})
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-6">
+                  {subjectiveAnswers.map((answer: any) => (
+                    <div key={answer.id} className="border rounded-lg p-4">
+                      <div className="flex justify-between items-start mb-3">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Badge className={getQuestionTypeColor(answer.question.questionType)}>
+                              {formatQuestionType(answer.question.questionType)}
+                            </Badge>
+                            <span className="text-sm text-gray-600">
+                              Max: {parseFloat(answer.maxScore || '0')} points
+                            </span>
+                          </div>
+                          <h4 className="font-medium mb-3">{answer.question.questionText}</h4>
+                        </div>
+                      </div>
+
+                      {/* Student Answer */}
+                      <div className="mb-4">
+                        <h5 className="font-medium text-gray-700 mb-2">Student Answer:</h5>
+                        <div className="bg-gray-50 p-3 rounded border">
+                          <p className="whitespace-pre-wrap">
+                            {answer.answerText || 'No answer provided'}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Grading Section */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Score
+                          </label>
+                          <Input
+                            type="number"
+                            min="0"
+                            max={parseFloat(answer.maxScore || '0')}
+                            step="0.1"
+                            placeholder="Enter score"
+                            value={gradingData[answer.id]?.score || parseFloat(answer.score || '0')}
+                            onChange={(e) => handleScoreChange(answer.id, e.target.value)}
+                          />
+                        </div>
+                        <div className="flex items-end">
+                          <Button
+                            onClick={() => saveGrade(answer.id)}
+                            disabled={gradeAnswerMutation.isPending}
+                            className="w-full"
+                          >
+                            <Save className="h-4 w-4 mr-2" />
+                            Save Grade
+                          </Button>
+                        </div>
+                      </div>
+
+                      <div className="mt-4">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Feedback (optional)
+                        </label>
+                        <Textarea
+                          placeholder="Provide feedback to the student..."
+                          rows={3}
+                          value={gradingData[answer.id]?.feedback || answer.feedback || ''}
+                          onChange={(e) => handleFeedbackChange(answer.id, e.target.value)}
+                        />
+                      </div>
+
+                      {answer.gradedAt && (
+                        <div className="mt-3 text-sm text-gray-600 flex items-center gap-2">
+                          <CheckCircle className="h-4 w-4 text-green-600" />
+                          Graded on {new Date(answer.gradedAt).toLocaleDateString()}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Finalize Button */}
+            <div className="flex justify-end">
+              <Button
+                onClick={finalizeSubmission}
+                disabled={finalizeSubmissionMutation.isPending}
+                className="bg-green-600 hover:bg-green-700"
+              >
+                <CheckCircle className="h-4 w-4 mr-2" />
+                {finalizeSubmissionMutation.isPending ? "Finalizing..." : "Finalize Grading"}
+              </Button>
+            </div>
           </div>
         </main>
       </div>

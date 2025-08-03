@@ -14,8 +14,11 @@ import {
   Users, 
   Clock,
   TrendingUp,
-  ArrowUp
+  ArrowUp,
+  AlertCircle,
+  Eye
 } from "lucide-react";
+import { Link } from "wouter";
 
 export default function InstructorDashboard() {
   const { toast } = useToast();
@@ -49,6 +52,12 @@ export default function InstructorDashboard() {
 
   const { data: recentExams, isLoading: examsLoading } = useQuery({
     queryKey: ["/api/exams"],
+    retry: false,
+  });
+
+  // Fetch pending submissions for grading
+  const { data: pendingSubmissions = [] } = useQuery({
+    queryKey: ["/api/submissions"],
     retry: false,
   });
 
@@ -193,6 +202,53 @@ export default function InstructorDashboard() {
                           </Badge>
                         </div>
                       ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Pending Submissions Card */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <AlertCircle className="h-5 w-5 text-orange-600" />
+                    Pending Submissions
+                  </CardTitle>
+                  <CardDescription>Submissions requiring manual grading</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {pendingSubmissions.filter((sub: any) => sub.status === 'pending').length === 0 ? (
+                    <p className="text-gray-500 text-sm">No pending submissions</p>
+                  ) : (
+                    <div className="space-y-3">
+                      {pendingSubmissions
+                        .filter((sub: any) => sub.status === 'pending')
+                        .slice(0, 5)
+                        .map((submission: any) => {
+                          // Find the corresponding exam
+                          const exam = recentExams?.find((e: any) => e.id === submission.examId);
+                          return (
+                            <div key={submission.id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50">
+                              <div className="flex-1">
+                                <p className="font-medium text-sm">{exam?.title || 'Unknown Exam'}</p>
+                                <p className="text-xs text-gray-600">
+                                  Submitted: {new Date(submission.submittedAt).toLocaleDateString()}
+                                </p>
+                              </div>
+                              <Link href={`/grading/${submission.id}`}>
+                                <button className="text-primary hover:text-primary/80 text-sm font-medium flex items-center gap-1">
+                                  <Eye className="h-4 w-4" />
+                                  Grade
+                                </button>
+                              </Link>
+                            </div>
+                          );
+                        })}
+                      {pendingSubmissions.filter((sub: any) => sub.status === 'pending').length > 5 && (
+                        <p className="text-xs text-gray-500 text-center pt-2">
+                          +{pendingSubmissions.filter((sub: any) => sub.status === 'pending').length - 5} more pending
+                        </p>
+                      )}
                     </div>
                   )}
                 </CardContent>

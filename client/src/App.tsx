@@ -49,7 +49,7 @@ function Router() {
           <Route path="/" component={InstructorDashboard} />
           <Route path="/questions" component={InstructorQuestions} />
           <Route path="/exams" component={InstructorExams} />
-          <Route path="/grading" component={InstructorGrading} />
+          <Route path="/grading/:submissionId" component={InstructorGrading} />
           <Route path="/analytics" component={InstructorAnalytics} />
           <Route path="/students" component={InstructorStudents} />
         </>

@@ -410,11 +410,64 @@ export async function registerRoutes(app: Express): Promise<Server> {
       } else {
         // Students can only see their own submissions
         const submissions = await storage.getSubmissions(undefined, userId);
-        res.json(submissions);
+        
+        // Hide scores for pending submissions
+        const filteredSubmissions = submissions.map(submission => {
+          if (submission.status === 'pending') {
+            return {
+              ...submission,
+              totalScore: null,
+              maxScore: null
+            };
+          }
+          return submission;
+        });
+        
+        res.json(filteredSubmissions);
       }
     } catch (error) {
       console.error("Error fetching submissions:", error);
       res.status(500).json({ message: "Failed to fetch submissions" });
+    }
+  });
+
+  // Get submission details for manual grading
+  app.get('/api/submissions/:id/grade', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      const submissionId = parseInt(req.params.id);
+      
+      if (user?.role !== 'instructor') {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const submission = await storage.getSubmissionById(submissionId);
+      if (!submission) {
+        return res.status(404).json({ message: "Submission not found" });
+      }
+
+      const answers = await storage.getAnswers(submissionId);
+      const exam = await storage.getExamById(submission.examId);
+      const student = await storage.getUser(submission.studentId);
+      
+      // Get question details for each answer
+      const answersWithQuestions = await Promise.all(
+        answers.map(async (answer) => {
+          const question = await storage.getQuestionById(answer.questionId);
+          return { ...answer, question };
+        })
+      );
+
+      res.json({
+        submission,
+        exam,
+        student,
+        answers: answersWithQuestions
+      });
+    } catch (error) {
+      console.error("Error fetching submission for grading:", error);
+      res.status(500).json({ message: "Failed to fetch submission" });
     }
   });
 
@@ -423,23 +476,62 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
       const answerId = parseInt(req.params.id);
+      const { score, feedback } = req.body;
       
       if (user?.role !== 'instructor') {
         return res.status(403).json({ message: "Access denied" });
       }
 
-      const { score, feedback } = req.body;
+      // Validate score is a number
+      if (typeof score !== 'number' || score < 0) {
+        return res.status(400).json({ message: "Invalid score" });
+      }
+
       const updatedAnswer = await storage.updateAnswer(answerId, {
         score: score.toString(),
-        feedback,
+        feedback: feedback || '',
         gradedAt: new Date(),
-        gradedBy: userId,
+        gradedBy: userId
       });
 
       res.json(updatedAnswer);
     } catch (error) {
       console.error("Error grading answer:", error);
       res.status(500).json({ message: "Failed to grade answer" });
+    }
+  });
+
+  // Finalize submission grading
+  app.put('/api/submissions/:id/finalize', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      const submissionId = parseInt(req.params.id);
+      
+      if (user?.role !== 'instructor') {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const submission = await storage.getSubmissionById(submissionId);
+      if (!submission) {
+        return res.status(404).json({ message: "Submission not found" });
+      }
+
+      // Calculate total score from all answers
+      const answers = await storage.getAnswers(submissionId);
+      const totalScore = answers.reduce((sum, answer) => sum + parseFloat(answer.score || '0'), 0);
+      const maxScore = answers.reduce((sum, answer) => sum + parseFloat(answer.maxScore || '0'), 0);
+
+      const updatedSubmission = await storage.updateSubmission(submissionId, {
+        totalScore: totalScore.toString(),
+        maxScore: maxScore.toString(),
+        status: 'graded'
+      });
+
+      res.json(updatedSubmission);
+    } catch (error) {
+      console.error("Error finalizing submission:", error);
+      res.status(500).json({ message: "Failed to finalize submission" });
     }
   });
 
