@@ -335,7 +335,11 @@ export class DatabaseStorage implements IStorage {
       }
       
       if (isCompleted) {
-        completedExams.push(exam);
+        // Return exam with computed "completed" status for UI display
+        completedExams.push({
+          ...exam,
+          status: 'completed' as const
+        });
       }
     }
 
