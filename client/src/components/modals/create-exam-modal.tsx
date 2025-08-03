@@ -227,6 +227,11 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
     }
   };
 
+  const getSubjectName = (subjectId: number) => {
+    const subject = subjects.find(s => s.id === subjectId);
+    return subject ? subject.name : `Subject ${subjectId}`;
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
@@ -502,7 +507,7 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
                                   <Badge className={getQuestionTypeColor(question.questionType)} variant="secondary">
                                     {formatQuestionType(question.questionType)}
                                   </Badge>
-                                  <Badge variant="outline">Subject {question.subjectId}</Badge>
+                                  <Badge variant="outline">{getSubjectName(question.subjectId)}</Badge>
                                   {question.difficulty && (
                                     <Badge variant="outline" className="capitalize text-xs">{question.difficulty}</Badge>
                                   )}
