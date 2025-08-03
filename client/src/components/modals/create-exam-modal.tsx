@@ -502,7 +502,7 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
                                   <Badge className={getQuestionTypeColor(question.questionType)} variant="secondary">
                                     {formatQuestionType(question.questionType)}
                                   </Badge>
-                                  <Badge variant="outline">{question.subject || 'No subject'}</Badge>
+                                  <Badge variant="outline">Subject {question.subjectId}</Badge>
                                   {question.difficulty && (
                                     <Badge variant="outline" className="capitalize text-xs">{question.difficulty}</Badge>
                                   )}
@@ -571,7 +571,7 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
                                 <Badge className={getQuestionTypeColor(question.questionType)} variant="secondary">
                                   {formatQuestionType(question.questionType)}
                                 </Badge>
-                                <Badge variant="outline">{question.subject || 'No subject'}</Badge>
+                                <Badge variant="outline">Subject {question.subjectId}</Badge>
                                 {question.difficulty && (
                                   <Badge variant="outline" className="capitalize text-xs">{question.difficulty}</Badge>
                                 )}

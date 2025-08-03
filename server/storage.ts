@@ -165,6 +165,8 @@ export class DatabaseStorage implements IStorage {
     search?: string;
   }): Promise<Question[]> {
     try {
+      console.log('getQuestions called with filters:', filters);
+      
       // Start with basic conditions
       const conditions = [eq(questions.instructorId, instructorId), eq(questions.isActive, true)];
 
@@ -189,18 +191,19 @@ export class DatabaseStorage implements IStorage {
         );
       }
 
-      // Simple query without joins
+      console.log('Executing query with conditions:', conditions.length);
+
+      // Simple query - return exactly what's in the database
       const questionsResult = await db
         .select()
         .from(questions)
         .where(and(...conditions))
         .orderBy(desc(questions.createdAt));
 
-      // For now, return without subject names to test basic functionality
-      return questionsResult.map(question => ({
-        ...question,
-        subject: `Subject ${question.subjectId}`, // Simple fallback
-      }));
+      console.log('Query executed successfully, got', questionsResult.length, 'questions');
+
+      // Return the raw results without modification to avoid any type issues
+      return questionsResult as Question[];
 
     } catch (error) {
       console.error('Database error in getQuestions:', error);
