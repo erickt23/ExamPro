@@ -58,7 +58,12 @@ export default function InstructorDashboard() {
 
   // Fetch pending submissions for grading
   const { data: pendingSubmissions = [] } = useQuery<any[]>({
-    queryKey: ["/api/submissions"],
+    queryKey: ["/api/submissions", { status: "pending" }],
+    queryFn: async () => {
+      const response = await fetch('/api/submissions?status=pending');
+      if (!response.ok) throw new Error(`${response.status}: ${response.statusText}`);
+      return response.json();
+    },
     retry: false,
   });
 
@@ -103,7 +108,7 @@ export default function InstructorDashboard() {
                     <div>
                       <p className="text-sm font-medium text-gray-600">Total Questions</p>
                       <p className="text-2xl font-bold text-gray-900">
-                        {statsLoading ? "..." : stats?.totalQuestions || 0}
+                        {statsLoading ? "..." : (stats as any)?.totalQuestions || 0}
                       </p>
                     </div>
                     <div className="p-3 bg-primary/10 rounded-lg">
@@ -124,7 +129,7 @@ export default function InstructorDashboard() {
                     <div>
                       <p className="text-sm font-medium text-gray-600">Active Exams</p>
                       <p className="text-2xl font-bold text-gray-900">
-                        {statsLoading ? "..." : stats?.activeExams || 0}
+                        {statsLoading ? "..." : (stats as any)?.activeExams || 0}
                       </p>
                     </div>
                     <div className="p-3 bg-green-100 rounded-lg">
@@ -145,7 +150,7 @@ export default function InstructorDashboard() {
                     <div>
                       <p className="text-sm font-medium text-gray-600">Students Enrolled</p>
                       <p className="text-2xl font-bold text-gray-900">
-                        {statsLoading ? "..." : stats?.totalStudents || 0}
+                        {statsLoading ? "..." : (stats as any)?.totalStudents || 0}
                       </p>
                     </div>
                     <div className="p-3 bg-orange-100 rounded-lg">
@@ -166,7 +171,7 @@ export default function InstructorDashboard() {
                     <div>
                       <p className="text-sm font-medium text-gray-600">Pending Reviews</p>
                       <p className="text-2xl font-bold text-gray-900">
-                        {statsLoading ? "..." : stats?.pendingGrading || 0}
+                        {pendingSubmissions.length || 0}
                       </p>
                     </div>
                     <div className="p-3 bg-red-100 rounded-lg">
@@ -198,11 +203,11 @@ export default function InstructorDashboard() {
                         </div>
                       ))}
                     </div>
-                  ) : recentExams?.length === 0 ? (
+                  ) : (recentExams as any)?.length === 0 ? (
                     <p className="text-gray-500 text-center py-8">No exams created yet</p>
                   ) : (
                     <div className="space-y-4">
-                      {recentExams?.slice(0, 3).map((exam: any) => (
+                      {(recentExams as any)?.slice(0, 3).map((exam: any) => (
                         <div key={exam.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                           <div>
                             <h4 className="font-medium text-gray-900">{exam.title}</h4>
@@ -228,22 +233,21 @@ export default function InstructorDashboard() {
                   <CardDescription>Submissions requiring manual grading</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  {pendingSubmissions.filter((sub: any) => sub.status === 'pending').length === 0 ? (
+                  {pendingSubmissions.length === 0 ? (
                     <p className="text-gray-500 text-sm">No pending submissions</p>
                   ) : (
                     <div className="space-y-3">
                       {pendingSubmissions
-                        .filter((sub: any) => sub.status === 'pending')
                         .slice(0, 5)
                         .map((submission: any) => {
                           // Find the corresponding exam
-                          const exam = recentExams?.find((e: any) => e.id === submission.examId);
+                          const exam = (recentExams as any)?.find((e: any) => e.id === submission.examId);
                           return (
                             <div key={submission.id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50">
                               <div className="flex-1">
                                 <p className="font-medium text-sm">{exam?.title || 'Unknown Exam'}</p>
                                 <p className="text-xs text-gray-600">
-                                  Submitted: {new Date(submission.submittedAt).toLocaleDateString()}
+                                  Student ID: {submission.studentId} • Submitted: {new Date(submission.submittedAt).toLocaleDateString()}
                                 </p>
                               </div>
                               <Link href={`/grading/${submission.id}`}>
@@ -255,9 +259,9 @@ export default function InstructorDashboard() {
                             </div>
                           );
                         })}
-                      {pendingSubmissions.filter((sub: any) => sub.status === 'pending').length > 5 && (
+                      {pendingSubmissions.length > 5 && (
                         <p className="text-xs text-gray-500 text-center pt-2">
-                          +{pendingSubmissions.filter((sub: any) => sub.status === 'pending').length - 5} more pending
+                          +{pendingSubmissions.length - 5} more pending
                         </p>
                       )}
                     </div>

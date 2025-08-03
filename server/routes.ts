@@ -498,13 +498,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
-      const { examId, studentId } = req.query;
+      const { examId, studentId, status } = req.query;
       
       if (user?.role === 'instructor') {
-        const submissions = await storage.getSubmissions(
+        let submissions = await storage.getSubmissions(
           examId ? parseInt(examId as string) : undefined,
           studentId as string
         );
+        
+        // Filter by status if provided
+        if (status) {
+          submissions = submissions.filter(sub => sub.status === status);
+        }
+        
         res.json(submissions);
       } else {
         // Students can only see their own submissions
