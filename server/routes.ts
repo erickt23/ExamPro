@@ -171,8 +171,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const user = await storage.getUser(userId);
       
       if (user?.role === 'instructor') {
-        const { status } = req.query;
-        const exams = await storage.getExams(userId, status as string);
+        const { status, search } = req.query;
+        const exams = await storage.getExams(userId, status as string, search as string);
         res.json(exams);
       } else {
         // For students, return exams they can take

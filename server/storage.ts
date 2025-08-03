@@ -48,7 +48,7 @@ export interface IStorage {
   
   // Exam operations
   createExam(exam: InsertExam): Promise<Exam>;
-  getExams(instructorId: string, status?: string): Promise<Exam[]>;
+  getExams(instructorId: string, status?: string, search?: string): Promise<Exam[]>;
   getActiveExamsForStudents(): Promise<Exam[]>;
   getExamById(id: number): Promise<Exam | undefined>;
   updateExam(id: number, updates: Partial<InsertExam>): Promise<Exam>;
@@ -229,17 +229,53 @@ export class DatabaseStorage implements IStorage {
     return newExam;
   }
 
-  async getExams(instructorId: string, status?: string): Promise<Exam[]> {
+  async getExams(instructorId: string, status?: string, search?: string): Promise<Exam[]> {
     const conditions = [eq(exams.instructorId, instructorId)];
     if (status) {
       conditions.push(eq(exams.status, status as any));
     }
 
-    return db
-      .select()
-      .from(exams)
-      .where(and(...conditions))
-      .orderBy(desc(exams.createdAt));
+    if (search) {
+      // Join with subjects table to search by subject name as well
+      return db
+        .select({
+          id: exams.id,
+          instructorId: exams.instructorId,
+          title: exams.title,
+          description: exams.description,
+          subjectId: exams.subjectId,
+          duration: exams.duration,
+          totalPoints: exams.totalPoints,
+          attemptsAllowed: exams.attemptsAllowed,
+          randomizeQuestions: exams.randomizeQuestions,
+          randomizeOptions: exams.randomizeOptions,
+          showResultsImmediately: exams.showResultsImmediately,
+          requirePassword: exams.requirePassword,
+          password: exams.password,
+          availableFrom: exams.availableFrom,
+          availableUntil: exams.availableUntil,
+          status: exams.status,
+          createdAt: exams.createdAt,
+          updatedAt: exams.updatedAt,
+        })
+        .from(exams)
+        .leftJoin(subjects, eq(exams.subjectId, subjects.id))
+        .where(and(
+          ...conditions,
+          or(
+            like(exams.title, `%${search}%`),
+            like(exams.description, `%${search}%`),
+            like(subjects.name, `%${search}%`)
+          )!
+        ))
+        .orderBy(desc(exams.createdAt));
+    } else {
+      return db
+        .select()
+        .from(exams)
+        .where(and(...conditions))
+        .orderBy(desc(exams.createdAt));
+    }
   }
 
   async getActiveExamsForStudents(): Promise<Exam[]> {

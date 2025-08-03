@@ -14,6 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
 import { 
   Plus,
   FileText,
@@ -26,7 +27,8 @@ import {
   Trash2,
   Eye,
   Archive,
-  MoreVertical
+  MoreVertical,
+  Search
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -59,6 +61,7 @@ export default function InstructorExams() {
   const [activeTab, setActiveTab] = useState("all");
   const [deletingExamId, setDeletingExamId] = useState<number | null>(null);
   const [archivingExamId, setArchivingExamId] = useState<number | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -82,11 +85,14 @@ export default function InstructorExams() {
   });
 
   const { data: exams, isLoading: examsLoading } = useQuery({
-    queryKey: ["/api/exams", activeTab !== "all" ? { status: activeTab } : undefined],
+    queryKey: ["/api/exams", activeTab !== "all" ? { status: activeTab } : undefined, searchTerm ? { search: searchTerm } : undefined],
     queryFn: async () => {
       const params = new URLSearchParams();
       if (activeTab !== "all") {
         params.append('status', activeTab);
+      }
+      if (searchTerm.trim()) {
+        params.append('search', searchTerm.trim());
       }
       
       const response = await fetch(`/api/exams?${params}`);
@@ -257,18 +263,31 @@ export default function InstructorExams() {
         <Sidebar />
         <main className="flex-1 overflow-y-auto">
           <div className="p-6">
-            <div className="mb-6 flex justify-between items-center">
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900">Exam Management</h2>
-                <p className="text-gray-600 mt-1">Create, schedule, and manage your exams</p>
+            <div className="mb-6">
+              <div className="flex justify-between items-center mb-4">
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900">Exam Management</h2>
+                  <p className="text-gray-600 mt-1">Create, schedule, and manage your exams</p>
+                </div>
+                <Button 
+                  onClick={() => setShowCreateModal(true)}
+                  className="bg-primary hover:bg-primary/90"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create Exam
+                </Button>
               </div>
-              <Button 
-                onClick={() => setShowCreateModal(true)}
-                className="bg-primary hover:bg-primary/90"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Create Exam
-              </Button>
+              
+              {/* Search Bar */}
+              <div className="relative max-w-md">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <Input
+                  placeholder="Search exams by title, description, or subject..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
             </div>
 
             {/* Exam Status Tabs */}
