@@ -222,6 +222,7 @@ export const insertQuestionSchema = createInsertSchema(questions).omit({
   usageCount: true,
   createdAt: true,
   updatedAt: true,
+  title: true,
 }).extend({
   title: z.string().optional(),
 });
