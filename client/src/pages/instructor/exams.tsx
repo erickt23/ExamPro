@@ -227,6 +227,7 @@ export default function InstructorExams() {
       case 'draft': return 'bg-orange-100 text-orange-800';
       case 'completed': return 'bg-blue-100 text-blue-800';
       case 'scheduled': return 'bg-purple-100 text-purple-800';
+      case 'archived': return 'bg-gray-100 text-gray-800';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
@@ -270,6 +271,7 @@ export default function InstructorExams() {
                 <TabsTrigger value="draft">Draft</TabsTrigger>
                 <TabsTrigger value="completed">Completed</TabsTrigger>
                 <TabsTrigger value="scheduled">Scheduled</TabsTrigger>
+                <TabsTrigger value="archived">Archived</TabsTrigger>
               </TabsList>
 
               <TabsContent value={activeTab} className="mt-6">
@@ -293,7 +295,13 @@ export default function InstructorExams() {
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {exams?.map((exam: any) => (
+                    {exams?.sort((a: any, b: any) => {
+                      // Sort archived exams to the bottom
+                      if (a.status === 'archived' && b.status !== 'archived') return 1;
+                      if (b.status === 'archived' && a.status !== 'archived') return -1;
+                      // Otherwise sort by creation date (newest first)
+                      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+                    })?.map((exam: any) => (
                       <Card key={exam.id} className="hover:shadow-md transition-shadow">
                         <CardContent className="p-6">
                           <div className="flex justify-between items-start mb-4">
@@ -399,7 +407,7 @@ export default function InstructorExams() {
                                     </Button>
                                   </DropdownMenuTrigger>
                                   <DropdownMenuContent align="end">
-                                    {exam.status === 'active' && (
+                                    {(exam.status === 'active' || exam.status === 'completed') && (
                                       <DropdownMenuItem onClick={() => setArchivingExamId(exam.id)}>
                                         <Archive className="h-4 w-4 mr-2" />
                                         Archive Exam
@@ -495,7 +503,7 @@ export default function InstructorExams() {
             <AlertDialogAction
               onClick={() => deletingExamId && deleteExamMutation.mutate(deletingExamId)}
               disabled={deleteExamMutation.isPending}
-              variant="destructive"
+              className="bg-red-600 hover:bg-red-700"
             >
               {deleteExamMutation.isPending ? "Deleting..." : "Delete Exam"}
             </AlertDialogAction>

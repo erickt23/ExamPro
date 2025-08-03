@@ -92,7 +92,7 @@ export const exams = pgTable("exams", {
   password: varchar("password"),
   availableFrom: timestamp("available_from"),
   availableUntil: timestamp("available_until"),
-  status: varchar("status", { enum: ["draft", "active", "completed", "scheduled"] }).notNull().default("draft"),
+  status: varchar("status", { enum: ["draft", "active", "completed", "scheduled", "archived"] }).notNull().default("draft"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

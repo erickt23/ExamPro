@@ -270,7 +270,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Exam not found" });
       }
 
-      const updatedExam = await storage.updateExam(examId, { status: 'completed' });
+      const updatedExam = await storage.updateExam(examId, { status: 'archived' });
       res.json(updatedExam);
     } catch (error) {
       console.error("Error archiving exam:", error);
