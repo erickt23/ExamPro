@@ -230,52 +230,31 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getExams(instructorId: string, status?: string, search?: string): Promise<Exam[]> {
+    console.log('getExams called with:', { instructorId, status, search });
     const conditions = [eq(exams.instructorId, instructorId)];
+    
     if (status) {
       conditions.push(eq(exams.status, status as any));
     }
 
-    if (search) {
-      // Join with subjects table to search by subject name as well
-      return db
-        .select({
-          id: exams.id,
-          instructorId: exams.instructorId,
-          title: exams.title,
-          description: exams.description,
-          subjectId: exams.subjectId,
-          duration: exams.duration,
-          totalPoints: exams.totalPoints,
-          attemptsAllowed: exams.attemptsAllowed,
-          randomizeQuestions: exams.randomizeQuestions,
-          randomizeOptions: exams.randomizeOptions,
-          showResultsImmediately: exams.showResultsImmediately,
-          requirePassword: exams.requirePassword,
-          password: exams.password,
-          availableFrom: exams.availableFrom,
-          availableUntil: exams.availableUntil,
-          status: exams.status,
-          createdAt: exams.createdAt,
-          updatedAt: exams.updatedAt,
-        })
-        .from(exams)
-        .leftJoin(subjects, eq(exams.subjectId, subjects.id))
-        .where(and(
-          ...conditions,
-          or(
-            ilike(exams.title, `%${search}%`),
-            ilike(exams.description, `%${search}%`),
-            ilike(subjects.name, `%${search}%`)
-          )!
-        ))
-        .orderBy(desc(exams.createdAt));
-    } else {
-      return db
-        .select()
-        .from(exams)
-        .where(and(...conditions))
-        .orderBy(desc(exams.createdAt));
+    // Add search condition if provided
+    if (search && search.trim()) {
+      conditions.push(
+        or(
+          ilike(exams.title, `%${search.trim()}%`),
+          ilike(exams.description, `%${search.trim()}%`)
+        )!
+      );
     }
+
+    const results = await db
+      .select()
+      .from(exams)
+      .where(and(...conditions))
+      .orderBy(desc(exams.createdAt));
+
+    console.log('Query results:', results.length, 'exams found');
+    return results;
   }
 
   async getActiveExamsForStudents(): Promise<Exam[]> {
