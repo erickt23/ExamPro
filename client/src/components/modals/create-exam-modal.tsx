@@ -109,11 +109,7 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
       if (filterDifficulty && filterDifficulty !== 'all') params.append('difficulty', filterDifficulty);
       if (filterBloomsTaxonomy && filterBloomsTaxonomy !== 'all') params.append('bloomsTaxonomy', filterBloomsTaxonomy);
       
-      const url = `/api/questions?${params}`;
-      console.log('Frontend: Making request to:', url);
-      console.log('Frontend: Filter values:', { questionSearch, filterSubject, filterType, filterDifficulty, filterBloomsTaxonomy });
-      
-      const response = await fetch(url);
+      const response = await fetch(`/api/questions?${params}`);
       if (!response.ok) throw new Error(`${response.status}: ${response.statusText}`);
       return response.json();
     },

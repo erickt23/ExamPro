@@ -67,8 +67,8 @@ export default function InstructorQuestions() {
     queryKey: ["/api/questions", filters],
     queryFn: async () => {
       const params = new URLSearchParams();
-      if (filters.subjectId && filters.subjectId !== 'all') params.append('subjectId', filters.subjectId);
-      if (filters.questionType && filters.questionType !== 'all') params.append('questionType', filters.questionType);
+      if (filters.subjectId && filters.subjectId !== 'all') params.append('subject', filters.subjectId);
+      if (filters.questionType && filters.questionType !== 'all') params.append('type', filters.questionType);
       if (filters.difficulty && filters.difficulty !== 'all') params.append('difficulty', filters.difficulty);
       if (filters.search) params.append('search', filters.search);
       
