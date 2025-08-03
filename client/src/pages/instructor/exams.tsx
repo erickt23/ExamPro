@@ -8,6 +8,7 @@ import Navbar from "@/components/layout/navbar";
 import Sidebar from "@/components/layout/sidebar";
 import CreateExamModal from "@/components/modals/create-exam-modal";
 import EditExamModal from "@/components/modals/edit-exam-modal";
+import ExamPreviewModal from "@/components/modals/exam-preview-modal";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -21,7 +22,8 @@ import {
   Users,
   Clock,
   Play,
-  Trash2
+  Trash2,
+  Eye
 } from "lucide-react";
 
 export default function InstructorExams() {
@@ -29,7 +31,9 @@ export default function InstructorExams() {
   const { isAuthenticated, isLoading } = useAuth();
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [editingExamId, setEditingExamId] = useState<number | null>(null);
+  const [previewingExamId, setPreviewingExamId] = useState<number | null>(null);
   const [activeTab, setActiveTab] = useState("all");
 
   // Redirect if not authenticated
@@ -103,6 +107,11 @@ export default function InstructorExams() {
   const handleEditExam = (examId: number) => {
     setEditingExamId(examId);
     setShowEditModal(true);
+  };
+
+  const handlePreviewExam = (examId: number) => {
+    setPreviewingExamId(examId);
+    setShowPreviewModal(true);
   };
 
   const handlePublishExam = (examId: number) => {
@@ -233,19 +242,46 @@ export default function InstructorExams() {
                           <div className="pt-4 border-t border-gray-100">
                             <div className="flex justify-between items-center">
                               {exam.status === 'draft' ? (
+                                <div className="flex items-center gap-2">
+                                  <Button 
+                                    variant="outline" 
+                                    size="sm"
+                                    onClick={() => handleEditExam(exam.id)}
+                                  >
+                                    <Edit className="h-4 w-4 mr-1" />
+                                    Edit
+                                  </Button>
+                                  <Button 
+                                    onClick={() => handlePreviewExam(exam.id)}
+                                    size="sm"
+                                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                                  >
+                                    <Eye className="h-4 w-4 mr-1" />
+                                    Preview & Publish
+                                  </Button>
+                                </div>
+                              ) : exam.status === 'active' ? (
+                                <div className="flex items-center gap-2">
+                                  <Button 
+                                    variant="outline" 
+                                    size="sm"
+                                    onClick={() => handlePreviewExam(exam.id)}
+                                  >
+                                    <Eye className="h-4 w-4 mr-1" />
+                                    Preview
+                                  </Button>
+                                  <Button variant="outline" size="sm">
+                                    <FileText className="h-4 w-4 mr-1" />
+                                    View Results
+                                  </Button>
+                                </div>
+                              ) : (
                                 <Button 
                                   variant="outline" 
                                   size="sm"
-                                  onClick={() => handleEditExam(exam.id)}
+                                  onClick={() => handlePreviewExam(exam.id)}
                                 >
-                                  Continue Editing
-                                </Button>
-                              ) : exam.status === 'active' ? (
-                                <Button variant="outline" size="sm">
-                                  View Results
-                                </Button>
-                              ) : (
-                                <Button variant="outline" size="sm">
+                                  <Eye className="h-4 w-4 mr-1" />
                                   Preview
                                 </Button>
                               )}
@@ -255,24 +291,13 @@ export default function InstructorExams() {
                                   variant="ghost" 
                                   size="sm"
                                   onClick={() => handleEditExam(exam.id)}
-                                  title="Edit exam"
+                                  title="Edit exam settings"
                                 >
                                   <Edit className="h-4 w-4" />
                                 </Button>
                                 <Button variant="ghost" size="sm" title="Copy exam">
                                   <Copy className="h-4 w-4" />
                                 </Button>
-                                {exam.status === 'draft' && (
-                                  <Button 
-                                    variant="ghost" 
-                                    size="sm"
-                                    onClick={() => handlePublishExam(exam.id)}
-                                    disabled={publishExamMutation.isPending}
-                                    title="Publish exam"
-                                  >
-                                    <Play className="h-4 w-4" />
-                                  </Button>
-                                )}
                               </div>
                             </div>
                           </div>
@@ -301,6 +326,21 @@ export default function InstructorExams() {
           }
         }}
         examId={editingExamId}
+      />
+      
+      <ExamPreviewModal
+        open={showPreviewModal}
+        onOpenChange={(open) => {
+          setShowPreviewModal(open);
+          if (!open) {
+            setPreviewingExamId(null);
+          }
+        }}
+        examId={previewingExamId}
+        onPublish={() => {
+          // Refresh exams list after publishing
+          queryClient.invalidateQueries({ queryKey: ["/api/exams"] });
+        }}
       />
     </div>
   );
