@@ -291,6 +291,9 @@ export default function InstructorQuestions() {
                                   {question.bloomsTaxonomy}
                                 </Badge>
                               )}
+                              <Badge variant="outline" className="bg-amber-100 text-amber-800">
+                                {question.points} pts
+                              </Badge>
                             </div>
                             <h4 className="font-medium text-gray-900 mb-2">{question.title || question.questionText.substring(0, 100)}</h4>
                             <p className="text-sm text-gray-600 mb-3 line-clamp-2">
