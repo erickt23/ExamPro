@@ -61,6 +61,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const { subject, type, difficulty, bloomsTaxonomy, search } = req.query;
+      console.log('Backend: Raw query params received:', req.query);
+      console.log('Backend: Extracted params:', { subject, type, difficulty, bloomsTaxonomy, search });
+      
       const questions = await storage.getQuestions(userId, {
         subjectId: subject ? parseInt(subject as string) : undefined,
         questionType: type as string,
