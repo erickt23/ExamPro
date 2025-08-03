@@ -229,8 +229,8 @@ export const insertExamSchema = createInsertSchema(exams).omit({
   createdAt: true,
   updatedAt: true,
 }).extend({
-  availableFrom: z.string().optional().transform((val) => val ? new Date(val) : undefined),
-  availableUntil: z.string().optional().transform((val) => val ? new Date(val) : undefined),
+  availableFrom: z.string().nullable().optional().transform((val) => val ? new Date(val) : undefined),
+  availableUntil: z.string().nullable().optional().transform((val) => val ? new Date(val) : undefined),
 });
 
 export const insertSubmissionSchema = createInsertSchema(submissions).omit({

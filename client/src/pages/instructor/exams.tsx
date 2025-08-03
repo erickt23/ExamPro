@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { isUnauthorizedError } from "@/lib/authUtils";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import Navbar from "@/components/layout/navbar";
 import Sidebar from "@/components/layout/sidebar";
 import CreateExamModal from "@/components/modals/create-exam-modal";
+import EditExamModal from "@/components/modals/edit-exam-modal";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -26,6 +28,8 @@ export default function InstructorExams() {
   const { toast } = useToast();
   const { isAuthenticated, isLoading } = useAuth();
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingExamId, setEditingExamId] = useState<number | null>(null);
   const [activeTab, setActiveTab] = useState("all");
 
   // Redirect if not authenticated
@@ -63,6 +67,47 @@ export default function InstructorExams() {
     },
     retry: false,
   });
+
+  // Publish exam mutation
+  const publishExamMutation = useMutation({
+    mutationFn: async (examId: number) => {
+      await apiRequest("PUT", `/api/exams/${examId}`, { status: "active" });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/exams"] });
+      toast({
+        title: "Success",
+        description: "Exam published successfully",
+      });
+    },
+    onError: (error: Error) => {
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
+      toast({
+        title: "Error",
+        description: "Failed to publish exam",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleEditExam = (examId: number) => {
+    setEditingExamId(examId);
+    setShowEditModal(true);
+  };
+
+  const handlePublishExam = (examId: number) => {
+    publishExamMutation.mutate(examId);
+  };
 
   if (isLoading || !isAuthenticated) {
     return (
@@ -188,7 +233,11 @@ export default function InstructorExams() {
                           <div className="pt-4 border-t border-gray-100">
                             <div className="flex justify-between items-center">
                               {exam.status === 'draft' ? (
-                                <Button variant="outline" size="sm">
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  onClick={() => handleEditExam(exam.id)}
+                                >
                                   Continue Editing
                                 </Button>
                               ) : exam.status === 'active' ? (
@@ -202,14 +251,25 @@ export default function InstructorExams() {
                               )}
                               
                               <div className="flex items-center space-x-1">
-                                <Button variant="ghost" size="sm">
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm"
+                                  onClick={() => handleEditExam(exam.id)}
+                                  title="Edit exam"
+                                >
                                   <Edit className="h-4 w-4" />
                                 </Button>
-                                <Button variant="ghost" size="sm">
+                                <Button variant="ghost" size="sm" title="Copy exam">
                                   <Copy className="h-4 w-4" />
                                 </Button>
                                 {exam.status === 'draft' && (
-                                  <Button variant="ghost" size="sm">
+                                  <Button 
+                                    variant="ghost" 
+                                    size="sm"
+                                    onClick={() => handlePublishExam(exam.id)}
+                                    disabled={publishExamMutation.isPending}
+                                    title="Publish exam"
+                                  >
                                     <Play className="h-4 w-4" />
                                   </Button>
                                 )}
@@ -230,6 +290,17 @@ export default function InstructorExams() {
       <CreateExamModal 
         open={showCreateModal} 
         onOpenChange={setShowCreateModal}
+      />
+      
+      <EditExamModal
+        open={showEditModal}
+        onOpenChange={(open) => {
+          setShowEditModal(open);
+          if (!open) {
+            setEditingExamId(null);
+          }
+        }}
+        examId={editingExamId}
       />
     </div>
   );
