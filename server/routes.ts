@@ -255,6 +255,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Exam question management
+  app.get('/api/exams/:id/questions', isAuthenticated, async (req: any, res) => {
+    try {
+      const examId = parseInt(req.params.id);
+      const examQuestions = await storage.getExamQuestions(examId);
+      res.json(examQuestions);
+    } catch (error) {
+      console.error("Error fetching exam questions:", error);
+      res.status(500).json({ message: "Failed to fetch exam questions" });
+    }
+  });
+
   app.post('/api/exams/:id/questions', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
@@ -277,6 +288,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error adding question to exam:", error);
       res.status(500).json({ message: "Failed to add question to exam" });
+    }
+  });
+
+  app.delete('/api/exams/:examId/questions/:questionId', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      const examId = parseInt(req.params.examId);
+      const questionId = parseInt(req.params.questionId);
+      
+      if (user?.role !== 'instructor') {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const exam = await storage.getExamById(examId);
+      if (!exam || exam.instructorId !== userId) {
+        return res.status(404).json({ message: "Exam not found" });
+      }
+
+      await storage.removeQuestionFromExam(examId, questionId);
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error removing question from exam:", error);
+      res.status(500).json({ message: "Failed to remove question from exam" });
     }
   });
 
