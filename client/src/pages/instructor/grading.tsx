@@ -24,7 +24,7 @@ import {
 
 export default function GradingPage() {
   const [match, params] = useRoute("/grading/:submissionId");
-  const submissionId = params?.submissionId;
+  const submissionId = match ? params?.submissionId : null;
   const { toast } = useToast();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const [, navigate] = useLocation();
