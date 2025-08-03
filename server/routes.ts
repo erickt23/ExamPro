@@ -22,7 +22,7 @@ const upload = multer({
 
 // Helper function to validate and transform Excel row
 async function validateAndTransformRow(row: any, rowNumber: number) {
-  const required = ['title', 'questionText', 'questionType', 'subjectId'];
+  const required = ['title', 'questionText', 'questionType', 'subject'];
   
   // Check required fields
   for (const field of required) {
@@ -56,15 +56,21 @@ async function validateAndTransformRow(row: any, rowNumber: number) {
     correctAnswer = row.correctAnswer || 'A';
   }
 
+  // Look up subject ID from subject name
+  const subjects = await storage.getSubjects();
+  const subject = subjects.find(s => s.name.toLowerCase() === row.subject.toLowerCase());
+  if (!subject) {
+    throw new Error(`Subject not found: ${row.subject}`);
+  }
+
   return {
     title: row.title,
     questionText: row.questionText,
     questionType: row.questionType,
-    subjectId: parseInt(row.subjectId),
+    subjectId: subject.id,
     difficulty: row.difficulty || 'medium',
     bloomsTaxonomy: row.bloomsTaxonomy || null,
     points: parseInt(row.points) || 1,
-    timeLimit: row.timeLimit ? parseInt(row.timeLimit) : null,
     options,
     correctAnswer,
     explanation: row.explanation || null

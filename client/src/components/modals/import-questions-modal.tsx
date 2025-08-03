@@ -114,11 +114,10 @@ export default function ImportQuestionsModal({ open, onOpenChange }: ImportQuest
                 <li><strong>title</strong> - Question title</li>
                 <li><strong>questionText</strong> - The actual question</li>
                 <li><strong>questionType</strong> - multiple_choice, short_answer, essay, or fill_blank</li>
-                <li><strong>subjectId</strong> - Numeric ID of the subject</li>
+                <li><strong>subject</strong> - Subject name (e.g., "Mathematics", "Physics", "History")</li>
                 <li><strong>difficulty</strong> - easy, medium, or hard (optional, defaults to medium)</li>
                 <li><strong>bloomsTaxonomy</strong> - remember, understand, apply, analyze, evaluate, create (optional)</li>
                 <li><strong>points</strong> - Point value (optional, defaults to 1)</li>
-                <li><strong>timeLimit</strong> - Time limit in minutes (optional)</li>
                 <li><strong>options</strong> - For multiple choice, separated by semicolons (e.g., "Paris;London;Berlin;Madrid")</li>
                 <li><strong>correctAnswer</strong> - For multiple choice (A, B, C, D, etc.)</li>
                 <li><strong>explanation</strong> - Optional explanation text</li>
