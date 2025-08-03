@@ -128,9 +128,11 @@ export function getExamStatus(
   const availableFrom = exam.availableFrom ? new Date(exam.availableFrom) : null;
   const availableUntil = exam.availableUntil ? new Date(exam.availableUntil) : null;
   
-  // Check if student has already submitted this exam
-  const hasSubmission = submissions?.some((sub: any) => sub.examId === exam.id);
+  // Get student's submissions for this specific exam
+  const examSubmissions = submissions?.filter((sub: any) => sub.examId === exam.id) || [];
+  const hasSubmission = examSubmissions.length > 0;
   
+  // Check if student has completed submissions
   if (hasSubmission) {
     return {
       status: 'completed',
@@ -148,8 +150,28 @@ export function getExamStatus(
     };
   }
   
-  // Check if exam deadline has passed (expired)
+  // Check if exam deadline has passed
   if (availableUntil && now > availableUntil) {
+    // Check if the exam was within the valid scheduled time window
+    const wasWithinSchedule = !availableFrom || availableFrom <= now;
+    
+    // Check if student still had attempts remaining
+    const attemptsUsed = examSubmissions.length;
+    const hasAttemptsRemaining = exam.attemptsAllowed === -1 || attemptsUsed < exam.attemptsAllowed;
+    
+    // Check if exam is not yet graded (no submissions exist to grade)
+    const isNotGraded = examSubmissions.length === 0;
+    
+    // If all conditions are met, mark as completed instead of expired
+    if (wasWithinSchedule && hasAttemptsRemaining && isNotGraded) {
+      return {
+        status: 'completed',
+        label: 'Completed',
+        canStart: false
+      };
+    }
+    
+    // Otherwise, mark as expired
     return {
       status: 'expired',
       label: 'Expired',
