@@ -23,7 +23,9 @@ import {
   Save,
   Upload,
   Link,
-  Paperclip
+  Paperclip,
+  Download,
+  ExternalLink
 } from "lucide-react";
 import { ObjectUploader } from "@/components/ObjectUploader";
 import { Input } from "@/components/ui/input";
@@ -261,6 +263,30 @@ export default function StudentExams() {
                   <h3 className="text-lg font-medium text-gray-900 mb-4">
                     {currentQuestion.question.questionText}
                   </h3>
+                  
+                  {/* Question Attachment */}
+                  {currentQuestion.question.attachmentUrl && (
+                    <div className="bg-blue-50 p-3 rounded border mb-4">
+                      <div className="flex items-center gap-2">
+                        <Paperclip className="h-4 w-4 text-blue-600" />
+                        <span className="text-sm font-medium text-blue-900">Question Attachment:</span>
+                      </div>
+                      <div className="mt-2">
+                        <a 
+                          href={currentQuestion.question.attachmentUrl.startsWith('/objects/') 
+                            ? currentQuestion.question.attachmentUrl 
+                            : `/objects/uploads/${currentQuestion.question.attachmentUrl.split('/').pop()}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 text-sm"
+                        >
+                          <Download className="h-3 w-3" />
+                          Download File
+                          <ExternalLink className="h-3 w-3" />
+                        </a>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Answer Input Based on Question Type */}

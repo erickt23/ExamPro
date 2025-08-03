@@ -28,8 +28,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { Plus, List, PenTool, FileText, Pen } from "lucide-react";
+import { Plus, List, PenTool, FileText, Pen, Upload, Paperclip } from "lucide-react";
 import CreateSubjectModal from "./create-subject-modal";
+import { ObjectUploader } from "@/components/ObjectUploader";
 
 const editQuestionSchema = z.object({
   title: z.string().min(1, "Title is required").max(200),
@@ -38,6 +39,7 @@ const editQuestionSchema = z.object({
   options: z.array(z.string()).optional(),
   correctAnswer: z.string().optional(),
   explanation: z.string().optional(),
+  attachmentUrl: z.string().optional(),
   subjectId: z.number().min(1, "Subject is required"),
   difficulty: z.enum(['easy', 'medium', 'hard']),
   bloomsTaxonomy: z.enum(['remember', 'understand', 'apply', 'analyze', 'evaluate', 'create']).optional(),
@@ -79,6 +81,8 @@ export default function EditQuestionModal({ open, onOpenChange, questionId }: Ed
   const [selectedType, setSelectedType] = useState<string>('multiple_choice');
   const [mcqOptions, setMcqOptions] = useState(['', '', '', '']);
   const [correctOption, setCorrectOption] = useState('A');
+  const [attachmentFile, setAttachmentFile] = useState<any>(null);
+  const [attachmentUrl, setAttachmentUrl] = useState<string>('');
 
   const form = useForm<EditQuestionForm>({
     resolver: zodResolver(editQuestionSchema),
@@ -105,6 +109,7 @@ export default function EditQuestionModal({ open, onOpenChange, questionId }: Ed
         points: questionData.points || 1,
         timeLimit: questionData.timeLimit || undefined,
         explanation: questionData.explanation || '',
+        attachmentUrl: questionData.attachmentUrl || '',
       });
       
       setSelectedType(questionData.questionType || 'multiple_choice');
@@ -112,6 +117,12 @@ export default function EditQuestionModal({ open, onOpenChange, questionId }: Ed
       if (questionData.questionType === 'multiple_choice' && questionData.options) {
         setMcqOptions([...questionData.options, '', '', '', ''].slice(0, Math.max(4, questionData.options.length)));
         setCorrectOption(questionData.correctAnswer || 'A');
+      }
+      
+      if (questionData.attachmentUrl) {
+        setAttachmentUrl(questionData.attachmentUrl);
+        // Set a placeholder file object for display
+        setAttachmentFile({ name: 'Existing attachment' });
       }
     }
   }, [questionData, form]);
@@ -126,6 +137,18 @@ export default function EditQuestionModal({ open, onOpenChange, questionId }: Ed
       }
       
       await apiRequest("PUT", `/api/questions/${questionId}`, payload);
+      
+      // If there's a new attachment, set the ACL policy
+      if (attachmentUrl && !attachmentUrl.startsWith('/objects/')) {
+        try {
+          await apiRequest("PUT", `/api/questions/${questionId}/attachment`, {
+            attachmentURL: attachmentUrl
+          });
+        } catch (attachmentError) {
+          console.error("Error setting attachment ACL:", attachmentError);
+          // Don't fail the entire operation if ACL setting fails
+        }
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/questions"] });
@@ -431,6 +454,58 @@ export default function EditQuestionModal({ open, onOpenChange, questionId }: Ed
                 </FormItem>
               )}
             />
+
+            {/* File Attachment Section */}
+            <div>
+              <Label className="text-sm font-medium">Question Attachment (Optional)</Label>
+              <p className="text-xs text-gray-600 mb-3">Upload a file that students can download when answering this question</p>
+              
+              {attachmentFile ? (
+                <div className="flex items-center gap-2 p-3 border rounded-lg bg-gray-50">
+                  <Paperclip className="h-4 w-4 text-gray-600" />
+                  <span className="text-sm font-medium truncate">
+                    {attachmentFile.name}
+                  </span>
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => {
+                      setAttachmentFile(null);
+                      setAttachmentUrl('');
+                    }}
+                  >
+                    Remove
+                  </Button>
+                </div>
+              ) : (
+                <ObjectUploader
+                  maxNumberOfFiles={1}
+                  maxFileSize={25 * 1024 * 1024} // 25MB
+                  onGetUploadParameters={async () => {
+                    const response = await fetch('/api/objects/upload', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' }
+                    });
+                    const data = await response.json();
+                    return {
+                      method: 'PUT' as const,
+                      url: data.uploadURL
+                    };
+                  }}
+                  onComplete={(result) => {
+                    if (result.successful && result.successful.length > 0) {
+                      const file = result.successful[0];
+                      setAttachmentFile(file.meta);
+                      setAttachmentUrl(file.uploadURL || '');
+                    }
+                  }}
+                  buttonClassName="w-full"
+                >
+                  <Upload className="h-4 w-4 mr-2" />
+                  Upload Attachment
+                </ObjectUploader>
+              )}
+            </div>
 
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>

@@ -936,6 +936,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Handle question attachment uploads and set ACL policies
+  app.put("/api/questions/:id/attachment", isAuthenticated, async (req: any, res) => {
+    if (!req.body.attachmentURL) {
+      return res.status(400).json({ error: "attachmentURL is required" });
+    }
+
+    const userId = req.user.claims.sub;
+    const user = await storage.getUser(userId);
+    const questionId = parseInt(req.params.id);
+
+    if (user?.role !== 'instructor') {
+      return res.status(403).json({ error: "Access denied" });
+    }
+
+    try {
+      const question = await storage.getQuestionById(questionId);
+      if (!question || question.instructorId !== userId) {
+        return res.status(404).json({ error: "Question not found" });
+      }
+
+      const objectStorageService = new ObjectStorageService();
+      const objectPath = await objectStorageService.trySetObjectEntityAclPolicy(
+        req.body.attachmentURL,
+        {
+          owner: userId,
+          visibility: "public", // Question attachments should be publicly accessible to students
+        },
+      );
+
+      // Update the question with the attachment URL
+      await storage.updateQuestion(questionId, { attachmentUrl: objectPath });
+
+      res.status(200).json({
+        objectPath: objectPath,
+      });
+    } catch (error) {
+      console.error("Error setting question attachment:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

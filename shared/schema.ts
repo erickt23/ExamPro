@@ -63,6 +63,7 @@ export const questions = pgTable("questions", {
   options: jsonb("options"), // For MCQ options
   correctAnswer: text("correct_answer"),
   explanation: text("explanation"),
+  attachmentUrl: text("attachment_url"), // For instructor file attachments
   subjectId: integer("subject_id").notNull().references(() => subjects.id),
   difficulty: difficultyEnum("difficulty").notNull(),
   bloomsTaxonomy: bloomsTaxonomyEnum("blooms_taxonomy"),
