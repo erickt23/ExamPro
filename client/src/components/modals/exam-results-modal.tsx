@@ -18,7 +18,9 @@ import {
   TrendingUp,
   Award,
   FileText,
-  Eye
+  Eye,
+  ChevronDown,
+  ChevronUp
 } from "lucide-react";
 
 interface ExamResultsModalProps {
@@ -29,6 +31,7 @@ interface ExamResultsModalProps {
 
 export default function ExamResultsModal({ open, onOpenChange, examId }: ExamResultsModalProps) {
   const { toast } = useToast();
+  const [expandedSubmission, setExpandedSubmission] = useState<number | null>(null);
 
   // Fetch exam details
   const { data: examData } = useQuery({
@@ -236,35 +239,14 @@ export default function ExamResultsModal({ open, onOpenChange, examId }: ExamRes
                 ) : (
                   <div className="space-y-3">
                     {submissions.map((submission: any) => (
-                      <div key={submission.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-3">
-                            <p className="font-medium">Student ID: {submission.studentId}</p>
-                            <Badge className={getStatusBadgeColor(submission.status)}>
-                              {submission.status}
-                            </Badge>
-                          </div>
-                          <div className="flex items-center gap-4 text-sm text-gray-600 mt-1">
-                            <span>Submitted: {new Date(submission.submittedAt).toLocaleString()}</span>
-                            <span>Time Taken: {formatTime(submission.timeTaken || 0)}</span>
-                            {submission.status === 'graded' && (
-                              <span className="font-medium text-green-600">
-                                Score: {submission.totalScore}/{submission.maxScore} 
-                                ({Math.round((submission.totalScore / submission.maxScore) * 100)}%)
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                        {submission.status === 'pending' && (
-                          <button
-                            onClick={() => window.location.href = `/grading/${submission.id}`}
-                            className="text-primary hover:text-primary/80 text-sm font-medium flex items-center gap-1"
-                          >
-                            <Eye className="h-4 w-4" />
-                            Grade
-                          </button>
-                        )}
-                      </div>
+                      <SubmissionCard 
+                        key={submission.id} 
+                        submission={submission}
+                        isExpanded={expandedSubmission === submission.id}
+                        onToggleExpand={() => setExpandedSubmission(expandedSubmission === submission.id ? null : submission.id)}
+                        getStatusBadgeColor={getStatusBadgeColor}
+                        formatTime={formatTime}
+                      />
                     ))}
                   </div>
                 )}
@@ -359,5 +341,184 @@ export default function ExamResultsModal({ open, onOpenChange, examId }: ExamRes
         </Tabs>
       </DialogContent>
     </Dialog>
+  );
+}
+
+// Separate component for submission cards with expandable answers
+function SubmissionCard({ submission, isExpanded, onToggleExpand, getStatusBadgeColor, formatTime }: {
+  submission: any;
+  isExpanded: boolean;
+  onToggleExpand: () => void;
+  getStatusBadgeColor: (status: string) => string;
+  formatTime: (minutes: number) => string;
+}) {
+  // Fetch submission details with answers when expanded
+  const { data: submissionDetails } = useQuery({
+    queryKey: ["/api/submissions", submission.id, "grade"],
+    queryFn: async () => {
+      const response = await fetch(`/api/submissions/${submission.id}/grade`);
+      if (!response.ok) throw new Error(`${response.status}: ${response.statusText}`);
+      return response.json();
+    },
+    enabled: isExpanded,
+    retry: false,
+  });
+
+  const formatQuestionType = (type: string | undefined) => {
+    if (!type) return 'Unknown';
+    return type.replace('_', ' ').split(' ').map(word => 
+      word.charAt(0).toUpperCase() + word.slice(1)
+    ).join(' ');
+  };
+
+  const getQuestionTypeColor = (type: string | undefined) => {
+    switch (type) {
+      case 'multiple_choice': return 'bg-blue-100 text-blue-800';
+      case 'short_answer': return 'bg-green-100 text-green-800';
+      case 'essay': return 'bg-orange-100 text-orange-800';
+      case 'fill_blank': return 'bg-purple-100 text-purple-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  return (
+    <div className="border rounded-lg overflow-hidden">
+      {/* Main submission info */}
+      <div className="flex items-center justify-between p-4 hover:bg-gray-50">
+        <div className="flex-1">
+          <div className="flex items-center gap-3">
+            <p className="font-medium">Student ID: {submission.studentId}</p>
+            <Badge className={getStatusBadgeColor(submission.status)}>
+              {submission.status}
+            </Badge>
+          </div>
+          <div className="flex items-center gap-4 text-sm text-gray-600 mt-1">
+            <span>Submitted: {new Date(submission.submittedAt).toLocaleString()}</span>
+            <span>Time Taken: {formatTime(submission.timeTaken || 0)}</span>
+            {submission.status === 'graded' && (
+              <span className="font-medium text-green-600">
+                Score: {submission.totalScore}/{submission.maxScore} 
+                ({Math.round((submission.totalScore / submission.maxScore) * 100)}%)
+              </span>
+            )}
+          </div>
+        </div>
+        
+        <div className="flex items-center gap-2">
+          {submission.status === 'pending' && (
+            <button
+              onClick={() => window.location.href = `/grading/${submission.id}`}
+              className="text-primary hover:text-primary/80 text-sm font-medium flex items-center gap-1"
+            >
+              <Eye className="h-4 w-4" />
+              Grade
+            </button>
+          )}
+          
+          <button
+            onClick={onToggleExpand}
+            className="text-gray-600 hover:text-gray-800 text-sm font-medium flex items-center gap-1"
+          >
+            {isExpanded ? (
+              <>
+                <ChevronUp className="h-4 w-4" />
+                Hide Answers
+              </>
+            ) : (
+              <>
+                <ChevronDown className="h-4 w-4" />
+                View Answers
+              </>
+            )}
+          </button>
+        </div>
+      </div>
+
+      {/* Expanded answers section */}
+      {isExpanded && (
+        <div className="border-t bg-gray-50 p-4">
+          {!submissionDetails ? (
+            <div className="text-center py-4">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto mb-2"></div>
+              <p className="text-sm text-gray-600">Loading answers...</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <h4 className="font-medium text-gray-900 mb-3">Questions and Answers</h4>
+              {submissionDetails.answers?.map((answer: any, index: number) => (
+                <div key={answer.id} className="bg-white p-4 rounded-lg border">
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-sm font-medium text-gray-700">Question {index + 1}</span>
+                        <Badge className={getQuestionTypeColor(answer.question?.questionType)} variant="outline">
+                          {formatQuestionType(answer.question?.questionType)}
+                        </Badge>
+                      </div>
+                      <p className="text-gray-900 font-medium">{answer.question?.questionText}</p>
+                    </div>
+                    <div className="text-right text-sm">
+                      {submission.status === 'graded' && (
+                        <span className={`font-medium ${
+                          parseFloat(answer.score) === parseFloat(answer.maxScore) 
+                            ? 'text-green-600' 
+                            : parseFloat(answer.score) > 0 
+                            ? 'text-orange-600' 
+                            : 'text-red-600'
+                        }`}>
+                          {answer.score}/{answer.maxScore} pts
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  
+                  {/* Show correct answer for MCQ */}
+                  {answer.question?.questionType === 'multiple_choice' && answer.question?.options && (
+                    <div className="mb-3">
+                      <p className="text-sm text-gray-600 mb-2">Options:</p>
+                      <div className="grid grid-cols-1 gap-1">
+                        {answer.question.options.map((option: string, optionIndex: number) => {
+                          const letter = String.fromCharCode(65 + optionIndex);
+                          const isSelected = answer.selectedOption === letter;
+                          const isCorrect = answer.question.correctAnswer === letter;
+                          return (
+                            <div 
+                              key={optionIndex} 
+                              className={`text-sm p-2 rounded ${
+                                isSelected && isCorrect 
+                                  ? 'bg-green-100 text-green-800 font-medium' 
+                                  : isSelected 
+                                  ? 'bg-red-100 text-red-800 font-medium'
+                                  : isCorrect
+                                  ? 'bg-blue-100 text-blue-800'
+                                  : 'bg-gray-50'
+                              }`}
+                            >
+                              <span className="font-medium">{letter}.</span> {option}
+                              {isSelected && <span className="ml-2">(Selected)</span>}
+                              {isCorrect && <span className="ml-2">(Correct)</span>}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Student's answer */}
+                  {answer.answerText && (
+                    <div>
+                      <p className="text-sm text-gray-600 mb-1">Student's Answer:</p>
+                      <div className="bg-gray-50 p-3 rounded text-sm">
+                        {answer.answerText}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
   );
 }
