@@ -59,34 +59,70 @@ export function ObjectUploader({
   children,
 }: ObjectUploaderProps) {
   const [showModal, setShowModal] = useState(false);
-  const [uppy] = useState(() =>
-    new Uppy({
+  const [uppy] = useState(() => {
+    const uppyInstance = new Uppy({
       restrictions: {
         maxNumberOfFiles,
         maxFileSize,
       },
       autoProceed: false,
+      debug: false,
     })
       .use(AwsS3, {
         shouldUseMultipart: false,
-        getUploadParameters: onGetUploadParameters,
+        getUploadParameters: async (file) => {
+          try {
+            console.log('Getting upload parameters for file:', file.name);
+            const params = await onGetUploadParameters();
+            console.log('Upload parameters received successfully');
+            return params;
+          } catch (error) {
+            console.error('Failed to get upload parameters:', error);
+            throw error;
+          }
+        },
       })
       .on("complete", (result) => {
+        console.log('Upload complete:', result);
         onComplete?.(result);
+        setShowModal(false); // Close modal after successful upload
       })
-  );
+      .on("error", (error) => {
+        console.error('Upload error:', error);
+      })
+      .on("upload-error", (file, error) => {
+        console.error('Upload error for file:', file?.name, error);
+      });
+    
+    return uppyInstance;
+  });
+
+  const handleOpenModal = () => {
+    console.log('Opening upload modal');
+    // Clear any previous files
+    uppy.cancelAll();
+    setShowModal(true);
+  };
+
+  const handleCloseModal = () => {
+    console.log('Closing upload modal');
+    setShowModal(false);
+  };
 
   return (
     <div>
-      <Button onClick={() => setShowModal(true)} className={buttonClassName}>
+      <Button onClick={handleOpenModal} className={buttonClassName}>
         {children}
       </Button>
 
       <DashboardModal
         uppy={uppy}
         open={showModal}
-        onRequestClose={() => setShowModal(false)}
+        onRequestClose={handleCloseModal}
         proudlyDisplayPoweredByUppy={false}
+        closeModalOnClickOutside={false}
+        disableInformer={false}
+        note="Select files to upload"
       />
     </div>
   );
