@@ -272,9 +272,16 @@ export default function EditExamModal({ open, onOpenChange, examId }: EditExamMo
   };
 
   const addQuestion = (question: any) => {
+    // Prevent adding if already in progress or question already exists
+    if (addQuestionToExamMutation.isPending) return;
+    
+    const isAlreadyInExam = currentExamQuestions.some((eq: any) => eq.questionId === question.id);
+    if (isAlreadyInExam) return;
+    
     const maxOrder = currentExamQuestions.length > 0 
       ? Math.max(...currentExamQuestions.map((q: any) => q.order || 0))
       : 0;
+    
     addQuestionToExamMutation.mutate({
       questionId: question.id,
       order: maxOrder + 1,
@@ -283,18 +290,47 @@ export default function EditExamModal({ open, onOpenChange, examId }: EditExamMo
   };
 
   const addQuestionsInBulk = (questions: any[]) => {
-    questions.forEach((question, index) => {
-      const maxOrder = currentExamQuestions.length > 0 
-        ? Math.max(...currentExamQuestions.map((q: any) => q.order || 0))
-        : 0;
-      setTimeout(() => {
-        addQuestionToExamMutation.mutate({
-          questionId: question.id,
-          order: maxOrder + index + 1,
-          points: question.points || 1,
-        });
-      }, index * 100); // Small delay to avoid overwhelming the server
-    });
+    // Prevent bulk adding if already in progress
+    if (addQuestionToExamMutation.isPending) return;
+    
+    // Filter out questions that are already in the exam
+    const questionsToAdd = questions.filter(question => 
+      !currentExamQuestions.some((eq: any) => eq.questionId === question.id)
+    );
+    
+    if (questionsToAdd.length === 0) return;
+    
+    // Calculate the starting order once
+    const baseOrder = currentExamQuestions.length > 0 
+      ? Math.max(...currentExamQuestions.map((q: any) => q.order || 0))
+      : 0;
+    
+    // Create a queue of questions to add and process them one by one
+    let currentIndex = 0;
+    
+    const addNextQuestion = () => {
+      if (currentIndex >= questionsToAdd.length) return;
+      
+      const question = questionsToAdd[currentIndex];
+      addQuestionToExamMutation.mutate({
+        questionId: question.id,
+        order: baseOrder + currentIndex + 1,
+        points: question.points || 1,
+      }, {
+        onSuccess: () => {
+          currentIndex++;
+          // Small delay before adding the next question to avoid overwhelming the server
+          setTimeout(() => addNextQuestion(), 100);
+        },
+        onError: () => {
+          // Stop adding questions on error
+          currentIndex = questionsToAdd.length;
+        }
+      });
+    };
+    
+    // Start adding questions
+    addNextQuestion();
   };
 
   const removeQuestion = (questionId: number) => {
@@ -750,7 +786,13 @@ export default function EditExamModal({ open, onOpenChange, examId }: EditExamMo
                                         onClick={() => addQuestion(question)}
                                         disabled={isAlreadyInExam || addQuestionToExamMutation.isPending}
                                       >
-                                        {isAlreadyInExam ? 'Added' : <Plus className="h-4 w-4" />}
+                                        {addQuestionToExamMutation.isPending ? (
+                                          'Adding...'
+                                        ) : isAlreadyInExam ? (
+                                          'Added'
+                                        ) : (
+                                          <Plus className="h-4 w-4" />
+                                        )}
                                       </Button>
                                     </div>
                                   </div>
@@ -796,9 +838,9 @@ export default function EditExamModal({ open, onOpenChange, examId }: EditExamMo
                               variant="outline"
                               size="sm"
                               onClick={() => addQuestionsInBulk(randomQuestions)}
-                              disabled={addQuestionToExamMutation.isPending}
+                              disabled={addQuestionToExamMutation.isPending || randomQuestions.length === 0}
                             >
-                              {addQuestionToExamMutation.isPending ? 'Adding...' : 'Add All Selected'}
+                              {addQuestionToExamMutation.isPending ? 'Adding...' : `Add ${randomQuestions.length} Selected`}
                             </Button>
                           </div>
                           <div className="mt-2 space-y-2 max-h-32 overflow-y-auto border rounded-lg">
