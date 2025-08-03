@@ -9,6 +9,7 @@ import Sidebar from "@/components/layout/sidebar";
 import CreateExamModal from "@/components/modals/create-exam-modal";
 import EditExamModal from "@/components/modals/edit-exam-modal";
 import ExamPreviewModal from "@/components/modals/exam-preview-modal";
+import ExamResultsModal from "@/components/modals/exam-results-modal";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -51,8 +52,10 @@ export default function InstructorExams() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const [showResultsModal, setShowResultsModal] = useState(false);
   const [editingExamId, setEditingExamId] = useState<number | null>(null);
   const [previewingExamId, setPreviewingExamId] = useState<number | null>(null);
+  const [viewingResultsExamId, setViewingResultsExamId] = useState<number | null>(null);
   const [activeTab, setActiveTab] = useState("all");
   const [deletingExamId, setDeletingExamId] = useState<number | null>(null);
   const [archivingExamId, setArchivingExamId] = useState<number | null>(null);
@@ -204,6 +207,11 @@ export default function InstructorExams() {
   const handlePreviewExam = (examId: number) => {
     setPreviewingExamId(examId);
     setShowPreviewModal(true);
+  };
+
+  const handleViewResults = (examId: number) => {
+    setViewingResultsExamId(examId);
+    setShowResultsModal(true);
   };
 
   const handlePublishExam = (examId: number) => {
@@ -370,7 +378,30 @@ export default function InstructorExams() {
                                     <Eye className="h-4 w-4 mr-1" />
                                     Preview
                                   </Button>
-                                  <Button variant="outline" size="sm">
+                                  <Button 
+                                    variant="outline" 
+                                    size="sm"
+                                    onClick={() => handleViewResults(exam.id)}
+                                  >
+                                    <FileText className="h-4 w-4 mr-1" />
+                                    View Results
+                                  </Button>
+                                </div>
+                              ) : exam.status === 'completed' || exam.status === 'archived' ? (
+                                <div className="flex items-center gap-2">
+                                  <Button 
+                                    variant="outline" 
+                                    size="sm"
+                                    onClick={() => handlePreviewExam(exam.id)}
+                                  >
+                                    <Eye className="h-4 w-4 mr-1" />
+                                    Preview
+                                  </Button>
+                                  <Button 
+                                    variant="outline" 
+                                    size="sm"
+                                    onClick={() => handleViewResults(exam.id)}
+                                  >
                                     <FileText className="h-4 w-4 mr-1" />
                                     View Results
                                   </Button>
@@ -465,6 +496,17 @@ export default function InstructorExams() {
           // Refresh exams list after publishing
           queryClient.invalidateQueries({ queryKey: ["/api/exams"] });
         }}
+      />
+      
+      <ExamResultsModal
+        open={showResultsModal}
+        onOpenChange={(open) => {
+          setShowResultsModal(open);
+          if (!open) {
+            setViewingResultsExamId(null);
+          }
+        }}
+        examId={viewingResultsExamId}
       />
 
       {/* Archive Confirmation Dialog */}
