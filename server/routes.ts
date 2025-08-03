@@ -254,6 +254,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Archive exam
+  app.put('/api/exams/:id/archive', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      const examId = parseInt(req.params.id);
+      
+      if (user?.role !== 'instructor') {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const exam = await storage.getExamById(examId);
+      if (!exam || exam.instructorId !== userId) {
+        return res.status(404).json({ message: "Exam not found" });
+      }
+
+      const updatedExam = await storage.updateExam(examId, { status: 'completed' });
+      res.json(updatedExam);
+    } catch (error) {
+      console.error("Error archiving exam:", error);
+      res.status(500).json({ message: "Failed to archive exam" });
+    }
+  });
+
+  // Delete exam
+  app.delete('/api/exams/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      const examId = parseInt(req.params.id);
+      
+      if (user?.role !== 'instructor') {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const exam = await storage.getExamById(examId);
+      if (!exam || exam.instructorId !== userId) {
+        return res.status(404).json({ message: "Exam not found" });
+      }
+
+      // Check if exam has submissions
+      const submissions = await storage.getSubmissions(examId);
+      if (submissions.length > 0) {
+        return res.status(400).json({ message: "Cannot delete exam with existing submissions. Archive it instead." });
+      }
+
+      await storage.deleteExam(examId);
+      res.json({ message: "Exam deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting exam:", error);
+      res.status(500).json({ message: "Failed to delete exam" });
+    }
+  });
+
   // Exam question management
   app.get('/api/exams/:id/questions', isAuthenticated, async (req: any, res) => {
     try {

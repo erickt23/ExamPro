@@ -23,8 +23,27 @@ import {
   Clock,
   Play,
   Trash2,
-  Eye
+  Eye,
+  Archive,
+  MoreVertical
 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 export default function InstructorExams() {
   const { toast } = useToast();
@@ -35,6 +54,8 @@ export default function InstructorExams() {
   const [editingExamId, setEditingExamId] = useState<number | null>(null);
   const [previewingExamId, setPreviewingExamId] = useState<number | null>(null);
   const [activeTab, setActiveTab] = useState("all");
+  const [deletingExamId, setDeletingExamId] = useState<number | null>(null);
+  const [archivingExamId, setArchivingExamId] = useState<number | null>(null);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -101,6 +122,77 @@ export default function InstructorExams() {
         description: "Failed to publish exam",
         variant: "destructive",
       });
+    },
+  });
+
+  // Archive exam mutation
+  const archiveExamMutation = useMutation({
+    mutationFn: async (examId: number) => {
+      await apiRequest("PUT", `/api/exams/${examId}/archive`, {});
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/exams"] });
+      toast({
+        title: "Success",
+        description: "Exam archived successfully",
+      });
+      setArchivingExamId(null);
+    },
+    onError: (error: Error) => {
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
+      toast({
+        title: "Error",
+        description: "Failed to archive exam",
+        variant: "destructive",
+      });
+      setArchivingExamId(null);
+    },
+  });
+
+  // Delete exam mutation
+  const deleteExamMutation = useMutation({
+    mutationFn: async (examId: number) => {
+      await apiRequest("DELETE", `/api/exams/${examId}`, {});
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/exams"] });
+      toast({
+        title: "Success",
+        description: "Exam deleted successfully",
+      });
+      setDeletingExamId(null);
+    },
+    onError: (error: Error) => {
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
+      const errorMessage = error.message.includes("submissions") 
+        ? "Cannot delete exam with existing submissions. Archive it instead."
+        : "Failed to delete exam";
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive",
+      });
+      setDeletingExamId(null);
     },
   });
 
@@ -298,6 +390,30 @@ export default function InstructorExams() {
                                 <Button variant="ghost" size="sm" title="Copy exam">
                                   <Copy className="h-4 w-4" />
                                 </Button>
+                                
+                                {/* Archive/Delete Dropdown */}
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="sm" title="More actions">
+                                      <MoreVertical className="h-4 w-4" />
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end">
+                                    {exam.status === 'active' && (
+                                      <DropdownMenuItem onClick={() => setArchivingExamId(exam.id)}>
+                                        <Archive className="h-4 w-4 mr-2" />
+                                        Archive Exam
+                                      </DropdownMenuItem>
+                                    )}
+                                    <DropdownMenuItem 
+                                      onClick={() => setDeletingExamId(exam.id)}
+                                      className="text-red-600 focus:text-red-600"
+                                    >
+                                      <Trash2 className="h-4 w-4 mr-2" />
+                                      Delete Exam
+                                    </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
                               </div>
                             </div>
                           </div>
@@ -342,6 +458,50 @@ export default function InstructorExams() {
           queryClient.invalidateQueries({ queryKey: ["/api/exams"] });
         }}
       />
+
+      {/* Archive Confirmation Dialog */}
+      <AlertDialog open={!!archivingExamId} onOpenChange={() => setArchivingExamId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Archive Exam</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to archive this exam? Archived exams will be marked as completed and students will no longer be able to access them.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => archivingExamId && archiveExamMutation.mutate(archivingExamId)}
+              disabled={archiveExamMutation.isPending}
+              className="bg-orange-600 hover:bg-orange-700"
+            >
+              {archiveExamMutation.isPending ? "Archiving..." : "Archive Exam"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!deletingExamId} onOpenChange={() => setDeletingExamId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Exam</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this exam? This action cannot be undone. All exam data and student submissions will be permanently removed.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => deletingExamId && deleteExamMutation.mutate(deletingExamId)}
+              disabled={deleteExamMutation.isPending}
+              variant="destructive"
+            >
+              {deleteExamMutation.isPending ? "Deleting..." : "Delete Exam"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
