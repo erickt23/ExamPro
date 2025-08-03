@@ -21,6 +21,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Subject routes
+  app.get('/api/subjects', isAuthenticated, async (req: any, res) => {
+    try {
+      const subjects = await storage.getSubjects();
+      res.json(subjects);
+    } catch (error) {
+      console.error("Error fetching subjects:", error);
+      res.status(500).json({ message: "Failed to fetch subjects" });
+    }
+  });
+
+  app.post('/api/subjects', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (user?.role !== 'instructor') {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const subjectData = req.body;
+      const subject = await storage.createSubject(subjectData);
+      res.status(201).json(subject);
+    } catch (error) {
+      console.error("Error creating subject:", error);
+      res.status(500).json({ message: "Failed to create subject" });
+    }
+  });
+
   // Question routes
   app.get('/api/questions', isAuthenticated, async (req: any, res) => {
     try {
@@ -31,9 +60,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Access denied" });
       }
 
-      const { subject, questionType, difficulty, search } = req.query;
+      const { subjectId, questionType, difficulty, search } = req.query;
       const questions = await storage.getQuestions(userId, {
-        subject: subject as string,
+        subjectId: subjectId ? parseInt(subjectId as string) : undefined,
         questionType: questionType as string,
         difficulty: difficulty as string,
         search: search as string,

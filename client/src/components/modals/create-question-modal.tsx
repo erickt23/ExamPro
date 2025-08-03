@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -37,7 +37,7 @@ const createQuestionSchema = z.object({
   options: z.array(z.string()).optional(),
   correctAnswer: z.string().optional(),
   explanation: z.string().optional(),
-  subject: z.string().min(1, "Subject is required"),
+  subjectId: z.number().min(1, "Subject is required"),
   difficulty: z.enum(['easy', 'medium', 'hard']),
   bloomsTaxonomy: z.enum(['remember', 'understand', 'apply', 'analyze', 'evaluate', 'create']).optional(),
   points: z.number().min(1).default(1),
@@ -53,6 +53,12 @@ interface CreateQuestionModalProps {
 
 export default function CreateQuestionModal({ open, onOpenChange }: CreateQuestionModalProps) {
   const { toast } = useToast();
+  
+  // Fetch subjects
+  const { data: subjects = [] } = useQuery<any[]>({
+    queryKey: ["/api/subjects"],
+    retry: false,
+  });
   const [selectedType, setSelectedType] = useState<string>('multiple_choice');
   const [mcqOptions, setMcqOptions] = useState(['', '', '', '']);
   const [correctOption, setCorrectOption] = useState('A');
@@ -63,7 +69,7 @@ export default function CreateQuestionModal({ open, onOpenChange }: CreateQuesti
       title: '',
       questionText: '',
       questionType: 'multiple_choice',
-      subject: '',
+      subjectId: 1,
       difficulty: 'medium',
       points: 1,
     },
@@ -244,21 +250,20 @@ export default function CreateQuestionModal({ open, onOpenChange }: CreateQuesti
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <FormField
                 control={form.control}
-                name="subject"
+                name="subjectId"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Subject</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={(value) => field.onChange(parseInt(value))} defaultValue={field.value?.toString()}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select subject" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="Mathematics">Mathematics</SelectItem>
-                        <SelectItem value="Physics">Physics</SelectItem>
-                        <SelectItem value="Chemistry">Chemistry</SelectItem>
-                        <SelectItem value="Biology">Biology</SelectItem>
+                        {subjects.map((subject: any) => (
+                          <SelectItem key={subject.id} value={subject.id.toString()}>{subject.name}</SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                     <FormMessage />

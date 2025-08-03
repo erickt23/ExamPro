@@ -43,6 +43,16 @@ export const questionTypeEnum = pgEnum('question_type', ['multiple_choice', 'sho
 export const difficultyEnum = pgEnum('difficulty', ['easy', 'medium', 'hard']);
 export const bloomsTaxonomyEnum = pgEnum('blooms_taxonomy', ['remember', 'understand', 'apply', 'analyze', 'evaluate', 'create']);
 
+// Subjects table
+export const subjects = pgTable("subjects", {
+  id: serial("id").primaryKey(),
+  name: varchar("name").notNull().unique(),
+  description: text("description"),
+  isActive: boolean("is_active").notNull().default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Questions table
 export const questions = pgTable("questions", {
   id: serial("id").primaryKey(),
@@ -53,7 +63,7 @@ export const questions = pgTable("questions", {
   options: jsonb("options"), // For MCQ options
   correctAnswer: text("correct_answer"),
   explanation: text("explanation"),
-  subject: varchar("subject").notNull(),
+  subjectId: integer("subject_id").notNull().references(() => subjects.id),
   difficulty: difficultyEnum("difficulty").notNull(),
   bloomsTaxonomy: bloomsTaxonomyEnum("blooms_taxonomy"),
   points: integer("points").notNull().default(1),
@@ -71,7 +81,7 @@ export const exams = pgTable("exams", {
   instructorId: varchar("instructor_id").notNull().references(() => users.id),
   title: varchar("title").notNull(),
   description: text("description"),
-  subject: varchar("subject").notNull(),
+  subjectId: integer("subject_id").notNull().references(() => subjects.id),
   duration: integer("duration").notNull(), // in minutes
   totalPoints: integer("total_points").notNull(),
   attemptsAllowed: integer("attempts_allowed").notNull().default(1),
@@ -126,6 +136,11 @@ export const answers = pgTable("answers", {
 });
 
 // Relations
+export const subjectsRelations = relations(subjects, ({ many }) => ({
+  questions: many(questions),
+  exams: many(exams),
+}));
+
 export const usersRelations = relations(users, ({ many }) => ({
   questions: many(questions),
   exams: many(exams),
@@ -137,6 +152,10 @@ export const questionsRelations = relations(questions, ({ one, many }) => ({
     fields: [questions.instructorId],
     references: [users.id],
   }),
+  subject: one(subjects, {
+    fields: [questions.subjectId],
+    references: [subjects.id],
+  }),
   examQuestions: many(examQuestions),
   answers: many(answers),
 }));
@@ -145,6 +164,10 @@ export const examsRelations = relations(exams, ({ one, many }) => ({
   instructor: one(users, {
     fields: [exams.instructorId],
     references: [users.id],
+  }),
+  subject: one(subjects, {
+    fields: [exams.subjectId],
+    references: [subjects.id],
   }),
   examQuestions: many(examQuestions),
   submissions: many(submissions),
@@ -205,6 +228,9 @@ export const insertExamSchema = createInsertSchema(exams).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
+}).extend({
+  availableFrom: z.string().optional().transform((val) => val ? new Date(val) : undefined),
+  availableUntil: z.string().optional().transform((val) => val ? new Date(val) : undefined),
 });
 
 export const insertSubmissionSchema = createInsertSchema(submissions).omit({
@@ -214,6 +240,12 @@ export const insertSubmissionSchema = createInsertSchema(submissions).omit({
 
 export const insertAnswerSchema = createInsertSchema(answers).omit({
   id: true,
+});
+
+export const insertSubjectSchema = createInsertSchema(subjects).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
 });
 
 // Types
@@ -226,3 +258,5 @@ export type Exam = typeof exams.$inferSelect;
 export type ExamQuestion = typeof examQuestions.$inferSelect;
 export type Submission = typeof submissions.$inferSelect;
 export type Answer = typeof answers.$inferSelect;
+export type InsertSubject = z.infer<typeof insertSubjectSchema>;
+export type Subject = typeof subjects.$inferSelect;

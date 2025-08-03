@@ -1,5 +1,6 @@
 import {
   users,
+  subjects,
   questions,
   exams,
   examQuestions,
@@ -7,6 +8,8 @@ import {
   answers,
   type User,
   type UpsertUser,
+  type InsertSubject,
+  type Subject,
   type InsertQuestion,
   type Question,
   type InsertExam,
@@ -23,10 +26,17 @@ export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
   
+  // Subject operations
+  createSubject(subject: InsertSubject): Promise<Subject>;
+  getSubjects(): Promise<Subject[]>;
+  getSubjectById(id: number): Promise<Subject | undefined>;
+  updateSubject(id: number, updates: Partial<InsertSubject>): Promise<Subject>;
+  deleteSubject(id: number): Promise<void>;
+  
   // Question operations
   createQuestion(question: InsertQuestion): Promise<Question>;
   getQuestions(instructorId: string, filters?: {
-    subject?: string;
+    subjectId?: number;
     questionType?: string;
     difficulty?: string;
     search?: string;
@@ -106,6 +116,37 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
 
+  // Subject operations
+  async createSubject(subjectData: InsertSubject): Promise<Subject> {
+    const [subject] = await db
+      .insert(subjects)
+      .values(subjectData)
+      .returning();
+    return subject;
+  }
+
+  async getSubjects(): Promise<Subject[]> {
+    return await db.select().from(subjects).where(eq(subjects.isActive, true)).orderBy(asc(subjects.name));
+  }
+
+  async getSubjectById(id: number): Promise<Subject | undefined> {
+    const [subject] = await db.select().from(subjects).where(eq(subjects.id, id));
+    return subject;
+  }
+
+  async updateSubject(id: number, updates: Partial<InsertSubject>): Promise<Subject> {
+    const [subject] = await db
+      .update(subjects)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(subjects.id, id))
+      .returning();
+    return subject;
+  }
+
+  async deleteSubject(id: number): Promise<void> {
+    await db.update(subjects).set({ isActive: false }).where(eq(subjects.id, id));
+  }
+
   // Question operations
   async createQuestion(question: InsertQuestion): Promise<Question> {
     const [newQuestion] = await db
@@ -116,23 +157,15 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getQuestions(instructorId: string, filters?: {
-    subject?: string;
+    subjectId?: number;
     questionType?: string;
     difficulty?: string;
     search?: string;
   }): Promise<Question[]> {
-    let query = db
-      .select()
-      .from(questions)
-      .where(and(
-        eq(questions.instructorId, instructorId),
-        eq(questions.isActive, true)
-      ));
-
     const conditions = [eq(questions.instructorId, instructorId), eq(questions.isActive, true)];
 
-    if (filters?.subject) {
-      conditions.push(eq(questions.subject, filters.subject));
+    if (filters?.subjectId) {
+      conditions.push(eq(questions.subjectId, filters.subjectId));
     }
     if (filters?.questionType) {
       conditions.push(eq(questions.questionType, filters.questionType as any));
@@ -145,7 +178,7 @@ export class DatabaseStorage implements IStorage {
         or(
           like(questions.title, `%${filters.search}%`),
           like(questions.questionText, `%${filters.search}%`)
-        )
+        )!
       );
     }
 
@@ -206,14 +239,6 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(exams)
       .where(and(...conditions))
-      .orderBy(desc(exams.createdAt));
-  }
-
-  async getActiveExamsForStudents(): Promise<Exam[]> {
-    return db
-      .select()
-      .from(exams)
-      .where(eq(exams.status, 'active'))
       .orderBy(desc(exams.createdAt));
   }
 

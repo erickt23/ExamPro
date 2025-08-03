@@ -31,7 +31,7 @@ export default function InstructorQuestions() {
   const { isAuthenticated, isLoading } = useAuth();
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [filters, setFilters] = useState({
-    subject: "all",
+    subjectId: "all",
     questionType: "all",
     difficulty: "all",
     search: ""
@@ -52,11 +52,17 @@ export default function InstructorQuestions() {
     }
   }, [isAuthenticated, isLoading, toast]);
 
+  // Fetch subjects
+  const { data: subjects = [] } = useQuery<any[]>({
+    queryKey: ["/api/subjects"],
+    retry: false,
+  });
+
   const { data: questions, isLoading: questionsLoading, error } = useQuery({
     queryKey: ["/api/questions", filters],
     queryFn: async () => {
       const params = new URLSearchParams();
-      if (filters.subject && filters.subject !== 'all') params.append('subject', filters.subject);
+      if (filters.subjectId && filters.subjectId !== 'all') params.append('subjectId', filters.subjectId);
       if (filters.questionType && filters.questionType !== 'all') params.append('questionType', filters.questionType);
       if (filters.difficulty && filters.difficulty !== 'all') params.append('difficulty', filters.difficulty);
       if (filters.search) params.append('search', filters.search);
@@ -162,16 +168,15 @@ export default function InstructorQuestions() {
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                   <div>
                     <Label htmlFor="subject">Subject</Label>
-                    <Select value={filters.subject} onValueChange={(value) => setFilters(prev => ({...prev, subject: value}))}>
+                    <Select value={filters.subjectId} onValueChange={(value) => setFilters(prev => ({...prev, subjectId: value}))}>
                       <SelectTrigger>
                         <SelectValue placeholder="All Subjects" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all">All Subjects</SelectItem>
-                        <SelectItem value="Mathematics">Mathematics</SelectItem>
-                        <SelectItem value="Physics">Physics</SelectItem>
-                        <SelectItem value="Chemistry">Chemistry</SelectItem>
-                        <SelectItem value="Biology">Biology</SelectItem>
+                        {(subjects as any[]).map((subject: any) => (
+                          <SelectItem key={subject.id} value={subject.id.toString()}>{subject.name}</SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
@@ -258,7 +263,9 @@ export default function InstructorQuestions() {
                               <Badge className={getQuestionTypeColor(question.questionType)}>
                                 {formatQuestionType(question.questionType)}
                               </Badge>
-                              <Badge variant="outline">{question.subject}</Badge>
+                              <Badge variant="outline">
+                                {(subjects as any[]).find((s: any) => s.id === question.subjectId)?.name || 'Unknown Subject'}
+                              </Badge>
                               <Badge className={getDifficultyColor(question.difficulty)}>
                                 {question.difficulty}
                               </Badge>
