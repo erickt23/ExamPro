@@ -66,11 +66,19 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
     queryKey: ["/api/subjects"],
     retry: false,
   });
+  // Question selection state
   const [selectionMethod, setSelectionMethod] = useState<'manual' | 'random'>('manual');
   const [selectedQuestions, setSelectedQuestions] = useState<any[]>([]);
-  const [questionSearch, setQuestionSearch] = useState("");
   const [randomQuestionCount, setRandomQuestionCount] = useState<number>(10);
   const [randomQuestions, setRandomQuestions] = useState<any[]>([]);
+  
+  // Search and filter state
+  const [questionSearch, setQuestionSearch] = useState("");
+  const [filterSubject, setFilterSubject] = useState<string>("");
+  const [filterType, setFilterType] = useState<string>("");
+  const [filterDifficulty, setFilterDifficulty] = useState<string>("");
+  const [filterBloomsTaxonomy, setFilterBloomsTaxonomy] = useState<string>("");
+  const [showFilters, setShowFilters] = useState(false);
 
   const form = useForm<CreateExamForm>({
     resolver: zodResolver(createExamSchema),
@@ -92,10 +100,14 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
   });
 
   const { data: questions } = useQuery({
-    queryKey: ["/api/questions", { search: questionSearch }],
+    queryKey: ["/api/questions", { search: questionSearch, subject: filterSubject, type: filterType, difficulty: filterDifficulty, bloomsTaxonomy: filterBloomsTaxonomy }],
     queryFn: async () => {
       const params = new URLSearchParams();
       if (questionSearch) params.append('search', questionSearch);
+      if (filterSubject) params.append('subject', filterSubject);
+      if (filterType) params.append('type', filterType);
+      if (filterDifficulty) params.append('difficulty', filterDifficulty);
+      if (filterBloomsTaxonomy) params.append('bloomsTaxonomy', filterBloomsTaxonomy);
       
       const response = await fetch(`/api/questions?${params}`);
       if (!response.ok) throw new Error(`${response.status}: ${response.statusText}`);
@@ -148,7 +160,12 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
       setSelectedQuestions([]);
       setRandomQuestions([]);
       setQuestionSearch("");
+      setFilterSubject("");
+      setFilterType("");
+      setFilterDifficulty("");
+      setFilterBloomsTaxonomy("");
       setRandomQuestionCount(10);
+      setShowFilters(false);
       onOpenChange(false);
     },
     onError: (error: Error) => {
@@ -312,18 +329,125 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
             {selectionMethod === 'manual' && (
               <div className="space-y-4">
                 <div>
-                  <Label>Search and Select Questions</Label>
-                  <div className="flex space-x-2 mt-2">
-                    <div className="relative flex-1">
-                      <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                      <Input
-                        placeholder="Search questions..."
-                        value={questionSearch}
-                        onChange={(e) => setQuestionSearch(e.target.value)}
-                        className="pl-9"
-                      />
-                    </div>
+                  <div className="flex items-center justify-between mb-3">
+                    <Label>Search and Select Questions</Label>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowFilters(!showFilters)}
+                      className="text-xs"
+                    >
+                      {showFilters ? 'Hide Filters' : 'Show Filters'}
+                    </Button>
                   </div>
+                  
+                  {/* Search Bar */}
+                  <div className="relative">
+                    <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                    <Input
+                      placeholder="Search questions by title or content..."
+                      value={questionSearch}
+                      onChange={(e) => setQuestionSearch(e.target.value)}
+                      className="pl-9"
+                    />
+                  </div>
+                  
+                  {/* Filter Section */}
+                  {showFilters && (
+                    <Card className="p-4 bg-gray-50">
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        {/* Subject Filter */}
+                        <div>
+                          <Label className="text-sm font-medium mb-2 block">Subject</Label>
+                          <Select value={filterSubject} onValueChange={setFilterSubject}>
+                            <SelectTrigger className="h-9">
+                              <SelectValue placeholder="All subjects" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="">All subjects</SelectItem>
+                              {subjects.map((subject: any) => (
+                                <SelectItem key={subject.id} value={subject.id.toString()}>
+                                  {subject.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        
+                        {/* Question Type Filter */}
+                        <div>
+                          <Label className="text-sm font-medium mb-2 block">Question Type</Label>
+                          <Select value={filterType} onValueChange={setFilterType}>
+                            <SelectTrigger className="h-9">
+                              <SelectValue placeholder="All types" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="">All types</SelectItem>
+                              <SelectItem value="multiple_choice">Multiple Choice</SelectItem>
+                              <SelectItem value="short_answer">Short Answer</SelectItem>
+                              <SelectItem value="essay">Essay</SelectItem>
+                              <SelectItem value="fill_blank">Fill in Blank</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        
+                        {/* Difficulty Filter */}
+                        <div>
+                          <Label className="text-sm font-medium mb-2 block">Difficulty</Label>
+                          <Select value={filterDifficulty} onValueChange={setFilterDifficulty}>
+                            <SelectTrigger className="h-9">
+                              <SelectValue placeholder="All levels" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="">All levels</SelectItem>
+                              <SelectItem value="easy">Easy</SelectItem>
+                              <SelectItem value="medium">Medium</SelectItem>
+                              <SelectItem value="hard">Hard</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        
+                        {/* Bloom's Taxonomy Filter */}
+                        <div>
+                          <Label className="text-sm font-medium mb-2 block">Bloom's Taxonomy</Label>
+                          <Select value={filterBloomsTaxonomy} onValueChange={setFilterBloomsTaxonomy}>
+                            <SelectTrigger className="h-9">
+                              <SelectValue placeholder="All levels" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="">All levels</SelectItem>
+                              <SelectItem value="remember">Remember</SelectItem>
+                              <SelectItem value="understand">Understand</SelectItem>
+                              <SelectItem value="apply">Apply</SelectItem>
+                              <SelectItem value="analyze">Analyze</SelectItem>
+                              <SelectItem value="evaluate">Evaluate</SelectItem>
+                              <SelectItem value="create">Create</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                      
+                      {/* Clear Filters Button */}
+                      <div className="mt-4 flex justify-end">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            setQuestionSearch("");
+                            setFilterSubject("");
+                            setFilterType("");
+                            setFilterDifficulty("");
+                            setFilterBloomsTaxonomy("");
+                          }}
+                          className="text-xs"
+                        >
+                          Clear All Filters
+                        </Button>
+                      </div>
+                    </Card>
+                  )}
                 </div>
 
                 {/* Selected Questions */}
@@ -339,6 +463,12 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
                             <Badge className={getQuestionTypeColor(question.questionType)} variant="secondary">
                               {formatQuestionType(question.questionType)}
                             </Badge>
+                            {question.difficulty && (
+                              <Badge variant="outline" className="capitalize text-xs">{question.difficulty}</Badge>
+                            )}
+                            {question.bloomsTaxonomy && (
+                              <Badge variant="outline" className="capitalize text-xs">{question.bloomsTaxonomy}</Badge>
+                            )}
                           </div>
                           <Button
                             type="button"
@@ -372,7 +502,13 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
                                   <Badge className={getQuestionTypeColor(question.questionType)} variant="secondary">
                                     {formatQuestionType(question.questionType)}
                                   </Badge>
-                                  <Badge variant="outline">{question.subject}</Badge>
+                                  <Badge variant="outline">{question.subject || 'No subject'}</Badge>
+                                  {question.difficulty && (
+                                    <Badge variant="outline" className="capitalize text-xs">{question.difficulty}</Badge>
+                                  )}
+                                  {question.bloomsTaxonomy && (
+                                    <Badge variant="outline" className="capitalize text-xs">{question.bloomsTaxonomy}</Badge>
+                                  )}
                                   <span className="text-xs text-gray-500">{question.points} pts</span>
                                 </div>
                                 <p className="text-sm text-gray-900 truncate">
@@ -435,7 +571,13 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
                                 <Badge className={getQuestionTypeColor(question.questionType)} variant="secondary">
                                   {formatQuestionType(question.questionType)}
                                 </Badge>
-                                <Badge variant="outline">{question.subject}</Badge>
+                                <Badge variant="outline">{question.subject || 'No subject'}</Badge>
+                                {question.difficulty && (
+                                  <Badge variant="outline" className="capitalize text-xs">{question.difficulty}</Badge>
+                                )}
+                                {question.bloomsTaxonomy && (
+                                  <Badge variant="outline" className="capitalize text-xs">{question.bloomsTaxonomy}</Badge>
+                                )}
                                 <span className="text-xs text-gray-500">{question.points} pts</span>
                               </div>
                               <p className="text-sm text-gray-900 truncate">

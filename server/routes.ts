@@ -60,11 +60,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Access denied" });
       }
 
-      const { subjectId, questionType, difficulty, search } = req.query;
+      const { subject, type, difficulty, bloomsTaxonomy, search } = req.query;
       const questions = await storage.getQuestions(userId, {
-        subjectId: subjectId ? parseInt(subjectId as string) : undefined,
-        questionType: questionType as string,
+        subjectId: subject ? parseInt(subject as string) : undefined,
+        questionType: type as string,
         difficulty: difficulty as string,
+        bloomsTaxonomy: bloomsTaxonomy as string,
         search: search as string,
       });
       

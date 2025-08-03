@@ -39,6 +39,7 @@ export interface IStorage {
     subjectId?: number;
     questionType?: string;
     difficulty?: string;
+    bloomsTaxonomy?: string;
     search?: string;
   }): Promise<Question[]>;
   getQuestionById(id: number): Promise<Question | undefined>;
@@ -160,6 +161,7 @@ export class DatabaseStorage implements IStorage {
     subjectId?: number;
     questionType?: string;
     difficulty?: string;
+    bloomsTaxonomy?: string;
     search?: string;
   }): Promise<Question[]> {
     const conditions = [eq(questions.instructorId, instructorId), eq(questions.isActive, true)];
@@ -173,6 +175,9 @@ export class DatabaseStorage implements IStorage {
     if (filters?.difficulty) {
       conditions.push(eq(questions.difficulty, filters.difficulty as any));
     }
+    if (filters?.bloomsTaxonomy) {
+      conditions.push(eq(questions.bloomsTaxonomy, filters.bloomsTaxonomy as any));
+    }
     if (filters?.search) {
       conditions.push(
         or(
@@ -183,8 +188,28 @@ export class DatabaseStorage implements IStorage {
     }
 
     return db
-      .select()
+      .select({
+        id: questions.id,
+        instructorId: questions.instructorId,
+        subjectId: questions.subjectId,
+        title: questions.title,
+        questionText: questions.questionText,
+        questionType: questions.questionType,
+        options: questions.options,
+        correctAnswer: questions.correctAnswer,
+        explanation: questions.explanation,
+        difficulty: questions.difficulty,
+        bloomsTaxonomy: questions.bloomsTaxonomy,
+        points: questions.points,
+        timeLimit: questions.timeLimit,
+        timesUsed: questions.timesUsed,
+        isActive: questions.isActive,
+        createdAt: questions.createdAt,
+        updatedAt: questions.updatedAt,
+        subject: subjects.name,
+      })
       .from(questions)
+      .leftJoin(subjects, eq(questions.subjectId, subjects.id))
       .where(and(...conditions))
       .orderBy(desc(questions.createdAt));
   }
