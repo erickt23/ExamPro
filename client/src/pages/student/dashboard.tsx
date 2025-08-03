@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
-import { formatSubmissionTime, formatSubmissionDuration } from "@/lib/dateUtils";
+import { formatSubmissionTime, formatSubmissionDuration, getExamStatus, formatEasternTime } from "@/lib/dateUtils";
 import Navbar from "@/components/layout/navbar";
 import Sidebar from "@/components/layout/sidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -46,14 +46,14 @@ export default function StudentDashboard() {
     retry: false,
   });
 
-  const { data: exams } = useQuery({
+  const { data: exams = [] } = useQuery<any[]>({
     queryKey: ["/api/exams"],
     retry: false,
     refetchInterval: 30000, // Auto-refresh every 30 seconds to check for newly available exams
     refetchIntervalInBackground: true,
   });
 
-  const { data: mySubmissions } = useQuery({
+  const { data: mySubmissions = [] } = useQuery<any[]>({
     queryKey: ["/api/submissions"],
     retry: false,
     refetchInterval: 30000, // Auto-refresh every 30 seconds to check for submission updates
@@ -72,19 +72,24 @@ export default function StudentDashboard() {
   }
 
   // Process student stats
-  const completedSubmissions = mySubmissions?.filter((s: any) => s.status === 'graded') || [];
+  const completedSubmissions = mySubmissions.filter((s: any) => s.status === 'graded');
   const totalScore = completedSubmissions.reduce((sum: number, s: any) => sum + parseFloat(s.totalScore || '0'), 0);
   const totalMaxScore = completedSubmissions.reduce((sum: number, s: any) => sum + parseFloat(s.maxScore || '0'), 0);
   const averageScore = totalMaxScore > 0 ? (totalScore / totalMaxScore) * 100 : 0;
 
-  // Get upcoming exams (active exams not yet taken)
-  const upcomingExams = exams?.filter((exam: any) => {
-    const hasSubmission = mySubmissions?.some((sub: any) => sub.examId === exam.id);
-    return exam.status === 'active' && !hasSubmission;
-  }) || [];
+  // Categorize exams by status
+  const examsByStatus = exams.filter((exam: any) => exam.status === 'active').map((exam: any) => {
+    const examStatus = getExamStatus(exam, mySubmissions);
+    return { ...exam, examStatus };
+  });
+
+  const upcomingExams = examsByStatus.filter((exam: any) => exam.examStatus.status === 'upcoming');
+  const availableExams = examsByStatus.filter((exam: any) => exam.examStatus.status === 'available');
+  const expiredExams = examsByStatus.filter((exam: any) => exam.examStatus.status === 'expired');
+  const allUpcomingAndAvailable = [...upcomingExams, ...availableExams];
 
   // Get recent submissions
-  const recentSubmissions = mySubmissions?.slice(0, 3) || [];
+  const recentSubmissions = mySubmissions.slice(0, 3);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -107,14 +112,19 @@ export default function StudentDashboard() {
     return m > 0 ? (s / m) * 100 : 0;
   };
 
-  const isExamAvailable = (exam: any) => {
-    const now = new Date();
-    const availableFrom = exam.availableFrom ? new Date(exam.availableFrom) : null;
-    const availableUntil = exam.availableUntil ? new Date(exam.availableUntil) : null;
-    
-    if (availableFrom && now < availableFrom) return false;
-    if (availableUntil && now > availableUntil) return false;
-    return true;
+  const getStatusBadgeProps = (status: string) => {
+    switch (status) {
+      case 'available':
+        return { variant: 'default' as const, className: 'bg-green-100 text-green-800 hover:bg-green-100' };
+      case 'upcoming':
+        return { variant: 'secondary' as const, className: 'bg-blue-100 text-blue-800 hover:bg-blue-100' };
+      case 'expired':
+        return { variant: 'outline' as const, className: 'bg-red-100 text-red-800 hover:bg-red-100' };
+      case 'completed':
+        return { variant: 'outline' as const, className: 'bg-gray-100 text-gray-800 hover:bg-gray-100' };
+      default:
+        return { variant: 'secondary' as const };
+    }
   };
 
   const handleStartExam = (exam: any) => {
@@ -182,9 +192,9 @@ export default function StudentDashboard() {
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-gray-600">Upcoming Exams</p>
+                      <p className="text-sm font-medium text-gray-600">Available Exams</p>
                       <p className="text-2xl font-bold text-gray-900">
-                        {upcomingExams.length}
+                        {availableExams.length}
                       </p>
                     </div>
                     <div className="p-3 bg-orange-100 rounded-lg">
@@ -193,7 +203,7 @@ export default function StudentDashboard() {
                   </div>
                   <div className="mt-4 flex items-center text-sm">
                     <span className="text-gray-500">
-                      {upcomingExams.filter((e: any) => isExamAvailable(e)).length} available now
+                      {upcomingExams.length} upcoming, {expiredExams.length} expired
                     </span>
                   </div>
                 </CardContent>
@@ -226,37 +236,49 @@ export default function StudentDashboard() {
                 <CardHeader>
                   <CardTitle className="flex items-center">
                     <Calendar className="h-5 w-5 mr-2" />
-                    Upcoming Exams
+                    Exams
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  {upcomingExams.length === 0 ? (
+                  {allUpcomingAndAvailable.length === 0 ? (
                     <div className="text-center py-8">
                       <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                      <p className="text-gray-500">No upcoming exams</p>
+                      <p className="text-gray-500">No exams available</p>
                       <p className="text-sm text-gray-400">Check back later for new assignments</p>
                     </div>
                   ) : (
                     <div className="space-y-4">
-                      {upcomingExams.slice(0, 3).map((exam: any) => (
+                      {allUpcomingAndAvailable.slice(0, 4).map((exam: any) => (
                         <div key={exam.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                           <div className="flex-1">
-                            <h4 className="font-medium text-gray-900">{exam.title}</h4>
+                            <div className="flex items-center gap-2 mb-1">
+                              <h4 className="font-medium text-gray-900">{exam.title}</h4>
+                              <Badge {...getStatusBadgeProps(exam.examStatus.status)}>
+                                {exam.examStatus.label}
+                              </Badge>
+                            </div>
                             <p className="text-sm text-gray-600">{(subjects as any[]).find((s: any) => s.id === exam.subjectId)?.name || 'Unknown Subject'} • {exam.duration} minutes</p>
+                            {exam.availableFrom && exam.examStatus.status === 'upcoming' && (
+                              <p className="text-xs text-gray-500 mt-1">
+                                Available: {formatEasternTime(exam.availableFrom, { includeDate: true, includeTime: true, format: 'medium' })}
+                              </p>
+                            )}
                             {exam.availableUntil && (
                               <p className="text-xs text-gray-500 mt-1">
-                                Due: {new Date(exam.availableUntil).toLocaleDateString()}
+                                Due: {formatEasternTime(exam.availableUntil, { includeDate: true, includeTime: true, format: 'medium' })}
                               </p>
                             )}
                           </div>
                           <div className="flex items-center space-x-2">
-                            {isExamAvailable(exam) ? (
+                            {exam.examStatus.canStart ? (
                               <Button size="sm" onClick={() => handleStartExam(exam)}>
                                 <Play className="h-4 w-4 mr-1" />
                                 Start
                               </Button>
                             ) : (
-                              <Badge variant="secondary">Not Available</Badge>
+                              <div className="text-sm text-gray-500">
+                                {exam.examStatus.status === 'upcoming' ? 'Not yet available' : 'Cannot start'}
+                              </div>
                             )}
                           </div>
                         </div>

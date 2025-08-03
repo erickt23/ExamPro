@@ -30,6 +30,7 @@ import {
 } from "lucide-react";
 import { ObjectUploader } from "@/components/ObjectUploader";
 import { Input } from "@/components/ui/input";
+import { getExamStatus } from "@/lib/dateUtils";
 
 export default function StudentExams() {
   const { toast } = useToast();
@@ -62,14 +63,14 @@ export default function StudentExams() {
     retry: false,
   });
 
-  const { data: exams } = useQuery({
+  const { data: exams = [] } = useQuery<any[]>({
     queryKey: ["/api/exams"],
     retry: false,
     refetchInterval: 30000, // Auto-refresh every 30 seconds to check for newly available exams
     refetchIntervalInBackground: true,
   });
 
-  const { data: mySubmissions } = useQuery({
+  const { data: mySubmissions = [] } = useQuery<any[]>({
     queryKey: ["/api/submissions"],
     retry: false,
     refetchInterval: 30000, // Auto-refresh every 30 seconds to check for submission updates
@@ -152,37 +153,28 @@ export default function StudentExams() {
     );
   }
 
-  const availableExams = (exams as any[])?.filter((exam: any) => {
-    const hasSubmission = (mySubmissions as any[])?.some((sub: any) => sub.examId === exam.id);
-    const now = new Date();
-    const availableFrom = exam.availableFrom ? new Date(exam.availableFrom) : null;
-    const availableUntil = exam.availableUntil ? new Date(exam.availableUntil) : null;
-    
-    const isAvailable = (!availableFrom || now >= availableFrom) && 
-                       (!availableUntil || now <= availableUntil);
-    
-    const isEligible = exam.status === 'active' && !hasSubmission && isAvailable;
-    
-    console.log('Exam eligibility check:', {
-      examId: exam.id,
-      title: exam.title,
-      status: exam.status,
-      hasSubmission,
-      isAvailable,
-      availableFrom,
-      availableUntil,
-      duration: exam.duration,
-      isEligible
-    });
-    
-    return isEligible;
-  }) || [];
+  // Categorize all exams by status
+  const allExamsWithStatus = exams.filter((exam: any) => exam.status === 'active').map((exam: any) => {
+    const examStatus = getExamStatus(exam, mySubmissions);
+    return { ...exam, examStatus };
+  });
+
+  // Filter available exams (students can only start available exams)
+  const availableExams = allExamsWithStatus.filter((exam: any) => exam.examStatus.status === 'available');
+  
+  // All exams categorized for display
+  const upcomingExams = allExamsWithStatus.filter((exam: any) => exam.examStatus.status === 'upcoming');
+  const expiredExams = allExamsWithStatus.filter((exam: any) => exam.examStatus.status === 'expired');
+  const completedExams = allExamsWithStatus.filter((exam: any) => exam.examStatus.status === 'completed');
 
   // Debug: Log all loaded data
   console.log('Student exam dashboard data:', {
-    totalExams: exams?.length || 0,
+    totalExams: exams.length,
     availableExams: availableExams.length,
-    totalSubmissions: mySubmissions?.length || 0,
+    upcomingExams: upcomingExams.length,
+    expiredExams: expiredExams.length,
+    completedExams: completedExams.length,
+    totalSubmissions: mySubmissions.length,
     user: user?.id
   });
 
@@ -200,9 +192,20 @@ export default function StudentExams() {
     }
   }, [exams, availableExams, location, selectedExam]);
 
-  const completedExams = (exams as any[])?.filter((exam: any) => {
-    return (mySubmissions as any[])?.some((sub: any) => sub.examId === exam.id);
-  }) || [];
+  const getStatusBadgeProps = (status: string) => {
+    switch (status) {
+      case 'available':
+        return { variant: 'default' as const, className: 'bg-green-100 text-green-800 hover:bg-green-100' };
+      case 'upcoming':
+        return { variant: 'secondary' as const, className: 'bg-blue-100 text-blue-800 hover:bg-blue-100' };
+      case 'expired':
+        return { variant: 'outline' as const, className: 'bg-red-100 text-red-800 hover:bg-red-100' };
+      case 'completed':
+        return { variant: 'outline' as const, className: 'bg-gray-100 text-gray-800 hover:bg-gray-100' };
+      default:
+        return { variant: 'secondary' as const };
+    }
+  };
 
   const handleStartExam = (exam: any) => {
     console.log('Start exam button clicked for exam:', exam);
@@ -575,63 +578,162 @@ export default function StudentExams() {
               <p className="text-gray-600 mt-1">View available exams and your completed assessments</p>
             </div>
 
-            {/* Available Exams */}
+            {/* All Exams - Available, Upcoming, Expired */}
             <Card className="mb-6">
               <CardHeader>
                 <CardTitle className="flex items-center">
-                  <Play className="h-5 w-5 mr-2" />
-                  Available Exams
+                  <FileText className="h-5 w-5 mr-2" />
+                  All Exams
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {availableExams.length === 0 ? (
+                {allExamsWithStatus.length === 0 ? (
                   <div className="text-center py-12">
                     <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <p className="text-gray-500 text-lg mb-2">No available exams</p>
+                    <p className="text-gray-500 text-lg mb-2">No exams available</p>
                     <p className="text-gray-400">Check back later for new assignments</p>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {availableExams.map((exam: any) => (
-                      <div key={exam.id} className="border rounded-lg p-6 hover:shadow-md transition-shadow">
-                        <div className="flex justify-between items-start mb-4">
-                          <div>
-                            <h3 className="font-semibold text-gray-900 mb-1">{exam.title}</h3>
-                            <p className="text-sm text-gray-600">{(subjects as any[]).find((s: any) => s.id === exam.subjectId)?.name || 'Unknown Subject'}</p>
-                          </div>
-                          <Badge>Available</Badge>
-                        </div>
-                        
-                        <div className="space-y-2 mb-4 text-sm">
-                          <div className="flex justify-between">
-                            <span className="text-gray-600">Duration:</span>
-                            <span>{exam.duration} minutes</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-gray-600">Total Points:</span>
-                            <span>{exam.totalPoints}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-gray-600">Attempts:</span>
-                            <span>{exam.attemptsAllowed === -1 ? 'Unlimited' : exam.attemptsAllowed}</span>
-                          </div>
-                          {exam.availableUntil && (
-                            <div className="flex justify-between">
-                              <span className="text-gray-600">Due:</span>
-                              <span>{new Date(exam.availableUntil).toLocaleDateString()}</span>
-                            </div>
-                          )}
-                        </div>
+                  <div className="space-y-6">
+                    {/* Available Exams */}
+                    {availableExams.length > 0 && (
+                      <div>
+                        <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center">
+                          <Play className="h-5 w-5 mr-2 text-green-600" />
+                          Available Exams ({availableExams.length})
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {availableExams.map((exam: any) => (
+                            <div key={exam.id} className="border rounded-lg p-6 hover:shadow-md transition-shadow bg-green-50 border-green-200">
+                              <div className="flex justify-between items-start mb-4">
+                                <div>
+                                  <h4 className="font-semibold text-gray-900 mb-1">{exam.title}</h4>
+                                  <p className="text-sm text-gray-600">{(subjects as any[]).find((s: any) => s.id === exam.subjectId)?.name || 'Unknown Subject'}</p>
+                                </div>
+                                <Badge {...getStatusBadgeProps(exam.examStatus.status)}>
+                                  {exam.examStatus.label}
+                                </Badge>
+                              </div>
+                              
+                              <div className="space-y-2 mb-4 text-sm">
+                                <div className="flex justify-between">
+                                  <span className="text-gray-600">Duration:</span>
+                                  <span>{exam.duration} minutes</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className="text-gray-600">Total Points:</span>
+                                  <span>{exam.totalPoints}</span>
+                                </div>
+                                {exam.availableUntil && (
+                                  <div className="flex justify-between">
+                                    <span className="text-gray-600">Due:</span>
+                                    <span>{new Date(exam.availableUntil).toLocaleDateString()}</span>
+                                  </div>
+                                )}
+                              </div>
 
-                        <Button 
-                          onClick={() => handleStartExam(exam)}
-                          className="w-full"
-                        >
-                          <Play className="h-4 w-4 mr-2" />
-                          Start Exam
-                        </Button>
+                              <Button 
+                                onClick={() => handleStartExam(exam)}
+                                className="w-full"
+                              >
+                                <Play className="h-4 w-4 mr-2" />
+                                Start Exam
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
                       </div>
-                    ))}
+                    )}
+
+                    {/* Upcoming Exams */}
+                    {upcomingExams.length > 0 && (
+                      <div>
+                        <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center">
+                          <Clock className="h-5 w-5 mr-2 text-blue-600" />
+                          Upcoming Exams ({upcomingExams.length})
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {upcomingExams.map((exam: any) => (
+                            <div key={exam.id} className="border rounded-lg p-6 bg-blue-50 border-blue-200">
+                              <div className="flex justify-between items-start mb-4">
+                                <div>
+                                  <h4 className="font-semibold text-gray-900 mb-1">{exam.title}</h4>
+                                  <p className="text-sm text-gray-600">{(subjects as any[]).find((s: any) => s.id === exam.subjectId)?.name || 'Unknown Subject'}</p>
+                                </div>
+                                <Badge {...getStatusBadgeProps(exam.examStatus.status)}>
+                                  {exam.examStatus.label}
+                                </Badge>
+                              </div>
+                              
+                              <div className="space-y-2 mb-4 text-sm">
+                                <div className="flex justify-between">
+                                  <span className="text-gray-600">Duration:</span>
+                                  <span>{exam.duration} minutes</span>
+                                </div>
+                                {exam.availableFrom && (
+                                  <div className="flex justify-between">
+                                    <span className="text-gray-600">Available from:</span>
+                                    <span>{new Date(exam.availableFrom).toLocaleDateString()}</span>
+                                  </div>
+                                )}
+                                {exam.availableUntil && (
+                                  <div className="flex justify-between">
+                                    <span className="text-gray-600">Due:</span>
+                                    <span>{new Date(exam.availableUntil).toLocaleDateString()}</span>
+                                  </div>
+                                )}
+                              </div>
+
+                              <div className="text-center text-gray-500 text-sm">
+                                Not yet available
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Expired Exams */}
+                    {expiredExams.length > 0 && (
+                      <div>
+                        <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center">
+                          <AlertCircle className="h-5 w-5 mr-2 text-red-600" />
+                          Expired Exams ({expiredExams.length})
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {expiredExams.map((exam: any) => (
+                            <div key={exam.id} className="border rounded-lg p-6 bg-red-50 border-red-200">
+                              <div className="flex justify-between items-start mb-4">
+                                <div>
+                                  <h4 className="font-semibold text-gray-900 mb-1">{exam.title}</h4>
+                                  <p className="text-sm text-gray-600">{(subjects as any[]).find((s: any) => s.id === exam.subjectId)?.name || 'Unknown Subject'}</p>
+                                </div>
+                                <Badge {...getStatusBadgeProps(exam.examStatus.status)}>
+                                  {exam.examStatus.label}
+                                </Badge>
+                              </div>
+                              
+                              <div className="space-y-2 mb-4 text-sm">
+                                <div className="flex justify-between">
+                                  <span className="text-gray-600">Duration:</span>
+                                  <span>{exam.duration} minutes</span>
+                                </div>
+                                {exam.availableUntil && (
+                                  <div className="flex justify-between">
+                                    <span className="text-gray-600">Expired on:</span>
+                                    <span>{new Date(exam.availableUntil).toLocaleDateString()}</span>
+                                  </div>
+                                )}
+                              </div>
+
+                              <div className="text-center text-red-600 text-sm font-medium">
+                                Exam has expired
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </CardContent>
@@ -655,10 +757,10 @@ export default function StudentExams() {
                 ) : (
                   <div className="space-y-4">
                     {completedExams.map((exam: any) => {
-                      const submission = (mySubmissions as any[])?.find((s: any) => s.examId === exam.id);
+                      const submission = mySubmissions.find((s: any) => s.examId === exam.id);
                       return (
-                        <div key={exam.id} className="flex items-center justify-between p-4 border rounded-lg">
-                          <div>
+                        <div key={exam.id} className="flex items-center justify-between p-4 border rounded-lg bg-gray-50">
+                          <div className="flex-1">
                             <h4 className="font-medium text-gray-900">{exam.title}</h4>
                             <p className="text-sm text-gray-600">{(subjects as any[]).find((s: any) => s.id === exam.subjectId)?.name || 'Unknown Subject'}</p>
                             {submission?.submittedAt && (

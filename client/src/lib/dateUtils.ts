@@ -112,3 +112,55 @@ export function formatSubmissionDuration(
     return 'Invalid duration';
   }
 }
+
+/**
+ * Determines the status of an exam for a student
+ */
+export function getExamStatus(
+  exam: any,
+  submissions: any[]
+): {
+  status: 'upcoming' | 'available' | 'expired' | 'completed';
+  label: string;
+  canStart: boolean;
+} {
+  const now = new Date();
+  const availableFrom = exam.availableFrom ? new Date(exam.availableFrom) : null;
+  const availableUntil = exam.availableUntil ? new Date(exam.availableUntil) : null;
+  
+  // Check if student has already submitted this exam
+  const hasSubmission = submissions?.some((sub: any) => sub.examId === exam.id);
+  
+  if (hasSubmission) {
+    return {
+      status: 'completed',
+      label: 'Completed',
+      canStart: false
+    };
+  }
+  
+  // Check if exam is not yet available (upcoming)
+  if (availableFrom && now < availableFrom) {
+    return {
+      status: 'upcoming',
+      label: 'Upcoming',
+      canStart: false
+    };
+  }
+  
+  // Check if exam deadline has passed (expired)
+  if (availableUntil && now > availableUntil) {
+    return {
+      status: 'expired',
+      label: 'Expired',
+      canStart: false
+    };
+  }
+  
+  // Exam is currently available
+  return {
+    status: 'available',
+    label: 'Available',
+    canStart: true
+  };
+}
