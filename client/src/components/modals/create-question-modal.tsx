@@ -32,7 +32,6 @@ import { Plus, List, PenTool, FileText, Pen } from "lucide-react";
 import CreateSubjectModal from "./create-subject-modal";
 
 const createQuestionSchema = z.object({
-  title: z.string().min(1, "Title is required").max(200),
   questionText: z.string().min(1, "Question text is required"),
   questionType: z.enum(['multiple_choice', 'short_answer', 'essay', 'fill_blank']),
   options: z.array(z.string()).optional(),
@@ -68,7 +67,6 @@ export default function CreateQuestionModal({ open, onOpenChange }: CreateQuesti
   const form = useForm<CreateQuestionForm>({
     resolver: zodResolver(createQuestionSchema),
     defaultValues: {
-      title: '',
       questionText: '',
       questionType: 'multiple_choice',
       subjectId: 1,
@@ -173,20 +171,6 @@ export default function CreateQuestionModal({ open, onOpenChange }: CreateQuesti
                 })}
               </div>
             </div>
-
-            <FormField
-              control={form.control}
-              name="title"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Question Title</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter question title..." {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
 
             <FormField
               control={form.control}
