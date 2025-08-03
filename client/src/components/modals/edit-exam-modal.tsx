@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -27,8 +27,10 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
-import { Plus } from "lucide-react";
+import { Plus, Search, X, Minus } from "lucide-react";
 import CreateSubjectModal from "./create-subject-modal";
 
 const editExamSchema = z.object({
@@ -60,6 +62,13 @@ export default function EditExamModal({ open, onOpenChange, examId }: EditExamMo
   const { toast } = useToast();
   const [showCreateSubjectModal, setShowCreateSubjectModal] = useState(false);
   
+  // Question management state
+  const [selectionMethod, setSelectionMethod] = useState<'manual' | 'random'>('manual');
+  const [selectedQuestions, setSelectedQuestions] = useState<any[]>([]);
+  const [questionSearch, setQuestionSearch] = useState("");
+  const [randomQuestionCount, setRandomQuestionCount] = useState<number>(10);
+  const [randomQuestions, setRandomQuestions] = useState<any[]>([]);
+  
   // Fetch subjects
   const { data: subjects = [] } = useQuery<any[]>({
     queryKey: ["/api/subjects"],
@@ -78,6 +87,43 @@ export default function EditExamModal({ open, onOpenChange, examId }: EditExamMo
     enabled: !!examId && open,
     retry: false,
   });
+
+  // Fetch current exam questions
+  const { data: currentExamQuestions = [] } = useQuery({
+    queryKey: ["/api/exams", examId, "questions"],
+    queryFn: async () => {
+      if (!examId) return [];
+      const response = await fetch(`/api/exams/${examId}/questions`);
+      if (!response.ok) throw new Error(`${response.status}: ${response.statusText}`);
+      return response.json();
+    },
+    enabled: !!examId && open,
+    retry: false,
+  });
+
+  // Fetch available questions for adding
+  const { data: availableQuestions } = useQuery({
+    queryKey: ["/api/questions", { search: questionSearch }],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      if (questionSearch) params.append('search', questionSearch);
+      
+      const response = await fetch(`/api/questions?${params}`);
+      if (!response.ok) throw new Error(`${response.status}: ${response.statusText}`);
+      return response.json();
+    },
+    retry: false,
+    enabled: open,
+  });
+
+  // Auto-select random questions when method changes or count changes
+  React.useEffect(() => {
+    if (selectionMethod === 'random' && availableQuestions && availableQuestions.length > 0) {
+      const shuffled = [...availableQuestions].sort(() => Math.random() - 0.5);
+      const selected = shuffled.slice(0, Math.min(randomQuestionCount, availableQuestions.length));
+      setRandomQuestions(selected);
+    }
+  }, [selectionMethod, randomQuestionCount, availableQuestions]);
 
   const form = useForm<EditExamForm>({
     resolver: zodResolver(editExamSchema),
@@ -153,8 +199,122 @@ export default function EditExamModal({ open, onOpenChange, examId }: EditExamMo
     },
   });
 
+  // Add question to exam mutation
+  const addQuestionToExamMutation = useMutation({
+    mutationFn: async ({ questionId, order, points }: { questionId: number; order: number; points: number }) => {
+      await apiRequest("POST", `/api/exams/${examId}/questions`, {
+        questionId,
+        order,
+        points,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/exams", examId, "questions"] });
+      toast({
+        title: "Success",
+        description: "Question added to exam successfully",
+      });
+    },
+    onError: (error: Error) => {
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
+      toast({
+        title: "Error",
+        description: "Failed to add question to exam",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Remove question from exam mutation
+  const removeQuestionFromExamMutation = useMutation({
+    mutationFn: async (questionId: number) => {
+      await apiRequest("DELETE", `/api/exams/${examId}/questions/${questionId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/exams", examId, "questions"] });
+      toast({
+        title: "Success",
+        description: "Question removed from exam successfully",
+      });
+    },
+    onError: (error: Error) => {
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
+      toast({
+        title: "Error",
+        description: "Failed to remove question from exam",
+        variant: "destructive",
+      });
+    },
+  });
+
   const onSubmit = (data: EditExamForm) => {
     updateExamMutation.mutate(data);
+  };
+
+  const addQuestion = (question: any) => {
+    const maxOrder = currentExamQuestions.length > 0 
+      ? Math.max(...currentExamQuestions.map((q: any) => q.order || 0))
+      : 0;
+    addQuestionToExamMutation.mutate({
+      questionId: question.id,
+      order: maxOrder + 1,
+      points: question.points || 1,
+    });
+  };
+
+  const addQuestionsInBulk = (questions: any[]) => {
+    questions.forEach((question, index) => {
+      const maxOrder = currentExamQuestions.length > 0 
+        ? Math.max(...currentExamQuestions.map((q: any) => q.order || 0))
+        : 0;
+      setTimeout(() => {
+        addQuestionToExamMutation.mutate({
+          questionId: question.id,
+          order: maxOrder + index + 1,
+          points: question.points || 1,
+        });
+      }, index * 100); // Small delay to avoid overwhelming the server
+    });
+  };
+
+  const removeQuestion = (questionId: number) => {
+    removeQuestionFromExamMutation.mutate(questionId);
+  };
+
+  const formatQuestionType = (type: string) => {
+    return type.replace('_', ' ').split(' ').map(word => 
+      word.charAt(0).toUpperCase() + word.slice(1)
+    ).join(' ');
+  };
+
+  const getQuestionTypeColor = (type: string) => {
+    switch (type) {
+      case 'multiple_choice': return 'bg-blue-100 text-blue-800';
+      case 'short_answer': return 'bg-green-100 text-green-800';
+      case 'essay': return 'bg-orange-100 text-orange-800';
+      case 'fill_blank': return 'bg-purple-100 text-purple-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
   };
 
   return (
@@ -465,6 +625,216 @@ export default function EditExamModal({ open, onOpenChange, examId }: EditExamMo
                 )}
               />
             )}
+
+            {/* Question Management */}
+            <div className="space-y-4">
+              <div className="border-t pt-6">
+                <h3 className="text-lg font-medium mb-4">Manage Exam Questions</h3>
+
+                {/* Current Questions */}
+                <div className="mb-6">
+                  <Label className="text-sm font-medium">Current Questions ({currentExamQuestions.length})</Label>
+                  {currentExamQuestions.length > 0 ? (
+                    <div className="mt-2 space-y-2 max-h-40 overflow-y-auto border rounded-lg">
+                      {currentExamQuestions.map((examQuestion: any, index: number) => (
+                        <div key={examQuestion.id} className="p-3 bg-blue-50 border-l-4 border-blue-400">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-2 flex-1">
+                              <span className="text-sm font-medium">{index + 1}.</span>
+                              <div className="flex-1">
+                                <div className="flex items-center space-x-2 mb-1">
+                                  <Badge className={getQuestionTypeColor(examQuestion.question?.questionType)} variant="secondary">
+                                    {formatQuestionType(examQuestion.question?.questionType || 'unknown')}
+                                  </Badge>
+                                  <Badge variant="outline">{examQuestion.question?.subject || 'No Subject'}</Badge>
+                                  <span className="text-xs text-gray-500">{examQuestion.points} pts</span>
+                                </div>
+                                <p className="text-sm text-gray-900 truncate">
+                                  {examQuestion.question?.questionText || 'Question text not available'}
+                                </p>
+                              </div>
+                            </div>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => removeQuestion(examQuestion.questionId)}
+                              disabled={removeQuestionFromExamMutation.isPending}
+                              className="text-red-600 hover:text-red-800"
+                            >
+                              <Minus className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="mt-2 p-4 text-center text-gray-500 border rounded-lg">
+                      No questions added to this exam yet.
+                    </div>
+                  )}
+                </div>
+
+                {/* Add Questions Section */}
+                <div className="space-y-4">
+                  <Label className="text-sm font-medium">Add Questions to Exam</Label>
+                  
+                  {/* Question Selection Method */}
+                  <div>
+                    <Label className="text-sm font-medium">Selection Method</Label>
+                    <RadioGroup 
+                      value={selectionMethod} 
+                      onValueChange={(value: 'manual' | 'random') => setSelectionMethod(value)}
+                      className="mt-2"
+                    >
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="manual" id="manual-edit" />
+                        <Label htmlFor="manual-edit">Manual Selection - Choose specific questions</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="random" id="random-edit" />
+                        <Label htmlFor="random-edit">Random Selection - Auto-select from available questions</Label>
+                      </div>
+                    </RadioGroup>
+                  </div>
+
+                  {/* Manual Question Selection */}
+                  {selectionMethod === 'manual' && (
+                    <div className="space-y-4">
+                      <div>
+                        <Label>Search Available Questions</Label>
+                        <div className="flex space-x-2 mt-2">
+                          <div className="relative flex-1">
+                            <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                            <Input
+                              placeholder="Search questions..."
+                              value={questionSearch}
+                              onChange={(e) => setQuestionSearch(e.target.value)}
+                              className="pl-9"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Available Questions */}
+                      <div>
+                        <Label>Available Questions</Label>
+                        <div className="mt-2 max-h-40 overflow-y-auto border rounded-lg">
+                          {availableQuestions?.length === 0 ? (
+                            <div className="p-4 text-center text-gray-500">
+                              No questions found.
+                            </div>
+                          ) : (
+                            <div className="divide-y">
+                              {availableQuestions?.map((question: any) => {
+                                const isAlreadyInExam = currentExamQuestions.some((eq: any) => eq.questionId === question.id);
+                                return (
+                                  <div key={question.id} className={`p-3 ${isAlreadyInExam ? 'bg-gray-50 opacity-50' : 'hover:bg-gray-50'}`}>
+                                    <div className="flex items-center justify-between">
+                                      <div className="flex-1">
+                                        <div className="flex items-center space-x-2 mb-1">
+                                          <Badge className={getQuestionTypeColor(question.questionType)} variant="secondary">
+                                            {formatQuestionType(question.questionType)}
+                                          </Badge>
+                                          <Badge variant="outline">{question.subject}</Badge>
+                                          <span className="text-xs text-gray-500">{question.points} pts</span>
+                                        </div>
+                                        <p className="text-sm text-gray-900 truncate">
+                                          {question.questionText}
+                                        </p>
+                                      </div>
+                                      <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => addQuestion(question)}
+                                        disabled={isAlreadyInExam || addQuestionToExamMutation.isPending}
+                                      >
+                                        {isAlreadyInExam ? 'Added' : <Plus className="h-4 w-4" />}
+                                      </Button>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Random Question Selection */}
+                  {selectionMethod === 'random' && (
+                    <div className="space-y-4">
+                      <div>
+                        <Label>Number of Questions to Add</Label>
+                        <div className="mt-2">
+                          <Input
+                            type="number"
+                            min="1"
+                            max={availableQuestions?.length || 100}
+                            value={randomQuestionCount}
+                            onChange={(e) => setRandomQuestionCount(parseInt(e.target.value) || 1)}
+                            placeholder="Enter number of questions"
+                            className="w-48"
+                          />
+                        </div>
+                        <p className="text-sm text-gray-500 mt-1">
+                          {availableQuestions?.length > 0 
+                            ? `Available questions: ${availableQuestions.length}` 
+                            : 'Loading questions...'}
+                        </p>
+                      </div>
+
+                      {/* Randomly Selected Questions Preview */}
+                      {randomQuestions.length > 0 && (
+                        <div>
+                          <div className="flex items-center justify-between mb-2">
+                            <Label>Randomly Selected Questions ({randomQuestions.length})</Label>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => addQuestionsInBulk(randomQuestions)}
+                              disabled={addQuestionToExamMutation.isPending}
+                            >
+                              {addQuestionToExamMutation.isPending ? 'Adding...' : 'Add All Selected'}
+                            </Button>
+                          </div>
+                          <div className="mt-2 space-y-2 max-h-32 overflow-y-auto border rounded-lg">
+                            {randomQuestions.map((question, index) => (
+                              <div key={question.id} className="p-3 bg-green-50 border-l-4 border-green-400">
+                                <div className="flex items-center space-x-2">
+                                  <span className="text-sm font-medium">{index + 1}.</span>
+                                  <div className="flex-1">
+                                    <div className="flex items-center space-x-2 mb-1">
+                                      <Badge className={getQuestionTypeColor(question.questionType)} variant="secondary">
+                                        {formatQuestionType(question.questionType)}
+                                      </Badge>
+                                      <Badge variant="outline">{question.subject}</Badge>
+                                      <span className="text-xs text-gray-500">{question.points} pts</span>
+                                    </div>
+                                    <p className="text-sm text-gray-900 truncate">
+                                      {question.questionText}
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {availableQuestions?.length === 0 && (
+                        <div className="p-4 text-center text-gray-500 border rounded-lg">
+                          No questions available for random selection.
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
 
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
