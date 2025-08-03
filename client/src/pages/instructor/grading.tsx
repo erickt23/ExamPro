@@ -28,6 +28,33 @@ import {
 
 export default function GradingPage() {
   const [match, params] = useRoute("/grading/:submissionId");
+  
+  // Convert Google Cloud Storage URL to our authenticated API endpoint
+  const getSecureFileUrl = (attachmentUrl: string) => {
+    if (!attachmentUrl) return '';
+    
+    // If it's already our API endpoint, return as is
+    if (attachmentUrl.startsWith('/objects/')) {
+      return attachmentUrl;
+    }
+    
+    // If it's a Google Cloud Storage URL, extract the object path
+    if (attachmentUrl.startsWith('https://storage.googleapis.com/')) {
+      try {
+        const url = new URL(attachmentUrl);
+        const pathParts = url.pathname.split('/');
+        if (pathParts.length >= 4) {
+          // Format: /bucket/private_dir/uploads/object_id -> /objects/uploads/object_id
+          const objectPath = pathParts.slice(3).join('/');
+          return `/objects/uploads/${objectPath.split('/').pop()}`;
+        }
+      } catch (error) {
+        console.error('Error parsing attachment URL:', error);
+      }
+    }
+    
+    return attachmentUrl;
+  };
   const submissionId = match ? params?.submissionId : null;
   const { toast } = useToast();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
@@ -365,7 +392,7 @@ export default function GradingPage() {
                             </div>
                             <div className="mt-2">
                               <a 
-                                href={answer.attachmentUrl}
+                                href={getSecureFileUrl(answer.attachmentUrl)}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 text-sm"
