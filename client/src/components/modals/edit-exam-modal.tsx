@@ -337,13 +337,14 @@ export default function EditExamModal({ open, onOpenChange, examId }: EditExamMo
     removeQuestionFromExamMutation.mutate(questionId);
   };
 
-  const formatQuestionType = (type: string) => {
+  const formatQuestionType = (type: string | undefined) => {
+    if (!type) return 'Unknown';
     return type.replace('_', ' ').split(' ').map(word => 
       word.charAt(0).toUpperCase() + word.slice(1)
     ).join(' ');
   };
 
-  const getQuestionTypeColor = (type: string) => {
+  const getQuestionTypeColor = (type: string | undefined) => {
     switch (type) {
       case 'multiple_choice': return 'bg-blue-100 text-blue-800';
       case 'short_answer': return 'bg-green-100 text-green-800';

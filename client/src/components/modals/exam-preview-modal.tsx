@@ -119,13 +119,14 @@ export default function ExamPreviewModal({ open, onOpenChange, examId, onPublish
     });
   };
 
-  const formatQuestionType = (type: string) => {
+  const formatQuestionType = (type: string | undefined) => {
+    if (!type) return 'Unknown';
     return type.replace('_', ' ').split(' ').map(word => 
       word.charAt(0).toUpperCase() + word.slice(1)
     ).join(' ');
   };
 
-  const getQuestionTypeColor = (type: string) => {
+  const getQuestionTypeColor = (type: string | undefined) => {
     switch (type) {
       case 'multiple_choice': return 'bg-blue-100 text-blue-800';
       case 'short_answer': return 'bg-green-100 text-green-800';
@@ -145,17 +146,17 @@ export default function ExamPreviewModal({ open, onOpenChange, examId, onPublish
             <div className="flex-1">
               <CardTitle className="text-lg mb-2">
                 Question {currentQuestionIndex + 1} of {totalQuestions}
-                {question.title && `: ${question.title}`}
+                {question.question?.title && `: ${question.question.title}`}
               </CardTitle>
               <div className="flex items-center gap-2 mb-3">
-                <Badge className={getQuestionTypeColor(question.questionType)}>
-                  {formatQuestionType(question.questionType)}
+                <Badge className={getQuestionTypeColor(question.question?.questionType)}>
+                  {formatQuestionType(question.question?.questionType)}
                 </Badge>
                 <Badge variant="outline">{question.points} points</Badge>
-                {question.timeLimit && (
+                {question.question?.timeLimit && (
                   <Badge variant="outline">
                     <Clock className="h-3 w-3 mr-1" />
-                    {question.timeLimit} min
+                    {question.question.timeLimit} min
                   </Badge>
                 )}
               </div>
@@ -164,14 +165,14 @@ export default function ExamPreviewModal({ open, onOpenChange, examId, onPublish
         </CardHeader>
         <CardContent>
           <div className="mb-4">
-            <p className="text-gray-900 whitespace-pre-wrap">{question.questionText}</p>
+            <p className="text-gray-900 whitespace-pre-wrap">{question.question?.questionText}</p>
           </div>
 
           {/* Multiple Choice Options */}
-          {question.questionType === 'multiple_choice' && question.options && (
+          {question.question?.questionType === 'multiple_choice' && question.question?.options && (
             <div className="space-y-3">
               <RadioGroup disabled className="space-y-3">
-                {question.options.map((option: string, index: number) => {
+                {question.question.options.map((option: string, index: number) => {
                   const letter = String.fromCharCode(65 + index);
                   return (
                     <div key={index} className="flex items-center space-x-3 p-3 border rounded-lg">
@@ -188,7 +189,7 @@ export default function ExamPreviewModal({ open, onOpenChange, examId, onPublish
           )}
 
           {/* Short Answer */}
-          {question.questionType === 'short_answer' && (
+          {question.question?.questionType === 'short_answer' && (
             <div>
               <Input 
                 placeholder="Student will type their answer here..."
@@ -199,7 +200,7 @@ export default function ExamPreviewModal({ open, onOpenChange, examId, onPublish
           )}
 
           {/* Essay */}
-          {question.questionType === 'essay' && (
+          {question.question?.questionType === 'essay' && (
             <div>
               <Textarea 
                 placeholder="Student will write their essay response here..."
@@ -211,7 +212,7 @@ export default function ExamPreviewModal({ open, onOpenChange, examId, onPublish
           )}
 
           {/* Fill in the Blank */}
-          {question.questionType === 'fill_blank' && (
+          {question.question?.questionType === 'fill_blank' && (
             <div>
               <Input 
                 placeholder="Student will fill in the blank here..."
