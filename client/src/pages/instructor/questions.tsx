@@ -286,6 +286,11 @@ export default function InstructorQuestions() {
                               <Badge className={getDifficultyColor(question.difficulty)}>
                                 {question.difficulty}
                               </Badge>
+                              {question.bloomsTaxonomy && (
+                                <Badge variant="outline" className="capitalize bg-indigo-100 text-indigo-800">
+                                  {question.bloomsTaxonomy}
+                                </Badge>
+                              )}
                             </div>
                             <h4 className="font-medium text-gray-900 mb-2">{question.title || question.questionText.substring(0, 100)}</h4>
                             <p className="text-sm text-gray-600 mb-3 line-clamp-2">
