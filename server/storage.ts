@@ -164,54 +164,48 @@ export class DatabaseStorage implements IStorage {
     bloomsTaxonomy?: string;
     search?: string;
   }): Promise<Question[]> {
-    const conditions = [eq(questions.instructorId, instructorId), eq(questions.isActive, true)];
+    try {
+      // Start with basic conditions
+      const conditions = [eq(questions.instructorId, instructorId), eq(questions.isActive, true)];
 
-    if (filters?.subjectId) {
-      conditions.push(eq(questions.subjectId, filters.subjectId));
-    }
-    if (filters?.questionType) {
-      conditions.push(eq(questions.questionType, filters.questionType as any));
-    }
-    if (filters?.difficulty) {
-      conditions.push(eq(questions.difficulty, filters.difficulty as any));
-    }
-    if (filters?.bloomsTaxonomy) {
-      conditions.push(eq(questions.bloomsTaxonomy, filters.bloomsTaxonomy as any));
-    }
-    if (filters?.search) {
-      conditions.push(
-        or(
-          ilike(questions.title, `%${filters.search}%`),
-          ilike(questions.questionText, `%${filters.search}%`)
-        )!
-      );
-    }
+      if (filters?.subjectId) {
+        conditions.push(eq(questions.subjectId, filters.subjectId));
+      }
+      if (filters?.questionType) {
+        conditions.push(eq(questions.questionType, filters.questionType as any));
+      }
+      if (filters?.difficulty) {
+        conditions.push(eq(questions.difficulty, filters.difficulty as any));
+      }
+      if (filters?.bloomsTaxonomy) {
+        conditions.push(eq(questions.bloomsTaxonomy, filters.bloomsTaxonomy as any));
+      }
+      if (filters?.search) {
+        conditions.push(
+          or(
+            ilike(questions.title, `%${filters.search}%`),
+            ilike(questions.questionText, `%${filters.search}%`)
+          )!
+        );
+      }
 
-    return db
-      .select({
-        id: questions.id,
-        instructorId: questions.instructorId,
-        subjectId: questions.subjectId,
-        title: questions.title,
-        questionText: questions.questionText,
-        questionType: questions.questionType,
-        options: questions.options,
-        correctAnswer: questions.correctAnswer,
-        explanation: questions.explanation,
-        difficulty: questions.difficulty,
-        bloomsTaxonomy: questions.bloomsTaxonomy,
-        points: questions.points,
-        timeLimit: questions.timeLimit,
-        timesUsed: questions.timesUsed,
-        isActive: questions.isActive,
-        createdAt: questions.createdAt,
-        updatedAt: questions.updatedAt,
-        subject: subjects.name,
-      })
-      .from(questions)
-      .leftJoin(subjects, eq(questions.subjectId, subjects.id))
-      .where(and(...conditions))
-      .orderBy(desc(questions.createdAt));
+      // Simple query without joins
+      const questionsResult = await db
+        .select()
+        .from(questions)
+        .where(and(...conditions))
+        .orderBy(desc(questions.createdAt));
+
+      // For now, return without subject names to test basic functionality
+      return questionsResult.map(question => ({
+        ...question,
+        subject: `Subject ${question.subjectId}`, // Simple fallback
+      }));
+
+    } catch (error) {
+      console.error('Database error in getQuestions:', error);
+      throw error;
+    }
   }
 
   async getQuestionById(id: number): Promise<Question | undefined> {

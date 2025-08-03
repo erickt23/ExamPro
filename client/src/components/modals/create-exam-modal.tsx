@@ -74,10 +74,10 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
   
   // Search and filter state
   const [questionSearch, setQuestionSearch] = useState("");
-  const [filterSubject, setFilterSubject] = useState<string>("");
-  const [filterType, setFilterType] = useState<string>("");
-  const [filterDifficulty, setFilterDifficulty] = useState<string>("");
-  const [filterBloomsTaxonomy, setFilterBloomsTaxonomy] = useState<string>("");
+  const [filterSubject, setFilterSubject] = useState<string>("all");
+  const [filterType, setFilterType] = useState<string>("all");
+  const [filterDifficulty, setFilterDifficulty] = useState<string>("all");
+  const [filterBloomsTaxonomy, setFilterBloomsTaxonomy] = useState<string>("all");
   const [showFilters, setShowFilters] = useState(false);
 
   const form = useForm<CreateExamForm>({
@@ -104,10 +104,10 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
     queryFn: async () => {
       const params = new URLSearchParams();
       if (questionSearch) params.append('search', questionSearch);
-      if (filterSubject) params.append('subject', filterSubject);
-      if (filterType) params.append('type', filterType);
-      if (filterDifficulty) params.append('difficulty', filterDifficulty);
-      if (filterBloomsTaxonomy) params.append('bloomsTaxonomy', filterBloomsTaxonomy);
+      if (filterSubject && filterSubject !== 'all') params.append('subject', filterSubject);
+      if (filterType && filterType !== 'all') params.append('type', filterType);
+      if (filterDifficulty && filterDifficulty !== 'all') params.append('difficulty', filterDifficulty);
+      if (filterBloomsTaxonomy && filterBloomsTaxonomy !== 'all') params.append('bloomsTaxonomy', filterBloomsTaxonomy);
       
       const response = await fetch(`/api/questions?${params}`);
       if (!response.ok) throw new Error(`${response.status}: ${response.statusText}`);
@@ -160,10 +160,10 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
       setSelectedQuestions([]);
       setRandomQuestions([]);
       setQuestionSearch("");
-      setFilterSubject("");
-      setFilterType("");
-      setFilterDifficulty("");
-      setFilterBloomsTaxonomy("");
+      setFilterSubject("all");
+      setFilterType("all");
+      setFilterDifficulty("all");
+      setFilterBloomsTaxonomy("all");
       setRandomQuestionCount(10);
       setShowFilters(false);
       onOpenChange(false);
@@ -365,7 +365,7 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
                               <SelectValue placeholder="All subjects" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="">All subjects</SelectItem>
+                              <SelectItem value="all">All subjects</SelectItem>
                               {subjects.map((subject: any) => (
                                 <SelectItem key={subject.id} value={subject.id.toString()}>
                                   {subject.name}
@@ -383,7 +383,7 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
                               <SelectValue placeholder="All types" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="">All types</SelectItem>
+                              <SelectItem value="all">All types</SelectItem>
                               <SelectItem value="multiple_choice">Multiple Choice</SelectItem>
                               <SelectItem value="short_answer">Short Answer</SelectItem>
                               <SelectItem value="essay">Essay</SelectItem>
@@ -400,7 +400,7 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
                               <SelectValue placeholder="All levels" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="">All levels</SelectItem>
+                              <SelectItem value="all">All levels</SelectItem>
                               <SelectItem value="easy">Easy</SelectItem>
                               <SelectItem value="medium">Medium</SelectItem>
                               <SelectItem value="hard">Hard</SelectItem>
@@ -416,7 +416,7 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
                               <SelectValue placeholder="All levels" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="">All levels</SelectItem>
+                              <SelectItem value="all">All levels</SelectItem>
                               <SelectItem value="remember">Remember</SelectItem>
                               <SelectItem value="understand">Understand</SelectItem>
                               <SelectItem value="apply">Apply</SelectItem>
@@ -436,10 +436,10 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
                           size="sm"
                           onClick={() => {
                             setQuestionSearch("");
-                            setFilterSubject("");
-                            setFilterType("");
-                            setFilterDifficulty("");
-                            setFilterBloomsTaxonomy("");
+                            setFilterSubject("all");
+                            setFilterType("all");
+                            setFilterDifficulty("all");
+                            setFilterBloomsTaxonomy("all");
                           }}
                           className="text-xs"
                         >
