@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -69,6 +69,8 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
   const [selectionMethod, setSelectionMethod] = useState<'manual' | 'random'>('manual');
   const [selectedQuestions, setSelectedQuestions] = useState<any[]>([]);
   const [questionSearch, setQuestionSearch] = useState("");
+  const [randomQuestionCount, setRandomQuestionCount] = useState<number>(10);
+  const [randomQuestions, setRandomQuestions] = useState<any[]>([]);
 
   const form = useForm<CreateExamForm>({
     resolver: zodResolver(createExamSchema),
@@ -100,8 +102,17 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
       return response.json();
     },
     retry: false,
-    enabled: selectionMethod === 'manual',
+    enabled: true, // Always fetch questions for both manual and random selection
   });
+
+  // Auto-select random questions when method changes or count changes
+  React.useEffect(() => {
+    if (selectionMethod === 'random' && questions && questions.length > 0) {
+      const shuffled = [...questions].sort(() => Math.random() - 0.5);
+      const selected = shuffled.slice(0, Math.min(randomQuestionCount, questions.length));
+      setRandomQuestions(selected);
+    }
+  }, [selectionMethod, randomQuestionCount, questions]);
 
   const createExamMutation = useMutation({
     mutationFn: async (data: CreateExamForm) => {
@@ -112,12 +123,13 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
         availableUntil: data.availableUntil ? new Date(data.availableUntil).toISOString() : null,
       });
       
-      // If manual selection, add questions to exam
-      if (selectionMethod === 'manual' && selectedQuestions.length > 0) {
+      // Add questions to exam based on selection method
+      const questionsToAdd = selectionMethod === 'manual' ? selectedQuestions : randomQuestions;
+      if (questionsToAdd.length > 0) {
         const examData = await examResponse.json();
         
-        for (let i = 0; i < selectedQuestions.length; i++) {
-          const question = selectedQuestions[i];
+        for (let i = 0; i < questionsToAdd.length; i++) {
+          const question = questionsToAdd[i];
           await apiRequest("POST", `/api/exams/${examData.id}/questions`, {
             questionId: question.id,
             order: i + 1,
@@ -134,7 +146,9 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
       });
       form.reset();
       setSelectedQuestions([]);
+      setRandomQuestions([]);
       setQuestionSearch("");
+      setRandomQuestionCount(10);
       onOpenChange(false);
     },
     onError: (error: Error) => {
@@ -158,10 +172,11 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
   });
 
   const onSubmit = (data: CreateExamForm) => {
-    if (selectionMethod === 'manual' && selectedQuestions.length === 0) {
+    const questionsToCheck = selectionMethod === 'manual' ? selectedQuestions : randomQuestions;
+    if (questionsToCheck.length === 0) {
       toast({
         title: "Error",
-        description: "Please select at least one question for the exam",
+        description: `Please ${selectionMethod === 'manual' ? 'select at least one question' : 'ensure there are questions available for random selection'} for the exam`,
         variant: "destructive",
       });
       return;
@@ -380,6 +395,77 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
                     )}
                   </div>
                 </div>
+              </div>
+            )}
+
+            {/* Random Question Selection */}
+            {selectionMethod === 'random' && (
+              <div className="space-y-4">
+                <div>
+                  <Label>Number of Questions to Select</Label>
+                  <div className="mt-2">
+                    <Input
+                      type="number"
+                      min="1"
+                      max={questions?.length || 100}
+                      value={randomQuestionCount}
+                      onChange={(e) => setRandomQuestionCount(parseInt(e.target.value) || 1)}
+                      placeholder="Enter number of questions"
+                      className="w-48"
+                    />
+                  </div>
+                  <p className="text-sm text-gray-500 mt-1">
+                    {questions?.length > 0 
+                      ? `Available questions: ${questions.length}` 
+                      : 'Loading questions...'}
+                  </p>
+                </div>
+
+                {/* Randomly Selected Questions Preview */}
+                {randomQuestions.length > 0 && (
+                  <div>
+                    <Label>Randomly Selected Questions ({randomQuestions.length})</Label>
+                    <div className="mt-2 space-y-2 max-h-40 overflow-y-auto border rounded-lg">
+                      {randomQuestions.map((question, index) => (
+                        <div key={question.id} className="p-3 bg-green-50 border-l-4 border-green-400">
+                          <div className="flex items-center space-x-2">
+                            <span className="text-sm font-medium">{index + 1}.</span>
+                            <div className="flex-1">
+                              <div className="flex items-center space-x-2 mb-1">
+                                <Badge className={getQuestionTypeColor(question.questionType)} variant="secondary">
+                                  {formatQuestionType(question.questionType)}
+                                </Badge>
+                                <Badge variant="outline">{question.subject}</Badge>
+                                <span className="text-xs text-gray-500">{question.points} pts</span>
+                              </div>
+                              <p className="text-sm text-gray-900 truncate">
+                                {question.questionText}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="mt-2 p-3 bg-blue-50 rounded-lg">
+                      <p className="text-sm text-blue-800">
+                        <strong>Note:</strong> These questions were randomly selected. 
+                        The selection will change if you modify the number of questions or refresh the selection.
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {questions?.length === 0 && (
+                  <div className="p-4 text-center text-gray-500 border rounded-lg">
+                    No questions available for random selection. Please create some questions first.
+                  </div>
+                )}
+
+                {questions && questions.length > 0 && randomQuestions.length === 0 && (
+                  <div className="p-4 text-center text-gray-500 border rounded-lg">
+                    Setting up random selection...
+                  </div>
+                )}
               </div>
             )}
 
