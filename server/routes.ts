@@ -426,11 +426,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Determine final status based on exam settings and question types
+      // Determine final status based on question types
       let finalStatus: 'graded' | 'pending' = 'graded';
       
-      // If show results immediately is disabled AND there are subjective questions, mark as pending
-      if (!exam.showResultsImmediately && hasSubjectiveQuestions) {
+      // If there are subjective questions, always mark as pending for manual grading
+      if (hasSubjectiveQuestions) {
         finalStatus = 'pending';
       }
 
