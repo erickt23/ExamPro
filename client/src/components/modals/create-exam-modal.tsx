@@ -486,8 +486,8 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
 
                 {/* Available Questions */}
                 <div>
-                  <Label>Available Questions</Label>
-                  <div className="mt-2 max-h-40 overflow-y-auto border rounded-lg">
+                  <Label>Available Questions ({questions?.length || 0} total)</Label>
+                  <div className="mt-2 max-h-80 overflow-y-auto border rounded-lg">
                     {questions?.length === 0 ? (
                       <div className="p-4 text-center text-gray-500">
                         No questions found. Create some questions first.
