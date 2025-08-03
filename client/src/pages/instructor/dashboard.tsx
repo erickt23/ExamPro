@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { isUnauthorizedError } from "@/lib/authUtils";
-import { formatSubmissionTime } from "@/lib/dateUtils";
+import { formatSubmissionTime, formatDetailedSubmissionTime } from "@/lib/dateUtils";
 import Navbar from "@/components/layout/navbar";
 import Sidebar from "@/components/layout/sidebar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,7 +18,8 @@ import {
   TrendingUp,
   ArrowUp,
   AlertCircle,
-  Eye
+  Eye,
+  CheckCircle2
 } from "lucide-react";
 import { Link } from "wouter";
 
@@ -62,6 +63,17 @@ export default function InstructorDashboard() {
     queryKey: ["/api/submissions", { status: "pending" }],
     queryFn: async () => {
       const response = await fetch('/api/submissions?status=pending');
+      if (!response.ok) throw new Error(`${response.status}: ${response.statusText}`);
+      return response.json();
+    },
+    retry: false,
+  });
+
+  // Fetch completed submissions
+  const { data: completedSubmissions = [] } = useQuery<any[]>({
+    queryKey: ["/api/submissions", { status: "graded" }],
+    queryFn: async () => {
+      const response = await fetch('/api/submissions?status=graded');
       if (!response.ok) throw new Error(`${response.status}: ${response.statusText}`);
       return response.json();
     },
@@ -189,7 +201,7 @@ export default function InstructorDashboard() {
             </div>
 
             {/* Recent Activity */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <Card>
                 <CardHeader>
                   <CardTitle>Recent Exams</CardTitle>
@@ -263,6 +275,60 @@ export default function InstructorDashboard() {
                       {pendingSubmissions.length > 5 && (
                         <p className="text-xs text-gray-500 text-center pt-2">
                           +{pendingSubmissions.length - 5} more pending
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Completed Exams Card */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <CheckCircle2 className="h-5 w-5 text-green-600" />
+                    Completed Exams
+                  </CardTitle>
+                  <CardDescription>Recently completed student submissions</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {completedSubmissions.length === 0 ? (
+                    <p className="text-gray-500 text-sm">No completed submissions yet</p>
+                  ) : (
+                    <div className="space-y-3">
+                      {completedSubmissions
+                        .slice(0, 5)
+                        .map((submission: any) => {
+                          // Find the corresponding exam and subject
+                          const exam = (recentExams as any)?.find((e: any) => e.id === submission.examId);
+                          const subject = (subjects as any[]).find((s: any) => s.id === exam?.subjectId);
+                          const percentage = submission.maxScore > 0 ? ((submission.totalScore / submission.maxScore) * 100) : 0;
+                          
+                          return (
+                            <div key={submission.id} className="p-3 border rounded-lg hover:bg-gray-50">
+                              <div className="flex items-start justify-between">
+                                <div className="flex-1">
+                                  <p className="font-medium text-sm text-gray-900">{exam?.title || 'Unknown Exam'}</p>
+                                  <p className="text-xs text-gray-600 mt-1">{subject?.name || 'General'}</p>
+                                  <p className="text-xs text-gray-500 mt-1">
+                                    Completed: {formatDetailedSubmissionTime(submission.submittedAt)}
+                                  </p>
+                                </div>
+                                <div className="text-right">
+                                  <p className="text-sm font-medium text-gray-900">
+                                    {submission.totalScore}/{submission.maxScore}
+                                  </p>
+                                  <p className="text-xs text-gray-600">
+                                    {percentage.toFixed(1)}%
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      {completedSubmissions.length > 5 && (
+                        <p className="text-xs text-gray-500 text-center pt-2">
+                          +{completedSubmissions.length - 5} more completed
                         </p>
                       )}
                     </div>
