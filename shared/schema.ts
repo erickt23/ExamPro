@@ -117,7 +117,7 @@ export const submissions = pgTable("submissions", {
   timeTaken: integer("time_taken"), // in minutes
   totalScore: decimal("total_score", { precision: 5, scale: 2 }),
   maxScore: decimal("max_score", { precision: 5, scale: 2 }),
-  status: varchar("status", { enum: ["in_progress", "submitted", "graded"] }).notNull().default("in_progress"),
+  status: varchar("status", { enum: ["in_progress", "submitted", "graded", "pending"] }).notNull().default("in_progress"),
   isLate: boolean("is_late").notNull().default(false),
 });
 
