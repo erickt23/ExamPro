@@ -234,13 +234,13 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Create New Exam</DialogTitle>
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 max-w-full overflow-hidden">
             {/* Basic Information */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
@@ -457,9 +457,9 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
 
                 {/* Selected Questions */}
                 {selectedQuestions.length > 0 && (
-                  <div>
+                  <div className="max-w-full">
                     <Label>Selected Questions ({selectedQuestions.length})</Label>
-                    <div className="mt-2 space-y-2 max-h-32 overflow-y-auto overflow-x-hidden">
+                    <div className="mt-2 space-y-2 max-h-32 overflow-y-auto overflow-x-hidden max-w-full">
                       {selectedQuestions.map((question, index) => (
                         <div key={question.id} className="flex items-start gap-2 p-2 bg-blue-50 rounded max-w-full">
                           <div className="flex-1 min-w-0 overflow-hidden">
@@ -475,7 +475,7 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
                                 <Badge variant="outline" className="capitalize text-xs flex-shrink-0">{question.bloomsTaxonomy}</Badge>
                               )}
                             </div>
-                            <p className="text-sm truncate max-w-full">{question.questionText}</p>
+                            <p className="text-sm truncate" style={{maxWidth: 'calc(100% - 2rem)'}}>{question.questionText}</p>
                           </div>
                           <Button
                             type="button"
@@ -493,9 +493,9 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
                 )}
 
                 {/* Available Questions */}
-                <div>
+                <div className="max-w-full">
                   <Label>Available Questions ({questions?.length || 0} total)</Label>
-                  <div className="mt-2 max-h-80 overflow-y-auto border rounded-lg overflow-x-hidden">
+                  <div className="mt-2 max-h-80 overflow-y-auto border rounded-lg overflow-x-hidden max-w-full">
                     {questions?.length === 0 ? (
                       <div className="p-4 text-center text-gray-500">
                         No questions found. Create some questions first.
@@ -519,7 +519,7 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
                                   )}
                                   <span className="text-xs text-gray-500 flex-shrink-0">{question.points} pts</span>
                                 </div>
-                                <p className="text-sm text-gray-900 truncate max-w-full">
+                                <p className="text-sm text-gray-900 truncate" style={{maxWidth: 'calc(100% - 2rem)'}}>
                                   {question.questionText}
                                 </p>
                               </div>
