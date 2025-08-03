@@ -65,11 +65,15 @@ export default function StudentExams() {
   const { data: exams } = useQuery({
     queryKey: ["/api/exams"],
     retry: false,
+    refetchInterval: 30000, // Auto-refresh every 30 seconds to check for newly available exams
+    refetchIntervalInBackground: true,
   });
 
   const { data: mySubmissions } = useQuery({
     queryKey: ["/api/submissions"],
     retry: false,
+    refetchInterval: 30000, // Auto-refresh every 30 seconds to check for submission updates
+    refetchIntervalInBackground: true,
   });
 
   const { data: examDetails } = useQuery({
