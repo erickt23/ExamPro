@@ -362,7 +362,7 @@ export default function EditExamModal({ open, onOpenChange, examId }: EditExamMo
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 max-w-full overflow-hidden">
             {/* Basic Information */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
@@ -669,10 +669,10 @@ export default function EditExamModal({ open, onOpenChange, examId }: EditExamMo
                 <h3 className="text-lg font-medium mb-4">Manage Exam Questions</h3>
 
                 {/* Current Questions */}
-                <div className="mb-6">
+                <div className="mb-6 max-w-full">
                   <Label className="text-sm font-medium">Current Questions ({currentExamQuestions.length})</Label>
                   {currentExamQuestions.length > 0 ? (
-                    <div className="mt-2 space-y-2 max-h-40 overflow-y-auto border rounded-lg">
+                    <div className="mt-2 space-y-2 max-h-40 overflow-y-auto overflow-x-hidden border rounded-lg max-w-full">
                       {currentExamQuestions.map((examQuestion: any, index: number) => (
                         <div key={examQuestion.id} className="p-3 bg-blue-50 border-l-4 border-blue-400">
                           <div className="flex items-center justify-between">
@@ -754,9 +754,9 @@ export default function EditExamModal({ open, onOpenChange, examId }: EditExamMo
                       </div>
 
                       {/* Available Questions */}
-                      <div>
+                      <div className="max-w-full">
                         <Label>Available Questions</Label>
-                        <div className="mt-2 max-h-40 overflow-y-auto border rounded-lg">
+                        <div className="mt-2 max-h-40 overflow-y-auto overflow-x-hidden border rounded-lg max-w-full">
                           {availableQuestions?.length === 0 ? (
                             <div className="p-4 text-center text-gray-500">
                               No questions found.
