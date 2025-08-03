@@ -57,7 +57,7 @@ export const subjects = pgTable("subjects", {
 export const questions = pgTable("questions", {
   id: serial("id").primaryKey(),
   instructorId: varchar("instructor_id").notNull().references(() => users.id),
-  title: text("title").notNull(),
+  title: text("title"),
   questionText: text("question_text").notNull(),
   questionType: questionTypeEnum("question_type").notNull(),
   options: jsonb("options"), // For MCQ options
@@ -222,6 +222,8 @@ export const insertQuestionSchema = createInsertSchema(questions).omit({
   usageCount: true,
   createdAt: true,
   updatedAt: true,
+}).extend({
+  title: z.string().optional(),
 });
 
 export const insertExamSchema = createInsertSchema(exams).omit({
