@@ -93,9 +93,19 @@ export default function ExamPreviewModal({ open, onOpenChange, examId, onPublish
         }, 500);
         return;
       }
+      
+      // Extract error message from server response
+      let errorMessage = "Failed to publish exam";
+      if (error.message.includes(":")) {
+        const parts = error.message.split(":");
+        if (parts.length > 1) {
+          errorMessage = parts[1].trim();
+        }
+      }
+      
       toast({
-        title: "Error",
-        description: "Failed to publish exam",
+        title: "Publishing Failed",
+        description: errorMessage,
         variant: "destructive",
       });
     },

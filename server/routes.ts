@@ -244,13 +244,58 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Exam not found" });
       }
 
+      // Validate exam data before parsing
+      if (!req.body || typeof req.body !== 'object') {
+        return res.status(400).json({ message: "Invalid request data" });
+      }
+
+      // If publishing (status = 'active'), validate exam readiness
+      if (req.body.status === 'active') {
+        const examQuestions = await storage.getExamQuestions(examId);
+        if (examQuestions.length === 0) {
+          return res.status(400).json({ 
+            message: "Cannot publish exam without questions. Please add at least one question." 
+          });
+        }
+        
+        if (!exam.title || exam.title.trim().length === 0) {
+          return res.status(400).json({ 
+            message: "Cannot publish exam without a title." 
+          });
+        }
+        
+        if (!exam.duration || exam.duration <= 0) {
+          return res.status(400).json({ 
+            message: "Cannot publish exam without a valid duration." 
+          });
+        }
+      }
+
       const updates = insertExamSchema.partial().parse(req.body);
       const updatedExam = await storage.updateExam(examId, updates);
       
       res.json(updatedExam);
     } catch (error) {
       console.error("Error updating exam:", error);
-      res.status(500).json({ message: "Failed to update exam" });
+      
+      // Handle specific error types
+      if (error instanceof Error) {
+        if (error.message.includes('connection') || error.message.includes('pool')) {
+          return res.status(503).json({ 
+            message: "Database connection error. Please try again in a moment." 
+          });
+        }
+        
+        if (error.message.includes('validation') || error.message.includes('parse')) {
+          return res.status(400).json({ 
+            message: "Invalid exam data provided." 
+          });
+        }
+      }
+      
+      res.status(500).json({ 
+        message: "Failed to update exam. Please try again." 
+      });
     }
   });
 
