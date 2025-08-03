@@ -36,7 +36,7 @@ import { Plus, Search, X } from "lucide-react";
 const createExamSchema = z.object({
   title: z.string().min(1, "Title is required").max(200),
   description: z.string().optional(),
-  subject: z.string().min(1, "Subject is required"),
+  subjectId: z.number().min(1, "Subject is required"),
   duration: z.number().min(1, "Duration must be at least 1 minute"),
   totalPoints: z.number().min(1, "Total points must be at least 1"),
   attemptsAllowed: z.number().min(1).default(1),
@@ -58,6 +58,12 @@ interface CreateExamModalProps {
 
 export default function CreateExamModal({ open, onOpenChange }: CreateExamModalProps) {
   const { toast } = useToast();
+  
+  // Fetch subjects
+  const { data: subjects = [] } = useQuery<any[]>({
+    queryKey: ["/api/subjects"],
+    retry: false,
+  });
   const [selectionMethod, setSelectionMethod] = useState<'manual' | 'random'>('manual');
   const [selectedQuestions, setSelectedQuestions] = useState<any[]>([]);
   const [questionSearch, setQuestionSearch] = useState("");
@@ -67,7 +73,7 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
     defaultValues: {
       title: '',
       description: '',
-      subject: '',
+      subjectId: 1,
       duration: 90,
       totalPoints: 100,
       attemptsAllowed: 1,
@@ -214,21 +220,20 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
 
               <FormField
                 control={form.control}
-                name="subject"
+                name="subjectId"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Subject</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={(value) => field.onChange(parseInt(value))} defaultValue={field.value?.toString()}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select subject" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="Mathematics">Mathematics</SelectItem>
-                        <SelectItem value="Physics">Physics</SelectItem>
-                        <SelectItem value="Chemistry">Chemistry</SelectItem>
-                        <SelectItem value="Biology">Biology</SelectItem>
+                        {subjects.map((subject: any) => (
+                          <SelectItem key={subject.id} value={subject.id.toString()}>{subject.name}</SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                     <FormMessage />

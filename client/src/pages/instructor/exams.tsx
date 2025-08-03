@@ -43,6 +43,12 @@ export default function InstructorExams() {
     }
   }, [isAuthenticated, isLoading, toast]);
 
+  // Fetch subjects
+  const { data: subjects = [] } = useQuery<any[]>({
+    queryKey: ["/api/subjects"],
+    retry: false,
+  });
+
   const { data: exams, isLoading: examsLoading } = useQuery({
     queryKey: ["/api/exams", activeTab !== "all" ? { status: activeTab } : undefined],
     queryFn: async () => {
@@ -147,7 +153,7 @@ export default function InstructorExams() {
                           <div className="flex justify-between items-start mb-4">
                             <div>
                               <h3 className="font-semibold text-gray-900 mb-1">{exam.title}</h3>
-                              <p className="text-sm text-gray-600">{exam.subject} • {exam.totalPoints} points</p>
+                              <p className="text-sm text-gray-600">{(subjects as any[]).find((s: any) => s.id === exam.subjectId)?.name || 'Unknown Subject'} • {exam.totalPoints} points</p>
                             </div>
                             <Badge className={getStatusColor(exam.status)}>
                               {exam.status}

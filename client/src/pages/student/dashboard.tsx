@@ -37,6 +37,12 @@ export default function StudentDashboard() {
     }
   }, [isAuthenticated, isLoading, toast]);
 
+  // Fetch subjects
+  const { data: subjects = [] } = useQuery<any[]>({
+    queryKey: ["/api/subjects"],
+    retry: false,
+  });
+
   const { data: exams } = useQuery({
     queryKey: ["/api/exams"],
     retry: false,
@@ -224,7 +230,7 @@ export default function StudentDashboard() {
                         <div key={exam.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                           <div className="flex-1">
                             <h4 className="font-medium text-gray-900">{exam.title}</h4>
-                            <p className="text-sm text-gray-600">{exam.subject} • {exam.duration} minutes</p>
+                            <p className="text-sm text-gray-600">{(subjects as any[]).find((s: any) => s.id === exam.subjectId)?.name || 'Unknown Subject'} • {exam.duration} minutes</p>
                             {exam.availableUntil && (
                               <p className="text-xs text-gray-500 mt-1">
                                 Due: {new Date(exam.availableUntil).toLocaleDateString()}

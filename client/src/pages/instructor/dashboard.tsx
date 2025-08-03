@@ -41,6 +41,12 @@ export default function InstructorDashboard() {
     retry: false,
   });
 
+  // Fetch subjects
+  const { data: subjects = [] } = useQuery<any[]>({
+    queryKey: ["/api/subjects"],
+    retry: false,
+  });
+
   const { data: recentExams, isLoading: examsLoading } = useQuery({
     queryKey: ["/api/exams"],
     retry: false,
@@ -180,7 +186,7 @@ export default function InstructorDashboard() {
                         <div key={exam.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                           <div>
                             <h4 className="font-medium text-gray-900">{exam.title}</h4>
-                            <p className="text-sm text-gray-600">{exam.subject}</p>
+                            <p className="text-sm text-gray-600">{(subjects as any[]).find((s: any) => s.id === exam.subjectId)?.name || 'Unknown Subject'}</p>
                           </div>
                           <Badge variant={exam.status === 'active' ? 'default' : 'secondary'}>
                             {exam.status}

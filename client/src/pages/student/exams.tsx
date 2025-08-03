@@ -47,6 +47,12 @@ export default function StudentExams() {
     }
   }, [isAuthenticated, isLoading, toast]);
 
+  // Fetch subjects
+  const { data: subjects = [] } = useQuery<any[]>({
+    queryKey: ["/api/subjects"],
+    retry: false,
+  });
+
   const { data: exams } = useQuery({
     queryKey: ["/api/exams"],
     retry: false,
@@ -380,7 +386,7 @@ export default function StudentExams() {
                         <div className="flex justify-between items-start mb-4">
                           <div>
                             <h3 className="font-semibold text-gray-900 mb-1">{exam.title}</h3>
-                            <p className="text-sm text-gray-600">{exam.subject}</p>
+                            <p className="text-sm text-gray-600">{(subjects as any[]).find((s: any) => s.id === exam.subjectId)?.name || 'Unknown Subject'}</p>
                           </div>
                           <Badge>Available</Badge>
                         </div>
@@ -443,7 +449,7 @@ export default function StudentExams() {
                         <div key={exam.id} className="flex items-center justify-between p-4 border rounded-lg">
                           <div>
                             <h4 className="font-medium text-gray-900">{exam.title}</h4>
-                            <p className="text-sm text-gray-600">{exam.subject}</p>
+                            <p className="text-sm text-gray-600">{(subjects as any[]).find((s: any) => s.id === exam.subjectId)?.name || 'Unknown Subject'}</p>
                             {submission?.submittedAt && (
                               <p className="text-xs text-gray-500">
                                 Completed: {new Date(submission.submittedAt).toLocaleDateString()}
