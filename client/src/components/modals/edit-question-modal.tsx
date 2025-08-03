@@ -136,19 +136,12 @@ export default function EditQuestionModal({ open, onOpenChange, questionId }: Ed
         payload.correctAnswer = correctOption;
       }
       
-      await apiRequest("PUT", `/api/questions/${questionId}`, payload);
-      
-      // If there's a new attachment, set the ACL policy
-      if (attachmentUrl && !attachmentUrl.startsWith('/objects/')) {
-        try {
-          await apiRequest("PUT", `/api/questions/${questionId}/attachment`, {
-            attachmentURL: attachmentUrl
-          });
-        } catch (attachmentError) {
-          console.error("Error setting attachment ACL:", attachmentError);
-          // Don't fail the entire operation if ACL setting fails
-        }
+      // Include attachment URL if present
+      if (attachmentUrl) {
+        payload.attachmentUrl = attachmentUrl;
       }
+      
+      await apiRequest("PUT", `/api/questions/${questionId}`, payload);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/questions"] });
@@ -492,11 +485,25 @@ export default function EditQuestionModal({ open, onOpenChange, questionId }: Ed
                       url: data.uploadURL
                     };
                   }}
-                  onComplete={(result) => {
+                  onComplete={async (result) => {
                     if (result.successful && result.successful.length > 0) {
                       const file = result.successful[0];
                       setAttachmentFile(file.meta);
-                      setAttachmentUrl(file.uploadURL || '');
+                      
+                      // Convert upload URL to normalized object path
+                      const uploadUrl = file.uploadURL || '';
+                      try {
+                        const response = await fetch('/api/objects/normalize-path', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ path: uploadUrl })
+                        });
+                        const data = await response.json();
+                        setAttachmentUrl(data.normalizedPath || uploadUrl);
+                      } catch (error) {
+                        console.error('Error normalizing path:', error);
+                        setAttachmentUrl(uploadUrl);
+                      }
                     }
                   }}
                   buttonClassName="w-full"

@@ -937,6 +937,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Handle question attachment uploads and set ACL policies
+  // Normalize object storage path
+  app.post("/api/objects/normalize-path", isAuthenticated, async (req: any, res) => {
+    try {
+      if (!req.body.path) {
+        return res.status(400).json({ error: "path is required" });
+      }
+
+      const objectStorageService = new ObjectStorageService();
+      const normalizedPath = objectStorageService.normalizeObjectEntityPath(req.body.path);
+      
+      res.json({ normalizedPath });
+    } catch (error) {
+      console.error("Error normalizing path:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   app.put("/api/questions/:id/attachment", isAuthenticated, async (req: any, res) => {
     if (!req.body.attachmentURL) {
       return res.status(400).json({ error: "attachmentURL is required" });
