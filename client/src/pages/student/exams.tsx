@@ -155,19 +155,77 @@ export default function StudentExams() {
     const isAvailable = (!availableFrom || now >= availableFrom) && 
                        (!availableUntil || now <= availableUntil);
     
-    return exam.status === 'active' && !hasSubmission && isAvailable;
+    const isEligible = exam.status === 'active' && !hasSubmission && isAvailable;
+    
+    console.log('Exam eligibility check:', {
+      examId: exam.id,
+      title: exam.title,
+      status: exam.status,
+      hasSubmission,
+      isAvailable,
+      availableFrom,
+      availableUntil,
+      duration: exam.duration,
+      isEligible
+    });
+    
+    return isEligible;
   }) || [];
+
+  // Debug: Log all loaded data
+  console.log('Student exam dashboard data:', {
+    totalExams: exams?.length || 0,
+    availableExams: availableExams.length,
+    totalSubmissions: mySubmissions?.length || 0,
+    user: user?.id
+  });
 
   const completedExams = (exams as any[])?.filter((exam: any) => {
     return (mySubmissions as any[])?.some((sub: any) => sub.examId === exam.id);
   }) || [];
 
   const handleStartExam = (exam: any) => {
-    setSelectedExam(exam);
-    setExamStartTime(new Date());
-    setTimeRemaining(exam.duration * 60); // Convert minutes to seconds
-    setCurrentQuestionIndex(0);
-    setAnswers({});
+    console.log('Start exam button clicked for exam:', exam);
+    
+    // Validate exam data
+    if (!exam) {
+      console.error('No exam provided to handleStartExam');
+      toast({
+        title: "Error",
+        description: "Invalid exam data. Please refresh the page and try again.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (!exam.duration || exam.duration <= 0) {
+      console.error('Invalid exam duration:', exam.duration);
+      toast({
+        title: "Error", 
+        description: "This exam has invalid duration settings. Please contact your instructor.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    console.log('Starting exam with duration:', exam.duration, 'minutes');
+    
+    try {
+      setSelectedExam(exam);
+      setExamStartTime(new Date());
+      setTimeRemaining(exam.duration * 60); // Convert minutes to seconds
+      setCurrentQuestionIndex(0);
+      setAnswers({});
+      
+      console.log('Exam started successfully');
+    } catch (error) {
+      console.error('Error starting exam:', error);
+      toast({
+        title: "Error",
+        description: "Failed to start exam. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleAnswerChange = (questionId: number, answer: any) => {
