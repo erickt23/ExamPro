@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
-import { formatSubmissionTime } from "@/lib/dateUtils";
+import { formatSubmissionTime, formatSubmissionDuration } from "@/lib/dateUtils";
 import Navbar from "@/components/layout/navbar";
 import Sidebar from "@/components/layout/sidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -282,15 +282,29 @@ export default function StudentDashboard() {
                       {recentSubmissions.map((submission: any) => (
                         <div key={submission.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                           <div className="flex-1">
-                            <h4 className="font-medium text-gray-900">Exam {submission.examId}</h4>
-                            <p className="text-sm text-gray-600">
-                              {submission.submittedAt ? 
-                                `Submitted: ${formatSubmissionTime(submission.submittedAt)}` : 
-                                submission.startedAt ? 
-                                  `Started: ${formatSubmissionTime(submission.startedAt)}` :
-                                  'In Progress'
-                              }
-                            </p>
+                            <div className="flex items-center space-x-2 mb-1">
+                              <h4 className="font-medium text-gray-900">Exam {submission.examId}</h4>
+                              {submission.isLate && (
+                                <Badge variant="destructive" className="text-xs">Late</Badge>
+                              )}
+                            </div>
+                            <div className="text-sm text-gray-600 space-y-1">
+                              {submission.submittedAt ? (
+                                <>
+                                  <p>Completed: {formatSubmissionTime(submission.submittedAt)}</p>
+                                  {submission.startedAt && (
+                                    <p className="flex items-center space-x-2">
+                                      <Clock className="h-3 w-3" />
+                                      <span>Duration: {formatSubmissionDuration(submission.startedAt, submission.submittedAt)}</span>
+                                    </p>
+                                  )}
+                                </>
+                              ) : submission.startedAt ? (
+                                <p>Started: {formatSubmissionTime(submission.startedAt)}</p>
+                              ) : (
+                                <p>In Progress</p>
+                              )}
+                            </div>
                           </div>
                           <div className="flex items-center space-x-4">
                             {submission.totalScore ? (

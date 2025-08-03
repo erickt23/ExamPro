@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { formatSubmissionTime } from "@/lib/dateUtils";
+import { formatSubmissionTime, formatSubmissionDuration, formatDetailedSubmissionTime } from "@/lib/dateUtils";
 import Navbar from "@/components/layout/navbar";
 import Sidebar from "@/components/layout/sidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,7 +15,8 @@ import {
   Star,
   MessageSquare,
   Calendar,
-  Award
+  Award,
+  Clock
 } from "lucide-react";
 
 export default function StudentGrades() {
@@ -260,17 +261,23 @@ export default function StudentGrades() {
                                 <span className="flex items-center">
                                   <Calendar className="h-3 w-3 mr-1" />
                                   {grade.submittedAt ? 
-                                    formatSubmissionTime(grade.submittedAt) : 
+                                    `Completed: ${formatSubmissionTime(grade.submittedAt)}` : 
                                     grade.startedAt ? 
                                       `Started: ${formatSubmissionTime(grade.startedAt)}` :
                                       'In Progress'
                                   }
                                 </span>
-                                {grade.timeTaken && (
-                                  <span>{grade.timeTaken} minutes</span>
+                                {grade.startedAt && grade.submittedAt && (
+                                  <span className="flex items-center">
+                                    <Clock className="h-3 w-3 mr-1" />
+                                    Duration: {formatSubmissionDuration(grade.startedAt, grade.submittedAt)}
+                                  </span>
+                                )}
+                                {grade.exam?.duration && (
+                                  <span>Time Limit: {grade.exam.duration} min</span>
                                 )}
                                 {grade.isLate && (
-                                  <span className="text-red-500">Late Submission</span>
+                                  <span className="text-red-500 font-medium">Late Submission</span>
                                 )}
                               </div>
                             </div>
@@ -302,6 +309,36 @@ export default function StudentGrades() {
                               )}
                             </div>
                           </div>
+
+                          {/* Detailed Time Information for Completed Exams */}
+                          {grade.submittedAt && (
+                            <div className="mt-4 pt-4 border-t border-gray-100">
+                              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                                <div>
+                                  <p className="text-gray-600 font-medium mb-1">Started</p>
+                                  <p className="text-gray-900">
+                                    {grade.startedAt ? formatDetailedSubmissionTime(grade.startedAt) : 'N/A'}
+                                  </p>
+                                </div>
+                                <div>
+                                  <p className="text-gray-600 font-medium mb-1">Completed</p>
+                                  <p className="text-gray-900">
+                                    {formatDetailedSubmissionTime(grade.submittedAt)}
+                                  </p>
+                                </div>
+                                <div>
+                                  <p className="text-gray-600 font-medium mb-1">Time Used</p>
+                                  <p className="text-gray-900">
+                                    {grade.startedAt ? 
+                                      `${formatSubmissionDuration(grade.startedAt, grade.submittedAt)}` + 
+                                      (grade.exam?.duration ? ` of ${grade.exam.duration} min` : '') :
+                                      'N/A'
+                                    }
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          )}
 
                           {/* Feedback Section - placeholder for when feedback is available */}
                           {grade.status === 'graded' && (
