@@ -459,11 +459,11 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
                 {selectedQuestions.length > 0 && (
                   <div>
                     <Label>Selected Questions ({selectedQuestions.length})</Label>
-                    <div className="mt-2 space-y-2 max-h-32 overflow-y-auto">
+                    <div className="mt-2 space-y-2 max-h-32 overflow-y-auto overflow-x-hidden">
                       {selectedQuestions.map((question, index) => (
-                        <div key={question.id} className="flex items-start justify-between p-2 bg-blue-50 rounded gap-2">
-                          <div className="flex-1 min-w-0">
-                            <div className="flex flex-wrap items-center gap-1 mb-1">
+                        <div key={question.id} className="flex items-start gap-2 p-2 bg-blue-50 rounded max-w-full">
+                          <div className="flex-1 min-w-0 overflow-hidden">
+                            <div className="flex flex-wrap items-center gap-1 mb-1 overflow-hidden">
                               <span className="text-sm font-medium flex-shrink-0">{index + 1}.</span>
                               <Badge className={`${getQuestionTypeColor(question.questionType)} flex-shrink-0`} variant="secondary">
                                 {formatQuestionType(question.questionType)}
@@ -475,14 +475,14 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
                                 <Badge variant="outline" className="capitalize text-xs flex-shrink-0">{question.bloomsTaxonomy}</Badge>
                               )}
                             </div>
-                            <p className="text-sm truncate">{question.questionText}</p>
+                            <p className="text-sm truncate max-w-full">{question.questionText}</p>
                           </div>
                           <Button
                             type="button"
                             variant="ghost"
                             size="sm"
                             onClick={() => removeQuestion(question.id)}
-                            className="flex-shrink-0"
+                            className="flex-shrink-0 ml-2"
                           >
                             <X className="h-4 w-4" />
                           </Button>
@@ -495,7 +495,7 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
                 {/* Available Questions */}
                 <div>
                   <Label>Available Questions ({questions?.length || 0} total)</Label>
-                  <div className="mt-2 max-h-80 overflow-y-auto border rounded-lg">
+                  <div className="mt-2 max-h-80 overflow-y-auto border rounded-lg overflow-x-hidden">
                     {questions?.length === 0 ? (
                       <div className="p-4 text-center text-gray-500">
                         No questions found. Create some questions first.
@@ -504,9 +504,9 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
                       <div className="divide-y">
                         {questions?.map((question: any) => (
                           <div key={question.id} className="p-3 hover:bg-gray-50">
-                            <div className="flex items-start justify-between gap-2">
-                              <div className="flex-1 min-w-0">
-                                <div className="flex flex-wrap items-center gap-1 mb-2">
+                            <div className="flex items-start gap-2 max-w-full">
+                              <div className="flex-1 min-w-0 overflow-hidden">
+                                <div className="flex flex-wrap items-center gap-1 mb-2 overflow-hidden">
                                   <Badge className={`${getQuestionTypeColor(question.questionType)} flex-shrink-0`} variant="secondary">
                                     {formatQuestionType(question.questionType)}
                                   </Badge>
@@ -519,7 +519,7 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
                                   )}
                                   <span className="text-xs text-gray-500 flex-shrink-0">{question.points} pts</span>
                                 </div>
-                                <p className="text-sm text-gray-900 truncate">
+                                <p className="text-sm text-gray-900 truncate max-w-full">
                                   {question.questionText}
                                 </p>
                               </div>
@@ -529,7 +529,7 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
                                 size="sm"
                                 onClick={() => addQuestion(question)}
                                 disabled={selectedQuestions.find(q => q.id === question.id)}
-                                className="flex-shrink-0"
+                                className="flex-shrink-0 ml-2"
                               >
                                 <Plus className="h-4 w-4" />
                               </Button>
