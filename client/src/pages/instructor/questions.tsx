@@ -9,6 +9,7 @@ import Sidebar from "@/components/layout/sidebar";
 import CreateQuestionModal from "@/components/modals/create-question-modal";
 import CreateSubjectModal from "@/components/modals/create-subject-modal";
 import EditQuestionModal from "@/components/modals/edit-question-modal";
+import ImportQuestionsModal from "@/components/modals/import-questions-modal";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,7 +26,8 @@ import {
   Eye,
   Calendar,
   History,
-  BookOpen
+  BookOpen,
+  Upload
 } from "lucide-react";
 
 export default function InstructorQuestions() {
@@ -34,6 +36,7 @@ export default function InstructorQuestions() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showCreateSubjectModal, setShowCreateSubjectModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
   const [editQuestionId, setEditQuestionId] = useState<number | null>(null);
   const [filters, setFilters] = useState({
     subjectId: "all",
@@ -158,13 +161,23 @@ export default function InstructorQuestions() {
                 <h2 className="text-2xl font-bold text-gray-900">Question Bank</h2>
                 <p className="text-gray-600 mt-1">Manage your collection of exam questions</p>
               </div>
-              <Button 
-                onClick={() => setShowCreateModal(true)}
-                className="bg-primary hover:bg-primary/90"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Create Question
-              </Button>
+              <div className="flex gap-2">
+                <Button 
+                  onClick={() => setShowImportModal(true)} 
+                  variant="outline"
+                  className="border-primary text-primary hover:bg-primary hover:text-white"
+                >
+                  <Upload className="h-4 w-4 mr-2" />
+                  Import from Excel
+                </Button>
+                <Button 
+                  onClick={() => setShowCreateModal(true)}
+                  className="bg-primary hover:bg-primary/90"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create Question
+                </Button>
+              </div>
             </div>
 
             {/* Filters */}
@@ -362,6 +375,11 @@ export default function InstructorQuestions() {
         open={showEditModal}
         onOpenChange={setShowEditModal}
         questionId={editQuestionId}
+      />
+      
+      <ImportQuestionsModal
+        open={showImportModal}
+        onOpenChange={setShowImportModal}
       />
     </div>
   );

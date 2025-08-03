@@ -4,6 +4,72 @@ import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { insertQuestionSchema, insertExamSchema } from "@shared/schema";
 import { z } from "zod";
+import multer from "multer";
+import * as XLSX from "xlsx";
+
+// Configure multer for Excel file uploads
+const upload = multer({ 
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = [
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'application/vnd.ms-excel'
+    ];
+    cb(null, allowedTypes.includes(file.mimetype));
+  }
+});
+
+// Helper function to validate and transform Excel row
+async function validateAndTransformRow(row: any, rowNumber: number) {
+  const required = ['title', 'questionText', 'questionType', 'subjectId'];
+  
+  // Check required fields
+  for (const field of required) {
+    if (!row[field]) {
+      throw new Error(`Missing required field: ${field}`);
+    }
+  }
+
+  // Validate question type
+  const validTypes = ['multiple_choice', 'short_answer', 'essay', 'fill_blank'];
+  if (!validTypes.includes(row.questionType)) {
+    throw new Error(`Invalid question type: ${row.questionType}`);
+  }
+
+  // Parse options for multiple choice
+  let options = null;
+  let correctAnswer = null;
+  
+  if (row.questionType === 'multiple_choice') {
+    if (!row.options) {
+      throw new Error('Multiple choice questions must have options');
+    }
+    
+    // Parse options (assuming they're separated by semicolons)
+    options = row.options.split(';').map((opt: string) => opt.trim()).filter(Boolean);
+    
+    if (options.length < 2) {
+      throw new Error('Multiple choice questions must have at least 2 options');
+    }
+    
+    correctAnswer = row.correctAnswer || 'A';
+  }
+
+  return {
+    title: row.title,
+    questionText: row.questionText,
+    questionType: row.questionType,
+    subjectId: parseInt(row.subjectId),
+    difficulty: row.difficulty || 'medium',
+    bloomsTaxonomy: row.bloomsTaxonomy || null,
+    points: parseInt(row.points) || 1,
+    timeLimit: row.timeLimit ? parseInt(row.timeLimit) : null,
+    options,
+    correctAnswer,
+    explanation: row.explanation || null
+  };
+}
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
@@ -162,6 +228,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting question:", error);
       res.status(500).json({ message: "Failed to delete question" });
+    }
+  });
+
+  // Excel import endpoint
+  app.post('/api/questions/import', isAuthenticated, upload.single('file'), async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (user?.role !== 'instructor') {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      if (!req.file) {
+        return res.status(400).json({ message: 'No file uploaded' });
+      }
+
+      // Parse Excel file
+      const workbook = XLSX.read(req.file.buffer, { type: 'buffer' });
+      const sheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[sheetName];
+      const jsonData = XLSX.utils.sheet_to_json(worksheet);
+
+      const results = {
+        imported: 0,
+        errors: [],
+        warnings: []
+      };
+
+      // Process each row
+      for (let i = 0; i < jsonData.length; i++) {
+        const row = jsonData[i] as any;
+        
+        try {
+          // Validate and transform row data
+          const questionData = await validateAndTransformRow(row, i + 2); // +2 for header row
+          
+          // Create question using existing storage interface
+          const question = await storage.createQuestion({
+            ...questionData,
+            instructorId: userId
+          });
+          
+          results.imported++;
+        } catch (error: any) {
+          (results.errors as any[]).push({
+            row: i + 2,
+            message: error.message,
+            data: row
+          });
+        }
+      }
+
+      res.json(results);
+    } catch (error) {
+      console.error("Error importing questions:", error);
+      res.status(500).json({ message: 'Import failed', error: (error as Error).message });
     }
   });
 
