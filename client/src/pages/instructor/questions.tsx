@@ -8,6 +8,7 @@ import Navbar from "@/components/layout/navbar";
 import Sidebar from "@/components/layout/sidebar";
 import CreateQuestionModal from "@/components/modals/create-question-modal";
 import CreateSubjectModal from "@/components/modals/create-subject-modal";
+import EditQuestionModal from "@/components/modals/edit-question-modal";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -32,6 +33,8 @@ export default function InstructorQuestions() {
   const { isAuthenticated, isLoading } = useAuth();
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showCreateSubjectModal, setShowCreateSubjectModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editQuestionId, setEditQuestionId] = useState<number | null>(null);
   const [filters, setFilters] = useState({
     subjectId: "all",
     questionType: "all",
@@ -304,7 +307,14 @@ export default function InstructorQuestions() {
                             </div>
                           </div>
                           <div className="flex items-center space-x-2 ml-4">
-                            <Button variant="ghost" size="sm">
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              onClick={() => {
+                                setEditQuestionId(question.id);
+                                setShowEditModal(true);
+                              }}
+                            >
                               <Edit className="h-4 w-4" />
                             </Button>
                             <Button variant="ghost" size="sm">
@@ -338,6 +348,12 @@ export default function InstructorQuestions() {
       <CreateSubjectModal
         open={showCreateSubjectModal}
         onOpenChange={setShowCreateSubjectModal}
+      />
+      
+      <EditQuestionModal
+        open={showEditModal}
+        onOpenChange={setShowEditModal}
+        questionId={editQuestionId}
       />
     </div>
   );
