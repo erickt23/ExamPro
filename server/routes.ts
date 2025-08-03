@@ -598,7 +598,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         totalScore += score;
 
-        await storage.createAnswer({
+        const createdAnswer = await storage.createAnswer({
           submissionId: submission.id,
           questionId: answer.questionId,
           answerText: answer.answerText,
@@ -608,6 +608,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
           score: score.toString(),
           maxScore: question.points.toString(),
         });
+
+        // Set ACL policy on uploaded files
+        if (answer.attachmentUrl) {
+          try {
+            const objectStorageService = new ObjectStorageService();
+            await objectStorageService.trySetObjectEntityAclPolicy(
+              answer.attachmentUrl,
+              {
+                owner: userId,
+                visibility: "private",
+              }
+            );
+          } catch (error) {
+            console.error("Error setting ACL policy on uploaded file:", error);
+            // Don't fail the entire submission if ACL setting fails
+          }
+        }
       }
 
       // Determine final status based on question types
