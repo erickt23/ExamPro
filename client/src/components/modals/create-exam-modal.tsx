@@ -234,7 +234,7 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Create New Exam</DialogTitle>
         </DialogHeader>
@@ -361,7 +361,7 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
                   {/* Filter Section */}
                   {showFilters && (
                     <Card className="p-4 bg-gray-50">
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {/* Subject Filter */}
                         <div>
                           <Label className="text-sm font-medium mb-2 block">Subject</Label>
@@ -461,25 +461,28 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
                     <Label>Selected Questions ({selectedQuestions.length})</Label>
                     <div className="mt-2 space-y-2 max-h-32 overflow-y-auto">
                       {selectedQuestions.map((question, index) => (
-                        <div key={question.id} className="flex items-center justify-between p-2 bg-blue-50 rounded">
-                          <div className="flex items-center space-x-2">
-                            <span className="text-sm font-medium">{index + 1}.</span>
-                            <span className="text-sm truncate">{question.questionText}</span>
-                            <Badge className={getQuestionTypeColor(question.questionType)} variant="secondary">
-                              {formatQuestionType(question.questionType)}
-                            </Badge>
-                            {question.difficulty && (
-                              <Badge variant="outline" className="capitalize text-xs">{question.difficulty}</Badge>
-                            )}
-                            {question.bloomsTaxonomy && (
-                              <Badge variant="outline" className="capitalize text-xs">{question.bloomsTaxonomy}</Badge>
-                            )}
+                        <div key={question.id} className="flex items-start justify-between p-2 bg-blue-50 rounded gap-2">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex flex-wrap items-center gap-1 mb-1">
+                              <span className="text-sm font-medium flex-shrink-0">{index + 1}.</span>
+                              <Badge className={`${getQuestionTypeColor(question.questionType)} flex-shrink-0`} variant="secondary">
+                                {formatQuestionType(question.questionType)}
+                              </Badge>
+                              {question.difficulty && (
+                                <Badge variant="outline" className="capitalize text-xs flex-shrink-0">{question.difficulty}</Badge>
+                              )}
+                              {question.bloomsTaxonomy && (
+                                <Badge variant="outline" className="capitalize text-xs flex-shrink-0">{question.bloomsTaxonomy}</Badge>
+                              )}
+                            </div>
+                            <p className="text-sm truncate">{question.questionText}</p>
                           </div>
                           <Button
                             type="button"
                             variant="ghost"
                             size="sm"
                             onClick={() => removeQuestion(question.id)}
+                            className="flex-shrink-0"
                           >
                             <X className="h-4 w-4" />
                           </Button>
@@ -501,20 +504,20 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
                       <div className="divide-y">
                         {questions?.map((question: any) => (
                           <div key={question.id} className="p-3 hover:bg-gray-50">
-                            <div className="flex items-center justify-between">
-                              <div className="flex-1">
-                                <div className="flex items-center space-x-2 mb-1">
-                                  <Badge className={getQuestionTypeColor(question.questionType)} variant="secondary">
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="flex-1 min-w-0">
+                                <div className="flex flex-wrap items-center gap-1 mb-2">
+                                  <Badge className={`${getQuestionTypeColor(question.questionType)} flex-shrink-0`} variant="secondary">
                                     {formatQuestionType(question.questionType)}
                                   </Badge>
-                                  <Badge variant="outline">{getSubjectName(question.subjectId)}</Badge>
+                                  <Badge variant="outline" className="flex-shrink-0">{getSubjectName(question.subjectId)}</Badge>
                                   {question.difficulty && (
-                                    <Badge variant="outline" className="capitalize text-xs">{question.difficulty}</Badge>
+                                    <Badge variant="outline" className="capitalize text-xs flex-shrink-0">{question.difficulty}</Badge>
                                   )}
                                   {question.bloomsTaxonomy && (
-                                    <Badge variant="outline" className="capitalize text-xs">{question.bloomsTaxonomy}</Badge>
+                                    <Badge variant="outline" className="capitalize text-xs flex-shrink-0">{question.bloomsTaxonomy}</Badge>
                                   )}
-                                  <span className="text-xs text-gray-500">{question.points} pts</span>
+                                  <span className="text-xs text-gray-500 flex-shrink-0">{question.points} pts</span>
                                 </div>
                                 <p className="text-sm text-gray-900 truncate">
                                   {question.questionText}
@@ -526,6 +529,7 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
                                 size="sm"
                                 onClick={() => addQuestion(question)}
                                 disabled={selectedQuestions.find(q => q.id === question.id)}
+                                className="flex-shrink-0"
                               >
                                 <Plus className="h-4 w-4" />
                               </Button>
@@ -552,7 +556,7 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
                       value={randomQuestionCount}
                       onChange={(e) => setRandomQuestionCount(parseInt(e.target.value) || 1)}
                       placeholder="Enter number of questions"
-                      className="w-48"
+                      className="w-full max-w-48"
                     />
                   </div>
                   <p className="text-sm text-gray-500 mt-1">
@@ -617,7 +621,7 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
             )}
 
             {/* Exam Settings */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
                 name="duration"
@@ -656,6 +660,10 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
                 )}
               />
 
+            </div>
+
+            {/* Additional Settings Row */}
+            <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
               <FormField
                 control={form.control}
                 name="attemptsAllowed"
@@ -664,7 +672,7 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
                     <FormLabel>Attempts Allowed</FormLabel>
                     <Select onValueChange={(value) => field.onChange(parseInt(value))} defaultValue={field.value?.toString()}>
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger className="max-w-xs">
                           <SelectValue />
                         </SelectTrigger>
                       </FormControl>
