@@ -322,6 +322,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const examId = parseInt(req.params.id);
       const { answers, timeTaken } = req.body;
 
+      // Get exam details to check settings
+      const exam = await storage.getExamById(examId);
+      if (!exam) {
+        return res.status(404).json({ message: "Exam not found" });
+      }
+
       // Create submission
       const submission = await storage.createSubmission({
         examId,
@@ -331,9 +337,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         status: 'submitted',
       });
 
-      // Create answers
+      // Create answers and check for subjective questions
       let totalScore = 0;
       let maxScore = 0;
+      let hasSubjectiveQuestions = false;
 
       for (const answer of answers) {
         const question = await storage.getQuestionById(answer.questionId);
@@ -342,7 +349,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         let score = 0;
         maxScore += question.points;
 
-        // Auto-grade MCQ questions
+        // Check if this is a subjective question
+        if (question.questionType === 'essay' || question.questionType === 'short_answer' || question.questionType === 'fill_blank') {
+          hasSubjectiveQuestions = true;
+        }
+
+        // Auto-grade only MCQ questions
         if (question.questionType === 'multiple_choice' && 
             answer.selectedOption === question.correctAnswer) {
           score = question.points;
@@ -360,11 +372,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Update submission with scores
+      // Determine final status based on exam settings and question types
+      let finalStatus = 'graded';
+      
+      // If show results immediately is disabled AND there are subjective questions, mark as pending
+      if (!exam.showResultsImmediately && hasSubjectiveQuestions) {
+        finalStatus = 'pending';
+      }
+
+      // Update submission with scores and final status
       const updatedSubmission = await storage.updateSubmission(submission.id, {
         totalScore: totalScore.toString(),
         maxScore: maxScore.toString(),
-        status: 'graded',
+        status: finalStatus,
       });
 
       res.json(updatedSubmission);
