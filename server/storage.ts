@@ -19,7 +19,7 @@ import {
   type Answer,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, asc, and, or, count, avg, sum, like, inArray, sql } from "drizzle-orm";
+import { eq, desc, asc, and, or, count, avg, sum, like, ilike, inArray, sql } from "drizzle-orm";
 
 export interface IStorage {
   // User operations - mandatory for Replit Auth
@@ -176,8 +176,8 @@ export class DatabaseStorage implements IStorage {
     if (filters?.search) {
       conditions.push(
         or(
-          like(questions.title, `%${filters.search}%`),
-          like(questions.questionText, `%${filters.search}%`)
+          ilike(questions.title, `%${filters.search}%`),
+          ilike(questions.questionText, `%${filters.search}%`)
         )!
       );
     }
@@ -263,9 +263,9 @@ export class DatabaseStorage implements IStorage {
         .where(and(
           ...conditions,
           or(
-            like(exams.title, `%${search}%`),
-            like(exams.description, `%${search}%`),
-            like(subjects.name, `%${search}%`)
+            ilike(exams.title, `%${search}%`),
+            ilike(exams.description, `%${search}%`),
+            ilike(subjects.name, `%${search}%`)
           )!
         ))
         .orderBy(desc(exams.createdAt));
