@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { isUnauthorizedError } from "@/lib/authUtils";
+import { formatSubmissionTime } from "@/lib/dateUtils";
 import Navbar from "@/components/layout/navbar";
 import Sidebar from "@/components/layout/sidebar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -247,7 +248,7 @@ export default function InstructorDashboard() {
                               <div className="flex-1">
                                 <p className="font-medium text-sm">{exam?.title || 'Unknown Exam'}</p>
                                 <p className="text-xs text-gray-600">
-                                  Student ID: {submission.studentId} • Submitted: {new Date(submission.submittedAt).toLocaleDateString()}
+                                  Student ID: {submission.studentId} • Submitted: {formatSubmissionTime(submission.submittedAt)}
                                 </p>
                               </div>
                               <Link href={`/grading/${submission.id}`}>

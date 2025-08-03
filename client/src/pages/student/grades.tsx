@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { formatSubmissionTime } from "@/lib/dateUtils";
 import Navbar from "@/components/layout/navbar";
 import Sidebar from "@/components/layout/sidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -259,8 +260,10 @@ export default function StudentGrades() {
                                 <span className="flex items-center">
                                   <Calendar className="h-3 w-3 mr-1" />
                                   {grade.submittedAt ? 
-                                    new Date(grade.submittedAt).toLocaleDateString() : 
-                                    'In Progress'
+                                    formatSubmissionTime(grade.submittedAt) : 
+                                    grade.startedAt ? 
+                                      `Started: ${formatSubmissionTime(grade.startedAt)}` :
+                                      'In Progress'
                                   }
                                 </span>
                                 {grade.timeTaken && (

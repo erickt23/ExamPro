@@ -5,6 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { formatDetailedSubmissionTime, formatSubmissionDuration } from "@/lib/dateUtils";
 import Navbar from "@/components/layout/navbar";
 import Sidebar from "@/components/layout/sidebar";
 import { Button } from "@/components/ui/button";
@@ -298,7 +299,7 @@ export default function GradingPage() {
                     <span className="text-gray-600">Submitted:</span>
                     <span className="font-medium flex items-center gap-1">
                       <Clock className="h-4 w-4" />
-                      {new Date(submission.submittedAt).toLocaleDateString()}
+                      {formatDetailedSubmissionTime(submission.submittedAt)}
                     </span>
                   </div>
                 </div>
@@ -479,7 +480,7 @@ export default function GradingPage() {
                       {answer.gradedAt && (
                         <div className="mt-3 text-sm text-gray-600 flex items-center gap-2">
                           <CheckCircle className="h-4 w-4 text-green-600" />
-                          Graded on {new Date(answer.gradedAt).toLocaleDateString()}
+                          Graded on {formatDetailedSubmissionTime(answer.gradedAt)}
                         </div>
                       )}
                     </div>

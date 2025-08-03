@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
+import { formatSubmissionTime, formatDetailedSubmissionTime } from "@/lib/dateUtils";
 import {
   Dialog,
   DialogContent,
@@ -393,8 +394,11 @@ function SubmissionCard({ submission, isExpanded, onToggleExpand, getStatusBadge
             </Badge>
           </div>
           <div className="flex items-center gap-4 text-sm text-gray-600 mt-1">
-            <span>Submitted: {new Date(submission.submittedAt).toLocaleString()}</span>
+            <span>Submitted: {formatSubmissionTime(submission.submittedAt)}</span>
             <span>Time Taken: {formatTime(submission.timeTaken || 0)}</span>
+            {submission.startedAt && (
+              <span>Started: {formatSubmissionTime(submission.startedAt)}</span>
+            )}
             {submission.status === 'graded' && (
               <span className="font-medium text-green-600">
                 Score: {submission.totalScore}/{submission.maxScore} 

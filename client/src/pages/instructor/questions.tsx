@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { formatSubmissionTime } from "@/lib/dateUtils";
 import Navbar from "@/components/layout/navbar";
 import Sidebar from "@/components/layout/sidebar";
 import CreateQuestionModal from "@/components/modals/create-question-modal";
@@ -319,7 +320,7 @@ export default function InstructorQuestions() {
                               </span>
                               <span className="flex items-center">
                                 <Calendar className="h-4 w-4 mr-1" />
-                                Created: {new Date(question.createdAt).toLocaleDateString()}
+                                Created: {formatSubmissionTime(question.createdAt)}
                               </span>
                               <span className="flex items-center">
                                 <History className="h-4 w-4 mr-1" />

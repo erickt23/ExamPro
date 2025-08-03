@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
+import { formatSubmissionTime } from "@/lib/dateUtils";
 import Navbar from "@/components/layout/navbar";
 import Sidebar from "@/components/layout/sidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -283,9 +284,11 @@ export default function StudentDashboard() {
                           <div className="flex-1">
                             <h4 className="font-medium text-gray-900">Exam {submission.examId}</h4>
                             <p className="text-sm text-gray-600">
-                              Submitted: {submission.submittedAt ? 
-                                new Date(submission.submittedAt).toLocaleDateString() : 
-                                'In Progress'
+                              {submission.submittedAt ? 
+                                `Submitted: ${formatSubmissionTime(submission.submittedAt)}` : 
+                                submission.startedAt ? 
+                                  `Started: ${formatSubmissionTime(submission.startedAt)}` :
+                                  'In Progress'
                               }
                             </p>
                           </div>
