@@ -128,6 +128,8 @@ export const answers = pgTable("answers", {
   questionId: integer("question_id").notNull().references(() => questions.id),
   answerText: text("answer_text"),
   selectedOption: varchar("selected_option"),
+  attachmentUrl: text("attachment_url"), // For file uploads
+  linkUrl: text("link_url"), // For link submissions
   score: decimal("score", { precision: 5, scale: 2 }),
   maxScore: decimal("max_score", { precision: 5, scale: 2 }),
   feedback: text("feedback"),

@@ -20,8 +20,13 @@ import {
   CheckCircle,
   AlertCircle,
   ArrowLeft,
-  Save
+  Save,
+  Upload,
+  Link,
+  Paperclip
 } from "lucide-react";
+import { ObjectUploader } from "@/components/ObjectUploader";
+import { Input } from "@/components/ui/input";
 
 export default function StudentExams() {
   const { toast } = useToast();
@@ -139,8 +144,8 @@ export default function StudentExams() {
     );
   }
 
-  const availableExams = exams?.filter((exam: any) => {
-    const hasSubmission = mySubmissions?.some((sub: any) => sub.examId === exam.id);
+  const availableExams = (exams as any[])?.filter((exam: any) => {
+    const hasSubmission = (mySubmissions as any[])?.some((sub: any) => sub.examId === exam.id);
     const now = new Date();
     const availableFrom = exam.availableFrom ? new Date(exam.availableFrom) : null;
     const availableUntil = exam.availableUntil ? new Date(exam.availableUntil) : null;
@@ -151,8 +156,8 @@ export default function StudentExams() {
     return exam.status === 'active' && !hasSubmission && isAvailable;
   }) || [];
 
-  const completedExams = exams?.filter((exam: any) => {
-    return mySubmissions?.some((sub: any) => sub.examId === exam.id);
+  const completedExams = (exams as any[])?.filter((exam: any) => {
+    return (mySubmissions as any[])?.some((sub: any) => sub.examId === exam.id);
   }) || [];
 
   const handleStartExam = (exam: any) => {
@@ -178,6 +183,8 @@ export default function StudentExams() {
       questionId: eq.question.id,
       answerText: answers[eq.question.id]?.text || '',
       selectedOption: answers[eq.question.id]?.selectedOption || null,
+      attachmentUrl: answers[eq.question.id]?.attachmentUrl || null,
+      linkUrl: answers[eq.question.id]?.linkUrl || null,
     })) || [];
 
     submitExamMutation.mutate({
@@ -281,10 +288,9 @@ export default function StudentExams() {
                   </RadioGroup>
                 )}
 
-                {(currentQuestion.question.questionType === 'short_answer' || 
-                  currentQuestion.question.questionType === 'essay') && (
+                {currentQuestion.question.questionType === 'short_answer' && (
                   <Textarea
-                    rows={currentQuestion.question.questionType === 'essay' ? 10 : 4}
+                    rows={4}
                     placeholder="Enter your answer here..."
                     value={answers[currentQuestion.question.id]?.text || ''}
                     onChange={(e) => 
@@ -292,6 +298,107 @@ export default function StudentExams() {
                     }
                     className="w-full"
                   />
+                )}
+
+                {currentQuestion.question.questionType === 'essay' && (
+                  <div className="space-y-4">
+                    <div>
+                      <Label className="text-sm font-medium">Written Answer</Label>
+                      <Textarea
+                        rows={10}
+                        placeholder="Enter your essay answer here..."
+                        value={answers[currentQuestion.question.id]?.text || ''}
+                        onChange={(e) => 
+                          handleAnswerChange(currentQuestion.question.id, { 
+                            ...answers[currentQuestion.question.id],
+                            text: e.target.value 
+                          })
+                        }
+                        className="w-full mt-1"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* File Upload Section */}
+                      <div>
+                        <Label className="text-sm font-medium">Attach File (Optional)</Label>
+                        <div className="mt-1">
+                          {answers[currentQuestion.question.id]?.attachment ? (
+                            <div className="flex items-center gap-2 p-3 border rounded-lg bg-gray-50">
+                              <Paperclip className="h-4 w-4 text-gray-600" />
+                              <span className="text-sm truncate">
+                                {answers[currentQuestion.question.id].attachment.name}
+                              </span>
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                onClick={() => handleAnswerChange(currentQuestion.question.id, {
+                                  ...answers[currentQuestion.question.id],
+                                  attachment: null,
+                                  attachmentUrl: null
+                                })}
+                              >
+                                Remove
+                              </Button>
+                            </div>
+                          ) : (
+                            <ObjectUploader
+                              maxNumberOfFiles={1}
+                              maxFileSize={50 * 1024 * 1024} // 50MB
+                              onGetUploadParameters={async () => {
+                                const response = await fetch('/api/objects/upload', {
+                                  method: 'POST',
+                                  headers: { 'Content-Type': 'application/json' }
+                                });
+                                const data = await response.json();
+                                return {
+                                  method: 'PUT' as const,
+                                  url: data.uploadURL
+                                };
+                              }}
+                              onComplete={(result) => {
+                                if (result.successful && result.successful.length > 0) {
+                                  const file = result.successful[0];
+                                  handleAnswerChange(currentQuestion.question.id, {
+                                    ...answers[currentQuestion.question.id],
+                                    attachment: file.meta,
+                                    attachmentUrl: file.uploadURL
+                                  });
+                                }
+                              }}
+                              buttonClassName="w-full"
+                            >
+                              <Upload className="h-4 w-4 mr-2" />
+                              Upload File
+                            </ObjectUploader>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Link Section */}
+                      <div>
+                        <Label className="text-sm font-medium">Add Link (Optional)</Label>
+                        <Input
+                          type="url"
+                          placeholder="https://example.com"
+                          value={answers[currentQuestion.question.id]?.linkUrl || ''}
+                          onChange={(e) => 
+                            handleAnswerChange(currentQuestion.question.id, { 
+                              ...answers[currentQuestion.question.id],
+                              linkUrl: e.target.value 
+                            })
+                          }
+                          className="mt-1"
+                        />
+                        {answers[currentQuestion.question.id]?.linkUrl && (
+                          <div className="flex items-center gap-1 mt-1 text-xs text-gray-600">
+                            <Link className="h-3 w-3" />
+                            <span>Link will be submitted with your answer</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
                 )}
 
                 {currentQuestion.question.questionType === 'fill_blank' && (
@@ -444,7 +551,7 @@ export default function StudentExams() {
                 ) : (
                   <div className="space-y-4">
                     {completedExams.map((exam: any) => {
-                      const submission = mySubmissions?.find((s: any) => s.examId === exam.id);
+                      const submission = (mySubmissions as any[])?.find((s: any) => s.examId === exam.id);
                       return (
                         <div key={exam.id} className="flex items-center justify-between p-4 border rounded-lg">
                           <div>

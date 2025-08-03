@@ -19,7 +19,11 @@ import {
   FileText, 
   CheckCircle, 
   Save,
-  Award
+  Award,
+  Link,
+  Download,
+  Paperclip,
+  ExternalLink
 } from "lucide-react";
 
 export default function GradingPage() {
@@ -342,11 +346,67 @@ export default function GradingPage() {
                       {/* Student Answer */}
                       <div className="mb-4">
                         <h5 className="font-medium text-gray-700 mb-2">Student Answer:</h5>
-                        <div className="bg-gray-50 p-3 rounded border">
-                          <p className="whitespace-pre-wrap">
-                            {answer.answerText || 'No answer provided'}
-                          </p>
-                        </div>
+                        
+                        {/* Text Answer */}
+                        {answer.answerText && (
+                          <div className="bg-gray-50 p-3 rounded border mb-3">
+                            <p className="whitespace-pre-wrap">
+                              {answer.answerText}
+                            </p>
+                          </div>
+                        )}
+                        
+                        {/* File Attachment */}
+                        {answer.attachmentUrl && (
+                          <div className="bg-blue-50 p-3 rounded border mb-3">
+                            <div className="flex items-center gap-2">
+                              <Paperclip className="h-4 w-4 text-blue-600" />
+                              <span className="text-sm font-medium text-blue-900">File Attachment:</span>
+                            </div>
+                            <div className="mt-2">
+                              <a 
+                                href={answer.attachmentUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 text-sm"
+                              >
+                                <Download className="h-3 w-3" />
+                                View/Download File
+                                <ExternalLink className="h-3 w-3" />
+                              </a>
+                            </div>
+                          </div>
+                        )}
+                        
+                        {/* Link URL */}
+                        {answer.linkUrl && (
+                          <div className="bg-green-50 p-3 rounded border mb-3">
+                            <div className="flex items-center gap-2">
+                              <Link className="h-4 w-4 text-green-600" />
+                              <span className="text-sm font-medium text-green-900">Submitted Link:</span>
+                            </div>
+                            <div className="mt-2">
+                              <a 
+                                href={answer.linkUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1 text-green-600 hover:text-green-800 text-sm break-all"
+                              >
+                                {answer.linkUrl}
+                                <ExternalLink className="h-3 w-3 flex-shrink-0" />
+                              </a>
+                            </div>
+                          </div>
+                        )}
+                        
+                        {/* No answer provided message */}
+                        {!answer.answerText && !answer.attachmentUrl && !answer.linkUrl && (
+                          <div className="bg-gray-50 p-3 rounded border">
+                            <p className="text-gray-500 italic">
+                              No answer provided
+                            </p>
+                          </div>
+                        )}
                       </div>
 
                       {/* Grading Section */}

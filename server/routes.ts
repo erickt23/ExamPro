@@ -6,6 +6,11 @@ import { insertQuestionSchema, insertExamSchema } from "@shared/schema";
 import { z } from "zod";
 import multer from "multer";
 import * as XLSX from "xlsx";
+import {
+  ObjectStorageService,
+  ObjectNotFoundError,
+} from "./objectStorage";
+import { ObjectPermission } from "./objectAcl";
 
 // Configure multer for Excel file uploads
 const upload = multer({ 
@@ -598,6 +603,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           questionId: answer.questionId,
           answerText: answer.answerText,
           selectedOption: answer.selectedOption,
+          attachmentUrl: answer.attachmentUrl || null,
+          linkUrl: answer.linkUrl || null,
           score: score.toString(),
           maxScore: question.points.toString(),
         });
@@ -847,6 +854,68 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error updating user role:", error);
       res.status(500).json({ message: "Failed to update user role" });
+    }
+  });
+
+  // Object storage routes for file uploads
+  app.get("/objects/:objectPath(*)", isAuthenticated, async (req, res) => {
+    const userId = (req.user as any)?.claims?.sub;
+    const objectStorageService = new ObjectStorageService();
+    try {
+      const objectFile = await objectStorageService.getObjectEntityFile(
+        req.path,
+      );
+      const canAccess = await objectStorageService.canAccessObjectEntity({
+        objectFile,
+        userId: userId,
+        requestedPermission: ObjectPermission.READ,
+      });
+      if (!canAccess) {
+        return res.sendStatus(401);
+      }
+      objectStorageService.downloadObject(objectFile, res);
+    } catch (error) {
+      console.error("Error checking object access:", error);
+      if (error instanceof ObjectNotFoundError) {
+        return res.sendStatus(404);
+      }
+      return res.sendStatus(500);
+    }
+  });
+
+  app.post("/api/objects/upload", isAuthenticated, async (req, res) => {
+    const objectStorageService = new ObjectStorageService();
+    const uploadURL = await objectStorageService.getObjectEntityUploadURL();
+    res.json({ uploadURL });
+  });
+
+  app.put("/api/answers/:id/attachment", isAuthenticated, async (req: any, res) => {
+    if (!req.body.attachmentURL) {
+      return res.status(400).json({ error: "attachmentURL is required" });
+    }
+
+    const userId = req.user.claims.sub;
+    const answerId = parseInt(req.params.id);
+
+    try {
+      const objectStorageService = new ObjectStorageService();
+      const objectPath = await objectStorageService.trySetObjectEntityAclPolicy(
+        req.body.attachmentURL,
+        {
+          owner: userId,
+          visibility: "private",
+        },
+      );
+
+      // Update the answer with the attachment URL
+      await storage.updateAnswerAttachment(answerId, objectPath, req.body.linkUrl || null);
+
+      res.status(200).json({
+        objectPath: objectPath,
+      });
+    } catch (error) {
+      console.error("Error setting attachment:", error);
+      res.status(500).json({ error: "Internal server error" });
     }
   });
 

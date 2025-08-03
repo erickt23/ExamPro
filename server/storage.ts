@@ -74,6 +74,7 @@ export interface IStorage {
   createAnswer(answer: Partial<Answer>): Promise<Answer>;
   getAnswers(submissionId: number): Promise<Answer[]>;
   updateAnswer(id: number, updates: Partial<Answer>): Promise<Answer>;
+  updateAnswerAttachment(answerId: number, attachmentUrl: string | null, linkUrl: string | null): Promise<Answer>;
   
   // Analytics operations
   getExamAnalytics(examId: number): Promise<{
@@ -405,6 +406,18 @@ export class DatabaseStorage implements IStorage {
       .update(answers)
       .set(updates)
       .where(eq(answers.id, id))
+      .returning();
+    return answer;
+  }
+
+  async updateAnswerAttachment(answerId: number, attachmentUrl: string | null, linkUrl: string | null): Promise<Answer> {
+    const [answer] = await db
+      .update(answers)
+      .set({ 
+        attachmentUrl,
+        linkUrl 
+      })
+      .where(eq(answers.id, answerId))
       .returning();
     return answer;
   }
