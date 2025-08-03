@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useLocation } from "wouter";
 import Navbar from "@/components/layout/navbar";
 import Sidebar from "@/components/layout/sidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -33,6 +34,7 @@ import { Input } from "@/components/ui/input";
 export default function StudentExams() {
   const { toast } = useToast();
   const { user, isAuthenticated, isLoading } = useAuth();
+  const [location] = useLocation();
   const [selectedExam, setSelectedExam] = useState<any>(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<{[key: number]: any}>({});
@@ -179,6 +181,20 @@ export default function StudentExams() {
     totalSubmissions: mySubmissions?.length || 0,
     user: user?.id
   });
+
+  // Check for URL parameter to auto-start exam
+  useEffect(() => {
+    const urlParams = new URLSearchParams(location.split('?')[1] || '');
+    const startExamId = urlParams.get('start');
+    
+    if (startExamId && exams && !selectedExam) {
+      const examToStart = availableExams.find((exam: any) => exam.id.toString() === startExamId);
+      if (examToStart) {
+        console.log('Auto-starting exam from URL parameter:', examToStart);
+        handleStartExam(examToStart);
+      }
+    }
+  }, [exams, availableExams, location, selectedExam]);
 
   const completedExams = (exams as any[])?.filter((exam: any) => {
     return (mySubmissions as any[])?.some((sub: any) => sub.examId === exam.id);

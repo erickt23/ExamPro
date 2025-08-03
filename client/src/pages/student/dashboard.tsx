@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { useLocation } from "wouter";
 import Navbar from "@/components/layout/navbar";
 import Sidebar from "@/components/layout/sidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,6 +22,7 @@ import {
 export default function StudentDashboard() {
   const { toast } = useToast();
   const { user, isAuthenticated, isLoading } = useAuth();
+  const [, setLocation] = useLocation();
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -108,6 +110,11 @@ export default function StudentDashboard() {
     if (availableFrom && now < availableFrom) return false;
     if (availableUntil && now > availableUntil) return false;
     return true;
+  };
+
+  const handleStartExam = (exam: any) => {
+    // Navigate to exams page with exam ID as URL parameter
+    setLocation(`/exams?start=${exam.id}`);
   };
 
   return (
@@ -239,7 +246,7 @@ export default function StudentDashboard() {
                           </div>
                           <div className="flex items-center space-x-2">
                             {isExamAvailable(exam) ? (
-                              <Button size="sm">
+                              <Button size="sm" onClick={() => handleStartExam(exam)}>
                                 <Play className="h-4 w-4 mr-1" />
                                 Start
                               </Button>
