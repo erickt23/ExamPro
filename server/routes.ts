@@ -1041,6 +1041,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.put('/api/homework/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (user?.role !== 'instructor') {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const homeworkId = parseInt(req.params.id);
+      if (isNaN(homeworkId)) {
+        return res.status(400).json({ message: "Invalid homework ID" });
+      }
+
+      const homework = await storage.updateHomework(homeworkId, req.body);
+      res.json(homework);
+    } catch (error) {
+      console.error("Error updating homework:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid homework data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to update homework" });
+    }
+  });
+
   // Homework Questions API - separate from exam questions
   app.get('/api/homework-questions', isAuthenticated, async (req: any, res) => {
     try {

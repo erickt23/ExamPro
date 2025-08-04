@@ -26,7 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { BookOpen, Plus, Search, Clock, Users } from "lucide-react";
+import { BookOpen, Plus, Search, Clock, Users, Eye, Edit, CheckCircle } from "lucide-react";
 
 interface HomeworkAssignment {
   id: number;
@@ -50,6 +50,9 @@ export default function InstructorHomeworkPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [selectedHomework, setSelectedHomework] = useState<HomeworkAssignment | null>(null);
   const [newHomework, setNewHomework] = useState({
     title: "",
     description: "",
@@ -119,6 +122,77 @@ export default function InstructorHomeworkPage() {
     },
   });
 
+  // Update homework mutation
+  const updateHomeworkMutation = useMutation({
+    mutationFn: async ({ id, homeworkData }: { id: number; homeworkData: any }) => {
+      const response = await fetch(`/api/homework/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(homeworkData),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(`${response.status}: ${errorData.message || response.statusText}`);
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/homework"] });
+      setShowEditModal(false);
+      setSelectedHomework(null);
+      setNewHomework({ title: "", description: "", subjectId: "", dueDate: "" });
+      toast({
+        title: "Success",
+        description: "Homework assignment updated successfully",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Publish homework mutation
+  const publishHomeworkMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const response = await fetch(`/api/homework/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ status: "active" }),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(`${response.status}: ${errorData.message || response.statusText}`);
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/homework"] });
+      toast({
+        title: "Success",
+        description: "Homework assignment published successfully",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleCreateHomework = () => {
     if (!newHomework.title || !newHomework.subjectId) {
       toast({
@@ -136,6 +210,47 @@ export default function InstructorHomeworkPage() {
       dueDate: newHomework.dueDate || null,
       status: "draft",
     });
+  };
+
+  const handleEditHomework = () => {
+    if (!selectedHomework || !newHomework.title || !newHomework.subjectId) {
+      toast({
+        title: "Error",
+        description: "Please fill in all required fields",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    updateHomeworkMutation.mutate({
+      id: selectedHomework.id,
+      homeworkData: {
+        title: newHomework.title,
+        description: newHomework.description,
+        subjectId: parseInt(newHomework.subjectId),
+        dueDate: newHomework.dueDate || null,
+      },
+    });
+  };
+
+  const handleViewDetails = (homework: HomeworkAssignment) => {
+    setSelectedHomework(homework);
+    setShowDetailsModal(true);
+  };
+
+  const handleEditClick = (homework: HomeworkAssignment) => {
+    setSelectedHomework(homework);
+    setNewHomework({
+      title: homework.title,
+      description: homework.description,
+      subjectId: homework.subjectId.toString(),
+      dueDate: homework.dueDate ? new Date(homework.dueDate).toISOString().slice(0, 16) : "",
+    });
+    setShowEditModal(true);
+  };
+
+  const handlePublish = (homeworkId: number) => {
+    publishHomeworkMutation.mutate(homeworkId);
   };
 
   const getStatusBadge = (status: string) => {
@@ -261,6 +376,142 @@ export default function InstructorHomeworkPage() {
             </div>
           </DialogContent>
         </Dialog>
+
+        {/* Edit Homework Modal */}
+        <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Edit Homework Assignment</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="edit-title">Title *</Label>
+                <Input
+                  id="edit-title"
+                  value={newHomework.title}
+                  onChange={(e) => setNewHomework({ ...newHomework, title: e.target.value })}
+                  placeholder="Enter homework title"
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="edit-description">Description</Label>
+                <Textarea
+                  id="edit-description"
+                  value={newHomework.description}
+                  onChange={(e) => setNewHomework({ ...newHomework, description: e.target.value })}
+                  placeholder="Enter homework description"
+                  rows={3}
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="edit-subject">Subject *</Label>
+                <Select value={newHomework.subjectId} onValueChange={(value) => setNewHomework({ ...newHomework, subjectId: value })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a subject" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {subjects.map((subject) => (
+                      <SelectItem key={subject.id} value={subject.id.toString()}>
+                        {subject.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div>
+                <Label htmlFor="edit-dueDate">Due Date</Label>
+                <Input
+                  id="edit-dueDate"
+                  type="datetime-local"
+                  value={newHomework.dueDate}
+                  onChange={(e) => setNewHomework({ ...newHomework, dueDate: e.target.value })}
+                />
+              </div>
+              
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setShowEditModal(false)}>
+                  Cancel
+                </Button>
+                <Button 
+                  onClick={handleEditHomework}
+                  disabled={updateHomeworkMutation.isPending}
+                >
+                  {updateHomeworkMutation.isPending ? "Updating..." : "Update Homework"}
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* View Details Modal */}
+        <Dialog open={showDetailsModal} onOpenChange={setShowDetailsModal}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Homework Details</DialogTitle>
+            </DialogHeader>
+            {selectedHomework && (
+              <div className="space-y-6">
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-xl font-semibold">{selectedHomework.title}</h3>
+                    {getStatusBadge(selectedHomework.status)}
+                  </div>
+                  <p className="text-gray-600">{selectedHomework.description}</p>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">Subject</Label>
+                    <p className="mt-1">{subjects.find((s: any) => s.id === selectedHomework.subjectId)?.name || 'Unknown Subject'}</p>
+                  </div>
+                  
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">Status</Label>
+                    <p className="mt-1 capitalize">{selectedHomework.status}</p>
+                  </div>
+                  
+                  {selectedHomework.dueDate && (
+                    <div>
+                      <Label className="text-sm font-medium text-gray-500">Due Date</Label>
+                      <p className="mt-1">{new Date(selectedHomework.dueDate).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}</p>
+                    </div>
+                  )}
+                  
+                  <div>
+                    <Label className="text-sm font-medium text-gray-500">Created</Label>
+                    <p className="mt-1">{new Date(selectedHomework.createdAt).toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric'
+                    })}</p>
+                  </div>
+                </div>
+                
+                <div className="flex justify-end gap-2">
+                  <Button variant="outline" onClick={() => setShowDetailsModal(false)}>
+                    Close
+                  </Button>
+                  <Button onClick={() => {
+                    setShowDetailsModal(false);
+                    handleEditClick(selectedHomework);
+                  }}>
+                    <Edit className="h-4 w-4 mr-2" />
+                    Edit Homework
+                  </Button>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
 
       {/* Search and Filter Controls */}
@@ -331,25 +582,46 @@ export default function InstructorHomeworkPage() {
                     {hw.dueDate && (
                       <div className="flex items-center gap-1">
                         <Clock className="h-4 w-4" />
-                        Due: {new Date(hw.dueDate).toLocaleDateString()}
+                        Due: {new Date(hw.dueDate).toLocaleDateString('en-US', {
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
                       </div>
                     )}
                     <div className="flex items-center gap-1">
-                      <Users className="h-4 w-4" />
-                      Subject ID: {hw.subjectId}
+                      <BookOpen className="h-4 w-4" />
+                      {subjects.find((s: any) => s.id === hw.subjectId)?.name || 'Unknown Subject'}
                     </div>
                   </div>
                   
                   <div className="flex gap-2 mt-4">
-                    <Button variant="outline" size="sm">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => handleViewDetails(hw)}
+                    >
+                      <Eye className="h-4 w-4 mr-1" />
                       View Details
                     </Button>
-                    <Button variant="outline" size="sm">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => handleEditClick(hw)}
+                    >
+                      <Edit className="h-4 w-4 mr-1" />
                       Edit
                     </Button>
                     {hw.status === 'draft' && (
-                      <Button size="sm">
-                        Publish
+                      <Button 
+                        size="sm"
+                        onClick={() => handlePublish(hw.id)}
+                        disabled={publishHomeworkMutation.isPending}
+                      >
+                        <CheckCircle className="h-4 w-4 mr-1" />
+                        {publishHomeworkMutation.isPending ? 'Publishing...' : 'Publish'}
                       </Button>
                     )}
                   </div>
