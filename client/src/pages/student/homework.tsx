@@ -250,10 +250,10 @@ export default function StudentHomework() {
                                   </span>
                                 )}
                                 
-                                {hw.showResultsImmediately && (
+                                {submissionInfo.isSubmitted && submissionInfo.submittedAt && (
                                   <span className="flex items-center gap-1">
                                     <CheckCircle className="h-4 w-4" />
-                                    Instant feedback
+                                    Last submitted: {formatEasternTime(submissionInfo.submittedAt, { includeTime: true, includeDate: true })}
                                   </span>
                                 )}
                               </div>
