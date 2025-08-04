@@ -1219,6 +1219,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get homework submissions for current student
+  app.get('/api/homework-submissions', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      // Only students can access their own submissions
+      if (user?.role !== 'student') {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      // Get all homework submissions for this student
+      const submissions = await storage.getHomeworkSubmissions(undefined, userId);
+      res.json(submissions);
+    } catch (error) {
+      console.error("Error fetching homework submissions:", error);
+      res.status(500).json({ message: "Failed to fetch homework submissions" });
+    }
+  });
+
   // Submit homework answers
   app.post('/api/homework/:id/submit', isAuthenticated, async (req: any, res) => {
     try {

@@ -73,6 +73,12 @@ export default function StudentHomework() {
     queryKey: ["/api/subjects"],
   });
 
+  // Fetch homework submissions for the current student
+  const { data: submissions = [] } = useQuery<any[]>({
+    queryKey: ["/api/homework-submissions"],
+    enabled: isAuthenticated,
+  });
+
   // Filter homework assignments
   const filteredHomework = homework.filter(hw => {
     const matchesSearch = hw.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -100,6 +106,19 @@ export default function StudentHomework() {
     } else {
       return { status: "upcoming", color: "bg-green-100 text-green-800", text: `${daysLeft} days left` };
     }
+  };
+
+  const getHomeworkSubmissionInfo = (homeworkId: number) => {
+    const submission = submissions.find(s => s.homeworkId === homeworkId);
+    if (!submission) {
+      return { isSubmitted: false, attemptNumber: 0, status: null };
+    }
+    return { 
+      isSubmitted: true, 
+      attemptNumber: submission.attemptNumber || 1,
+      status: submission.status,
+      submittedAt: submission.submittedAt
+    };
   };
 
   if (isLoading || !isAuthenticated) {
@@ -187,6 +206,7 @@ export default function StudentHomework() {
                   filteredHomework.map((hw) => {
                     const statusInfo = getStatusInfo(hw);
                     const subject = subjects.find(s => s.id === hw.subjectId);
+                    const submissionInfo = getHomeworkSubmissionInfo(hw.id);
                     
                     return (
                       <Card key={hw.id} className="hover:shadow-md transition-shadow">
@@ -201,6 +221,11 @@ export default function StudentHomework() {
                                 <Badge variant="outline">
                                   {subject?.name || 'Unknown Subject'}
                                 </Badge>
+                                {submissionInfo.isSubmitted && (
+                                  <Badge className="bg-green-100 text-green-800">
+                                    Submitted
+                                  </Badge>
+                                )}
                               </div>
                               
                               <p className="text-gray-600 mb-4 line-clamp-2">{hw.description}</p>
@@ -218,6 +243,13 @@ export default function StudentHomework() {
                                   {hw.attemptsAllowed === -1 ? 'Unlimited attempts' : `${hw.attemptsAllowed} attempt${hw.attemptsAllowed !== 1 ? 's' : ''}`}
                                 </span>
                                 
+                                {submissionInfo.isSubmitted && (
+                                  <span className="flex items-center gap-1">
+                                    <CheckCircle className="h-4 w-4" />
+                                    Attempt #{submissionInfo.attemptNumber}
+                                  </span>
+                                )}
+                                
                                 {hw.showResultsImmediately && (
                                   <span className="flex items-center gap-1">
                                     <CheckCircle className="h-4 w-4" />
@@ -234,9 +266,10 @@ export default function StudentHomework() {
                                 }}
                                 disabled={statusInfo.status === "overdue"}
                                 className="flex items-center gap-2"
+                                variant={submissionInfo.isSubmitted ? "outline" : "default"}
                               >
                                 <Play className="h-4 w-4" />
-                                Start Homework
+                                {submissionInfo.isSubmitted ? 'Edit Submission' : 'Start Homework'}
                               </Button>
                             </div>
                           </div>
