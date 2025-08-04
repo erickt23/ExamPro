@@ -64,7 +64,7 @@ export default function StudentHomework() {
 
   // Fetch homework assignments (only active ones for students)
   const { data: homework = [], isLoading: homeworkLoading } = useQuery<HomeworkAssignment[]>({
-    queryKey: ["/api/homework", "active"],
+    queryKey: ["/api/homework"],
     enabled: true,
   });
 
