@@ -75,6 +75,11 @@ export default function Sidebar({ className }: SidebarProps) {
       icon: LayoutDashboard,
     },
     {
+      title: "Homework",
+      href: "/homework",
+      icon: Notebook,
+    },
+    {
       title: "Exams",
       href: "/exams",
       icon: FileText,
