@@ -57,6 +57,7 @@ export default function StudentHomeworkTaking() {
   const [answers, setAnswers] = useState<Record<number, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSubmitConfirm, setShowSubmitConfirm] = useState(false);
+  const [existingSubmission, setExistingSubmission] = useState<any>(null);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -85,6 +86,24 @@ export default function StudentHomeworkTaking() {
     enabled: !!homeworkId && isAuthenticated,
   });
 
+  // Fetch existing submission and answers
+  const { data: existingData, isLoading: existingDataLoading } = useQuery<{submission: any, answers: any[]}>({
+    queryKey: [`/api/homework/${homeworkId}/submission`],
+    enabled: !!homeworkId && isAuthenticated,
+  });
+
+  // Load existing answers when data is available
+  useEffect(() => {
+    if (existingData?.answers && questions.length > 0) {
+      const existingAnswers: Record<number, string> = {};
+      existingData.answers.forEach((answer: any) => {
+        existingAnswers[answer.questionId] = answer.answerText || "";
+      });
+      setAnswers(existingAnswers);
+      setExistingSubmission(existingData.submission);
+    }
+  }, [existingData, questions]);
+
   // Submit homework mutation
   const submitHomeworkMutation = useMutation({
     mutationFn: async (submissionData: any) => {
@@ -92,9 +111,10 @@ export default function StudentHomeworkTaking() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/homework"] });
+      queryClient.invalidateQueries({ queryKey: [`/api/homework/${homeworkId}/submission`] });
       toast({
         title: "Success",
-        description: "Homework submitted successfully!",
+        description: existingSubmission ? "Homework resubmitted successfully!" : "Homework submitted successfully!",
       });
       setLocation("/homework");
     },
@@ -168,7 +188,7 @@ export default function StudentHomeworkTaking() {
     );
   }
 
-  if (homeworkLoading || questionsLoading) {
+  if (homeworkLoading || questionsLoading || existingDataLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -297,6 +317,11 @@ export default function StudentHomeworkTaking() {
                     <CheckCircle className="h-4 w-4" />
                     {answeredCount} of {questions.length} answered
                   </span>
+                  {existingSubmission && (
+                    <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+                      Editing Attempt #{existingSubmission.attemptNumber}
+                    </Badge>
+                  )}
                 </div>
                 <Badge variant="outline">
                   Question {currentQuestionIndex + 1} of {questions.length}
@@ -378,7 +403,7 @@ export default function StudentHomeworkTaking() {
                     ) : (
                       <>
                         <Send className="h-4 w-4 mr-2" />
-                        Submit Homework
+                        {existingSubmission ? 'Resubmit Homework' : 'Submit Homework'}
                       </>
                     )}
                   </Button>

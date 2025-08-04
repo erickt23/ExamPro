@@ -1180,6 +1180,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get existing homework submission and answers
+  app.get('/api/homework/:id/submission', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      const homeworkId = parseInt(req.params.id);
+
+      if (isNaN(homeworkId)) {
+        return res.status(400).json({ message: "Invalid homework ID" });
+      }
+
+      // Only students can access their own submissions
+      if (user?.role !== 'student') {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      // Get existing submissions for this homework and student
+      const submissions = await storage.getHomeworkSubmissions(homeworkId, userId);
+      
+      if (submissions.length === 0) {
+        return res.json({ submission: null, answers: [] });
+      }
+
+      // Get the latest submission
+      const latestSubmission = submissions[0]; // Already ordered by startedAt desc
+      
+      // Get answers for this submission
+      const answers = await storage.getHomeworkAnswers(latestSubmission.id);
+      
+      res.json({ 
+        submission: latestSubmission,
+        answers: answers
+      });
+    } catch (error) {
+      console.error("Error fetching homework submission:", error);
+      res.status(500).json({ message: "Failed to fetch homework submission" });
+    }
+  });
+
   // Submit homework answers
   app.post('/api/homework/:id/submit', isAuthenticated, async (req: any, res) => {
     try {
@@ -1220,18 +1259,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid answers format" });
       }
 
-      // Create homework submission
-      const submission = await storage.createHomeworkSubmission({
-        homeworkId,
-        studentId: userId,
-        submittedAt: new Date(),
-        status: 'submitted',
-        startedAt: new Date(), // For now, assume started when submitted
-        attemptNumber: 1,
-        isLate: homework.dueDate ? new Date() > new Date(homework.dueDate) : false,
-      });
+      // Check for existing submissions
+      const existingSubmissions = await storage.getHomeworkSubmissions(homeworkId, userId);
+      
+      let submission;
+      let attemptNumber = 1;
+      
+      if (existingSubmissions.length > 0) {
+        // Check attempt limits
+        if (homework.attemptsAllowed !== -1 && existingSubmissions.length >= homework.attemptsAllowed) {
+          return res.status(403).json({ message: "Maximum attempts exceeded" });
+        }
+        
+        // Use the latest existing submission and update it
+        const latestSubmission = existingSubmissions[0];
+        attemptNumber = latestSubmission.attemptNumber + 1;
+        
+        submission = await storage.updateHomeworkSubmission(latestSubmission.id, {
+          submittedAt: new Date(),
+          status: 'submitted',
+          attemptNumber,
+          isLate: homework.dueDate ? new Date() > new Date(homework.dueDate) : false,
+        });
+        
+        // Delete existing answers for this submission (they will be replaced)
+        const existingAnswers = await storage.getHomeworkAnswers(latestSubmission.id);
+        
+      } else {
+        // Create new submission
+        submission = await storage.createHomeworkSubmission({
+          homeworkId,
+          studentId: userId,
+          submittedAt: new Date(),
+          status: 'submitted',
+          startedAt: new Date(),
+          attemptNumber: 1,
+          isLate: homework.dueDate ? new Date() > new Date(homework.dueDate) : false,
+        });
+      }
 
-      // Create homework answers
+      // Create new homework answers (this will overwrite previous answers)
       for (const answer of answers) {
         await storage.createHomeworkAnswer({
           submissionId: submission.id,
