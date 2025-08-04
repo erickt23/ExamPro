@@ -5,6 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import { formatSubmissionTime, formatSubmissionDuration, getExamStatus, formatEasternTime } from "@/lib/dateUtils";
 import Navbar from "@/components/layout/navbar";
+import Sidebar from "@/components/layout/sidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -134,7 +135,10 @@ export default function StudentDashboard() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="flex">
+        <Sidebar />
+        <main className="flex-1 overflow-y-auto">
+          <div className="p-6">
             <div className="mb-6">
               <h2 className="text-2xl font-bold text-gray-900">
                 Welcome back, {user?.firstName || 'Student'}!
@@ -390,7 +394,9 @@ export default function StudentDashboard() {
                 </CardContent>
               </Card>
             )}
-      </main>
+          </div>
+        </main>
+      </div>
     </div>
   );
 }
