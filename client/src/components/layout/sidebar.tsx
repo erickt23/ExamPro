@@ -42,7 +42,7 @@ export default function Sidebar({ className }: SidebarProps) {
       icon: PenTool,
     },
     {
-      title: "Homework",
+      title: "Homework Assignment",
       href: "/homework",
       icon: Notebook,
     },

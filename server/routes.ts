@@ -1093,6 +1093,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Add question to homework assignment
+  app.post('/api/homework/:id/questions', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (user?.role !== 'instructor') {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const homeworkId = parseInt(req.params.id);
+      if (isNaN(homeworkId)) {
+        return res.status(400).json({ message: "Invalid homework ID" });
+      }
+
+      const { questionId, order, points } = req.body;
+      
+      if (!questionId || !order || !points) {
+        return res.status(400).json({ message: "Missing required fields: questionId, order, points" });
+      }
+
+      const result = await storage.addQuestionToHomework(homeworkId, questionId, order, points);
+      res.status(201).json(result);
+    } catch (error) {
+      console.error("Error adding question to homework:", error);
+      res.status(500).json({ message: "Failed to add question to homework" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
