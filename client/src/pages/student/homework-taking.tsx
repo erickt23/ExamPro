@@ -194,7 +194,8 @@ export default function StudentHomeworkTaking() {
     );
   }
 
-  const formatQuestionType = (type: string) => {
+  const formatQuestionType = (type: string | undefined) => {
+    if (!type) return '';
     return type.replace('_', ' ').split(' ').map(word => 
       word.charAt(0).toUpperCase() + word.slice(1)
     ).join(' ');
@@ -306,34 +307,43 @@ export default function StudentHomeworkTaking() {
             </div>
 
             {/* Question Card */}
-            <Card className="mb-6">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="flex items-center gap-2">
-                    Question {currentQuestionIndex + 1}
-                    <Badge variant="outline" className="ml-2">
-                      {formatQuestionType(currentQuestion.questionType)}
-                    </Badge>
-                    <Badge variant="outline">
-                      {currentQuestion.points} point{currentQuestion.points !== 1 ? 's' : ''}
-                    </Badge>
-                  </CardTitle>
-                  {answers[currentQuestion.id] && (
-                    <CheckCircle className="h-5 w-5 text-green-500" />
-                  )}
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="prose max-w-none">
-                  <p className="text-lg leading-relaxed">{currentQuestion.questionText}</p>
-                </div>
-                
-                <div>
-                  <Label className="text-base font-medium mb-3 block">Your Answer:</Label>
-                  {renderAnswerInput(currentQuestion)}
-                </div>
-              </CardContent>
-            </Card>
+            {currentQuestion ? (
+              <Card className="mb-6">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="flex items-center gap-2">
+                      Question {currentQuestionIndex + 1}
+                      <Badge variant="outline" className="ml-2">
+                        {formatQuestionType(currentQuestion.questionType)}
+                      </Badge>
+                      <Badge variant="outline">
+                        {currentQuestion.points} point{currentQuestion.points !== 1 ? 's' : ''}
+                      </Badge>
+                    </CardTitle>
+                    {answers[currentQuestion.id] && (
+                      <CheckCircle className="h-5 w-5 text-green-500" />
+                    )}
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="prose max-w-none">
+                    <p className="text-lg leading-relaxed">{currentQuestion.questionText}</p>
+                  </div>
+                  
+                  <div>
+                    <Label className="text-base font-medium mb-3 block">Your Answer:</Label>
+                    {renderAnswerInput(currentQuestion)}
+                  </div>
+                </CardContent>
+              </Card>
+            ) : (
+              <Card className="mb-6">
+                <CardContent className="text-center py-12">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+                  <p className="text-gray-600">Loading question...</p>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Navigation and Submit */}
             <div className="flex items-center justify-between">
