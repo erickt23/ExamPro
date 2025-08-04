@@ -42,6 +42,7 @@ export const users = pgTable("users", {
 export const questionTypeEnum = pgEnum('question_type', ['multiple_choice', 'short_answer', 'essay', 'fill_blank']);
 export const difficultyEnum = pgEnum('difficulty', ['easy', 'medium', 'hard']);
 export const bloomsTaxonomyEnum = pgEnum('blooms_taxonomy', ['remember', 'understand', 'apply', 'analyze', 'evaluate', 'create']);
+export const questionCategoryEnum = pgEnum('question_category', ['exam', 'homework']);
 
 // Subjects table
 export const subjects = pgTable("subjects", {
@@ -60,6 +61,7 @@ export const questions = pgTable("questions", {
   title: text("title"),
   questionText: text("question_text").notNull(),
   questionType: questionTypeEnum("question_type").notNull(),
+  category: questionCategoryEnum("category").notNull().default('exam'), // NEW: Separate homework from exam questions
   options: jsonb("options"), // For MCQ options
   correctAnswer: text("correct_answer"),
   explanation: text("explanation"),
@@ -126,6 +128,60 @@ export const submissions = pgTable("submissions", {
 export const answers = pgTable("answers", {
   id: serial("id").primaryKey(),
   submissionId: integer("submission_id").notNull().references(() => submissions.id, { onDelete: "cascade" }),
+  questionId: integer("question_id").notNull().references(() => questions.id),
+  answerText: text("answer_text"),
+  selectedOption: varchar("selected_option"),
+  attachmentUrl: text("attachment_url"), // For file uploads
+  linkUrl: text("link_url"), // For link submissions
+  score: decimal("score", { precision: 5, scale: 2 }),
+  maxScore: decimal("max_score", { precision: 5, scale: 2 }),
+  feedback: text("feedback"),
+  gradedAt: timestamp("graded_at"),
+  gradedBy: varchar("graded_by").references(() => users.id),
+});
+
+// Homework Assignments table
+export const homeworkAssignments = pgTable("homework_assignments", {
+  id: serial("id").primaryKey(),
+  instructorId: varchar("instructor_id").notNull().references(() => users.id),
+  title: varchar("title").notNull(),
+  description: text("description"),
+  subjectId: integer("subject_id").notNull().references(() => subjects.id),
+  dueDate: timestamp("due_date"),
+  attemptsAllowed: integer("attempts_allowed").notNull().default(-1), // -1 for unlimited
+  showResultsImmediately: boolean("show_results_immediately").notNull().default(true),
+  status: varchar("status", { enum: ["draft", "active", "archived"] }).notNull().default("draft"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Homework Questions junction table
+export const homeworkQuestions = pgTable("homework_questions", {
+  id: serial("id").primaryKey(),
+  homeworkId: integer("homework_id").notNull().references(() => homeworkAssignments.id, { onDelete: "cascade" }),
+  questionId: integer("question_id").notNull().references(() => questions.id, { onDelete: "cascade" }),
+  order: integer("order").notNull(),
+  points: integer("points").notNull(),
+});
+
+// Homework Submissions table
+export const homeworkSubmissions = pgTable("homework_submissions", {
+  id: serial("id").primaryKey(),
+  homeworkId: integer("homework_id").notNull().references(() => homeworkAssignments.id),
+  studentId: varchar("student_id").notNull().references(() => users.id),
+  attemptNumber: integer("attempt_number").notNull().default(1),
+  startedAt: timestamp("started_at").defaultNow(),
+  submittedAt: timestamp("submitted_at"),
+  totalScore: decimal("total_score", { precision: 5, scale: 2 }),
+  maxScore: decimal("max_score", { precision: 5, scale: 2 }),
+  status: varchar("status", { enum: ["in_progress", "submitted", "graded", "pending"] }).notNull().default("in_progress"),
+  isLate: boolean("is_late").notNull().default(false),
+});
+
+// Homework Answers table
+export const homeworkAnswers = pgTable("homework_answers", {
+  id: serial("id").primaryKey(),
+  submissionId: integer("submission_id").notNull().references(() => homeworkSubmissions.id, { onDelete: "cascade" }),
   questionId: integer("question_id").notNull().references(() => questions.id),
   answerText: text("answer_text"),
   selectedOption: varchar("selected_option"),
