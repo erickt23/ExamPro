@@ -114,6 +114,53 @@ export function formatSubmissionDuration(
 }
 
 /**
+ * Converts a stored date (UTC) to local datetime-local input format
+ * This ensures that datetime-local inputs show the correct local time
+ */
+export function convertToDateTimeLocalValue(
+  date: string | Date | null | undefined
+): string {
+  if (!date) return '';
+  
+  try {
+    const dateObj = typeof date === 'string' ? new Date(date) : date;
+    
+    // Get local timezone offset and adjust the date
+    const localDate = new Date(dateObj.getTime() - (dateObj.getTimezoneOffset() * 60000));
+    
+    // Return in the format expected by datetime-local input (YYYY-MM-DDTHH:MM)
+    return localDate.toISOString().slice(0, 16);
+  } catch (error) {
+    console.error('Error converting date to datetime-local value:', error);
+    return '';
+  }
+}
+
+/**
+ * Converts a datetime-local input value to a proper Date object
+ * This ensures that the selected local time is correctly stored
+ */
+export function convertFromDateTimeLocalValue(
+  value: string
+): Date | null {
+  if (!value) return null;
+  
+  try {
+    // datetime-local values are in format YYYY-MM-DDTHH:MM
+    // Create a Date object treating it as local time
+    const localDate = new Date(value);
+    
+    // If invalid date, return null
+    if (isNaN(localDate.getTime())) return null;
+    
+    return localDate;
+  } catch (error) {
+    console.error('Error converting datetime-local value to date:', error);
+    return null;
+  }
+}
+
+/**
  * Determines the status of an exam for a student
  */
 export function getExamStatus(

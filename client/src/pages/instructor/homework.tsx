@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { queryClient, apiRequest } from "@/lib/queryClient";
+import { convertToDateTimeLocalValue, convertFromDateTimeLocalValue } from "@/lib/dateUtils";
 import Navbar from "@/components/layout/navbar";
 import Sidebar from "@/components/layout/sidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -260,11 +261,13 @@ export default function InstructorHomeworkPage() {
       return;
     }
 
+    const dueDate = newHomework.dueDate ? convertFromDateTimeLocalValue(newHomework.dueDate) : null;
+    
     createHomeworkMutation.mutate({
       title: newHomework.title,
       description: newHomework.description,
       subjectId: parseInt(newHomework.subjectId),
-      dueDate: newHomework.dueDate || null,
+      dueDate: dueDate,
       status: "draft",
     });
   };
@@ -279,13 +282,15 @@ export default function InstructorHomeworkPage() {
       return;
     }
 
+    const dueDate = newHomework.dueDate ? convertFromDateTimeLocalValue(newHomework.dueDate) : null;
+    
     updateHomeworkMutation.mutate({
       id: selectedHomework.id,
       homeworkData: {
         title: newHomework.title,
         description: newHomework.description,
         subjectId: parseInt(newHomework.subjectId),
-        dueDate: newHomework.dueDate || null,
+        dueDate: dueDate,
       },
     });
   };
@@ -301,7 +306,7 @@ export default function InstructorHomeworkPage() {
       title: homework.title,
       description: homework.description,
       subjectId: homework.subjectId.toString(),
-      dueDate: homework.dueDate ? new Date(homework.dueDate).toISOString().slice(0, 16) : "",
+      dueDate: convertToDateTimeLocalValue(homework.dueDate),
     });
     setShowEditModal(true);
   };
