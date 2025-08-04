@@ -36,6 +36,7 @@ const createQuestionSchema = z.object({
   title: z.string().min(1, "Title is required").max(200),
   questionText: z.string().min(1, "Question text is required"),
   questionType: z.enum(['multiple_choice', 'short_answer', 'essay', 'fill_blank']),
+  category: z.enum(['exam', 'homework']),
   options: z.array(z.string()).optional(),
   correctAnswer: z.string().optional(),
   explanation: z.string().optional(),
@@ -52,9 +53,10 @@ type CreateQuestionForm = z.infer<typeof createQuestionSchema>;
 interface CreateQuestionModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  questionCategory: 'exam' | 'homework';
 }
 
-export default function CreateQuestionModal({ open, onOpenChange }: CreateQuestionModalProps) {
+export default function CreateQuestionModal({ open, onOpenChange, questionCategory }: CreateQuestionModalProps) {
   const { toast } = useToast();
   const [showCreateSubjectModal, setShowCreateSubjectModal] = useState(false);
   
@@ -75,6 +77,7 @@ export default function CreateQuestionModal({ open, onOpenChange }: CreateQuesti
       title: '',
       questionText: '',
       questionType: 'multiple_choice',
+      category: questionCategory,
       subjectId: 1,
       difficulty: 'medium',
       points: 1,
@@ -151,7 +154,7 @@ export default function CreateQuestionModal({ open, onOpenChange }: CreateQuesti
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Create New Question</DialogTitle>
+          <DialogTitle>Create New {questionCategory === 'homework' ? 'Homework' : 'Exam'} Question</DialogTitle>
         </DialogHeader>
 
         <Form {...form}>

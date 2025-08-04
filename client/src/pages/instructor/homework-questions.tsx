@@ -369,6 +369,7 @@ export default function InstructorHomeworkQuestions() {
       <CreateQuestionModal 
         open={showCreateModal} 
         onOpenChange={setShowCreateModal}
+        questionCategory="homework"
       />
       
       <CreateSubjectModal

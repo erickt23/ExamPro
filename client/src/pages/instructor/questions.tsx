@@ -365,6 +365,7 @@ export default function InstructorQuestions() {
       <CreateQuestionModal 
         open={showCreateModal} 
         onOpenChange={setShowCreateModal}
+        questionCategory="exam"
       />
       
       <CreateSubjectModal
