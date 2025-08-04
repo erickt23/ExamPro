@@ -6,6 +6,10 @@ import {
   examQuestions,
   submissions,
   answers,
+  homeworkAssignments,
+  homeworkQuestions,
+  homeworkSubmissions,
+  homeworkAnswers,
   type User,
   type UpsertUser,
   type InsertSubject,
@@ -17,6 +21,11 @@ import {
   type ExamQuestion,
   type Submission,
   type Answer,
+  type InsertHomeworkAssignment,
+  type HomeworkAssignment,
+  type HomeworkQuestion,
+  type HomeworkSubmission,
+  type HomeworkAnswer,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, asc, and, or, count, avg, sum, like, ilike, inArray, sql, ne } from "drizzle-orm";
@@ -41,6 +50,7 @@ export interface IStorage {
     difficulty?: string;
     bloomsTaxonomy?: string;
     search?: string;
+    category?: 'exam' | 'homework'; // NEW: Filter by question category
   }): Promise<Question[]>;
   getQuestionById(id: number): Promise<Question | undefined>;
   updateQuestion(id: number, updates: Partial<InsertQuestion>): Promise<Question>;
@@ -94,6 +104,30 @@ export interface IStorage {
     totalStudents: number;
     pendingGrading: number;
   }>;
+  
+  // Homework operations
+  createHomework(homework: InsertHomeworkAssignment): Promise<HomeworkAssignment>;
+  getHomework(instructorId: string, status?: string, search?: string): Promise<HomeworkAssignment[]>;
+  getActiveHomeworkForStudents(): Promise<HomeworkAssignment[]>;
+  getHomeworkById(id: number): Promise<HomeworkAssignment | undefined>;
+  updateHomework(id: number, updates: Partial<InsertHomeworkAssignment>): Promise<HomeworkAssignment>;
+  deleteHomework(id: number): Promise<void>;
+  
+  // Homework Questions operations
+  addQuestionToHomework(homeworkId: number, questionId: number, order: number, points: number): Promise<void>;
+  getHomeworkQuestions(homeworkId: number): Promise<(HomeworkQuestion & { question: Question })[]>;
+  removeQuestionFromHomework(homeworkId: number, questionId: number): Promise<void>;
+  
+  // Homework Submission operations
+  createHomeworkSubmission(submission: Partial<HomeworkSubmission>): Promise<HomeworkSubmission>;
+  getHomeworkSubmissions(homeworkId?: number, studentId?: string): Promise<HomeworkSubmission[]>;
+  getHomeworkSubmissionById(id: number): Promise<HomeworkSubmission | undefined>;
+  updateHomeworkSubmission(id: number, updates: Partial<HomeworkSubmission>): Promise<HomeworkSubmission>;
+  
+  // Homework Answer operations
+  createHomeworkAnswer(answer: Partial<HomeworkAnswer>): Promise<HomeworkAnswer>;
+  getHomeworkAnswers(submissionId: number): Promise<HomeworkAnswer[]>;
+  updateHomeworkAnswer(id: number, updates: Partial<HomeworkAnswer>): Promise<HomeworkAnswer>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -164,12 +198,20 @@ export class DatabaseStorage implements IStorage {
     difficulty?: string;
     bloomsTaxonomy?: string;
     search?: string;
+    category?: 'exam' | 'homework';
   }): Promise<Question[]> {
     try {
       console.log('getQuestions called with filters:', filters);
       
       // Start with basic conditions
       const conditions = [eq(questions.instructorId, instructorId), eq(questions.isActive, true)];
+      
+      // Filter by category (default to 'exam' for backward compatibility)
+      if (filters?.category) {
+        conditions.push(eq(questions.category, filters.category));
+      } else {
+        conditions.push(eq(questions.category, 'exam')); // Default to exam questions
+      }
 
       if (filters?.subjectId) {
         conditions.push(eq(questions.subjectId, filters.subjectId));
@@ -604,6 +646,189 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(users)
       .orderBy(asc(users.email));
+  }
+
+  // Homework operations
+  async createHomework(homeworkData: InsertHomeworkAssignment): Promise<HomeworkAssignment> {
+    const [homework] = await db
+      .insert(homeworkAssignments)
+      .values(homeworkData)
+      .returning();
+    return homework;
+  }
+
+  async getHomework(instructorId: string, status?: string, search?: string): Promise<HomeworkAssignment[]> {
+    try {
+      const conditions = [eq(homeworkAssignments.instructorId, instructorId)];
+      
+      if (status) {
+        conditions.push(eq(homeworkAssignments.status, status as any));
+      }
+      
+      if (search) {
+        conditions.push(
+          or(
+            ilike(homeworkAssignments.title, `%${search}%`),
+            ilike(homeworkAssignments.description, `%${search}%`)
+          )!
+        );
+      }
+      
+      const homeworkResult = await db
+        .select()
+        .from(homeworkAssignments)
+        .where(and(...conditions))
+        .orderBy(desc(homeworkAssignments.createdAt));
+      
+      return homeworkResult;
+    } catch (error) {
+      console.error('Database error in getHomework:', error);
+      throw error;
+    }
+  }
+
+  async getActiveHomeworkForStudents(): Promise<HomeworkAssignment[]> {
+    const now = new Date();
+    return await db
+      .select()
+      .from(homeworkAssignments)
+      .where(
+        and(
+          eq(homeworkAssignments.status, 'active'),
+          or(
+            sql`${homeworkAssignments.dueDate} IS NULL`,
+            sql`${homeworkAssignments.dueDate} > ${now}`
+          )
+        )
+      )
+      .orderBy(asc(homeworkAssignments.dueDate));
+  }
+
+  async getHomeworkById(id: number): Promise<HomeworkAssignment | undefined> {
+    const [homework] = await db
+      .select()
+      .from(homeworkAssignments)
+      .where(eq(homeworkAssignments.id, id));
+    return homework;
+  }
+
+  async updateHomework(id: number, updates: Partial<InsertHomeworkAssignment>): Promise<HomeworkAssignment> {
+    const [homework] = await db
+      .update(homeworkAssignments)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(homeworkAssignments.id, id))
+      .returning();
+    return homework;
+  }
+
+  async deleteHomework(id: number): Promise<void> {
+    await db.delete(homeworkAssignments).where(eq(homeworkAssignments.id, id));
+  }
+
+  // Homework Questions operations
+  async addQuestionToHomework(homeworkId: number, questionId: number, order: number, points: number): Promise<void> {
+    await db.insert(homeworkQuestions).values({
+      homeworkId,
+      questionId,
+      order,
+      points,
+    });
+  }
+
+  async getHomeworkQuestions(homeworkId: number): Promise<(HomeworkQuestion & { question: Question })[]> {
+    return await db
+      .select({
+        id: homeworkQuestions.id,
+        homeworkId: homeworkQuestions.homeworkId,
+        questionId: homeworkQuestions.questionId,
+        order: homeworkQuestions.order,
+        points: homeworkQuestions.points,
+        question: questions,
+      })
+      .from(homeworkQuestions)
+      .innerJoin(questions, eq(homeworkQuestions.questionId, questions.id))
+      .where(eq(homeworkQuestions.homeworkId, homeworkId))
+      .orderBy(asc(homeworkQuestions.order));
+  }
+
+  async removeQuestionFromHomework(homeworkId: number, questionId: number): Promise<void> {
+    await db
+      .delete(homeworkQuestions)
+      .where(
+        and(
+          eq(homeworkQuestions.homeworkId, homeworkId),
+          eq(homeworkQuestions.questionId, questionId)
+        )
+      );
+  }
+
+  // Homework Submission operations
+  async createHomeworkSubmission(submissionData: Partial<HomeworkSubmission>): Promise<HomeworkSubmission> {
+    const [submission] = await db
+      .insert(homeworkSubmissions)
+      .values(submissionData as any)
+      .returning();
+    return submission;
+  }
+
+  async getHomeworkSubmissions(homeworkId?: number, studentId?: string): Promise<HomeworkSubmission[]> {
+    const conditions = [];
+    
+    if (homeworkId) {
+      conditions.push(eq(homeworkSubmissions.homeworkId, homeworkId));
+    }
+    
+    if (studentId) {
+      conditions.push(eq(homeworkSubmissions.studentId, studentId));
+    }
+    
+    return await db
+      .select()
+      .from(homeworkSubmissions)
+      .where(conditions.length > 0 ? and(...conditions) : undefined)
+      .orderBy(desc(homeworkSubmissions.startedAt));
+  }
+
+  async getHomeworkSubmissionById(id: number): Promise<HomeworkSubmission | undefined> {
+    const [submission] = await db
+      .select()
+      .from(homeworkSubmissions)
+      .where(eq(homeworkSubmissions.id, id));
+    return submission;
+  }
+
+  async updateHomeworkSubmission(id: number, updates: Partial<HomeworkSubmission>): Promise<HomeworkSubmission> {
+    const [submission] = await db
+      .update(homeworkSubmissions)
+      .set(updates)
+      .where(eq(homeworkSubmissions.id, id))
+      .returning();
+    return submission;
+  }
+
+  // Homework Answer operations
+  async createHomeworkAnswer(answerData: Partial<HomeworkAnswer>): Promise<HomeworkAnswer> {
+    const [answer] = await db
+      .insert(homeworkAnswers)
+      .values(answerData as any)
+      .returning();
+    return answer;
+  }
+
+  async getHomeworkAnswers(submissionId: number): Promise<HomeworkAnswer[]> {
+    return await db
+      .select()
+      .from(homeworkAnswers)
+      .where(eq(homeworkAnswers.submissionId, submissionId));
+  }
+
+  async updateHomeworkAnswer(id: number, updates: Partial<HomeworkAnswer>): Promise<HomeworkAnswer> {
+    const [answer] = await db
+      .update(homeworkAnswers)
+      .set(updates)
+      .where(eq(homeworkAnswers.id, id))
+      .returning();
+    return answer;
   }
 }
 

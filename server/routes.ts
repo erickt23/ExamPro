@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
-import { insertQuestionSchema, insertExamSchema } from "@shared/schema";
+import { insertQuestionSchema, insertExamSchema, insertHomeworkAssignmentSchema } from "@shared/schema";
 import { z } from "zod";
 import multer from "multer";
 import * as XLSX from "xlsx";
@@ -144,6 +144,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         difficulty: difficulty as string,
         bloomsTaxonomy: bloomsTaxonomy as string,
         search: search as string,
+        category: 'exam', // Only show exam questions by default
       });
       
       res.json(questions);
@@ -991,6 +992,79 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error setting question attachment:", error);
       res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
+  // Homework routes
+  app.get('/api/homework', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (user?.role === 'instructor') {
+        const { status, search } = req.query;
+        const homework = await storage.getHomework(userId, status as string, search as string);
+        res.json(homework);
+      } else {
+        // For students, return active homework they can access
+        const homework = await storage.getActiveHomeworkForStudents();
+        res.json(homework);
+      }
+    } catch (error) {
+      console.error("Error fetching homework:", error);
+      res.status(500).json({ message: "Failed to fetch homework" });
+    }
+  });
+
+  app.post('/api/homework', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (user?.role !== 'instructor') {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const homeworkData = insertHomeworkAssignmentSchema.parse({
+        ...req.body,
+        instructorId: userId,
+      });
+      
+      const homework = await storage.createHomework(homeworkData);
+      res.status(201).json(homework);
+    } catch (error) {
+      console.error("Error creating homework:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid homework data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to create homework" });
+    }
+  });
+
+  // Homework Questions API - separate from exam questions
+  app.get('/api/homework-questions', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (user?.role !== 'instructor') {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const { subject, type, difficulty, bloomsTaxonomy, search } = req.query;
+      const questions = await storage.getQuestions(userId, {
+        subjectId: subject ? parseInt(subject as string) : undefined,
+        questionType: type as string,
+        difficulty: difficulty as string,
+        bloomsTaxonomy: bloomsTaxonomy as string,
+        search: search as string,
+        category: 'homework', // Only show homework questions
+      });
+      
+      res.json(questions);
+    } catch (error) {
+      console.error("Error fetching homework questions:", error);
+      res.status(500).json({ message: "Failed to fetch homework questions" });
     }
   });
 

@@ -198,12 +198,15 @@ export const homeworkAnswers = pgTable("homework_answers", {
 export const subjectsRelations = relations(subjects, ({ many }) => ({
   questions: many(questions),
   exams: many(exams),
+  homeworkAssignments: many(homeworkAssignments),
 }));
 
 export const usersRelations = relations(users, ({ many }) => ({
   questions: many(questions),
   exams: many(exams),
   submissions: many(submissions),
+  homeworkAssignments: many(homeworkAssignments),
+  homeworkSubmissions: many(homeworkSubmissions),
 }));
 
 export const questionsRelations = relations(questions, ({ one, many }) => ({
@@ -216,7 +219,9 @@ export const questionsRelations = relations(questions, ({ one, many }) => ({
     references: [subjects.id],
   }),
   examQuestions: many(examQuestions),
+  homeworkQuestions: many(homeworkQuestions),
   answers: many(answers),
+  homeworkAnswers: many(homeworkAnswers),
 }));
 
 export const examsRelations = relations(exams, ({ one, many }) => ({
@@ -270,6 +275,58 @@ export const answersRelations = relations(answers, ({ one }) => ({
   }),
 }));
 
+// Homework Relations
+export const homeworkAssignmentsRelations = relations(homeworkAssignments, ({ one, many }) => ({
+  instructor: one(users, {
+    fields: [homeworkAssignments.instructorId],
+    references: [users.id],
+  }),
+  subject: one(subjects, {
+    fields: [homeworkAssignments.subjectId],
+    references: [subjects.id],
+  }),
+  homeworkQuestions: many(homeworkQuestions),
+  homeworkSubmissions: many(homeworkSubmissions),
+}));
+
+export const homeworkQuestionsRelations = relations(homeworkQuestions, ({ one }) => ({
+  homework: one(homeworkAssignments, {
+    fields: [homeworkQuestions.homeworkId],
+    references: [homeworkAssignments.id],
+  }),
+  question: one(questions, {
+    fields: [homeworkQuestions.questionId],
+    references: [questions.id],
+  }),
+}));
+
+export const homeworkSubmissionsRelations = relations(homeworkSubmissions, ({ one, many }) => ({
+  homework: one(homeworkAssignments, {
+    fields: [homeworkSubmissions.homeworkId],
+    references: [homeworkAssignments.id],
+  }),
+  student: one(users, {
+    fields: [homeworkSubmissions.studentId],
+    references: [users.id],
+  }),
+  answers: many(homeworkAnswers),
+}));
+
+export const homeworkAnswersRelations = relations(homeworkAnswers, ({ one }) => ({
+  submission: one(homeworkSubmissions, {
+    fields: [homeworkAnswers.submissionId],
+    references: [homeworkSubmissions.id],
+  }),
+  question: one(questions, {
+    fields: [homeworkAnswers.questionId],
+    references: [questions.id],
+  }),
+  grader: one(users, {
+    fields: [homeworkAnswers.gradedBy],
+    references: [users.id],
+  }),
+}));
+
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({
   createdAt: true,
@@ -281,6 +338,23 @@ export const insertQuestionSchema = createInsertSchema(questions).omit({
   usageCount: true,
   createdAt: true,
   updatedAt: true,
+});
+
+export const insertHomeworkAssignmentSchema = createInsertSchema(homeworkAssignments).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+}).extend({
+  dueDate: z.string().nullable().optional().transform((val) => val ? new Date(val) : undefined),
+});
+
+export const insertHomeworkSubmissionSchema = createInsertSchema(homeworkSubmissions).omit({
+  id: true,
+  startedAt: true,
+});
+
+export const insertHomeworkAnswerSchema = createInsertSchema(homeworkAnswers).omit({
+  id: true,
 });
 
 export const insertExamSchema = createInsertSchema(exams).omit({
@@ -319,3 +393,8 @@ export type Submission = typeof submissions.$inferSelect;
 export type Answer = typeof answers.$inferSelect;
 export type InsertSubject = z.infer<typeof insertSubjectSchema>;
 export type Subject = typeof subjects.$inferSelect;
+export type InsertHomeworkAssignment = z.infer<typeof insertHomeworkAssignmentSchema>;
+export type HomeworkAssignment = typeof homeworkAssignments.$inferSelect;
+export type HomeworkQuestion = typeof homeworkQuestions.$inferSelect;
+export type HomeworkSubmission = typeof homeworkSubmissions.$inferSelect;
+export type HomeworkAnswer = typeof homeworkAnswers.$inferSelect;
