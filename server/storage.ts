@@ -713,9 +713,16 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateHomework(id: number, updates: Partial<InsertHomeworkAssignment>): Promise<HomeworkAssignment> {
+    const processedUpdates = { ...updates };
+    
+    // Convert dueDate string to Date object if present
+    if (processedUpdates.dueDate && typeof processedUpdates.dueDate === 'string') {
+      processedUpdates.dueDate = new Date(processedUpdates.dueDate);
+    }
+    
     const [homework] = await db
       .update(homeworkAssignments)
-      .set({ ...updates, updatedAt: new Date() })
+      .set({ ...processedUpdates, updatedAt: new Date() })
       .where(eq(homeworkAssignments.id, id))
       .returning();
     return homework;
