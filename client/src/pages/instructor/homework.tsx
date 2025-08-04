@@ -66,10 +66,20 @@ export default function InstructorHomeworkPage() {
   // Create homework mutation
   const createHomeworkMutation = useMutation({
     mutationFn: async (homeworkData: any) => {
-      return apiRequest("/api/homework", {
+      const response = await fetch("/api/homework", {
         method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify(homeworkData),
       });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(`${response.status}: ${errorData.message || response.statusText}`);
+      }
+      
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/homework"] });
