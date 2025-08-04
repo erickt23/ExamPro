@@ -1324,6 +1324,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Debug endpoint to check homework submissions in database
+  app.get('/api/debug/homework-submissions', isAuthenticated, async (req: any, res) => {
+    try {
+      const allSubmissions = await storage.getAllHomeworkSubmissions();
+      const submittedSubmissions = await storage.getAllHomeworkSubmissions('submitted');
+      res.json({
+        total: allSubmissions.length,
+        submitted: submittedSubmissions.length,
+        submissions: allSubmissions
+      });
+    } catch (error) {
+      console.error("Debug error:", error);
+      res.status(500).json({ error: error instanceof Error ? error.message : 'Unknown error' });
+    }
+  });
+
   // Get homework submissions for current student
   app.get('/api/homework-submissions', isAuthenticated, async (req: any, res) => {
     try {
@@ -1331,15 +1347,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const user = await storage.getUser(userId);
       const { status } = req.query;
       
+      console.log('Homework submissions request:', { userId, userRole: user?.role, status });
+      
       if (user?.role === 'student') {
         // Students can only see their own submissions
         const submissions = await storage.getHomeworkSubmissions(undefined, userId);
+        console.log('Student homework submissions:', submissions.length);
         res.json(submissions);
       } else if (user?.role === 'instructor') {
         // Instructors can see all submissions, optionally filtered by status
         const submissions = await storage.getAllHomeworkSubmissions(status as string);
+        console.log('All homework submissions for instructor:', submissions.length, 'with status:', status);
         res.json(submissions);
       } else {
+        console.log('Access denied for user:', { userId, role: user?.role });
         return res.status(403).json({ message: "Access denied" });
       }
     } catch (error) {

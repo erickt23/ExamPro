@@ -828,7 +828,7 @@ export class DatabaseStorage implements IStorage {
       const submissions = await db
         .select()
         .from(homeworkSubmissions)
-        .where(eq(homeworkSubmissions.status, status))
+        .where(eq(homeworkSubmissions.status, status as any))
         .orderBy(homeworkSubmissions.submittedAt);
       return submissions;
     } else {
