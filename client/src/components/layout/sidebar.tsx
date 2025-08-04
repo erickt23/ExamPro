@@ -11,7 +11,8 @@ import {
   Users,
   GraduationCap,
   ClipboardList,
-  Notebook
+  Notebook,
+  PenTool
 } from "lucide-react";
 
 interface SidebarProps {
@@ -31,9 +32,14 @@ export default function Sidebar({ className }: SidebarProps) {
       icon: LayoutDashboard,
     },
     {
-      title: "Question Bank",
+      title: "Exam Questions",
       href: "/questions",
       icon: BookOpen,
+    },
+    {
+      title: "Homework Questions",
+      href: "/homework-questions",
+      icon: PenTool,
     },
     {
       title: "Homework",

@@ -8,6 +8,7 @@ import NotFound from "@/pages/not-found";
 import Landing from "@/pages/landing";
 import InstructorDashboard from "@/pages/instructor/dashboard";
 import InstructorQuestions from "@/pages/instructor/questions";
+import InstructorHomeworkQuestions from "@/pages/instructor/homework-questions";
 import InstructorExams from "@/pages/instructor/exams";
 import InstructorGrading from "@/pages/instructor/grading";
 import InstructorAnalytics from "@/pages/instructor/analytics";
@@ -49,6 +50,7 @@ function Router() {
         <>
           <Route path="/" component={InstructorDashboard} />
           <Route path="/questions" component={InstructorQuestions} />
+          <Route path="/homework-questions" component={InstructorHomeworkQuestions} />
           <Route path="/exams" component={InstructorExams} />
           <Route path="/homework" component={InstructorHomework} />
           <Route path="/grading/:submissionId" component={InstructorGrading} />
