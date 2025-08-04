@@ -113,7 +113,19 @@ export default function InstructorHomeworkPage() {
       return response.json();
     },
     retry: false,
-    enabled: showCreateModal, // Only fetch when modal is open
+    enabled: showCreateModal || showEditModal, // Fetch when either modal is open
+  });
+
+  // Fetch existing homework questions when editing
+  const { data: existingHomeworkQuestions = [] } = useQuery({
+    queryKey: ["/api/homework", selectedHomework?.id, "questions"],
+    queryFn: async () => {
+      if (!selectedHomework?.id) return [];
+      const response = await fetch(`/api/homework/${selectedHomework.id}/questions`);
+      if (!response.ok) throw new Error(`${response.status}: ${response.statusText}`);
+      return response.json();
+    },
+    enabled: !!selectedHomework?.id && showEditModal,
   });
 
   // Create homework mutation
@@ -174,6 +186,7 @@ export default function InstructorHomeworkPage() {
   // Update homework mutation
   const updateHomeworkMutation = useMutation({
     mutationFn: async ({ id, homeworkData }: { id: number; homeworkData: any }) => {
+      // First update the homework assignment
       const response = await fetch(`/api/homework/${id}`, {
         method: "PUT",
         headers: {
@@ -187,13 +200,33 @@ export default function InstructorHomeworkPage() {
         throw new Error(`${response.status}: ${errorData.message || response.statusText}`);
       }
       
+      // Remove existing homework questions
+      await apiRequest("DELETE", `/api/homework/${id}/questions`);
+      
+      // Add updated questions to homework
+      if (selectedQuestions.length > 0) {
+        for (let i = 0; i < selectedQuestions.length; i++) {
+          const question = selectedQuestions[i];
+          await apiRequest("POST", `/api/homework/${id}/questions`, {
+            questionId: question.id,
+            order: i + 1,
+            points: question.points || 1,
+          });
+        }
+      }
+      
       return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/homework"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/homework", selectedHomework?.id, "questions"] });
       setShowEditModal(false);
       setSelectedHomework(null);
       setNewHomework({ title: "", description: "", subjectId: "", dueDate: "" });
+      setSelectedQuestions([]);
+      setQuestionSearch("");
+      setQuestionFilters({ subjectId: "all", questionType: "all", difficulty: "all" });
+      setShowQuestionFilters(false);
       toast({
         title: "Success",
         description: "Homework assignment updated successfully",
@@ -282,6 +315,15 @@ export default function InstructorHomeworkPage() {
       return;
     }
 
+    if (selectedQuestions.length === 0) {
+      toast({
+        title: "Error",
+        description: "Please select at least one homework question",
+        variant: "destructive",
+      });
+      return;
+    }
+
     const dueDate = newHomework.dueDate ? convertFromDateTimeLocalValue(newHomework.dueDate) : null;
     
     updateHomeworkMutation.mutate({
@@ -308,6 +350,11 @@ export default function InstructorHomeworkPage() {
       subjectId: homework.subjectId.toString(),
       dueDate: convertToDateTimeLocalValue(homework.dueDate),
     });
+    // Reset question selection state
+    setSelectedQuestions([]);
+    setQuestionSearch("");
+    setQuestionFilters({ subjectId: "all", questionType: "all", difficulty: "all" });
+    setShowQuestionFilters(false);
     setShowEditModal(true);
   };
 
@@ -642,11 +689,11 @@ export default function InstructorHomeworkPage() {
 
         {/* Edit Homework Modal */}
         <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
-          <DialogContent className="max-w-md">
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Edit Homework Assignment</DialogTitle>
             </DialogHeader>
-            <div className="space-y-4">
+            <div className="space-y-6">
               <div>
                 <Label htmlFor="edit-title">Title *</Label>
                 <Input
@@ -694,15 +741,179 @@ export default function InstructorHomeworkPage() {
                 />
               </div>
               
-              <div className="flex justify-end gap-2">
-                <Button variant="outline" onClick={() => setShowEditModal(false)}>
+              {/* Question Selection Section */}
+              <div className="border-t pt-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold">Select Homework Questions</h3>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowQuestionFilters(!showQuestionFilters)}
+                  >
+                    <Filter className="h-4 w-4 mr-2" />
+                    Filters
+                  </Button>
+                </div>
+                
+                {/* Search and Filters */}
+                <div className="space-y-4 mb-4">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                    <Input
+                      placeholder="Search homework questions..."
+                      value={questionSearch}
+                      onChange={(e) => setQuestionSearch(e.target.value)}
+                      className="pl-9"
+                    />
+                  </div>
+                  
+                  {showQuestionFilters && (
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-gray-50 rounded-lg">
+                      <div>
+                        <Label>Subject</Label>
+                        <Select value={questionFilters.subjectId} onValueChange={(value) => setQuestionFilters(prev => ({...prev, subjectId: value}))}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="All Subjects" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">All Subjects</SelectItem>
+                            {subjects.map((subject) => (
+                              <SelectItem key={subject.id} value={subject.id.toString()}>{subject.name}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label>Question Type</Label>
+                        <Select value={questionFilters.questionType} onValueChange={(value) => setQuestionFilters(prev => ({...prev, questionType: value}))}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="All Types" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">All Types</SelectItem>
+                            <SelectItem value="multiple_choice">Multiple Choice</SelectItem>
+                            <SelectItem value="short_answer">Short Answer</SelectItem>
+                            <SelectItem value="essay">Essay</SelectItem>
+                            <SelectItem value="fill_blank">Fill in the Blank</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label>Difficulty</Label>
+                        <Select value={questionFilters.difficulty} onValueChange={(value) => setQuestionFilters(prev => ({...prev, difficulty: value}))}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="All Levels" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">All Levels</SelectItem>
+                            <SelectItem value="easy">Easy</SelectItem>
+                            <SelectItem value="medium">Medium</SelectItem>
+                            <SelectItem value="hard">Hard</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  )}
+                </div>
+                
+                {/* Selected Questions */}
+                {selectedQuestions.length > 0 && (
+                  <div className="mb-4">
+                    <h4 className="font-medium mb-2">Selected Questions ({selectedQuestions.length})</h4>
+                    <div className="space-y-2 max-h-40 overflow-y-auto">
+                      {selectedQuestions.map((question) => (
+                        <div key={question.id} className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <Badge className={getQuestionTypeColor(question.questionType)}>
+                                {formatQuestionType(question.questionType)}
+                              </Badge>
+                              <Badge className={getDifficultyColor(question.difficulty)}>
+                                {question.difficulty}
+                              </Badge>
+                              <Badge variant="outline">{question.points} pts</Badge>
+                            </div>
+                            <p className="text-sm text-gray-700 truncate">
+                              {question.title || question.questionText}
+                            </p>
+                          </div>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => removeQuestion(question.id)}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                {/* Available Questions */}
+                <div>
+                  <h4 className="font-medium mb-2">Available Homework Questions</h4>
+                  <div className="border rounded-lg max-h-60 overflow-y-auto">
+                    {homeworkQuestions.length === 0 ? (
+                      <div className="p-4 text-center text-gray-500">
+                        No homework questions found. Create homework questions first in the Homework Questions section.
+                      </div>
+                    ) : (
+                      <div className="divide-y">
+                        {homeworkQuestions
+                          .filter(q => !selectedQuestions.find(sq => sq.id === q.id))
+                          .map((question: any) => (
+                          <div key={question.id} className="p-3 hover:bg-gray-50">
+                            <div className="flex items-center justify-between">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <Badge className={getQuestionTypeColor(question.questionType)}>
+                                    {formatQuestionType(question.questionType)}
+                                  </Badge>
+                                  <Badge variant="outline">
+                                    {getSubjectName(question.subjectId)}
+                                  </Badge>
+                                  <Badge className={getDifficultyColor(question.difficulty)}>
+                                    {question.difficulty}
+                                  </Badge>
+                                  <Badge variant="outline">{question.points} pts</Badge>
+                                </div>
+                                <p className="text-sm text-gray-700 line-clamp-2">
+                                  {question.title || question.questionText}
+                                </p>
+                              </div>
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => addQuestion(question)}
+                              >
+                                <Plus className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+              
+              <div className="flex justify-end gap-2 pt-4 border-t">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setShowEditModal(false)}
+                >
                   Cancel
                 </Button>
-                <Button 
+                <Button
                   onClick={handleEditHomework}
                   disabled={updateHomeworkMutation.isPending}
                 >
-                  {updateHomeworkMutation.isPending ? "Updating..." : "Update Homework"}
+                  {updateHomeworkMutation.isPending ? "Saving..." : "Save Changes"}
                 </Button>
               </div>
             </div>
