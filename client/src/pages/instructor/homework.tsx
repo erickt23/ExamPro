@@ -1,7 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { isUnauthorizedError } from "@/lib/authUtils";
 import { queryClient, apiRequest } from "@/lib/queryClient";
+import Navbar from "@/components/layout/navbar";
+import Sidebar from "@/components/layout/sidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -42,6 +46,7 @@ interface Subject {
 
 export default function InstructorHomeworkPage() {
   const { toast } = useToast();
+  const { isAuthenticated, isLoading } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -51,6 +56,21 @@ export default function InstructorHomeworkPage() {
     subjectId: "",
     dueDate: "",
   });
+
+  // Redirect if not authenticated
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      toast({
+        title: "Unauthorized",
+        description: "You are logged out. Logging in again...",
+        variant: "destructive",
+      });
+      setTimeout(() => {
+        window.location.href = "/api/login";
+      }, 500);
+      return;
+    }
+  }, [isAuthenticated, isLoading, toast]);
 
   // Fetch homework assignments
   const { data: homework = [], isLoading: homeworkLoading } = useQuery<HomeworkAssignment[]>({
@@ -139,8 +159,24 @@ export default function InstructorHomeworkPage() {
     return matchesSearch && matchesStatus;
   });
 
+  if (isLoading || !isAuthenticated) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="min-h-screen bg-gray-50">
+      <Navbar />
+      <div className="flex">
+        <Sidebar />
+        <main className="flex-1 overflow-y-auto">
+          <div className="p-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold flex items-center gap-2">
@@ -336,6 +372,9 @@ export default function InstructorHomeworkPage() {
             </p>
           </div>
         </div>
+            </div>
+          </div>
+        </main>
       </div>
     </div>
   );
