@@ -123,6 +123,8 @@ export interface IStorage {
   getHomeworkSubmissions(homeworkId?: number, studentId?: string): Promise<HomeworkSubmission[]>;
   getHomeworkSubmissionById(id: number): Promise<HomeworkSubmission | undefined>;
   updateHomeworkSubmission(id: number, updates: Partial<HomeworkSubmission>): Promise<HomeworkSubmission>;
+  getHomeworkAssignmentById(id: number): Promise<HomeworkAssignment | undefined>;
+  getAllHomeworkSubmissions(status?: string): Promise<HomeworkSubmission[]>;
   
   // Homework Answer operations
   createHomeworkAnswer(answer: Partial<HomeworkAnswer>): Promise<HomeworkAnswer>;
@@ -811,6 +813,31 @@ export class DatabaseStorage implements IStorage {
       .where(eq(homeworkSubmissions.id, id))
       .returning();
     return submission;
+  }
+
+  async getHomeworkAssignmentById(id: number): Promise<HomeworkAssignment | undefined> {
+    const [homework] = await db
+      .select()
+      .from(homeworkAssignments)
+      .where(eq(homeworkAssignments.id, id));
+    return homework;
+  }
+
+  async getAllHomeworkSubmissions(status?: string): Promise<HomeworkSubmission[]> {
+    if (status) {
+      const submissions = await db
+        .select()
+        .from(homeworkSubmissions)
+        .where(eq(homeworkSubmissions.status, status))
+        .orderBy(homeworkSubmissions.submittedAt);
+      return submissions;
+    } else {
+      const submissions = await db
+        .select()
+        .from(homeworkSubmissions)
+        .orderBy(homeworkSubmissions.submittedAt);
+      return submissions;
+    }
   }
 
   // Homework Answer operations

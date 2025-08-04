@@ -763,6 +763,111 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get homework submission details for grading
+  app.get('/api/homework-submissions/:id/grade', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      const submissionId = parseInt(req.params.id);
+      
+      if (user?.role !== 'instructor') {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const submission = await storage.getHomeworkSubmissionById(submissionId);
+      if (!submission) {
+        return res.status(404).json({ message: "Homework submission not found" });
+      }
+
+      const answers = await storage.getHomeworkAnswers(submissionId);
+      const homework = await storage.getHomeworkAssignmentById(submission.homeworkId);
+      const student = await storage.getUser(submission.studentId);
+      
+      // Get question details for each answer
+      const answersWithQuestions = await Promise.all(
+        answers.map(async (answer) => {
+          const question = await storage.getQuestionById(answer.questionId);
+          return { ...answer, question };
+        })
+      );
+
+      res.json({
+        submission,
+        homework,
+        student,
+        answers: answersWithQuestions
+      });
+    } catch (error) {
+      console.error("Error fetching homework submission for grading:", error);
+      res.status(500).json({ message: "Failed to fetch homework submission" });
+    }
+  });
+
+  // Grade individual homework answer
+  app.put('/api/homework-answers/:id/grade', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      const answerId = parseInt(req.params.id);
+      const { score, feedback } = req.body;
+      
+      if (user?.role !== 'instructor') {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      // Validate score is a number
+      if (typeof score !== 'number' || score < 0) {
+        return res.status(400).json({ message: "Invalid score" });
+      }
+
+      const updatedAnswer = await storage.updateHomeworkAnswer(answerId, {
+        score: score.toString(),
+        feedback: feedback || '',
+        gradedAt: new Date(),
+        gradedBy: userId
+      });
+
+      res.json(updatedAnswer);
+    } catch (error) {
+      console.error("Error grading homework answer:", error);
+      res.status(500).json({ message: "Failed to grade homework answer" });
+    }
+  });
+
+  // Finalize homework submission grading
+  app.put('/api/homework-submissions/:id/finalize', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      const submissionId = parseInt(req.params.id);
+      
+      if (user?.role !== 'instructor') {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const submission = await storage.getHomeworkSubmissionById(submissionId);
+      if (!submission) {
+        return res.status(404).json({ message: "Homework submission not found" });
+      }
+
+      // Calculate total score from all answers
+      const answers = await storage.getHomeworkAnswers(submissionId);
+      const totalScore = answers.reduce((sum, answer) => sum + parseFloat(answer.score || '0'), 0);
+      const maxScore = answers.reduce((sum, answer) => sum + parseFloat(answer.maxScore || '0'), 0);
+
+      const updatedSubmission = await storage.updateHomeworkSubmission(submissionId, {
+        totalScore: totalScore.toString(),
+        maxScore: maxScore.toString(),
+        status: 'graded'
+      });
+
+      res.json(updatedSubmission);
+    } catch (error) {
+      console.error("Error finalizing homework submission:", error);
+      res.status(500).json({ message: "Failed to finalize homework submission" });
+    }
+  });
+
   // Finalize submission grading
   app.put('/api/submissions/:id/finalize', isAuthenticated, async (req: any, res) => {
     try {
@@ -1224,15 +1329,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
+      const { status } = req.query;
       
-      // Only students can access their own submissions
-      if (user?.role !== 'student') {
+      if (user?.role === 'student') {
+        // Students can only see their own submissions
+        const submissions = await storage.getHomeworkSubmissions(undefined, userId);
+        res.json(submissions);
+      } else if (user?.role === 'instructor') {
+        // Instructors can see all submissions, optionally filtered by status
+        const submissions = await storage.getAllHomeworkSubmissions(status as string);
+        res.json(submissions);
+      } else {
         return res.status(403).json({ message: "Access denied" });
       }
-
-      // Get all homework submissions for this student
-      const submissions = await storage.getHomeworkSubmissions(undefined, userId);
-      res.json(submissions);
     } catch (error) {
       console.error("Error fetching homework submissions:", error);
       res.status(500).json({ message: "Failed to fetch homework submissions" });

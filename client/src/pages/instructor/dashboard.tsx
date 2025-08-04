@@ -58,6 +58,12 @@ export default function InstructorDashboard() {
     retry: false,
   });
 
+  // Fetch homework assignments
+  const { data: homeworkAssignments = [] } = useQuery<any[]>({
+    queryKey: ["/api/homework"],
+    retry: false,
+  });
+
   // Fetch pending submissions for grading
   const { data: pendingSubmissions = [] } = useQuery<any[]>({
     queryKey: ["/api/submissions", { status: "pending" }],
@@ -74,6 +80,17 @@ export default function InstructorDashboard() {
     queryKey: ["/api/submissions", { status: "graded" }],
     queryFn: async () => {
       const response = await fetch('/api/submissions?status=graded');
+      if (!response.ok) throw new Error(`${response.status}: ${response.statusText}`);
+      return response.json();
+    },
+    retry: false,
+  });
+
+  // Fetch pending homework submissions for grading
+  const { data: pendingHomeworkSubmissions = [] } = useQuery<any[]>({
+    queryKey: ["/api/homework-submissions", { status: "submitted" }],
+    queryFn: async () => {
+      const response = await fetch('/api/homework-submissions?status=submitted');
       if (!response.ok) throw new Error(`${response.status}: ${response.statusText}`);
       return response.json();
     },
@@ -184,7 +201,7 @@ export default function InstructorDashboard() {
                     <div>
                       <p className="text-sm font-medium text-gray-600">Pending Reviews</p>
                       <p className="text-2xl font-bold text-gray-900">
-                        {pendingSubmissions.length || 0}
+                        {(pendingSubmissions.length || 0) + (pendingHomeworkSubmissions.length || 0)}
                       </p>
                     </div>
                     <div className="p-3 bg-red-100 rounded-lg">
@@ -243,22 +260,26 @@ export default function InstructorDashboard() {
                     <AlertCircle className="h-5 w-5 text-orange-600" />
                     Pending Submissions
                   </CardTitle>
-                  <CardDescription>Submissions requiring manual grading</CardDescription>
+                  <CardDescription>Exam and homework submissions requiring manual grading</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  {pendingSubmissions.length === 0 ? (
+                  {pendingSubmissions.length === 0 && pendingHomeworkSubmissions.length === 0 ? (
                     <p className="text-gray-500 text-sm">No pending submissions</p>
                   ) : (
                     <div className="space-y-3">
+                      {/* Exam Submissions */}
                       {pendingSubmissions
-                        .slice(0, 5)
+                        .slice(0, 3)
                         .map((submission: any) => {
                           // Find the corresponding exam
                           const exam = (recentExams as any)?.find((e: any) => e.id === submission.examId);
                           return (
-                            <div key={submission.id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50">
+                            <div key={`exam-${submission.id}`} className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50">
                               <div className="flex-1">
-                                <p className="font-medium text-sm">{exam?.title || 'Unknown Exam'}</p>
+                                <div className="flex items-center gap-2">
+                                  <p className="font-medium text-sm">{exam?.title || 'Unknown Exam'}</p>
+                                  <Badge variant="outline" className="text-xs">Exam</Badge>
+                                </div>
                                 <p className="text-xs text-gray-600">
                                   Student ID: {submission.studentId} • Submitted: {formatSubmissionTime(submission.submittedAt)}
                                 </p>
@@ -272,9 +293,37 @@ export default function InstructorDashboard() {
                             </div>
                           );
                         })}
-                      {pendingSubmissions.length > 5 && (
+                      
+                      {/* Homework Submissions */}
+                      {pendingHomeworkSubmissions
+                        .slice(0, 3)
+                        .map((submission: any) => {
+                          // Find the corresponding homework
+                          const homework = homeworkAssignments?.find((h: any) => h.id === submission.homeworkId);
+                          return (
+                            <div key={`homework-${submission.id}`} className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2">
+                                  <p className="font-medium text-sm">{homework?.title || 'Unknown Homework'}</p>
+                                  <Badge variant="outline" className="text-xs bg-green-50 text-green-700">Homework</Badge>
+                                </div>
+                                <p className="text-xs text-gray-600">
+                                  Student ID: {submission.studentId} • Submitted: {formatSubmissionTime(submission.submittedAt)}
+                                </p>
+                              </div>
+                              <Link href={`/homework-grading/${submission.id}`}>
+                                <button className="text-primary hover:text-primary/80 text-sm font-medium flex items-center gap-1">
+                                  <Eye className="h-4 w-4" />
+                                  Grade
+                                </button>
+                              </Link>
+                            </div>
+                          );
+                        })}
+                      
+                      {(pendingSubmissions.length + pendingHomeworkSubmissions.length) > 6 && (
                         <p className="text-xs text-gray-500 text-center pt-2">
-                          +{pendingSubmissions.length - 5} more pending
+                          +{(pendingSubmissions.length + pendingHomeworkSubmissions.length) - 6} more pending
                         </p>
                       )}
                     </div>

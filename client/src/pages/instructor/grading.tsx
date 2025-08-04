@@ -28,7 +28,11 @@ import {
 } from "lucide-react";
 
 export default function GradingPage() {
-  const [match, params] = useRoute("/grading/:submissionId");
+  const [examMatch, examParams] = useRoute("/grading/:submissionId");
+  const [homeworkMatch, homeworkParams] = useRoute("/homework-grading/:submissionId");
+  
+  const isHomeworkGrading = !!homeworkMatch;
+  const submissionId = isHomeworkGrading ? homeworkParams?.submissionId : examParams?.submissionId;
   
   // Convert Google Cloud Storage URL to our authenticated API endpoint
   const getSecureFileUrl = (attachmentUrl: string) => {
@@ -56,7 +60,6 @@ export default function GradingPage() {
     
     return attachmentUrl;
   };
-  const submissionId = match ? params?.submissionId : null;
   const { toast } = useToast();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const [, navigate] = useLocation();
@@ -79,9 +82,12 @@ export default function GradingPage() {
 
   // Fetch submission details for grading
   const { data: submissionDetails, isLoading: submissionLoading } = useQuery({
-    queryKey: ["/api/submissions", submissionId, "grade"],
+    queryKey: [isHomeworkGrading ? "/api/homework-submissions" : "/api/submissions", submissionId, "grade"],
     queryFn: async () => {
-      const response = await fetch(`/api/submissions/${submissionId}/grade`);
+      const endpoint = isHomeworkGrading 
+        ? `/api/homework-submissions/${submissionId}/grade`
+        : `/api/submissions/${submissionId}/grade`;
+      const response = await fetch(endpoint);
       if (!response.ok) throw new Error(`${response.status}: ${response.statusText}`);
       return response.json();
     },
@@ -92,10 +98,16 @@ export default function GradingPage() {
   // Grade individual answer mutation
   const gradeAnswerMutation = useMutation({
     mutationFn: async ({ answerId, score, feedback }: { answerId: number; score: number; feedback: string }) => {
-      await apiRequest("PUT", `/api/answers/${answerId}/grade`, { score, feedback });
+      const endpoint = isHomeworkGrading 
+        ? `/api/homework-answers/${answerId}/grade`
+        : `/api/answers/${answerId}/grade`;
+      await apiRequest("PUT", endpoint, { score, feedback });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/submissions", submissionId, "grade"] });
+      const queryKey = isHomeworkGrading 
+        ? ["/api/homework-submissions", submissionId, "grade"]
+        : ["/api/submissions", submissionId, "grade"];
+      queryClient.invalidateQueries({ queryKey });
       toast({
         title: "Success",
         description: "Grade saved successfully",
@@ -124,13 +136,17 @@ export default function GradingPage() {
   // Finalize submission mutation
   const finalizeSubmissionMutation = useMutation({
     mutationFn: async () => {
-      await apiRequest("PUT", `/api/submissions/${submissionId}/finalize`, {});
+      const endpoint = isHomeworkGrading 
+        ? `/api/homework-submissions/${submissionId}/finalize`
+        : `/api/submissions/${submissionId}/finalize`;
+      await apiRequest("PUT", endpoint, {});
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/submissions"] });
+      const queryKey = isHomeworkGrading ? ["/api/homework"] : ["/api/submissions"];
+      queryClient.invalidateQueries({ queryKey });
       toast({
         title: "Success",
-        description: "Submission graded successfully!",
+        description: `${isHomeworkGrading ? 'Homework' : 'Submission'} graded successfully!`,
       });
       navigate("/");
     },
@@ -244,7 +260,8 @@ export default function GradingPage() {
     );
   }
 
-  const { submission, exam, student, answers } = submissionDetails;
+  const { submission, exam, homework, student, answers } = submissionDetails;
+  const assignmentData = isHomeworkGrading ? homework : exam;
   const subjectiveAnswers = answers.filter((answer: any) => 
     answer.question && ['essay', 'short_answer', 'fill_blank'].includes(answer.question.questionType)
   );
@@ -267,7 +284,7 @@ export default function GradingPage() {
               </Button>
               <div className="flex-1">
                 <h1 className="text-2xl font-bold">Manual Grading</h1>
-                <p className="text-gray-600">Review and grade student submission</p>
+                <p className="text-gray-600">Review and grade student {isHomeworkGrading ? 'homework' : 'submission'}</p>
               </div>
               <Badge variant="outline" className="bg-yellow-50 text-yellow-800">
                 Pending Review
@@ -292,8 +309,8 @@ export default function GradingPage() {
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Exam:</span>
-                    <span className="font-medium">{exam.title}</span>
+                    <span className="text-gray-600">{isHomeworkGrading ? 'Homework:' : 'Exam:'}</span>
+                    <span className="font-medium">{assignmentData.title}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Submitted:</span>
