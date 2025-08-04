@@ -230,11 +230,7 @@ export default function StudentHomework() {
                             <div className="ml-4">
                               <Button
                                 onClick={() => {
-                                  // TODO: Navigate to homework taking interface
-                                  toast({
-                                    title: "Coming Soon",
-                                    description: "Homework taking interface will be implemented next",
-                                  });
+                                  window.location.href = `/homework/${hw.id}/take`;
                                 }}
                                 disabled={statusInfo.status === "overdue"}
                                 className="flex items-center gap-2"

@@ -16,6 +16,7 @@ import InstructorStudents from "@/pages/instructor/students";
 import InstructorHomework from "@/pages/instructor/homework";
 import StudentDashboard from "@/pages/student/dashboard";
 import StudentHomework from "@/pages/student/homework";
+import StudentHomeworkTaking from "@/pages/student/homework-taking";
 import StudentExams from "@/pages/student/exams";
 import StudentGrades from "@/pages/student/grades";
 import AdminPage from "@/pages/admin";
@@ -62,6 +63,7 @@ function Router() {
         <>
           <Route path="/" component={StudentDashboard} />
           <Route path="/homework" component={StudentHomework} />
+          <Route path="/homework/:id/take" component={StudentHomeworkTaking} />
           <Route path="/exams" component={StudentExams} />
           <Route path="/grades" component={StudentGrades} />
         </>

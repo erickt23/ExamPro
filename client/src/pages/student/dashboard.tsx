@@ -17,7 +17,8 @@ import {
   AlertCircle,
   TrendingUp,
   Calendar,
-  Play
+  Play,
+  BookOpen
 } from "lucide-react";
 
 export default function StudentDashboard() {
@@ -60,6 +61,14 @@ export default function StudentDashboard() {
     refetchIntervalInBackground: true,
   });
 
+  // Fetch homework assignments for dashboard
+  const { data: homework = [] } = useQuery<any[]>({
+    queryKey: ["/api/homework"],
+    retry: false,
+    refetchInterval: 30000, // Auto-refresh every 30 seconds
+    refetchIntervalInBackground: true,
+  });
+
   if (isLoading || !isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -77,60 +86,117 @@ export default function StudentDashboard() {
   const totalMaxScore = completedSubmissions.reduce((sum: number, s: any) => sum + parseFloat(s.maxScore || '0'), 0);
   const averageScore = totalMaxScore > 0 ? (totalScore / totalMaxScore) * 100 : 0;
 
+  // Get recent pending homework (due within next 7 days or no due date)
+  const now = new Date();
+  const next7Days = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+  const recentHomework = homework
+    .filter((hw: any) => hw.status === 'active')
+    .filter((hw: any) => {
+      if (!hw.dueDate) return true; // Include homework with no due date
+      const dueDate = new Date(hw.dueDate);
+      return dueDate > now && dueDate <= next7Days; // Due within next 7 days
+    })
+    .sort((a: any, b: any) => {
+      if (!a.dueDate && !b.dueDate) return 0;
+      if (!a.dueDate) return 1; // No due date goes to end
+      if (!b.dueDate) return -1;
+      return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
+    })
+    .slice(0, 3); // Show only top 3 most urgent
+
   // Categorize exams by status
-  const examsByStatus = exams.filter((exam: any) => exam.status === 'active').map((exam: any) => {
-    const examStatus = getExamStatus(exam, mySubmissions);
-    return { ...exam, examStatus };
+  const examStatuses = exams.map((exam: any) => ({
+    ...exam,
+    examStatus: getExamStatus(exam, mySubmissions)
+  }));
+
+  const availableExams = examStatuses.filter((exam: any) => exam.examStatus.status === 'available');
+  const upcomingExams = examStatuses.filter((exam: any) => exam.examStatus.status === 'upcoming');
+  const completedExams = examStatuses.filter((exam: any) => exam.examStatus.status === 'completed');
+  const expiredExams = examStatuses.filter((exam: any) => exam.examStatus.status === 'expired');
+
+  const allUpcomingAndAvailable = [...upcomingExams, ...availableExams].sort((a: any, b: any) => {
+    if (a.examStatus.status === 'available' && b.examStatus.status === 'upcoming') return -1;
+    if (a.examStatus.status === 'upcoming' && b.examStatus.status === 'available') return 1;
+    
+    const aDate = new Date(a.availableFrom || a.createdAt);
+    const bDate = new Date(b.availableFrom || b.createdAt);
+    return aDate.getTime() - bDate.getTime();
   });
 
-  const upcomingExams = examsByStatus.filter((exam: any) => exam.examStatus.status === 'upcoming');
-  const availableExams = examsByStatus.filter((exam: any) => exam.examStatus.status === 'available');
-  const expiredExams = examsByStatus.filter((exam: any) => exam.examStatus.status === 'expired');
-  const allUpcomingAndAvailable = [...upcomingExams, ...availableExams];
+  // Get recent submissions (last 3 completed ones)
+  const recentSubmissions = mySubmissions
+    .filter((s: any) => s.status === 'graded' || s.submittedAt)
+    .sort((a: any, b: any) => {
+      const aDate = new Date(a.submittedAt || a.createdAt);
+      const bDate = new Date(b.submittedAt || b.createdAt);
+      return bDate.getTime() - aDate.getTime(); // Most recent first
+    })
+    .slice(0, 3);
 
-  // Get recent submissions
-  const recentSubmissions = mySubmissions.slice(0, 3);
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'graded': return 'bg-green-100 text-green-800';
-      case 'submitted': return 'bg-blue-100 text-blue-800';
-      case 'in_progress': return 'bg-orange-100 text-orange-800';
-      default: return 'bg-gray-100 text-gray-800';
+  const handleStartExam = (exam: any) => {
+    if (exam.examStatus.canStart) {
+      setLocation(`/exams/${exam.id}/take`);
+    } else {
+      toast({
+        title: "Cannot Start Exam",
+        description: exam.examStatus.status === 'upcoming' ? 'This exam is not yet available' : 'This exam cannot be started',
+        variant: "destructive",
+      });
     }
-  };
-
-  const formatScore = (score: string | number, maxScore: string | number) => {
-    const s = parseFloat(score?.toString() || '0');
-    const m = parseFloat(maxScore?.toString() || '0');
-    return `${s.toFixed(1)}/${m}`;
-  };
-
-  const getScorePercentage = (score: string | number, maxScore: string | number) => {
-    const s = parseFloat(score?.toString() || '0');
-    const m = parseFloat(maxScore?.toString() || '0');
-    return m > 0 ? (s / m) * 100 : 0;
   };
 
   const getStatusBadgeProps = (status: string) => {
     switch (status) {
       case 'available':
-        return { variant: 'default' as const, className: 'bg-green-100 text-green-800 hover:bg-green-100' };
+        return { variant: 'default' as const, className: 'bg-green-100 text-green-800' };
       case 'upcoming':
-        return { variant: 'secondary' as const, className: 'bg-blue-100 text-blue-800 hover:bg-blue-100' };
-      case 'expired':
-        return { variant: 'outline' as const, className: 'bg-red-100 text-red-800 hover:bg-red-100' };
+        return { variant: 'secondary' as const, className: 'bg-blue-100 text-blue-800' };
       case 'completed':
-        return { variant: 'outline' as const, className: 'bg-gray-100 text-gray-800 hover:bg-gray-100' };
+        return { variant: 'outline' as const, className: 'bg-gray-100 text-gray-800' };
+      case 'expired':
+        return { variant: 'destructive' as const, className: 'bg-red-100 text-red-800' };
       default:
         return { variant: 'secondary' as const };
     }
   };
 
-  const handleStartExam = (exam: any) => {
-    // Navigate to exams page with exam ID as URL parameter
-    setLocation(`/exams?start=${exam.id}`);
+  // Helper functions for score display
+  const formatScore = (score: string | number, maxScore: string | number) => {
+    const numScore = parseFloat(score.toString());
+    const numMaxScore = parseFloat(maxScore.toString());
+    return `${numScore.toFixed(1)}/${numMaxScore.toFixed(1)}`;
   };
+
+  const getScorePercentage = (score: string | number, maxScore: string | number) => {
+    const numScore = parseFloat(score.toString());
+    const numMaxScore = parseFloat(maxScore.toString());
+    return numMaxScore > 0 ? (numScore / numMaxScore) * 100 : 0;
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'graded':
+        return 'bg-green-100 text-green-800';
+      case 'submitted':
+        return 'bg-blue-100 text-blue-800';
+      case 'in_progress':
+        return 'bg-yellow-100 text-yellow-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  // Log dashboard data for debugging
+  console.log('Student exam dashboard data:', {
+    totalExams: exams.length,
+    availableExams: availableExams.length,
+    upcomingExams: upcomingExams.length,
+    expiredExams: expiredExams.length,
+    completedExams: completedExams.length,
+    totalSubmissions: mySubmissions.length,
+    user: user?.id
+  });
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -139,87 +205,66 @@ export default function StudentDashboard() {
         <Sidebar />
         <main className="flex-1 overflow-y-auto">
           <div className="p-6">
-            <div className="mb-6">
-              <h2 className="text-2xl font-bold text-gray-900">
-                Welcome back, {user?.firstName || 'Student'}!
-              </h2>
-              <p className="text-gray-600 mt-1">Here's an overview of your academic progress</p>
+            <div className="mb-8">
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">Student Dashboard</h1>
+              <p className="text-gray-600">Welcome back! Here's your academic overview.</p>
             </div>
 
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
               <Card>
                 <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
+                  <div className="flex items-center">
+                    <div className="p-2 bg-blue-100 rounded-lg">
+                      <FileText className="h-6 w-6 text-blue-600" />
+                    </div>
+                    <div className="ml-4">
+                      <p className="text-sm font-medium text-gray-600">Available Exams</p>
+                      <p className="text-2xl font-bold text-gray-900">{availableExams.length}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="p-6">
+                  <div className="flex items-center">
+                    <div className="p-2 bg-green-100 rounded-lg">
+                      <CheckCircle className="h-6 w-6 text-green-600" />
+                    </div>
+                    <div className="ml-4">
+                      <p className="text-sm font-medium text-gray-600">Completed</p>
+                      <p className="text-2xl font-bold text-gray-900">{completedExams.length}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="p-6">
+                  <div className="flex items-center">
+                    <div className="p-2 bg-yellow-100 rounded-lg">
+                      <Clock className="h-6 w-6 text-yellow-600" />
+                    </div>
+                    <div className="ml-4">
+                      <p className="text-sm font-medium text-gray-600">Upcoming</p>
+                      <p className="text-2xl font-bold text-gray-900">{upcomingExams.length}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="p-6">
+                  <div className="flex items-center">
+                    <div className="p-2 bg-purple-100 rounded-lg">
+                      <TrendingUp className="h-6 w-6 text-purple-600" />
+                    </div>
+                    <div className="ml-4">
                       <p className="text-sm font-medium text-gray-600">Average Score</p>
                       <p className="text-2xl font-bold text-gray-900">
-                        {averageScore.toFixed(1)}%
+                        {completedSubmissions.length > 0 ? `${averageScore.toFixed(1)}%` : 'N/A'}
                       </p>
-                    </div>
-                    <div className="p-3 bg-green-100 rounded-lg">
-                      <TrendingUp className="h-6 w-6 text-green-600" />
-                    </div>
-                  </div>
-                  <div className="mt-4">
-                    <Progress value={averageScore} className="h-2" />
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-gray-600">Exams Completed</p>
-                      <p className="text-2xl font-bold text-gray-900">
-                        {completedSubmissions.length}
-                      </p>
-                    </div>
-                    <div className="p-3 bg-blue-100 rounded-lg">
-                      <CheckCircle className="h-6 w-6 text-blue-600" />
-                    </div>
-                  </div>
-                  <div className="mt-4 flex items-center text-sm">
-                    <span className="text-gray-500">
-                      {mySubmissions?.length || 0} total attempts
-                    </span>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-gray-600">Available Exams</p>
-                      <p className="text-2xl font-bold text-gray-900">
-                        {availableExams.length}
-                      </p>
-                    </div>
-                    <div className="p-3 bg-orange-100 rounded-lg">
-                      <Clock className="h-6 w-6 text-orange-600" />
-                    </div>
-                  </div>
-                  <div className="mt-4 flex items-center text-sm">
-                    <span className="text-gray-500">
-                      {upcomingExams.length} upcoming, {expiredExams.length} expired
-                    </span>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-gray-600">Pending Results</p>
-                      <p className="text-2xl font-bold text-gray-900">
-                        {mySubmissions?.filter((s: any) => s.status === 'submitted').length || 0}
-                      </p>
-                    </div>
-                    <div className="p-3 bg-purple-100 rounded-lg">
-                      <AlertCircle className="h-6 w-6 text-purple-600" />
                     </div>
                   </div>
                   <div className="mt-4 flex items-center text-sm">
@@ -288,112 +333,79 @@ export default function StudentDashboard() {
                 </CardContent>
               </Card>
 
-              {/* Recent Results */}
+              {/* Recent Homework */}
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center">
-                    <CheckCircle className="h-5 w-5 mr-2" />
-                    Recent Results
+                    <BookOpen className="h-5 w-5 mr-2" />
+                    Recent Homework
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  {recentSubmissions.length === 0 ? (
+                  {recentHomework.length === 0 ? (
                     <div className="text-center py-8">
-                      <CheckCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                      <p className="text-gray-500">No results yet</p>
-                      <p className="text-sm text-gray-400">Complete an exam to see your results</p>
+                      <BookOpen className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                      <p className="text-gray-500">No pending homework</p>
+                      <p className="text-sm text-gray-400">All assignments are up to date</p>
                     </div>
                   ) : (
                     <div className="space-y-4">
-                      {recentSubmissions.map((submission: any) => (
-                        <div key={submission.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                          <div className="flex-1">
-                            <div className="flex items-center space-x-2 mb-1">
-                              <h4 className="font-medium text-gray-900">Exam {submission.examId}</h4>
-                              {submission.isLate && (
-                                <Badge variant="destructive" className="text-xs">Late</Badge>
-                              )}
-                            </div>
-                            <div className="text-sm text-gray-600 space-y-1">
-                              {submission.submittedAt ? (
-                                <>
-                                  <p>Completed: {formatSubmissionTime(submission.submittedAt)}</p>
-                                  {submission.startedAt && (
-                                    <p className="flex items-center space-x-2">
-                                      <Clock className="h-3 w-3" />
-                                      <span>Duration: {formatSubmissionDuration(submission.startedAt, submission.submittedAt)}</span>
-                                    </p>
-                                  )}
-                                </>
-                              ) : submission.startedAt ? (
-                                <p>Started: {formatSubmissionTime(submission.startedAt)}</p>
-                              ) : (
-                                <p>In Progress</p>
-                              )}
-                            </div>
-                          </div>
-                          <div className="flex items-center space-x-4">
-                            {submission.totalScore ? (
-                              <div className="text-right">
-                                <p className="font-medium text-gray-900">
-                                  {formatScore(submission.totalScore, submission.maxScore)}
-                                </p>
-                                <p className="text-sm text-gray-600">
-                                  {getScorePercentage(submission.totalScore, submission.maxScore).toFixed(1)}%
-                                </p>
+                      {recentHomework.map((hw: any) => {
+                        const subject = (subjects as any[]).find((s: any) => s.id === hw.subjectId);
+                        const getDueDateStatus = (dueDate: string | null) => {
+                          if (!dueDate) return { color: "bg-blue-100 text-blue-800", text: "No deadline" };
+                          const now = new Date();
+                          const due = new Date(dueDate);
+                          const hoursLeft = (due.getTime() - now.getTime()) / (1000 * 60 * 60);
+                          
+                          if (hoursLeft < 24) {
+                            return { color: "bg-red-100 text-red-800", text: "Due today" };
+                          } else if (hoursLeft < 48) {
+                            return { color: "bg-orange-100 text-orange-800", text: "Due tomorrow" };
+                          } else {
+                            const daysLeft = Math.ceil(hoursLeft / 24);
+                            return { color: "bg-yellow-100 text-yellow-800", text: `${daysLeft} days left` };
+                          }
+                        };
+                        const dueDateStatus = getDueDateStatus(hw.dueDate);
+                        
+                        return (
+                          <div key={hw.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-1">
+                                <h4 className="font-medium text-gray-900">{hw.title}</h4>
+                                <Badge className={dueDateStatus.color}>
+                                  {dueDateStatus.text}
+                                </Badge>
                               </div>
-                            ) : (
-                              <Badge className={getStatusColor(submission.status)}>
-                                {submission.status.replace('_', ' ')}
-                              </Badge>
-                            )}
+                              <p className="text-sm text-gray-600">
+                                {subject?.name || 'Unknown Subject'}
+                              </p>
+                              {hw.dueDate && (
+                                <p className="text-xs text-gray-500 mt-1">
+                                  Due: {formatEasternTime(hw.dueDate, { includeDate: true, includeTime: true, format: 'medium' })}
+                                </p>
+                              )}
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <Button size="sm" onClick={() => setLocation(`/homework/${hw.id}/take`)}>
+                                <Play className="h-4 w-4 mr-1" />
+                                Start
+                              </Button>
+                            </div>
                           </div>
-                        </div>
-                      ))}
+                        );
+                      })}
+                      <div className="pt-4 border-t">
+                        <Button variant="outline" onClick={() => setLocation('/homework')} className="w-full">
+                          View All Homework
+                        </Button>
+                      </div>
                     </div>
                   )}
                 </CardContent>
               </Card>
             </div>
-
-            {/* Performance Overview */}
-            {completedSubmissions.length > 0 && (
-              <Card className="mt-6">
-                <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <TrendingUp className="h-5 w-5 mr-2" />
-                    Performance Overview
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="text-center">
-                      <p className="text-sm text-gray-600 mb-2">Highest Score</p>
-                      <p className="text-2xl font-bold text-green-600">
-                        {Math.max(...completedSubmissions.map((s: any) => 
-                          getScorePercentage(s.totalScore, s.maxScore)
-                        )).toFixed(1)}%
-                      </p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-sm text-gray-600 mb-2">Average Score</p>
-                      <p className="text-2xl font-bold text-blue-600">
-                        {averageScore.toFixed(1)}%
-                      </p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-sm text-gray-600 mb-2">Completion Rate</p>
-                      <p className="text-2xl font-bold text-orange-600">
-                        {mySubmissions?.length ? 
-                          ((completedSubmissions.length / mySubmissions.length) * 100).toFixed(1) : 
-                          0
-                        }%
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
           </div>
         </main>
       </div>

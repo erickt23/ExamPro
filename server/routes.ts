@@ -1122,6 +1122,131 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get specific homework assignment details
+  app.get('/api/homework/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      const homeworkId = parseInt(req.params.id);
+
+      if (isNaN(homeworkId)) {
+        return res.status(400).json({ message: "Invalid homework ID" });
+      }
+
+      const homework = await storage.getHomeworkById(homeworkId);
+      if (!homework) {
+        return res.status(404).json({ message: "Homework not found" });
+      }
+
+      // Students can only access active homework
+      if (user?.role !== 'instructor' && homework.status !== 'active') {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      res.json(homework);
+    } catch (error) {
+      console.error("Error fetching homework:", error);
+      res.status(500).json({ message: "Failed to fetch homework" });
+    }
+  });
+
+  // Get homework questions for taking
+  app.get('/api/homework/:id/questions', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      const homeworkId = parseInt(req.params.id);
+
+      if (isNaN(homeworkId)) {
+        return res.status(400).json({ message: "Invalid homework ID" });
+      }
+
+      // Verify homework exists and is accessible
+      const homework = await storage.getHomeworkById(homeworkId);
+      if (!homework) {
+        return res.status(404).json({ message: "Homework not found" });
+      }
+
+      // Students can only access active homework
+      if (user?.role !== 'instructor' && homework.status !== 'active') {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const questions = await storage.getHomeworkQuestions(homeworkId);
+      res.json(questions);
+    } catch (error) {
+      console.error("Error fetching homework questions:", error);
+      res.status(500).json({ message: "Failed to fetch homework questions" });
+    }
+  });
+
+  // Submit homework answers
+  app.post('/api/homework/:id/submit', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      const homeworkId = parseInt(req.params.id);
+
+      if (isNaN(homeworkId)) {
+        return res.status(400).json({ message: "Invalid homework ID" });
+      }
+
+      // Only students can submit homework
+      if (user?.role !== 'student') {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      // Verify homework exists and is active
+      const homework = await storage.getHomeworkById(homeworkId);
+      if (!homework) {
+        return res.status(404).json({ message: "Homework not found" });
+      }
+
+      if (homework.status !== 'active') {
+        return res.status(403).json({ message: "Homework is not available for submission" });
+      }
+
+      // Check if homework is overdue
+      if (homework.dueDate) {
+        const now = new Date();
+        const dueDate = new Date(homework.dueDate);
+        if (now > dueDate) {
+          return res.status(403).json({ message: "Homework submission deadline has passed" });
+        }
+      }
+
+      const { answers } = req.body;
+      if (!answers || !Array.isArray(answers)) {
+        return res.status(400).json({ message: "Invalid answers format" });
+      }
+
+      // Create homework submission
+      const submission = await storage.createHomeworkSubmission({
+        homeworkId,
+        studentId: userId,
+        submittedAt: new Date(),
+        status: 'submitted',
+        startedAt: new Date(), // For now, assume started when submitted
+        attemptNumber: 1,
+        isLate: homework.dueDate ? new Date() > new Date(homework.dueDate) : false,
+      });
+
+      // Create homework answers
+      for (const answer of answers) {
+        await storage.createHomeworkAnswer({
+          submissionId: submission.id,
+          questionId: answer.questionId,
+          answerText: answer.answerText,
+        });
+      }
+
+      res.status(201).json(submission);
+    } catch (error) {
+      console.error("Error submitting homework:", error);
+      res.status(500).json({ message: "Failed to submit homework" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
