@@ -13,6 +13,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   ArrowLeft, 
   Clock, 
@@ -24,16 +26,211 @@ import {
   Link,
   Download,
   Paperclip,
-  ExternalLink
+  ExternalLink,
+  Eye,
+  BookOpen,
+  Notebook
 } from "lucide-react";
 
-export default function GradingPage() {
-  const [examMatch, examParams] = useRoute("/grading/:submissionId");
-  const [homeworkMatch, homeworkParams] = useRoute("/homework-grading/:submissionId");
-  
-  const isHomeworkGrading = !!homeworkMatch;
-  const submissionId = isHomeworkGrading ? homeworkParams?.submissionId : examParams?.submissionId;
-  
+// Component for listing submissions to grade
+function GradingList() {
+  const [, navigate] = useLocation();
+  const { user } = useAuth();
+  const { toast } = useToast();
+
+  // Fetch exam submissions that need grading
+  const { data: examSubmissions, isLoading: examLoading } = useQuery({
+    queryKey: ["/api/submissions", { status: "submitted", userRole: "instructor", userId: user?.id }],
+    queryFn: async () => {
+      const response = await fetch(`/api/submissions?status=submitted&userRole=instructor&userId=${user?.id}`);
+      if (!response.ok) throw new Error(`${response.status}: ${response.statusText}`);
+      return response.json();
+    },
+    enabled: !!user?.id,
+    retry: false,
+  });
+
+  // Fetch homework submissions that need grading
+  const { data: homeworkSubmissions, isLoading: homeworkLoading } = useQuery({
+    queryKey: ["/api/homework-submissions", { status: "submitted", userRole: "instructor", userId: user?.id }],
+    queryFn: async () => {
+      const response = await fetch(`/api/homework-submissions?status=submitted&userRole=instructor&userId=${user?.id}`);
+      if (!response.ok) throw new Error(`${response.status}: ${response.statusText}`);
+      return response.json();
+    },
+    enabled: !!user?.id,
+    retry: false,
+  });
+
+  const handleGradeExamSubmission = (submissionId: number) => {
+    navigate(`/grading/${submissionId}`);
+  };
+
+  const handleGradeHomeworkSubmission = (submissionId: number) => {
+    navigate(`/homework-grading/${submissionId}`);
+  };
+
+  if (examLoading || homeworkLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-lg">Loading submissions...</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold">Grading Center</h1>
+        <p className="text-gray-600">Review and grade student submissions</p>
+      </div>
+
+      <Tabs defaultValue="exams" className="w-full">
+        <TabsList>
+          <TabsTrigger value="exams" className="flex items-center gap-2">
+            <BookOpen className="h-4 w-4" />
+            Exam Submissions ({examSubmissions?.length || 0})
+          </TabsTrigger>
+          <TabsTrigger value="homework" className="flex items-center gap-2">
+            <Notebook className="h-4 w-4" />
+            Homework Submissions ({homeworkSubmissions?.length || 0})
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="exams">
+          <Card>
+            <CardHeader>
+              <CardTitle>Exam Submissions Pending Review</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {!examSubmissions || examSubmissions.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  <FileText className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                  <p>No exam submissions pending review</p>
+                </div>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Student</TableHead>
+                      <TableHead>Exam</TableHead>
+                      <TableHead>Submitted</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {examSubmissions.map((submission: any) => (
+                      <TableRow key={submission.id}>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <User className="h-4 w-4" />
+                            {submission.student?.firstName} {submission.student?.lastName}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="font-medium">{submission.exam?.title}</div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <Clock className="h-4 w-4" />
+                            {formatDetailedSubmissionTime(submission.submittedAt)}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="secondary">Needs Review</Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Button
+                            size="sm"
+                            onClick={() => handleGradeExamSubmission(submission.id)}
+                            className="flex items-center gap-2"
+                          >
+                            <Eye className="h-4 w-4" />
+                            Grade
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="homework">
+          <Card>
+            <CardHeader>
+              <CardTitle>Homework Submissions Pending Review</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {!homeworkSubmissions || homeworkSubmissions.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  <Notebook className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                  <p>No homework submissions pending review</p>
+                </div>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Student</TableHead>
+                      <TableHead>Homework</TableHead>
+                      <TableHead>Submitted</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {homeworkSubmissions.map((submission: any) => (
+                      <TableRow key={submission.id}>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <User className="h-4 w-4" />
+                            {submission.student?.firstName} {submission.student?.lastName}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="font-medium">{submission.homework?.title}</div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <Clock className="h-4 w-4" />
+                            {formatDetailedSubmissionTime(submission.submittedAt)}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="secondary">Needs Review</Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Button
+                            size="sm"
+                            onClick={() => handleGradeHomeworkSubmission(submission.id)}
+                            className="flex items-center gap-2"
+                          >
+                            <Eye className="h-4 w-4" />
+                            Grade
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+}
+
+// Component for individual submission grading
+function SubmissionGrading({ submissionId, isHomeworkGrading }: { submissionId: string; isHomeworkGrading: boolean }) {
+  const { toast } = useToast();
+  const [, navigate] = useLocation();
+  const [gradingData, setGradingData] = useState<Record<number, { score: number; feedback: string }>>({});
+
   // Convert Google Cloud Storage URL to our authenticated API endpoint
   const getSecureFileUrl = (attachmentUrl: string) => {
     if (!attachmentUrl) return '';
@@ -60,25 +257,6 @@ export default function GradingPage() {
     
     return attachmentUrl;
   };
-  const { toast } = useToast();
-  const { isAuthenticated, isLoading: authLoading } = useAuth();
-  const [, navigate] = useLocation();
-  const [gradingData, setGradingData] = useState<Record<number, { score: number; feedback: string }>>({});
-
-  // Redirect if not authenticated
-  useEffect(() => {
-    if (!authLoading && !isAuthenticated) {
-      toast({
-        title: "Unauthorized",
-        description: "You are logged out. Logging in again...",
-        variant: "destructive",
-      });
-      setTimeout(() => {
-        window.location.href = "/api/login";
-      }, 500);
-      return;
-    }
-  }, [isAuthenticated, authLoading, toast]);
 
   // Fetch submission details for grading
   const { data: submissionDetails, isLoading: submissionLoading } = useQuery({
@@ -148,7 +326,7 @@ export default function GradingPage() {
         title: "Success",
         description: `${isHomeworkGrading ? 'Homework' : 'Submission'} graded successfully!`,
       });
-      navigate("/");
+      navigate("/grading");
     },
     onError: (error: Error) => {
       if (isUnauthorizedError(error)) {
@@ -217,45 +395,18 @@ export default function GradingPage() {
     }
   };
 
-  if (authLoading || !isAuthenticated) {
+  if (submissionLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!submissionId || submissionLoading) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <Navbar />
-        <div className="flex">
-          <Sidebar />
-          <main className="flex-1 overflow-y-auto">
-            <div className="flex items-center justify-center h-64">
-              <div className="text-lg">Loading submission details...</div>
-            </div>
-          </main>
-        </div>
+      <div className="flex items-center justify-center h-64">
+        <div className="text-lg">Loading submission details...</div>
       </div>
     );
   }
 
   if (!submissionDetails) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <Navbar />
-        <div className="flex">
-          <Sidebar />
-          <main className="flex-1 overflow-y-auto">
-            <div className="flex items-center justify-center h-64">
-              <div className="text-lg text-red-600">Submission not found</div>
-            </div>
-          </main>
-        </div>
+      <div className="flex items-center justify-center h-64">
+        <div className="text-lg text-red-600">Submission not found</div>
       </div>
     );
   }
@@ -270,253 +421,283 @@ export default function GradingPage() {
   );
 
   return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center gap-4">
+        <Button variant="ghost" onClick={() => navigate("/grading")}>
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back to Grading Center
+        </Button>
+        <div className="flex-1">
+          <h1 className="text-2xl font-bold">Manual Grading</h1>
+          <p className="text-gray-600">Review and grade student {isHomeworkGrading ? 'homework' : 'submission'}</p>
+        </div>
+        <Badge variant="outline" className="bg-yellow-50 text-yellow-800">
+          Pending Review
+        </Badge>
+      </div>
+
+      {/* Submission Info */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <FileText className="h-5 w-5" />
+            Submission Details
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+            <div className="flex justify-between">
+              <span className="text-gray-600">Student:</span>
+              <span className="font-medium flex items-center gap-1">
+                <User className="h-4 w-4" />
+                {student.firstName} {student.lastName}
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600">{isHomeworkGrading ? 'Homework:' : 'Exam:'}</span>
+              <span className="font-medium">{assignmentData.title}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600">Submitted:</span>
+              <span className="font-medium flex items-center gap-1">
+                <Clock className="h-4 w-4" />
+                {formatDetailedSubmissionTime(submission.submittedAt)}
+              </span>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Objective Questions (Auto-graded) */}
+      {objectiveAnswers.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <CheckCircle className="h-5 w-5 text-green-600" />
+              Auto-graded Questions ({objectiveAnswers.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {objectiveAnswers.map((answer: any) => (
+                <div key={answer.id} className="border rounded-lg p-4">
+                  <div className="flex justify-between items-start mb-3">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Badge className={getQuestionTypeColor(answer.question.questionType)}>
+                          {formatQuestionType(answer.question.questionType)}
+                        </Badge>
+                        <span className="text-sm text-gray-600">
+                          {parseFloat(answer.score || '0')} / {parseFloat(answer.maxScore || '0')} points
+                        </span>
+                      </div>
+                      <h4 className="font-medium mb-2">{answer.question.questionText}</h4>
+                    </div>
+                  </div>
+                  <div className="text-sm">
+                    <span className="text-gray-600">Selected: </span>
+                    <span className="font-medium">{answer.selectedOption}</span>
+                    <span className="text-gray-600"> | Correct: </span>
+                    <span className="font-medium">{answer.question.correctAnswer}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Subjective Questions (Manual Grading) */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Award className="h-5 w-5 text-orange-600" />
+            Questions Requiring Manual Grading ({subjectiveAnswers.length})
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-6">
+            {subjectiveAnswers.map((answer: any) => (
+              <div key={answer.id} className="border rounded-lg p-4">
+                <div className="flex justify-between items-start mb-3">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Badge className={getQuestionTypeColor(answer.question.questionType)}>
+                        {formatQuestionType(answer.question.questionType)}
+                      </Badge>
+                      <span className="text-sm text-gray-600">
+                        Max: {parseFloat(answer.maxScore || '0')} points
+                      </span>
+                    </div>
+                    <h4 className="font-medium mb-3">{answer.question.questionText}</h4>
+                  </div>
+                </div>
+
+                {/* Student Answer */}
+                <div className="mb-4">
+                  <h5 className="font-medium text-gray-700 mb-2">Student Answer:</h5>
+                  
+                  {/* Text Answer */}
+                  {answer.answerText && (
+                    <div className="bg-gray-50 p-3 rounded border mb-3">
+                      <p className="whitespace-pre-wrap">
+                        {answer.answerText}
+                      </p>
+                    </div>
+                  )}
+                  
+                  {/* File Attachment */}
+                  {answer.attachmentUrl && (
+                    <div className="bg-blue-50 p-3 rounded border mb-3">
+                      <div className="flex items-center gap-2">
+                        <Paperclip className="h-4 w-4 text-blue-600" />
+                        <span className="text-sm font-medium text-blue-900">File Attachment:</span>
+                      </div>
+                      <div className="mt-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          asChild
+                          className="flex items-center gap-2"
+                        >
+                          <a
+                            href={getSecureFileUrl(answer.attachmentUrl)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            <ExternalLink className="h-4 w-4" />
+                            View Attachment
+                          </a>
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Grading Section */}
+                <div className="border-t pt-4">
+                  <h5 className="font-medium text-gray-700 mb-3">Grade This Answer:</h5>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Score (out of {parseFloat(answer.maxScore || '0')})
+                      </label>
+                      <Input
+                        type="number"
+                        min="0"
+                        max={parseFloat(answer.maxScore || '0')}
+                        step="0.5"
+                        placeholder="Enter score"
+                        value={gradingData[answer.id]?.score || ''}
+                        onChange={(e) => handleScoreChange(answer.id, e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Feedback
+                      </label>
+                      <Textarea
+                        placeholder="Provide feedback for the student"
+                        value={gradingData[answer.id]?.feedback || ''}
+                        onChange={(e) => handleFeedbackChange(answer.id, e.target.value)}
+                        rows={3}
+                      />
+                    </div>
+                  </div>
+                  <div className="mt-3">
+                    <Button
+                      onClick={() => saveGrade(answer.id)}
+                      disabled={gradeAnswerMutation.isPending}
+                      className="flex items-center gap-2"
+                    >
+                      <Save className="h-4 w-4" />
+                      Save Grade
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Finalize Section */}
+      <Card>
+        <CardContent className="pt-6">
+          <div className="flex justify-between items-center">
+            <div>
+              <h3 className="font-medium">Ready to finalize?</h3>
+              <p className="text-sm text-gray-600">
+                Once finalized, grades will be published to the student and cannot be changed.
+              </p>
+            </div>
+            <Button
+              onClick={finalizeSubmission}
+              disabled={finalizeSubmissionMutation.isPending}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              <Award className="h-4 w-4 mr-2" />
+              Finalize Grades
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+export default function GradingPage() {
+  const [examMatch, examParams] = useRoute("/grading/:submissionId");
+  const [homeworkMatch, homeworkParams] = useRoute("/homework-grading/:submissionId");
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const { toast } = useToast();
+  
+  const isHomeworkGrading = !!homeworkMatch;
+  const submissionId = isHomeworkGrading ? homeworkParams?.submissionId : examParams?.submissionId;
+  const isGradingSpecificSubmission = !!submissionId;
+
+  // Redirect if not authenticated
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      toast({
+        title: "Unauthorized",
+        description: "You are logged out. Logging in again...",
+        variant: "destructive",
+      });
+      setTimeout(() => {
+        window.location.href = "/api/login";
+      }, 500);
+      return;
+    }
+  }, [isAuthenticated, authLoading, toast]);
+
+  if (authLoading || !isAuthenticated) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
       <div className="flex">
         <Sidebar />
         <main className="flex-1 overflow-y-auto">
           <div className="p-6 max-w-6xl mx-auto">
-            {/* Header */}
-            <div className="flex items-center gap-4 mb-6">
-              <Button variant="ghost" onClick={() => navigate("/")}>
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Dashboard
-              </Button>
-              <div className="flex-1">
-                <h1 className="text-2xl font-bold">Manual Grading</h1>
-                <p className="text-gray-600">Review and grade student {isHomeworkGrading ? 'homework' : 'submission'}</p>
-              </div>
-              <Badge variant="outline" className="bg-yellow-50 text-yellow-800">
-                Pending Review
-              </Badge>
-            </div>
-
-            {/* Submission Info */}
-            <Card className="mb-6">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <FileText className="h-5 w-5" />
-                  Submission Details
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Student:</span>
-                    <span className="font-medium flex items-center gap-1">
-                      <User className="h-4 w-4" />
-                      {student.firstName} {student.lastName}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">{isHomeworkGrading ? 'Homework:' : 'Exam:'}</span>
-                    <span className="font-medium">{assignmentData.title}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Submitted:</span>
-                    <span className="font-medium flex items-center gap-1">
-                      <Clock className="h-4 w-4" />
-                      {formatDetailedSubmissionTime(submission.submittedAt)}
-                    </span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Objective Questions (Auto-graded) */}
-            {objectiveAnswers.length > 0 && (
-              <Card className="mb-6">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <CheckCircle className="h-5 w-5 text-green-600" />
-                    Auto-graded Questions ({objectiveAnswers.length})
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {objectiveAnswers.map((answer: any) => (
-                      <div key={answer.id} className="border rounded-lg p-4">
-                        <div className="flex justify-between items-start mb-3">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
-                              <Badge className={getQuestionTypeColor(answer.question.questionType)}>
-                                {formatQuestionType(answer.question.questionType)}
-                              </Badge>
-                              <span className="text-sm text-gray-600">
-                                {parseFloat(answer.score || '0')} / {parseFloat(answer.maxScore || '0')} points
-                              </span>
-                            </div>
-                            <h4 className="font-medium mb-2">{answer.question.questionText}</h4>
-                          </div>
-                        </div>
-                        <div className="text-sm">
-                          <span className="text-gray-600">Selected: </span>
-                          <span className="font-medium">{answer.selectedOption}</span>
-                          <span className="text-gray-600"> | Correct: </span>
-                          <span className="font-medium">{answer.question.correctAnswer}</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
+            {isGradingSpecificSubmission ? (
+              <SubmissionGrading 
+                submissionId={submissionId!} 
+                isHomeworkGrading={isHomeworkGrading} 
+              />
+            ) : (
+              <GradingList />
             )}
-
-            {/* Subjective Questions (Manual Grading) */}
-            <Card className="mb-6">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Award className="h-5 w-5 text-orange-600" />
-                  Questions Requiring Manual Grading ({subjectiveAnswers.length})
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-6">
-                  {subjectiveAnswers.map((answer: any) => (
-                    <div key={answer.id} className="border rounded-lg p-4">
-                      <div className="flex justify-between items-start mb-3">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            <Badge className={getQuestionTypeColor(answer.question.questionType)}>
-                              {formatQuestionType(answer.question.questionType)}
-                            </Badge>
-                            <span className="text-sm text-gray-600">
-                              Max: {parseFloat(answer.maxScore || '0')} points
-                            </span>
-                          </div>
-                          <h4 className="font-medium mb-3">{answer.question.questionText}</h4>
-                        </div>
-                      </div>
-
-                      {/* Student Answer */}
-                      <div className="mb-4">
-                        <h5 className="font-medium text-gray-700 mb-2">Student Answer:</h5>
-                        
-                        {/* Text Answer */}
-                        {answer.answerText && (
-                          <div className="bg-gray-50 p-3 rounded border mb-3">
-                            <p className="whitespace-pre-wrap">
-                              {answer.answerText}
-                            </p>
-                          </div>
-                        )}
-                        
-                        {/* File Attachment */}
-                        {answer.attachmentUrl && (
-                          <div className="bg-blue-50 p-3 rounded border mb-3">
-                            <div className="flex items-center gap-2">
-                              <Paperclip className="h-4 w-4 text-blue-600" />
-                              <span className="text-sm font-medium text-blue-900">File Attachment:</span>
-                            </div>
-                            <div className="mt-2">
-                              <a 
-                                href={getSecureFileUrl(answer.attachmentUrl)}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 text-sm"
-                              >
-                                <Download className="h-3 w-3" />
-                                View/Download File
-                                <ExternalLink className="h-3 w-3" />
-                              </a>
-                            </div>
-                          </div>
-                        )}
-                        
-                        {/* Link URL */}
-                        {answer.linkUrl && (
-                          <div className="bg-green-50 p-3 rounded border mb-3">
-                            <div className="flex items-center gap-2">
-                              <Link className="h-4 w-4 text-green-600" />
-                              <span className="text-sm font-medium text-green-900">Submitted Link:</span>
-                            </div>
-                            <div className="mt-2">
-                              <a 
-                                href={answer.linkUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-flex items-center gap-1 text-green-600 hover:text-green-800 text-sm break-all"
-                              >
-                                {answer.linkUrl}
-                                <ExternalLink className="h-3 w-3 flex-shrink-0" />
-                              </a>
-                            </div>
-                          </div>
-                        )}
-                        
-                        {/* No answer provided message */}
-                        {!answer.answerText && !answer.attachmentUrl && !answer.linkUrl && (
-                          <div className="bg-gray-50 p-3 rounded border">
-                            <p className="text-gray-500 italic">
-                              No answer provided
-                            </p>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Grading Section */}
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Score
-                          </label>
-                          <Input
-                            type="number"
-                            min="0"
-                            max={parseFloat(answer.maxScore || '0')}
-                            step="0.1"
-                            placeholder="Enter score"
-                            value={gradingData[answer.id]?.score || parseFloat(answer.score || '0')}
-                            onChange={(e) => handleScoreChange(answer.id, e.target.value)}
-                          />
-                        </div>
-                        <div className="flex items-end">
-                          <Button
-                            onClick={() => saveGrade(answer.id)}
-                            disabled={gradeAnswerMutation.isPending}
-                            className="w-full"
-                          >
-                            <Save className="h-4 w-4 mr-2" />
-                            Save Grade
-                          </Button>
-                        </div>
-                      </div>
-
-                      <div className="mt-4">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Feedback (optional)
-                        </label>
-                        <Textarea
-                          placeholder="Provide feedback to the student..."
-                          rows={3}
-                          value={gradingData[answer.id]?.feedback || answer.feedback || ''}
-                          onChange={(e) => handleFeedbackChange(answer.id, e.target.value)}
-                        />
-                      </div>
-
-                      {answer.gradedAt && (
-                        <div className="mt-3 text-sm text-gray-600 flex items-center gap-2">
-                          <CheckCircle className="h-4 w-4 text-green-600" />
-                          Graded on {formatDetailedSubmissionTime(answer.gradedAt)}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Finalize Button */}
-            <div className="flex justify-end">
-              <Button
-                onClick={finalizeSubmission}
-                disabled={finalizeSubmissionMutation.isPending}
-                className="bg-green-600 hover:bg-green-700"
-              >
-                <CheckCircle className="h-4 w-4 mr-2" />
-                {finalizeSubmissionMutation.isPending ? "Finalizing..." : "Finalize Grading"}
-              </Button>
-            </div>
           </div>
         </main>
       </div>

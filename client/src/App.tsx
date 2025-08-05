@@ -55,6 +55,7 @@ function Router() {
           <Route path="/homework-questions" component={InstructorHomeworkQuestions} />
           <Route path="/exams" component={InstructorExams} />
           <Route path="/homework" component={InstructorHomework} />
+          <Route path="/grading" component={InstructorGrading} />
           <Route path="/grading/:submissionId" component={InstructorGrading} />
           <Route path="/homework-grading/:submissionId" component={InstructorGrading} />
           <Route path="/analytics" component={InstructorAnalytics} />
