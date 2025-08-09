@@ -41,7 +41,7 @@ const createQuestionSchema = z.object({
   correctAnswer: z.string().optional(),
   explanation: z.string().optional(),
   attachmentUrl: z.string().optional(),
-  subjectId: z.number().min(1, "Subject is required"),
+  subjectId: z.number().min(1, "Please select a subject"),
   difficulty: z.enum(['easy', 'medium', 'hard']),
   bloomsTaxonomy: z.enum(['remember', 'understand', 'apply', 'analyze', 'evaluate', 'create']).optional(),
   points: z.number().min(1).default(1),
@@ -84,7 +84,6 @@ export default function CreateQuestionModal({ open, onOpenChange, questionCatego
       questionText: '',
       questionType: 'multiple_choice',
       category: questionCategory,
-      subjectId: 1,
       difficulty: 'medium',
       points: 1,
     },
@@ -497,10 +496,10 @@ export default function CreateQuestionModal({ open, onOpenChange, questionCatego
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Subject</FormLabel>
-                    <Select onValueChange={(value) => field.onChange(parseInt(value))} defaultValue={field.value?.toString()}>
+                    <Select onValueChange={(value) => field.onChange(parseInt(value))} value={field.value?.toString()}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select subject" />
+                          <SelectValue placeholder="Choose a subject" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>

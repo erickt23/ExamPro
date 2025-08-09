@@ -41,7 +41,7 @@ const editQuestionSchema = z.object({
   correctAnswer: z.string().optional(),
   explanation: z.string().optional(),
   attachmentUrl: z.string().optional(),
-  subjectId: z.number().min(1, "Subject is required"),
+  subjectId: z.number().min(1, "Please select a subject"),
   difficulty: z.enum(['easy', 'medium', 'hard']),
   bloomsTaxonomy: z.enum(['remember', 'understand', 'apply', 'analyze', 'evaluate', 'create']).optional(),
   points: z.number().min(1).default(1),
@@ -98,7 +98,6 @@ export default function EditQuestionModal({ open, onOpenChange, questionId }: Ed
       questionText: '',
       questionType: 'multiple_choice',
       category: 'exam',
-      subjectId: 1,
       difficulty: 'medium',
       points: 1,
     },
@@ -112,7 +111,7 @@ export default function EditQuestionModal({ open, onOpenChange, questionId }: Ed
         questionText: questionData.questionText || '',
         questionType: questionData.questionType || 'multiple_choice',
         category: questionData.category || 'exam',
-        subjectId: questionData.subjectId || 1,
+        subjectId: questionData.subjectId,
         difficulty: questionData.difficulty || 'medium',
         bloomsTaxonomy: questionData.bloomsTaxonomy || undefined,
         points: questionData.points || 1,
@@ -550,7 +549,7 @@ export default function EditQuestionModal({ open, onOpenChange, questionId }: Ed
                     <Select onValueChange={(value) => field.onChange(parseInt(value))} value={field.value?.toString()}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select subject" />
+                          <SelectValue placeholder="Choose a subject" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
