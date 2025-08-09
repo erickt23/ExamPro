@@ -32,7 +32,7 @@ import {
   Notebook,
   Calculator
 } from "lucide-react";
-import { calculateFinalGrade, calculateLetterGrade } from "@shared/gradeConfig";
+import { calculateFinalGrade } from "@shared/gradeConfig";
 
 // Component for listing submissions to grade
 function GradingList() {
@@ -263,7 +263,6 @@ function GradingList() {
                       <TableHead>Assignment Score</TableHead>
                       <TableHead>Exam Score</TableHead>
                       <TableHead>Final Grade</TableHead>
-                      <TableHead>Letter Grade</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -274,7 +273,6 @@ function GradingList() {
                         grade.totalExamScore,
                         grade.totalExamMaxScore
                       );
-                      const letterGrade = calculateLetterGrade(finalGrade);
                       
                       const assignmentPercentage = grade.totalAssignmentMaxScore > 0 
                         ? ((grade.totalAssignmentScore / grade.totalAssignmentMaxScore) * 100).toFixed(1)
@@ -313,16 +311,6 @@ function GradingList() {
                             <div className="font-bold text-lg">
                               {finalGrade.toFixed(1)}%
                             </div>
-                          </TableCell>
-                          <TableCell>
-                            <Badge 
-                              variant={letterGrade === 'F' ? 'destructive' : 
-                                     letterGrade.startsWith('A') ? 'default' :
-                                     letterGrade.startsWith('B') ? 'secondary' : 'outline'}
-                              className="font-bold"
-                            >
-                              {letterGrade}
-                            </Badge>
                           </TableCell>
                         </TableRow>
                       );

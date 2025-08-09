@@ -11,23 +11,6 @@ export const GRADE_CALCULATION_CONFIG = {
     MIN: 0,
     MAX: 100,
   },
-  
-  // Optional: Letter grade mapping
-  LETTER_GRADES: {
-    'A+': { min: 97, max: 100 },
-    'A': { min: 93, max: 96 },
-    'A-': { min: 90, max: 92 },
-    'B+': { min: 87, max: 89 },
-    'B': { min: 83, max: 86 },
-    'B-': { min: 80, max: 82 },
-    'C+': { min: 77, max: 79 },
-    'C': { min: 73, max: 76 },
-    'C-': { min: 70, max: 72 },
-    'D+': { min: 67, max: 69 },
-    'D': { min: 63, max: 66 },
-    'D-': { min: 60, max: 62 },
-    'F': { min: 0, max: 59 },
-  }
 } as const;
 
 export type GradeCalculationResult = {
@@ -41,18 +24,7 @@ export type GradeCalculationResult = {
   totalExamMaxScore: number;
   examPercentage: number;
   finalGrade: number;
-  letterGrade: string;
 };
-
-// Helper function to calculate letter grade
-export function calculateLetterGrade(percentage: number): string {
-  for (const [letter, range] of Object.entries(GRADE_CALCULATION_CONFIG.LETTER_GRADES)) {
-    if (percentage >= range.min && percentage <= range.max) {
-      return letter;
-    }
-  }
-  return 'F';
-}
 
 // Helper function to calculate final grade
 export function calculateFinalGrade(

@@ -67,7 +67,7 @@ The application uses PostgreSQL with the following main entities:
 - Configurable weighted grading system combining assignments and exams
 - Default formula: Final Grade = 40% Assignment Score + 60% Exam Score
 - Coefficients easily configurable in `shared/gradeConfig.ts`
-- Letter grade mapping (A+ through F) with percentage thresholds
+- Percentage-based grading system with real-time calculation
 - Real-time grade calculation and display in instructor grading interface
 - Per-subject grade calculations for comprehensive course management
 

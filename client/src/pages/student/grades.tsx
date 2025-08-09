@@ -88,21 +88,6 @@ export default function StudentGrades() {
     return 'bg-red-100 text-red-800';
   };
 
-  const getLetterGrade = (percentage: number) => {
-    if (percentage >= 97) return 'A+';
-    if (percentage >= 93) return 'A';
-    if (percentage >= 90) return 'A-';
-    if (percentage >= 87) return 'B+';
-    if (percentage >= 83) return 'B';
-    if (percentage >= 80) return 'B-';
-    if (percentage >= 77) return 'C+';
-    if (percentage >= 73) return 'C';
-    if (percentage >= 70) return 'C-';
-    if (percentage >= 67) return 'D+';
-    if (percentage >= 65) return 'D';
-    return 'F';
-  };
-
   const getTrendIcon = (currentScore: number, previousScore?: number) => {
     if (!previousScore) return <Minus className="h-4 w-4 text-gray-400" />;
     if (currentScore > previousScore) return <TrendingUp className="h-4 w-4 text-green-500" />;
@@ -143,9 +128,6 @@ export default function StudentGrades() {
                       <p className="text-sm font-medium text-gray-600">Overall Average</p>
                       <p className={`text-2xl font-bold ${getScoreColor(overallAverage)}`}>
                         {overallAverage.toFixed(1)}%
-                      </p>
-                      <p className="text-sm text-gray-500 mt-1">
-                        {getLetterGrade(overallAverage)}
                       </p>
                     </div>
                     <div className="p-3 bg-blue-100 rounded-lg">
@@ -252,7 +234,7 @@ export default function StudentGrades() {
                                 <h3 className="font-semibold text-gray-900">{grade.exam?.title}</h3>
                                 {percentage !== null && (
                                   <Badge className={getScoreColorBg(percentage)}>
-                                    {getLetterGrade(percentage)}
+                                    {percentage.toFixed(1)}%
                                   </Badge>
                                 )}
                               </div>
