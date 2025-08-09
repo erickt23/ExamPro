@@ -28,14 +28,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { Plus, List, PenTool, FileText, Pen, Upload, Paperclip } from "lucide-react";
+import { Plus, List, PenTool, FileText, Pen, Upload, Paperclip, ArrowUpDown, Link, Move3D } from "lucide-react";
 import CreateSubjectModal from "./create-subject-modal";
 import { ObjectUploader } from "@/components/ObjectUploader";
 
 const editQuestionSchema = z.object({
   title: z.string().min(1, "Title is required").max(200),
   questionText: z.string().min(1, "Question text is required"),
-  questionType: z.enum(['multiple_choice', 'short_answer', 'essay', 'fill_blank']),
+  questionType: z.enum(['multiple_choice', 'short_answer', 'essay', 'fill_blank', 'matching', 'ranking', 'drag_drop']),
   category: z.enum(['exam', 'homework']),
   options: z.array(z.string()).optional(),
   correctAnswer: z.string().optional(),
@@ -84,6 +84,12 @@ export default function EditQuestionModal({ open, onOpenChange, questionId }: Ed
   const [correctOption, setCorrectOption] = useState('A');
   const [attachmentFile, setAttachmentFile] = useState<any>(null);
   const [attachmentUrl, setAttachmentUrl] = useState<string>('');
+  
+  // State for new question types
+  const [matchingPairs, setMatchingPairs] = useState([{ left: '', right: '' }, { left: '', right: '' }]);
+  const [rankingItems, setRankingItems] = useState(['', '']);
+  const [dragDropZones, setDragDropZones] = useState([{ zone: '', items: [''] }]);
+  const [dragDropItems, setDragDropItems] = useState(['']);
 
   const form = useForm<EditQuestionForm>({
     resolver: zodResolver(editQuestionSchema),
@@ -120,6 +126,20 @@ export default function EditQuestionModal({ open, onOpenChange, questionId }: Ed
       if (questionData.questionType === 'multiple_choice' && questionData.options) {
         setMcqOptions([...questionData.options, '', '', '', ''].slice(0, Math.max(4, questionData.options.length)));
         setCorrectOption(questionData.correctAnswer || 'A');
+      } else if (questionData.questionType === 'matching' && questionData.options) {
+        setMatchingPairs(questionData.options.length > 0 ? questionData.options : [{ left: '', right: '' }, { left: '', right: '' }]);
+      } else if (questionData.questionType === 'ranking' && questionData.options) {
+        setRankingItems(questionData.options.length > 0 ? questionData.options : ['', '']);
+      } else if (questionData.questionType === 'drag_drop' && questionData.correctAnswer) {
+        try {
+          const data = JSON.parse(questionData.correctAnswer);
+          if (data.zones) setDragDropZones(data.zones);
+          if (data.items) setDragDropItems(data.items);
+        } catch (e) {
+          // If parsing fails, use default values
+          setDragDropZones([{ zone: '', items: [''] }]);
+          setDragDropItems(['']);
+        }
       }
       
       if (questionData.attachmentUrl) {
@@ -137,6 +157,17 @@ export default function EditQuestionModal({ open, onOpenChange, questionId }: Ed
       if (data.questionType === 'multiple_choice') {
         payload.options = mcqOptions.filter(option => option.trim());
         payload.correctAnswer = correctOption;
+      } else if (data.questionType === 'matching') {
+        payload.options = matchingPairs.filter(pair => pair.left.trim() && pair.right.trim());
+        payload.correctAnswer = JSON.stringify(matchingPairs.filter(pair => pair.left.trim() && pair.right.trim()));
+      } else if (data.questionType === 'ranking') {
+        payload.options = rankingItems.filter(item => item.trim());
+        payload.correctAnswer = JSON.stringify(rankingItems.filter(item => item.trim()));
+      } else if (data.questionType === 'drag_drop') {
+        payload.options = [...dragDropZones, ...dragDropItems].filter(item => 
+          typeof item === 'string' ? item.trim() : item.zone?.trim()
+        );
+        payload.correctAnswer = JSON.stringify({ zones: dragDropZones, items: dragDropItems });
       }
       
       // Include attachment URL if present
@@ -179,6 +210,9 @@ export default function EditQuestionModal({ open, onOpenChange, questionId }: Ed
     { value: 'short_answer', label: 'Short Answer', icon: PenTool },
     { value: 'essay', label: 'Essay', icon: FileText },
     { value: 'fill_blank', label: 'Fill in Blank', icon: Pen },
+    { value: 'matching', label: 'Matching', icon: Link },
+    { value: 'ranking', label: 'Ranking', icon: ArrowUpDown },
+    { value: 'drag_drop', label: 'Drag & Drop', icon: Move3D },
   ];
 
   const onSubmit = (data: EditQuestionForm) => {
@@ -189,6 +223,59 @@ export default function EditQuestionModal({ open, onOpenChange, questionId }: Ed
     const newOptions = [...mcqOptions];
     newOptions[index] = value;
     setMcqOptions(newOptions);
+  };
+
+  // Helper functions for new question types
+  const updateMatchingPair = (index: number, side: 'left' | 'right', value: string) => {
+    const newPairs = [...matchingPairs];
+    newPairs[index][side] = value;
+    setMatchingPairs(newPairs);
+  };
+
+  const addMatchingPair = () => {
+    setMatchingPairs([...matchingPairs, { left: '', right: '' }]);
+  };
+
+  const removeMatchingPair = (index: number) => {
+    if (matchingPairs.length > 2) {
+      setMatchingPairs(matchingPairs.filter((_, i) => i !== index));
+    }
+  };
+
+  const updateRankingItem = (index: number, value: string) => {
+    const newItems = [...rankingItems];
+    newItems[index] = value;
+    setRankingItems(newItems);
+  };
+
+  const addRankingItem = () => {
+    setRankingItems([...rankingItems, '']);
+  };
+
+  const removeRankingItem = (index: number) => {
+    if (rankingItems.length > 2) {
+      setRankingItems(rankingItems.filter((_, i) => i !== index));
+    }
+  };
+
+  const updateDragDropZone = (index: number, value: string) => {
+    const newZones = [...dragDropZones];
+    newZones[index].zone = value;
+    setDragDropZones(newZones);
+  };
+
+  const addDragDropZone = () => {
+    setDragDropZones([...dragDropZones, { zone: '', items: [''] }]);
+  };
+
+  const updateDragDropItem = (index: number, value: string) => {
+    const newItems = [...dragDropItems];
+    newItems[index] = value;
+    setDragDropItems(newItems);
+  };
+
+  const addDragDropItem = () => {
+    setDragDropItems([...dragDropItems, '']);
   };
 
   return (
@@ -300,6 +387,155 @@ export default function EditQuestionModal({ open, onOpenChange, questionId }: Ed
                   <Plus className="h-4 w-4 mr-2" />
                   Add another option
                 </Button>
+              </div>
+            )}
+
+            {/* Matching Question Options */}
+            {selectedType === 'matching' && (
+              <div>
+                <Label className="text-sm font-medium">Matching Pairs</Label>
+                <div className="space-y-3 mt-2">
+                  {matchingPairs.map((pair, index) => (
+                    <div key={index} className="grid grid-cols-2 gap-4 p-3 border rounded-lg">
+                      <div>
+                        <Label className="text-xs text-gray-500">Left Item</Label>
+                        <Input
+                          value={pair.left}
+                          onChange={(e) => updateMatchingPair(index, 'left', e.target.value)}
+                          placeholder={`Item ${index + 1}`}
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-xs text-gray-500">Right Item</Label>
+                        <Input
+                          value={pair.right}
+                          onChange={(e) => updateMatchingPair(index, 'right', e.target.value)}
+                          placeholder={`Match ${index + 1}`}
+                        />
+                      </div>
+                      {matchingPairs.length > 2 && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => removeMatchingPair(index)}
+                          className="col-span-2 mt-2"
+                        >
+                          Remove Pair
+                        </Button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                <Button 
+                  type="button" 
+                  variant="ghost" 
+                  size="sm" 
+                  className="mt-3"
+                  onClick={addMatchingPair}
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add another pair
+                </Button>
+              </div>
+            )}
+
+            {/* Ranking Question Options */}
+            {selectedType === 'ranking' && (
+              <div>
+                <Label className="text-sm font-medium">Items to Rank (in correct order)</Label>
+                <div className="space-y-3 mt-2">
+                  {rankingItems.map((item, index) => (
+                    <div key={index} className="flex items-center space-x-3">
+                      <span className="text-sm font-medium text-gray-700 min-w-[30px]">{index + 1}.</span>
+                      <Input
+                        value={item}
+                        onChange={(e) => updateRankingItem(index, e.target.value)}
+                        placeholder={`Ranking item ${index + 1}`}
+                        className="flex-1"
+                      />
+                      {rankingItems.length > 2 && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => removeRankingItem(index)}
+                        >
+                          Remove
+                        </Button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                <Button 
+                  type="button" 
+                  variant="ghost" 
+                  size="sm" 
+                  className="mt-3"
+                  onClick={addRankingItem}
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add another item
+                </Button>
+              </div>
+            )}
+
+            {/* Drag and Drop Question Options */}
+            {selectedType === 'drag_drop' && (
+              <div className="space-y-4">
+                <div>
+                  <Label className="text-sm font-medium">Drop Zones</Label>
+                  <div className="space-y-3 mt-2">
+                    {dragDropZones.map((zone, index) => (
+                      <div key={index} className="flex items-center space-x-3">
+                        <span className="text-sm font-medium text-gray-700 min-w-[70px]">Zone {index + 1}:</span>
+                        <Input
+                          value={zone.zone}
+                          onChange={(e) => updateDragDropZone(index, e.target.value)}
+                          placeholder={`Drop zone ${index + 1}`}
+                          className="flex-1"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                  <Button 
+                    type="button" 
+                    variant="ghost" 
+                    size="sm" 
+                    className="mt-3"
+                    onClick={addDragDropZone}
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add drop zone
+                  </Button>
+                </div>
+
+                <div>
+                  <Label className="text-sm font-medium">Draggable Items</Label>
+                  <div className="space-y-3 mt-2">
+                    {dragDropItems.map((item, index) => (
+                      <div key={index} className="flex items-center space-x-3">
+                        <span className="text-sm font-medium text-gray-700 min-w-[70px]">Item {index + 1}:</span>
+                        <Input
+                          value={item}
+                          onChange={(e) => updateDragDropItem(index, e.target.value)}
+                          placeholder={`Draggable item ${index + 1}`}
+                          className="flex-1"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                  <Button 
+                    type="button" 
+                    variant="ghost" 
+                    size="sm" 
+                    className="mt-3"
+                    onClick={addDragDropItem}
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add draggable item
+                  </Button>
+                </div>
               </div>
             )}
 

@@ -223,6 +223,9 @@ export default function InstructorQuestions() {
                         <SelectItem value="short_answer">Short Answer</SelectItem>
                         <SelectItem value="essay">Essay</SelectItem>
                         <SelectItem value="fill_blank">Fill in the Blank</SelectItem>
+                        <SelectItem value="matching">Matching</SelectItem>
+                        <SelectItem value="ranking">Ranking</SelectItem>
+                        <SelectItem value="drag_drop">Drag & Drop</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
