@@ -32,7 +32,8 @@ import {
   MoreVertical,
   Search,
   ChevronDown,
-  ChevronRight
+  ChevronRight,
+  ChevronLeft
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -67,6 +68,8 @@ export default function InstructorExams() {
   const [archivingExamId, setArchivingExamId] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [expandedExamIds, setExpandedExamIds] = useState<Set<number>>(new Set());
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -323,28 +326,39 @@ export default function InstructorExams() {
                     <p className="text-gray-500 text-lg mb-2">No exams found</p>
                     <p className="text-gray-400">Create your first exam to get started</p>
                   </div>
-                ) : (
-                  <div className="bg-white rounded-lg border">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead className="w-[50px]"></TableHead>
-                          <TableHead>Exam Title</TableHead>
-                          <TableHead>Start Date</TableHead>
-                          <TableHead>Time</TableHead>
-                          <TableHead>Duration</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead className="text-right">Actions</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {exams?.sort((a: any, b: any) => {
-                          // Sort archived exams to the bottom
-                          if (a.status === 'archived' && b.status !== 'archived') return 1;
-                          if (b.status === 'archived' && a.status !== 'archived') return -1;
-                          // Otherwise sort by creation date (newest first)
-                          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-                        })?.map((exam: any, index: number) => {
+                ) : (() => {
+                  // Sort and paginate exams
+                  const sortedExams = exams?.sort((a: any, b: any) => {
+                    // Sort archived exams to the bottom
+                    if (a.status === 'archived' && b.status !== 'archived') return 1;
+                    if (b.status === 'archived' && a.status !== 'archived') return -1;
+                    // Otherwise sort by creation date (newest first)
+                    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+                  }) || [];
+                  
+                  const totalItems = sortedExams.length;
+                  const totalPages = Math.ceil(totalItems / itemsPerPage);
+                  const startIndex = (currentPage - 1) * itemsPerPage;
+                  const endIndex = startIndex + itemsPerPage;
+                  const paginatedExams = sortedExams.slice(startIndex, endIndex);
+
+                  return (
+                    <div className="space-y-4">
+                      <div className="bg-white rounded-lg border">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead className="w-[50px]"></TableHead>
+                              <TableHead>Exam Title</TableHead>
+                              <TableHead>Start Date</TableHead>
+                              <TableHead>Time</TableHead>
+                              <TableHead>Duration</TableHead>
+                              <TableHead>Status</TableHead>
+                              <TableHead className="text-right">Actions</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {paginatedExams.map((exam: any, index: number) => {
                           const isExpanded = expandedExamIds.has(exam.id);
                           const toggleExpanded = () => {
                             const newExpanded = new Set(expandedExamIds);
@@ -360,7 +374,7 @@ export default function InstructorExams() {
                             <>
                               <TableRow 
                                 key={exam.id} 
-                                className={`cursor-pointer hover:bg-gray-50 ${index % 2 === 0 ? "bg-white" : "bg-gray-50/30"}`}
+                                className={`cursor-pointer hover:bg-gray-100 ${index % 2 === 0 ? "bg-white" : "bg-gray-50"}`}
                                 onClick={toggleExpanded}
                               >
                                 <TableCell>
@@ -399,13 +413,20 @@ export default function InstructorExams() {
                                 <TableCell className="text-right">
                                   <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
                                     <Button 
-                                      variant="outline" 
+                                      variant="ghost" 
                                       size="sm"
                                       onClick={() => handleViewResults(exam.id)}
                                       title="View results"
                                     >
-                                      <FileText className="h-4 w-4 mr-1" />
-                                      View Results
+                                      <FileText className="h-4 w-4" />
+                                    </Button>
+                                    <Button 
+                                      variant="ghost" 
+                                      size="sm"
+                                      onClick={() => handlePreviewExam(exam.id)}
+                                      title="Preview exam"
+                                    >
+                                      <Eye className="h-4 w-4" />
                                     </Button>
                                     <DropdownMenu>
                                       <DropdownMenuTrigger asChild>
@@ -417,10 +438,6 @@ export default function InstructorExams() {
                                         <DropdownMenuItem onClick={() => handleEditExam(exam.id)}>
                                           <Edit className="h-4 w-4 mr-2" />
                                           Edit Exam
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem onClick={() => handlePreviewExam(exam.id)}>
-                                          <Eye className="h-4 w-4 mr-2" />
-                                          Preview Exam
                                         </DropdownMenuItem>
                                         <DropdownMenuItem onClick={() => handleEditExam(exam.id)}>
                                           <Copy className="h-4 w-4 mr-2" />
@@ -447,7 +464,7 @@ export default function InstructorExams() {
                               
                               {/* Expanded Details Row */}
                               {isExpanded && (
-                                <TableRow className="bg-gray-50/50">
+                                <TableRow className={`${index % 2 === 0 ? "bg-gray-50" : "bg-gray-100"}`}>
                                   <TableCell colSpan={7}>
                                     <div className="p-4 space-y-4">
                                       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -566,10 +583,52 @@ export default function InstructorExams() {
                             </>
                           );
                         })}
-                      </TableBody>
-                    </Table>
-                  </div>
-                )}
+                          </TableBody>
+                        </Table>
+                      </div>
+
+                      {/* Pagination Controls */}
+                      <div className="flex items-center justify-between px-2">
+                        <div className="text-sm text-gray-700">
+                          Showing {startIndex + 1} to {Math.min(endIndex, totalItems)} of {totalItems} exams
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                            disabled={currentPage === 1}
+                          >
+                            <ChevronLeft className="h-4 w-4" />
+                            Previous
+                          </Button>
+                          <div className="flex items-center gap-1">
+                            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                              <Button
+                                key={page}
+                                variant={currentPage === page ? "default" : "outline"}
+                                size="sm"
+                                onClick={() => setCurrentPage(page)}
+                                className="min-w-[2.5rem]"
+                              >
+                                {page}
+                              </Button>
+                            ))}
+                          </div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                            disabled={currentPage === totalPages}
+                          >
+                            Next
+                            <ChevronRight className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
               </TabsContent>
             </Tabs>
           </div>
