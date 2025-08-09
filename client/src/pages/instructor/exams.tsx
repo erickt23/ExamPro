@@ -399,20 +399,13 @@ export default function InstructorExams() {
                                 <TableCell className="text-right">
                                   <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
                                     <Button 
-                                      variant="ghost" 
+                                      variant="outline" 
                                       size="sm"
-                                      onClick={() => handleEditExam(exam.id)}
-                                      title="Edit exam settings"
+                                      onClick={() => handleViewResults(exam.id)}
+                                      title="View results"
                                     >
-                                      <Edit className="h-4 w-4" />
-                                    </Button>
-                                    <Button 
-                                      variant="ghost" 
-                                      size="sm"
-                                      onClick={() => handlePreviewExam(exam.id)}
-                                      title="Preview exam"
-                                    >
-                                      <Eye className="h-4 w-4" />
+                                      <FileText className="h-4 w-4 mr-1" />
+                                      View Results
                                     </Button>
                                     <DropdownMenu>
                                       <DropdownMenuTrigger asChild>
@@ -421,9 +414,13 @@ export default function InstructorExams() {
                                         </Button>
                                       </DropdownMenuTrigger>
                                       <DropdownMenuContent align="end">
-                                        <DropdownMenuItem onClick={() => handleViewResults(exam.id)}>
-                                          <FileText className="h-4 w-4 mr-2" />
-                                          View Results
+                                        <DropdownMenuItem onClick={() => handleEditExam(exam.id)}>
+                                          <Edit className="h-4 w-4 mr-2" />
+                                          Edit Exam
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => handlePreviewExam(exam.id)}>
+                                          <Eye className="h-4 w-4 mr-2" />
+                                          Preview Exam
                                         </DropdownMenuItem>
                                         <DropdownMenuItem onClick={() => handleEditExam(exam.id)}>
                                           <Copy className="h-4 w-4 mr-2" />
