@@ -98,7 +98,6 @@ export default function EditQuestionModal({ open, onOpenChange, questionId }: Ed
       questionText: '',
       questionType: 'multiple_choice',
       category: 'exam',
-      difficulty: 'medium',
       points: 1,
     },
   });
@@ -112,7 +111,7 @@ export default function EditQuestionModal({ open, onOpenChange, questionId }: Ed
         questionType: questionData.questionType || 'multiple_choice',
         category: questionData.category || 'exam',
         subjectId: questionData.subjectId,
-        difficulty: questionData.difficulty || 'medium',
+        difficulty: questionData.difficulty,
         bloomsTaxonomy: questionData.bloomsTaxonomy || undefined,
         points: questionData.points || 1,
         timeLimit: questionData.timeLimit || undefined,
@@ -572,7 +571,7 @@ export default function EditQuestionModal({ open, onOpenChange, questionId }: Ed
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select difficulty" />
+                          <SelectValue placeholder="Choose difficulty level" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>

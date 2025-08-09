@@ -84,7 +84,6 @@ export default function CreateQuestionModal({ open, onOpenChange, questionCatego
       questionText: '',
       questionType: 'multiple_choice',
       category: questionCategory,
-      difficulty: 'medium',
       points: 1,
     },
   });
@@ -519,10 +518,10 @@ export default function CreateQuestionModal({ open, onOpenChange, questionCatego
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Difficulty Level</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select difficulty" />
+                          <SelectValue placeholder="Choose difficulty level" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -542,7 +541,7 @@ export default function CreateQuestionModal({ open, onOpenChange, questionCatego
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Bloom's Taxonomy</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select taxonomy" />
