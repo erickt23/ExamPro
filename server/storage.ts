@@ -517,6 +517,44 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(submissions.startedAt));
   }
 
+  async getSubmissionsWithDetails(examId?: number, studentId?: string): Promise<any[]> {
+    const conditions = [];
+    if (examId) conditions.push(eq(submissions.examId, examId));
+    if (studentId) conditions.push(eq(submissions.studentId, studentId));
+
+    return db
+      .select({
+        id: submissions.id,
+        examId: submissions.examId,
+        studentId: submissions.studentId,
+        attemptNumber: submissions.attemptNumber,
+        startedAt: submissions.startedAt,
+        submittedAt: submissions.submittedAt,
+        timeTaken: submissions.timeTaken,
+        totalScore: submissions.totalScore,
+        maxScore: submissions.maxScore,
+        status: submissions.status,
+        isLate: submissions.isLate,
+        student: {
+          id: users.id,
+          firstName: users.firstName,
+          lastName: users.lastName,
+          email: users.email,
+        },
+        exam: {
+          id: exams.id,
+          title: exams.title,
+          description: exams.description,
+          subjectId: exams.subjectId,
+        }
+      })
+      .from(submissions)
+      .innerJoin(users, eq(submissions.studentId, users.id))
+      .innerJoin(exams, eq(submissions.examId, exams.id))
+      .where(conditions.length > 0 ? and(...conditions) : undefined)
+      .orderBy(desc(submissions.startedAt));
+  }
+
   async getSubmissionById(id: number): Promise<Submission | undefined> {
     const [submission] = await db
       .select()
@@ -832,6 +870,49 @@ export class DatabaseStorage implements IStorage {
     return await db
       .select()
       .from(homeworkSubmissions)
+      .where(conditions.length > 0 ? and(...conditions) : undefined)
+      .orderBy(desc(homeworkSubmissions.startedAt));
+  }
+
+  async getHomeworkSubmissionsWithDetails(homeworkId?: number, studentId?: string): Promise<any[]> {
+    const conditions = [];
+    
+    if (homeworkId) {
+      conditions.push(eq(homeworkSubmissions.homeworkId, homeworkId));
+    }
+    
+    if (studentId) {
+      conditions.push(eq(homeworkSubmissions.studentId, studentId));
+    }
+    
+    return await db
+      .select({
+        id: homeworkSubmissions.id,
+        homeworkId: homeworkSubmissions.homeworkId,
+        studentId: homeworkSubmissions.studentId,
+        attemptNumber: homeworkSubmissions.attemptNumber,
+        startedAt: homeworkSubmissions.startedAt,
+        submittedAt: homeworkSubmissions.submittedAt,
+        totalScore: homeworkSubmissions.totalScore,
+        maxScore: homeworkSubmissions.maxScore,
+        status: homeworkSubmissions.status,
+        isLate: homeworkSubmissions.isLate,
+        student: {
+          id: users.id,
+          firstName: users.firstName,
+          lastName: users.lastName,
+          email: users.email,
+        },
+        homework: {
+          id: homeworkAssignments.id,
+          title: homeworkAssignments.title,
+          description: homeworkAssignments.description,
+          subjectId: homeworkAssignments.subjectId,
+        }
+      })
+      .from(homeworkSubmissions)
+      .innerJoin(users, eq(homeworkSubmissions.studentId, users.id))
+      .innerJoin(homeworkAssignments, eq(homeworkSubmissions.homeworkId, homeworkAssignments.id))
       .where(conditions.length > 0 ? and(...conditions) : undefined)
       .orderBy(desc(homeworkSubmissions.startedAt));
   }

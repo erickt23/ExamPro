@@ -658,7 +658,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { examId, studentId, status } = req.query;
       
       if (user?.role === 'instructor') {
-        let submissions = await storage.getSubmissions(
+        let submissions = await storage.getSubmissionsWithDetails(
           examId ? parseInt(examId as string) : undefined,
           studentId as string
         );
@@ -1355,8 +1355,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log('Student homework submissions:', submissions.length);
         res.json(submissions);
       } else if (user?.role === 'instructor') {
-        // Instructors can see all submissions, optionally filtered by status
-        const submissions = await storage.getAllHomeworkSubmissions(status as string);
+        // Instructors can see all submissions with student/homework details, optionally filtered by status
+        let submissions;
+        if (status) {
+          submissions = (await storage.getHomeworkSubmissionsWithDetails()).filter(s => s.status === status);
+        } else {
+          submissions = await storage.getHomeworkSubmissionsWithDetails();
+        }
         console.log('All homework submissions for instructor:', submissions.length, 'with status:', status);
         res.json(submissions);
       } else {
