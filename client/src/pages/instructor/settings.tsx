@@ -104,7 +104,7 @@ export default function SettingsPage() {
   // Save global settings mutation
   const saveGlobalSettingsMutation = useMutation({
     mutationFn: async (settings: { assignmentCoefficient: number; examCoefficient: number }) => {
-      await apiRequest("/api/grade-settings/global", "POST", settings);
+      await apiRequest("POST", "/api/grade-settings/global", settings);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/grade-settings"] });
@@ -139,7 +139,7 @@ export default function SettingsPage() {
       courseId: number; 
       settings: { assignmentCoefficient: number; examCoefficient: number } 
     }) => {
-      await apiRequest(`/api/grade-settings/course/${courseId}`, "POST", settings);
+      await apiRequest("POST", `/api/grade-settings/course/${courseId}`, settings);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/grade-settings"] });
