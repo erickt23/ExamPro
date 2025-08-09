@@ -22,7 +22,9 @@ import {
   Globe,
   Plus,
   Edit,
-  Trash2
+  Trash2,
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -56,6 +58,10 @@ export default function SettingsPage() {
   const [showCreateSubjectModal, setShowCreateSubjectModal] = useState(false);
   const [showEditSubjectModal, setShowEditSubjectModal] = useState(false);
   const [editingSubject, setEditingSubject] = useState<any>(null);
+  
+  // Pagination state for subjects table
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   const subjectForm = useForm<SubjectForm>({
     resolver: zodResolver(subjectSchema),
@@ -263,6 +269,7 @@ export default function SettingsPage() {
       });
       subjectForm.reset();
       setShowCreateSubjectModal(false);
+      setCurrentPage(1); // Reset pagination to first page
     },
     onError: (error: Error) => {
       if (isUnauthorizedError(error)) {
@@ -328,6 +335,14 @@ export default function SettingsPage() {
         title: "Success",
         description: "Subject deleted successfully",
       });
+      // Reset to first page if current page becomes empty
+      const remainingItems = (subjects?.length || 0) - 1;
+      const newTotalPages = Math.ceil(remainingItems / itemsPerPage);
+      if (currentPage > newTotalPages && newTotalPages > 0) {
+        setCurrentPage(newTotalPages);
+      } else if (remainingItems === 0) {
+        setCurrentPage(1);
+      }
     },
     onError: (error: Error) => {
       if (isUnauthorizedError(error)) {
@@ -454,50 +469,104 @@ export default function SettingsPage() {
                           Create First Subject
                         </Button>
                       </div>
-                    ) : (
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>Subject Name</TableHead>
-                            <TableHead>Description</TableHead>
-                            <TableHead className="text-right">Actions</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {subjects.map((subject: any) => (
-                            <TableRow key={subject.id}>
-                              <TableCell>
-                                <div className="font-medium">{subject.name}</div>
-                              </TableCell>
-                              <TableCell>
-                                <div className="text-sm text-gray-600 max-w-md">
-                                  {subject.description || <span className="italic text-gray-400">No description</span>}
-                                </div>
-                              </TableCell>
-                              <TableCell className="text-right">
-                                <div className="flex items-center justify-end gap-2">
+                    ) : (() => {
+                      // Calculate pagination
+                      const totalItems = subjects.length;
+                      const totalPages = Math.ceil(totalItems / itemsPerPage);
+                      const startIndex = (currentPage - 1) * itemsPerPage;
+                      const endIndex = startIndex + itemsPerPage;
+                      const paginatedSubjects = subjects.slice(startIndex, endIndex);
+                      
+                      return (
+                        <div className="space-y-4">
+                          <Table>
+                            <TableHeader>
+                              <TableRow>
+                                <TableHead>Subject Name</TableHead>
+                                <TableHead>Description</TableHead>
+                                <TableHead className="text-right">Actions</TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {paginatedSubjects.map((subject: any, index: number) => (
+                                <TableRow 
+                                  key={subject.id}
+                                  className={index % 2 === 0 ? "bg-white" : "bg-gray-50"}
+                                >
+                                  <TableCell>
+                                    <div className="font-medium">{subject.name}</div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="text-sm text-gray-600 max-w-md">
+                                      {subject.description || <span className="italic text-gray-400">No description</span>}
+                                    </div>
+                                  </TableCell>
+                                  <TableCell className="text-right">
+                                    <div className="flex items-center justify-end gap-2">
+                                      <Button
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={() => handleEditSubject(subject)}
+                                      >
+                                        <Edit className="h-3 w-3" />
+                                      </Button>
+                                      <Button
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={() => handleDeleteSubject(subject.id)}
+                                        className="text-red-600 hover:text-red-800"
+                                      >
+                                        <Trash2 className="h-3 w-3" />
+                                      </Button>
+                                    </div>
+                                  </TableCell>
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
+                          
+                          {/* Pagination Controls */}
+                          <div className="flex items-center justify-between px-2">
+                            <div className="text-sm text-gray-700">
+                              Showing {startIndex + 1} to {Math.min(endIndex, totalItems)} of {totalItems} subjects
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                                disabled={currentPage === 1}
+                              >
+                                <ChevronLeft className="h-4 w-4" />
+                                Previous
+                              </Button>
+                              <div className="flex items-center gap-1">
+                                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
                                   <Button
+                                    key={page}
+                                    variant={currentPage === page ? "default" : "outline"}
                                     size="sm"
-                                    variant="outline"
-                                    onClick={() => handleEditSubject(subject)}
+                                    onClick={() => setCurrentPage(page)}
+                                    className="min-w-[2.5rem]"
                                   >
-                                    <Edit className="h-3 w-3" />
+                                    {page}
                                   </Button>
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    onClick={() => handleDeleteSubject(subject.id)}
-                                    className="text-red-600 hover:text-red-800"
-                                  >
-                                    <Trash2 className="h-3 w-3" />
-                                  </Button>
-                                </div>
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    )}
+                                ))}
+                              </div>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                                disabled={currentPage === totalPages}
+                              >
+                                Next
+                                <ChevronRight className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })()}
                   </CardContent>
                 </Card>
               </TabsContent>
