@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { 
   Plus,
   FileText,
@@ -29,7 +30,9 @@ import {
   Eye,
   Archive,
   MoreVertical,
-  Search
+  Search,
+  ChevronDown,
+  ChevronRight
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -63,6 +66,7 @@ export default function InstructorExams() {
   const [deletingExamId, setDeletingExamId] = useState<number | null>(null);
   const [archivingExamId, setArchivingExamId] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [expandedExamIds, setExpandedExamIds] = useState<Set<number>>(new Set());
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -320,163 +324,253 @@ export default function InstructorExams() {
                     <p className="text-gray-400">Create your first exam to get started</p>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {exams?.sort((a: any, b: any) => {
-                      // Sort archived exams to the bottom
-                      if (a.status === 'archived' && b.status !== 'archived') return 1;
-                      if (b.status === 'archived' && a.status !== 'archived') return -1;
-                      // Otherwise sort by creation date (newest first)
-                      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-                    })?.map((exam: any) => (
-                      <Card key={exam.id} className="hover:shadow-md transition-shadow">
-                        <CardContent className="p-6">
-                          <div className="flex justify-between items-start mb-4">
-                            <div>
-                              <h3 className="font-semibold text-gray-900 mb-1">{exam.title}</h3>
-                              <p className="text-sm text-gray-600">{(subjects as any[]).find((s: any) => s.id === exam.subjectId)?.name || 'Unknown Subject'} • {exam.totalPoints} points</p>
-                            </div>
-                            <Badge className={getStatusColor(exam.status)}>
-                              {exam.status}
-                            </Badge>
-                          </div>
-                          
-                          <div className="space-y-2 mb-4">
-                            <div className="flex justify-between text-sm">
-                              <span className="text-gray-600">Duration:</span>
-                              <span className="font-medium">{exam.duration} minutes</span>
-                            </div>
-                            {exam.availableFrom && (
-                              <div className="flex justify-between text-sm">
-                                <span className="text-gray-600">Start Date:</span>
-                                <span className="font-medium">{formatDate(exam.availableFrom)}</span>
-                              </div>
-                            )}
-                            {exam.availableUntil && (
-                              <div className="flex justify-between text-sm">
-                                <span className="text-gray-600">End Date:</span>
-                                <span className="font-medium">{formatDate(exam.availableUntil)}</span>
-                              </div>
-                            )}
-                            <div className="flex justify-between text-sm">
-                              <span className="text-gray-600">Attempts:</span>
-                              <span className="font-medium">
-                                {exam.attemptsAllowed === -1 ? 'Unlimited' : exam.attemptsAllowed}
-                              </span>
-                            </div>
-                          </div>
+                  <div className="bg-white rounded-lg border">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="w-[50px]"></TableHead>
+                          <TableHead>Exam Title</TableHead>
+                          <TableHead>Start Date</TableHead>
+                          <TableHead>Time</TableHead>
+                          <TableHead>Duration</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead className="text-right">Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {exams?.sort((a: any, b: any) => {
+                          // Sort archived exams to the bottom
+                          if (a.status === 'archived' && b.status !== 'archived') return 1;
+                          if (b.status === 'archived' && a.status !== 'archived') return -1;
+                          // Otherwise sort by creation date (newest first)
+                          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+                        })?.map((exam: any, index: number) => {
+                          const isExpanded = expandedExamIds.has(exam.id);
+                          const toggleExpanded = () => {
+                            const newExpanded = new Set(expandedExamIds);
+                            if (isExpanded) {
+                              newExpanded.delete(exam.id);
+                            } else {
+                              newExpanded.add(exam.id);
+                            }
+                            setExpandedExamIds(newExpanded);
+                          };
 
-                          <div className="pt-4 border-t border-gray-100">
-                            <div className="flex justify-between items-center">
-                              {exam.status === 'draft' ? (
-                                <div className="flex items-center gap-2">
-                                  <Button 
-                                    variant="outline" 
-                                    size="sm"
-                                    onClick={() => handleEditExam(exam.id)}
-                                  >
-                                    <Edit className="h-4 w-4 mr-1" />
-                                    Edit
-                                  </Button>
-                                  <Button 
-                                    onClick={() => handlePreviewExam(exam.id)}
-                                    size="sm"
-                                    className="bg-blue-600 hover:bg-blue-700 text-white"
-                                  >
-                                    <Eye className="h-4 w-4 mr-1" />
-                                    Preview & Publish
-                                  </Button>
-                                </div>
-                              ) : exam.status === 'active' ? (
-                                <div className="flex items-center gap-2">
-                                  <Button 
-                                    variant="outline" 
-                                    size="sm"
-                                    onClick={() => handlePreviewExam(exam.id)}
-                                  >
-                                    <Eye className="h-4 w-4 mr-1" />
-                                    Preview
-                                  </Button>
-                                  <Button 
-                                    variant="outline" 
-                                    size="sm"
-                                    onClick={() => handleViewResults(exam.id)}
-                                  >
-                                    <FileText className="h-4 w-4 mr-1" />
-                                    View Results
-                                  </Button>
-                                </div>
-                              ) : exam.status === 'completed' || exam.status === 'archived' ? (
-                                <div className="flex items-center gap-2">
-                                  <Button 
-                                    variant="outline" 
-                                    size="sm"
-                                    onClick={() => handlePreviewExam(exam.id)}
-                                  >
-                                    <Eye className="h-4 w-4 mr-1" />
-                                    Preview
-                                  </Button>
-                                  <Button 
-                                    variant="outline" 
-                                    size="sm"
-                                    onClick={() => handleViewResults(exam.id)}
-                                  >
-                                    <FileText className="h-4 w-4 mr-1" />
-                                    View Results
-                                  </Button>
-                                </div>
-                              ) : (
-                                <Button 
-                                  variant="outline" 
-                                  size="sm"
-                                  onClick={() => handlePreviewExam(exam.id)}
-                                >
-                                  <Eye className="h-4 w-4 mr-1" />
-                                  Preview
-                                </Button>
-                              )}
-                              
-                              <div className="flex items-center space-x-1">
-                                <Button 
-                                  variant="ghost" 
-                                  size="sm"
-                                  onClick={() => handleEditExam(exam.id)}
-                                  title="Edit exam settings"
-                                >
-                                  <Edit className="h-4 w-4" />
-                                </Button>
-                                <Button variant="ghost" size="sm" title="Copy exam">
-                                  <Copy className="h-4 w-4" />
-                                </Button>
-                                
-                                {/* Archive/Delete Dropdown */}
-                                <DropdownMenu>
-                                  <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="sm" title="More actions">
-                                      <MoreVertical className="h-4 w-4" />
-                                    </Button>
-                                  </DropdownMenuTrigger>
-                                  <DropdownMenuContent align="end">
-                                    {(exam.status === 'active' || exam.status === 'completed') && (
-                                      <DropdownMenuItem onClick={() => setArchivingExamId(exam.id)}>
-                                        <Archive className="h-4 w-4 mr-2" />
-                                        Archive Exam
-                                      </DropdownMenuItem>
+                          return (
+                            <>
+                              <TableRow 
+                                key={exam.id} 
+                                className={`cursor-pointer hover:bg-gray-50 ${index % 2 === 0 ? "bg-white" : "bg-gray-50/30"}`}
+                                onClick={toggleExpanded}
+                              >
+                                <TableCell>
+                                  <Button variant="ghost" size="sm">
+                                    {isExpanded ? (
+                                      <ChevronDown className="h-4 w-4" />
+                                    ) : (
+                                      <ChevronRight className="h-4 w-4" />
                                     )}
-                                    <DropdownMenuItem 
-                                      onClick={() => setDeletingExamId(exam.id)}
-                                      className="text-red-600 focus:text-red-600"
+                                  </Button>
+                                </TableCell>
+                                <TableCell>
+                                  <div className="font-medium">{exam.title}</div>
+                                  <div className="text-sm text-gray-600">
+                                    {(subjects as any[]).find((s: any) => s.id === exam.subjectId)?.name || 'Unknown Subject'} • {exam.totalPoints} points
+                                  </div>
+                                </TableCell>
+                                <TableCell>
+                                  <div className="text-sm">
+                                    {exam.availableFrom ? formatDate(exam.availableFrom) : 'Not set'}
+                                  </div>
+                                </TableCell>
+                                <TableCell>
+                                  <div className="text-sm">
+                                    {exam.availableFrom ? formatEasternTime(exam.availableFrom, 'time') : 'Not set'}
+                                  </div>
+                                </TableCell>
+                                <TableCell>
+                                  <div className="text-sm font-medium">{exam.duration} min</div>
+                                </TableCell>
+                                <TableCell>
+                                  <Badge className={getStatusColor(exam.status)}>
+                                    {exam.status}
+                                  </Badge>
+                                </TableCell>
+                                <TableCell className="text-right">
+                                  <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
+                                    <Button 
+                                      variant="ghost" 
+                                      size="sm"
+                                      onClick={() => handleEditExam(exam.id)}
+                                      title="Edit exam settings"
                                     >
-                                      <Trash2 className="h-4 w-4 mr-2" />
-                                      Delete Exam
-                                    </DropdownMenuItem>
-                                  </DropdownMenuContent>
-                                </DropdownMenu>
-                              </div>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
+                                      <Edit className="h-4 w-4" />
+                                    </Button>
+                                    <Button 
+                                      variant="ghost" 
+                                      size="sm"
+                                      onClick={() => handlePreviewExam(exam.id)}
+                                      title="Preview exam"
+                                    >
+                                      <Eye className="h-4 w-4" />
+                                    </Button>
+                                    <DropdownMenu>
+                                      <DropdownMenuTrigger asChild>
+                                        <Button variant="ghost" size="sm" title="More actions">
+                                          <MoreVertical className="h-4 w-4" />
+                                        </Button>
+                                      </DropdownMenuTrigger>
+                                      <DropdownMenuContent align="end">
+                                        <DropdownMenuItem onClick={() => handleViewResults(exam.id)}>
+                                          <FileText className="h-4 w-4 mr-2" />
+                                          View Results
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => handleEditExam(exam.id)}>
+                                          <Copy className="h-4 w-4 mr-2" />
+                                          Duplicate Exam
+                                        </DropdownMenuItem>
+                                        {(exam.status === 'active' || exam.status === 'completed') && (
+                                          <DropdownMenuItem onClick={() => setArchivingExamId(exam.id)}>
+                                            <Archive className="h-4 w-4 mr-2" />
+                                            Archive Exam
+                                          </DropdownMenuItem>
+                                        )}
+                                        <DropdownMenuItem 
+                                          onClick={() => setDeletingExamId(exam.id)}
+                                          className="text-red-600 focus:text-red-600"
+                                        >
+                                          <Trash2 className="h-4 w-4 mr-2" />
+                                          Delete Exam
+                                        </DropdownMenuItem>
+                                      </DropdownMenuContent>
+                                    </DropdownMenu>
+                                  </div>
+                                </TableCell>
+                              </TableRow>
+                              
+                              {/* Expanded Details Row */}
+                              {isExpanded && (
+                                <TableRow className="bg-gray-50/50">
+                                  <TableCell colSpan={7}>
+                                    <div className="p-4 space-y-4">
+                                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                        <div className="space-y-3">
+                                          <h4 className="font-medium text-gray-900 flex items-center gap-2">
+                                            <Calendar className="h-4 w-4" />
+                                            Schedule
+                                          </h4>
+                                          <div className="space-y-2 text-sm">
+                                            <div className="flex justify-between">
+                                              <span className="text-gray-600">Available From:</span>
+                                              <span className="font-medium">
+                                                {exam.availableFrom ? formatEasternTime(exam.availableFrom) : 'Not set'}
+                                              </span>
+                                            </div>
+                                            <div className="flex justify-between">
+                                              <span className="text-gray-600">Available Until:</span>
+                                              <span className="font-medium">
+                                                {exam.availableUntil ? formatEasternTime(exam.availableUntil) : 'Not set'}
+                                              </span>
+                                            </div>
+                                          </div>
+                                        </div>
+                                        
+                                        <div className="space-y-3">
+                                          <h4 className="font-medium text-gray-900 flex items-center gap-2">
+                                            <Clock className="h-4 w-4" />
+                                            Configuration
+                                          </h4>
+                                          <div className="space-y-2 text-sm">
+                                            <div className="flex justify-between">
+                                              <span className="text-gray-600">Attempts:</span>
+                                              <span className="font-medium">
+                                                {exam.attemptsAllowed === -1 ? 'Unlimited' : exam.attemptsAllowed}
+                                              </span>
+                                            </div>
+                                            <div className="flex justify-between">
+                                              <span className="text-gray-600">Password:</span>
+                                              <span className="font-medium">
+                                                {exam.password ? 'Protected' : 'None'}
+                                              </span>
+                                            </div>
+                                            <div className="flex justify-between">
+                                              <span className="text-gray-600">Random Order:</span>
+                                              <span className="font-medium">
+                                                {exam.randomizeQuestions ? 'Yes' : 'No'}
+                                              </span>
+                                            </div>
+                                          </div>
+                                        </div>
+                                        
+                                        <div className="space-y-3">
+                                          <h4 className="font-medium text-gray-900 flex items-center gap-2">
+                                            <Users className="h-4 w-4" />
+                                            Statistics
+                                          </h4>
+                                          <div className="space-y-2 text-sm">
+                                            <div className="flex justify-between">
+                                              <span className="text-gray-600">Questions:</span>
+                                              <span className="font-medium">{exam.questionCount || 0}</span>
+                                            </div>
+                                            <div className="flex justify-between">
+                                              <span className="text-gray-600">Submissions:</span>
+                                              <span className="font-medium">{exam.submissionCount || 0}</span>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </div>
+                                      
+                                      {/* Action Buttons */}
+                                      <div className="flex items-center gap-2 pt-4 border-t border-gray-200">
+                                        {exam.status === 'draft' ? (
+                                          <>
+                                            <Button 
+                                              variant="outline" 
+                                              size="sm"
+                                              onClick={() => handleEditExam(exam.id)}
+                                            >
+                                              <Edit className="h-4 w-4 mr-1" />
+                                              Edit Configuration
+                                            </Button>
+                                            <Button 
+                                              onClick={() => handlePreviewExam(exam.id)}
+                                              size="sm"
+                                              className="bg-blue-600 hover:bg-blue-700 text-white"
+                                            >
+                                              <Eye className="h-4 w-4 mr-1" />
+                                              Preview & Publish
+                                            </Button>
+                                          </>
+                                        ) : (
+                                          <>
+                                            <Button 
+                                              variant="outline" 
+                                              size="sm"
+                                              onClick={() => handlePreviewExam(exam.id)}
+                                            >
+                                              <Eye className="h-4 w-4 mr-1" />
+                                              Preview
+                                            </Button>
+                                            <Button 
+                                              variant="outline" 
+                                              size="sm"
+                                              onClick={() => handleViewResults(exam.id)}
+                                            >
+                                              <FileText className="h-4 w-4 mr-1" />
+                                              View Results
+                                            </Button>
+                                          </>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </TableCell>
+                                </TableRow>
+                              )}
+                            </>
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
                   </div>
                 )}
               </TabsContent>
