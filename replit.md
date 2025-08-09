@@ -63,6 +63,14 @@ The application uses PostgreSQL with the following main entities:
 - Auto-grading for objective questions
 - Manual grading interface for subjective questions
 
+### Final Grade Calculation System
+- Configurable weighted grading system combining assignments and exams
+- Default formula: Final Grade = 40% Assignment Score + 60% Exam Score
+- Coefficients easily configurable in `shared/gradeConfig.ts`
+- Letter grade mapping (A+ through F) with percentage thresholds
+- Real-time grade calculation and display in instructor grading interface
+- Per-subject grade calculations for comprehensive course management
+
 ### Role-Based Access Control
 - **Instructors**: Full access to question creation, exam management, grading, and analytics
 - **Students**: Access to assigned exams, submission history, and grade viewing

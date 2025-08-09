@@ -1464,6 +1464,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Final Grade Calculation endpoints
+  app.get('/api/student-grades/:studentId', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      const studentId = req.params.studentId;
+
+      // Only the student themselves or instructors can access grades
+      if (user?.role === 'student' && userId !== studentId) {
+        return res.status(403).json({ message: "Access denied" });
+      } else if (user?.role !== 'student' && user?.role !== 'instructor') {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const grades = await storage.getStudentGradesBySubject(studentId);
+      res.json(grades);
+    } catch (error) {
+      console.error("Error fetching student grades:", error);
+      res.status(500).json({ message: "Failed to fetch student grades" });
+    }
+  });
+
+  app.get('/api/instructor-student-grades', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+
+      if (user?.role !== 'instructor') {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const grades = await storage.getInstructorStudentGrades(userId);
+      res.json(grades);
+    } catch (error) {
+      console.error("Error fetching instructor student grades:", error);
+      res.status(500).json({ message: "Failed to fetch instructor student grades" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

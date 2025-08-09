@@ -29,8 +29,10 @@ import {
   ExternalLink,
   Eye,
   BookOpen,
-  Notebook
+  Notebook,
+  Calculator
 } from "lucide-react";
+import { calculateFinalGrade, calculateLetterGrade } from "@shared/gradeConfig";
 
 // Component for listing submissions to grade
 function GradingList() {
@@ -62,6 +64,18 @@ function GradingList() {
     retry: false,
   });
 
+  // Fetch instructor student grades for final grade calculation
+  const { data: studentGrades, isLoading: gradesLoading } = useQuery({
+    queryKey: ["/api/instructor-student-grades", user?.id],
+    queryFn: async () => {
+      const response = await fetch("/api/instructor-student-grades");
+      if (!response.ok) throw new Error(`${response.status}: ${response.statusText}`);
+      return response.json();
+    },
+    enabled: !!user?.id,
+    retry: false,
+  });
+
   const handleGradeExamSubmission = (submissionId: number) => {
     navigate(`/grading/${submissionId}`);
   };
@@ -70,10 +84,10 @@ function GradingList() {
     navigate(`/homework-grading/${submissionId}`);
   };
 
-  if (examLoading || homeworkLoading) {
+  if (examLoading || homeworkLoading || gradesLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-lg">Loading submissions...</div>
+        <div className="text-lg">Loading submissions and grades...</div>
       </div>
     );
   }
@@ -94,6 +108,10 @@ function GradingList() {
           <TabsTrigger value="homework" className="flex items-center gap-2">
             <Notebook className="h-4 w-4" />
             Homework Submissions ({homeworkSubmissions?.length || 0})
+          </TabsTrigger>
+          <TabsTrigger value="final-grades" className="flex items-center gap-2">
+            <Calculator className="h-4 w-4" />
+            Final Grades
           </TabsTrigger>
         </TabsList>
 
@@ -214,6 +232,101 @@ function GradingList() {
                         </TableCell>
                       </TableRow>
                     ))}
+                  </TableBody>
+                </Table>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="final-grades">
+          <Card>
+            <CardHeader>
+              <CardTitle>Final Grades by Course</CardTitle>
+              <p className="text-sm text-gray-600">
+                Final Grade = 40% Assignments + 60% Exams (coefficients configurable in grade settings)
+              </p>
+            </CardHeader>
+            <CardContent>
+              {!studentGrades || studentGrades.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  <Calculator className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                  <p>No student grades available</p>
+                  <p className="text-sm mt-2">Students need to complete and receive graded assignments and exams to see final grades</p>
+                </div>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Student</TableHead>
+                      <TableHead>Course</TableHead>
+                      <TableHead>Assignment Score</TableHead>
+                      <TableHead>Exam Score</TableHead>
+                      <TableHead>Final Grade</TableHead>
+                      <TableHead>Letter Grade</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {studentGrades.map((grade: any, index: number) => {
+                      const finalGrade = calculateFinalGrade(
+                        grade.totalAssignmentScore,
+                        grade.totalAssignmentMaxScore,
+                        grade.totalExamScore,
+                        grade.totalExamMaxScore
+                      );
+                      const letterGrade = calculateLetterGrade(finalGrade);
+                      
+                      const assignmentPercentage = grade.totalAssignmentMaxScore > 0 
+                        ? ((grade.totalAssignmentScore / grade.totalAssignmentMaxScore) * 100).toFixed(1)
+                        : "N/A";
+                      
+                      const examPercentage = grade.totalExamMaxScore > 0 
+                        ? ((grade.totalExamScore / grade.totalExamMaxScore) * 100).toFixed(1)
+                        : "N/A";
+
+                      return (
+                        <TableRow key={`${grade.studentId}-${grade.subjectId}-${index}`}>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <User className="h-4 w-4" />
+                              {grade.studentName}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="font-medium">{grade.subjectName}</div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="text-sm">
+                              {grade.totalAssignmentScore}/{grade.totalAssignmentMaxScore}
+                              <br />
+                              <span className="text-gray-500">({assignmentPercentage}%)</span>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="text-sm">
+                              {grade.totalExamScore}/{grade.totalExamMaxScore}
+                              <br />
+                              <span className="text-gray-500">({examPercentage}%)</span>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="font-bold text-lg">
+                              {finalGrade.toFixed(1)}%
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge 
+                              variant={letterGrade === 'F' ? 'destructive' : 
+                                     letterGrade.startsWith('A') ? 'default' :
+                                     letterGrade.startsWith('B') ? 'secondary' : 'outline'}
+                              className="font-bold"
+                            >
+                              {letterGrade}
+                            </Badge>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
                   </TableBody>
                 </Table>
               )}

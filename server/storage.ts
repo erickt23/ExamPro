@@ -130,6 +130,26 @@ export interface IStorage {
   createHomeworkAnswer(answer: Partial<HomeworkAnswer>): Promise<HomeworkAnswer>;
   getHomeworkAnswers(submissionId: number): Promise<HomeworkAnswer[]>;
   updateHomeworkAnswer(id: number, updates: Partial<HomeworkAnswer>): Promise<HomeworkAnswer>;
+
+  // Grade calculation operations
+  getStudentGradesBySubject(studentId: string): Promise<{
+    subjectId: number;
+    subjectName: string;
+    totalAssignmentScore: number;
+    totalAssignmentMaxScore: number;
+    totalExamScore: number;
+    totalExamMaxScore: number;
+  }[]>;
+  getInstructorStudentGrades(instructorId: string): Promise<{
+    studentId: string;
+    studentName: string;
+    subjectId: number;
+    subjectName: string;
+    totalAssignmentScore: number;
+    totalAssignmentMaxScore: number;
+    totalExamScore: number;
+    totalExamMaxScore: number;
+  }[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -863,6 +883,220 @@ export class DatabaseStorage implements IStorage {
       .where(eq(homeworkAnswers.id, id))
       .returning();
     return answer;
+  }
+
+  // Grade calculation operations
+  async getStudentGradesBySubject(studentId: string): Promise<{
+    subjectId: number;
+    subjectName: string;
+    totalAssignmentScore: number;
+    totalAssignmentMaxScore: number;
+    totalExamScore: number;
+    totalExamMaxScore: number;
+  }[]> {
+    // Get homework (assignment) scores by subject
+    const homeworkScores = await db
+      .select({
+        subjectId: subjects.id,
+        subjectName: subjects.name,
+        totalScore: sql<number>`COALESCE(SUM(CASE WHEN ${homeworkSubmissions.status} = 'graded' THEN ${homeworkSubmissions.totalScore} ELSE 0 END), 0)`,
+        totalMaxScore: sql<number>`COALESCE(SUM(CASE WHEN ${homeworkSubmissions.status} = 'graded' THEN ${homeworkSubmissions.maxScore} ELSE 0 END), 0)`,
+      })
+      .from(subjects)
+      .leftJoin(homeworkAssignments, eq(subjects.id, homeworkAssignments.subjectId))
+      .leftJoin(homeworkSubmissions, and(
+        eq(homeworkAssignments.id, homeworkSubmissions.homeworkId),
+        eq(homeworkSubmissions.studentId, studentId)
+      ))
+      .groupBy(subjects.id, subjects.name);
+
+    // Get exam scores by subject
+    const examScores = await db
+      .select({
+        subjectId: subjects.id,
+        subjectName: subjects.name,
+        totalScore: sql<number>`COALESCE(SUM(CASE WHEN ${submissions.status} = 'graded' THEN ${submissions.totalScore} ELSE 0 END), 0)`,
+        totalMaxScore: sql<number>`COALESCE(SUM(CASE WHEN ${submissions.status} = 'graded' THEN ${submissions.maxScore} ELSE 0 END), 0)`,
+      })
+      .from(subjects)
+      .leftJoin(exams, eq(subjects.id, exams.subjectId))
+      .leftJoin(submissions, and(
+        eq(exams.id, submissions.examId),
+        eq(submissions.studentId, studentId)
+      ))
+      .groupBy(subjects.id, subjects.name);
+
+    // Combine homework and exam scores
+    const subjectMap = new Map<number, {
+      subjectId: number;
+      subjectName: string;
+      totalAssignmentScore: number;
+      totalAssignmentMaxScore: number;
+      totalExamScore: number;
+      totalExamMaxScore: number;
+    }>();
+
+    // Initialize with homework scores
+    for (const homework of homeworkScores) {
+      subjectMap.set(homework.subjectId, {
+        subjectId: homework.subjectId,
+        subjectName: homework.subjectName,
+        totalAssignmentScore: Number(homework.totalScore) || 0,
+        totalAssignmentMaxScore: Number(homework.totalMaxScore) || 0,
+        totalExamScore: 0,
+        totalExamMaxScore: 0,
+      });
+    }
+
+    // Add exam scores
+    for (const exam of examScores) {
+      const existing = subjectMap.get(exam.subjectId);
+      if (existing) {
+        existing.totalExamScore = Number(exam.totalScore) || 0;
+        existing.totalExamMaxScore = Number(exam.totalMaxScore) || 0;
+      } else {
+        subjectMap.set(exam.subjectId, {
+          subjectId: exam.subjectId,
+          subjectName: exam.subjectName,
+          totalAssignmentScore: 0,
+          totalAssignmentMaxScore: 0,
+          totalExamScore: Number(exam.totalScore) || 0,
+          totalExamMaxScore: Number(exam.totalMaxScore) || 0,
+        });
+      }
+    }
+
+    return Array.from(subjectMap.values());
+  }
+
+  async getInstructorStudentGrades(instructorId: string): Promise<{
+    studentId: string;
+    studentName: string;
+    subjectId: number;
+    subjectName: string;
+    totalAssignmentScore: number;
+    totalAssignmentMaxScore: number;
+    totalExamScore: number;
+    totalExamMaxScore: number;
+  }[]> {
+    // Get all students who have submissions for this instructor's courses
+    const studentsWithSubmissions = await db
+      .select({
+        studentId: users.id,
+        studentName: sql<string>`CONCAT(${users.firstName}, ' ', ${users.lastName})`,
+      })
+      .from(users)
+      .where(eq(users.role, 'student'))
+      .groupBy(users.id, users.firstName, users.lastName);
+
+    const result: {
+      studentId: string;
+      studentName: string;
+      subjectId: number;
+      subjectName: string;
+      totalAssignmentScore: number;
+      totalAssignmentMaxScore: number;
+      totalExamScore: number;
+      totalExamMaxScore: number;
+    }[] = [];
+
+    // For each student, get their grades by subject for this instructor
+    for (const student of studentsWithSubmissions) {
+      // Get homework scores for instructor's assignments
+      const homeworkScores = await db
+        .select({
+          subjectId: subjects.id,
+          subjectName: subjects.name,
+          totalScore: sql<number>`COALESCE(SUM(CASE WHEN ${homeworkSubmissions.status} = 'graded' THEN ${homeworkSubmissions.totalScore} ELSE 0 END), 0)`,
+          totalMaxScore: sql<number>`COALESCE(SUM(CASE WHEN ${homeworkSubmissions.status} = 'graded' THEN ${homeworkSubmissions.maxScore} ELSE 0 END), 0)`,
+        })
+        .from(subjects)
+        .leftJoin(homeworkAssignments, and(
+          eq(subjects.id, homeworkAssignments.subjectId),
+          eq(homeworkAssignments.instructorId, instructorId)
+        ))
+        .leftJoin(homeworkSubmissions, and(
+          eq(homeworkAssignments.id, homeworkSubmissions.homeworkId),
+          eq(homeworkSubmissions.studentId, student.studentId)
+        ))
+        .groupBy(subjects.id, subjects.name);
+
+      // Get exam scores for instructor's exams
+      const examScores = await db
+        .select({
+          subjectId: subjects.id,
+          subjectName: subjects.name,
+          totalScore: sql<number>`COALESCE(SUM(CASE WHEN ${submissions.status} = 'graded' THEN ${submissions.totalScore} ELSE 0 END), 0)`,
+          totalMaxScore: sql<number>`COALESCE(SUM(CASE WHEN ${submissions.status} = 'graded' THEN ${submissions.maxScore} ELSE 0 END), 0)`,
+        })
+        .from(subjects)
+        .leftJoin(exams, and(
+          eq(subjects.id, exams.subjectId),
+          eq(exams.instructorId, instructorId)
+        ))
+        .leftJoin(submissions, and(
+          eq(exams.id, submissions.examId),
+          eq(submissions.studentId, student.studentId)
+        ))
+        .groupBy(subjects.id, subjects.name);
+
+      // Combine scores by subject
+      const subjectMap = new Map<number, {
+        subjectId: number;
+        subjectName: string;
+        totalAssignmentScore: number;
+        totalAssignmentMaxScore: number;
+        totalExamScore: number;
+        totalExamMaxScore: number;
+      }>();
+
+      // Add homework scores
+      for (const homework of homeworkScores) {
+        if (homework.totalMaxScore > 0) { // Only include subjects with actual homework
+          subjectMap.set(homework.subjectId, {
+            subjectId: homework.subjectId,
+            subjectName: homework.subjectName,
+            totalAssignmentScore: Number(homework.totalScore) || 0,
+            totalAssignmentMaxScore: Number(homework.totalMaxScore) || 0,
+            totalExamScore: 0,
+            totalExamMaxScore: 0,
+          });
+        }
+      }
+
+      // Add exam scores
+      for (const exam of examScores) {
+        if (exam.totalMaxScore > 0) { // Only include subjects with actual exams
+          const existing = subjectMap.get(exam.subjectId);
+          if (existing) {
+            existing.totalExamScore = Number(exam.totalScore) || 0;
+            existing.totalExamMaxScore = Number(exam.totalMaxScore) || 0;
+          } else {
+            subjectMap.set(exam.subjectId, {
+              subjectId: exam.subjectId,
+              subjectName: exam.subjectName,
+              totalAssignmentScore: 0,
+              totalAssignmentMaxScore: 0,
+              totalExamScore: Number(exam.totalScore) || 0,
+              totalExamMaxScore: Number(exam.totalMaxScore) || 0,
+            });
+          }
+        }
+      }
+
+      // Add to result only if student has grades in at least one subject
+      for (const grades of subjectMap.values()) {
+        if (grades.totalAssignmentMaxScore > 0 || grades.totalExamMaxScore > 0) {
+          result.push({
+            studentId: student.studentId,
+            studentName: student.studentName,
+            ...grades,
+          });
+        }
+      }
+    }
+
+    return result;
   }
 }
 
