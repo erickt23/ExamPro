@@ -118,16 +118,6 @@ export default function InstructorDashboard() {
             <div className="mb-6">
               <h2 className="text-2xl font-bold text-gray-900">Dashboard</h2>
               <p className="text-gray-600 mt-1">Overview of your teaching activities and recent updates</p>
-              
-              {/* Test Grading Link */}
-              <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                <p className="text-sm text-blue-800 mb-2">Test Grading Access:</p>
-                <Link href="/grading/4">
-                  <Button size="sm" variant="outline">
-                    Test Grading Page (Submission #4)
-                  </Button>
-                </Link>
-              </div>
             </div>
 
             {/* Stats Cards */}
