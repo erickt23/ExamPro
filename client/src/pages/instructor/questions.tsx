@@ -8,7 +8,7 @@ import { formatSubmissionTime } from "@/lib/dateUtils";
 import Navbar from "@/components/layout/navbar";
 import Sidebar from "@/components/layout/sidebar";
 import CreateQuestionModal from "@/components/modals/create-question-modal";
-import CreateSubjectModal from "@/components/modals/create-subject-modal";
+
 import EditQuestionModal from "@/components/modals/edit-question-modal";
 import ImportQuestionsModal from "@/components/modals/import-questions-modal";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -35,7 +35,7 @@ export default function InstructorQuestions() {
   const { toast } = useToast();
   const { isAuthenticated, isLoading } = useAuth();
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [showCreateSubjectModal, setShowCreateSubjectModal] = useState(false);
+
   const [showEditModal, setShowEditModal] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
   const [editQuestionId, setEditQuestionId] = useState<number | null>(null);
@@ -186,19 +186,7 @@ export default function InstructorQuestions() {
               <CardContent className="p-6">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                   <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <Label htmlFor="subject">Subject</Label>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setShowCreateSubjectModal(true)}
-                        className="h-auto p-1 text-primary hover:text-primary/80"
-                        title="Add new subject"
-                      >
-                        <Plus className="h-3 w-3" />
-                      </Button>
-                    </div>
+                    <Label htmlFor="subject">Subject</Label>
                     <Select value={filters.subjectId} onValueChange={(value) => setFilters(prev => ({...prev, subjectId: value}))}>
                       <SelectTrigger>
                         <SelectValue placeholder="All Subjects" />
@@ -369,11 +357,6 @@ export default function InstructorQuestions() {
         open={showCreateModal} 
         onOpenChange={setShowCreateModal}
         questionCategory="exam"
-      />
-      
-      <CreateSubjectModal
-        open={showCreateSubjectModal}
-        onOpenChange={setShowCreateSubjectModal}
       />
       
       <EditQuestionModal
