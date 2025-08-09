@@ -127,6 +127,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.put('/api/subjects/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      const subjectId = parseInt(req.params.id);
+      
+      if (user?.role !== 'instructor') {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const updateData = req.body;
+      const subject = await storage.updateSubject(subjectId, updateData);
+      res.json(subject);
+    } catch (error) {
+      console.error("Error updating subject:", error);
+      res.status(500).json({ message: "Failed to update subject" });
+    }
+  });
+
+  app.delete('/api/subjects/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      const subjectId = parseInt(req.params.id);
+      
+      if (user?.role !== 'instructor') {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      await storage.deleteSubject(subjectId);
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting subject:", error);
+      res.status(500).json({ message: "Failed to delete subject" });
+    }
+  });
+
   // Question routes
   app.get('/api/questions', isAuthenticated, async (req: any, res) => {
     try {
