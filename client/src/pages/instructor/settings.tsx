@@ -19,9 +19,26 @@ import {
   Calculator,
   AlertCircle,
   Users,
-  Globe
+  Globe,
+  Plus,
+  Edit,
+  Trash2
 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Textarea } from "@/components/ui/textarea";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+
+// Subject form schema
+const subjectSchema = z.object({
+  name: z.string().min(1, "Subject name is required").max(100, "Name must be less than 100 characters"),
+  description: z.string().optional(),
+});
+
+type SubjectForm = z.infer<typeof subjectSchema>;
 
 export default function SettingsPage() {
   const { user, isLoading: authLoading } = useAuth();
@@ -34,6 +51,19 @@ export default function SettingsPage() {
     assignmentCoefficient: number;
     examCoefficient: number;
   }>>({});
+
+  // Subject management state
+  const [showCreateSubjectModal, setShowCreateSubjectModal] = useState(false);
+  const [showEditSubjectModal, setShowEditSubjectModal] = useState(false);
+  const [editingSubject, setEditingSubject] = useState<any>(null);
+
+  const subjectForm = useForm<SubjectForm>({
+    resolver: zodResolver(subjectSchema),
+    defaultValues: {
+      name: '',
+      description: '',
+    },
+  });
 
   // Check authentication and redirect if needed
   useEffect(() => {
@@ -220,6 +250,130 @@ export default function SettingsPage() {
     saveCourseSettingsMutation.mutate({ courseId, settings });
   };
 
+  // Subject management mutations
+  const createSubjectMutation = useMutation({
+    mutationFn: async (data: SubjectForm) => {
+      await apiRequest("POST", "/api/subjects", data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/subjects"] });
+      toast({
+        title: "Success",
+        description: "Subject created successfully",
+      });
+      subjectForm.reset();
+      setShowCreateSubjectModal(false);
+    },
+    onError: (error: Error) => {
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
+      toast({
+        title: "Error",
+        description: "Failed to create subject",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const updateSubjectMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: number; data: SubjectForm }) => {
+      await apiRequest("PUT", `/api/subjects/${id}`, data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/subjects"] });
+      toast({
+        title: "Success",
+        description: "Subject updated successfully",
+      });
+      subjectForm.reset();
+      setShowEditSubjectModal(false);
+      setEditingSubject(null);
+    },
+    onError: (error: Error) => {
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
+      toast({
+        title: "Error",
+        description: "Failed to update subject",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const deleteSubjectMutation = useMutation({
+    mutationFn: async (id: number) => {
+      await apiRequest("DELETE", `/api/subjects/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/subjects"] });
+      toast({
+        title: "Success",
+        description: "Subject deleted successfully",
+      });
+    },
+    onError: (error: Error) => {
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
+      toast({
+        title: "Error",
+        description: "Failed to delete subject",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleCreateSubject = (data: SubjectForm) => {
+    createSubjectMutation.mutate(data);
+  };
+
+  const handleEditSubject = (subject: any) => {
+    setEditingSubject(subject);
+    subjectForm.reset({
+      name: subject.name,
+      description: subject.description || '',
+    });
+    setShowEditSubjectModal(true);
+  };
+
+  const handleUpdateSubject = (data: SubjectForm) => {
+    if (editingSubject) {
+      updateSubjectMutation.mutate({ id: editingSubject.id, data });
+    }
+  };
+
+  const handleDeleteSubject = (id: number) => {
+    if (confirm('Are you sure you want to delete this subject? This action cannot be undone.')) {
+      deleteSubjectMutation.mutate(id);
+    }
+  };
+
   if (authLoading || settingsLoading || subjectsLoading) {
     return (
       <div className="min-h-screen bg-gray-50">
@@ -248,17 +402,105 @@ export default function SettingsPage() {
               <p className="text-gray-600">Configure grade calculation coefficients and system preferences</p>
             </div>
 
-            <Tabs defaultValue="global" className="w-full">
+            <Tabs defaultValue="subjects" className="w-full">
               <TabsList>
+                <TabsTrigger value="subjects" className="flex items-center gap-2">
+                  <BookOpen className="h-4 w-4" />
+                  Subject Management
+                </TabsTrigger>
                 <TabsTrigger value="global" className="flex items-center gap-2">
                   <Globe className="h-4 w-4" />
                   Global Settings
                 </TabsTrigger>
                 <TabsTrigger value="courses" className="flex items-center gap-2">
-                  <BookOpen className="h-4 w-4" />
+                  <Calculator className="h-4 w-4" />
                   Course-Specific Settings
                 </TabsTrigger>
               </TabsList>
+
+              <TabsContent value="subjects">
+                <Card>
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <CardTitle className="flex items-center gap-2">
+                          <BookOpen className="h-5 w-5" />
+                          Subject Management
+                        </CardTitle>
+                        <p className="text-sm text-gray-600 mt-1">
+                          Create and manage subjects for your courses, exams, and homework assignments.
+                        </p>
+                      </div>
+                      <Button
+                        onClick={() => setShowCreateSubjectModal(true)}
+                        className="flex items-center gap-2"
+                      >
+                        <Plus className="h-4 w-4" />
+                        Add Subject
+                      </Button>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    {!subjects || !Array.isArray(subjects) || subjects.length === 0 ? (
+                      <div className="text-center py-12 text-gray-500">
+                        <BookOpen className="h-16 w-16 mx-auto mb-4 text-gray-300" />
+                        <h3 className="text-lg font-medium mb-2">No subjects created yet</h3>
+                        <p className="text-sm mb-4">Create your first subject to start organizing your courses</p>
+                        <Button
+                          onClick={() => setShowCreateSubjectModal(true)}
+                          className="flex items-center gap-2"
+                        >
+                          <Plus className="h-4 w-4" />
+                          Create First Subject
+                        </Button>
+                      </div>
+                    ) : (
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Subject Name</TableHead>
+                            <TableHead>Description</TableHead>
+                            <TableHead className="text-right">Actions</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {subjects.map((subject: any) => (
+                            <TableRow key={subject.id}>
+                              <TableCell>
+                                <div className="font-medium">{subject.name}</div>
+                              </TableCell>
+                              <TableCell>
+                                <div className="text-sm text-gray-600 max-w-md">
+                                  {subject.description || <span className="italic text-gray-400">No description</span>}
+                                </div>
+                              </TableCell>
+                              <TableCell className="text-right">
+                                <div className="flex items-center justify-end gap-2">
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => handleEditSubject(subject)}
+                                  >
+                                    <Edit className="h-3 w-3" />
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => handleDeleteSubject(subject.id)}
+                                    className="text-red-600 hover:text-red-800"
+                                  >
+                                    <Trash2 className="h-3 w-3" />
+                                  </Button>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    )}
+                  </CardContent>
+                </Card>
+              </TabsContent>
 
               <TabsContent value="global">
                 <Card>
@@ -436,6 +678,114 @@ export default function SettingsPage() {
           </div>
         </main>
       </div>
+
+      {/* Create Subject Modal */}
+      <Dialog open={showCreateSubjectModal} onOpenChange={setShowCreateSubjectModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Create New Subject</DialogTitle>
+          </DialogHeader>
+          <Form {...subjectForm}>
+            <form onSubmit={subjectForm.handleSubmit(handleCreateSubject)} className="space-y-4">
+              <FormField
+                control={subjectForm.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Subject Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter subject name" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={subjectForm.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Description (Optional)</FormLabel>
+                    <FormControl>
+                      <Textarea 
+                        placeholder="Enter subject description"
+                        rows={3}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => setShowCreateSubjectModal(false)}>
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={createSubjectMutation.isPending}
+                >
+                  {createSubjectMutation.isPending ? "Creating..." : "Create Subject"}
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Subject Modal */}
+      <Dialog open={showEditSubjectModal} onOpenChange={setShowEditSubjectModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Subject</DialogTitle>
+          </DialogHeader>
+          <Form {...subjectForm}>
+            <form onSubmit={subjectForm.handleSubmit(handleUpdateSubject)} className="space-y-4">
+              <FormField
+                control={subjectForm.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Subject Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter subject name" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={subjectForm.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Description (Optional)</FormLabel>
+                    <FormControl>
+                      <Textarea 
+                        placeholder="Enter subject description"
+                        rows={3}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => setShowEditSubjectModal(false)}>
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={updateSubjectMutation.isPending}
+                >
+                  {updateSubjectMutation.isPending ? "Updating..." : "Update Subject"}
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

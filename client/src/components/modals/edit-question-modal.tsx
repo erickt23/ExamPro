@@ -29,7 +29,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Plus, List, PenTool, FileText, Pen, Upload, Paperclip, ArrowUpDown, Link, Move3D } from "lucide-react";
-import CreateSubjectModal from "./create-subject-modal";
+
 import { ObjectUploader } from "@/components/ObjectUploader";
 
 const editQuestionSchema = z.object({
@@ -58,7 +58,7 @@ interface EditQuestionModalProps {
 
 export default function EditQuestionModal({ open, onOpenChange, questionId }: EditQuestionModalProps) {
   const { toast } = useToast();
-  const [showCreateSubjectModal, setShowCreateSubjectModal] = useState(false);
+
   
   // Fetch subjects
   const { data: subjects = [] } = useQuery<any[]>({
@@ -546,19 +546,7 @@ export default function EditQuestionModal({ open, onOpenChange, questionId }: Ed
                 name="subjectId"
                 render={({ field }) => (
                   <FormItem>
-                    <div className="flex items-center justify-between mb-2">
-                      <FormLabel>Subject</FormLabel>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setShowCreateSubjectModal(true)}
-                        className="h-auto p-1 text-primary hover:text-primary/80"
-                        title="Add new subject"
-                      >
-                        <Plus className="h-3 w-3" />
-                      </Button>
-                    </div>
+                    <FormLabel>Subject</FormLabel>
                     <Select onValueChange={(value) => field.onChange(parseInt(value))} value={field.value?.toString()}>
                       <FormControl>
                         <SelectTrigger>
@@ -764,11 +752,6 @@ export default function EditQuestionModal({ open, onOpenChange, questionId }: Ed
           </form>
         </Form>
       </DialogContent>
-      
-      <CreateSubjectModal
-        open={showCreateSubjectModal}
-        onOpenChange={setShowCreateSubjectModal}
-      />
     </Dialog>
   );
 }

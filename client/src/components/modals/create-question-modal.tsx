@@ -29,7 +29,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Plus, List, PenTool, FileText, Pen, Upload, Paperclip, ArrowUpDown, Link, Move3D } from "lucide-react";
-import CreateSubjectModal from "./create-subject-modal";
+
 import { ObjectUploader } from "@/components/ObjectUploader";
 
 const createQuestionSchema = z.object({
@@ -58,7 +58,7 @@ interface CreateQuestionModalProps {
 
 export default function CreateQuestionModal({ open, onOpenChange, questionCategory }: CreateQuestionModalProps) {
   const { toast } = useToast();
-  const [showCreateSubjectModal, setShowCreateSubjectModal] = useState(false);
+
   
   // Fetch subjects
   const { data: subjects = [] } = useQuery<any[]>({
@@ -98,16 +98,17 @@ export default function CreateQuestionModal({ open, onOpenChange, questionCatego
         payload.options = mcqOptions.filter(option => option.trim());
         payload.correctAnswer = correctOption;
       } else if (data.questionType === 'matching') {
-        payload.options = matchingPairs.filter(pair => pair.left.trim() && pair.right.trim());
-        payload.correctAnswer = JSON.stringify(matchingPairs.filter(pair => pair.left.trim() && pair.right.trim()));
+        const validPairs = matchingPairs.filter(pair => pair.left.trim() && pair.right.trim());
+        payload.options = validPairs.map(pair => `${pair.left}|${pair.right}`);
+        payload.correctAnswer = JSON.stringify(validPairs);
       } else if (data.questionType === 'ranking') {
         payload.options = rankingItems.filter(item => item.trim());
         payload.correctAnswer = JSON.stringify(rankingItems.filter(item => item.trim()));
       } else if (data.questionType === 'drag_drop') {
-        payload.options = [...dragDropZones, ...dragDropItems].filter(item => 
-          typeof item === 'string' ? item.trim() : item.zone?.trim()
-        );
-        payload.correctAnswer = JSON.stringify({ zones: dragDropZones, items: dragDropItems });
+        const validZones = dragDropZones.filter(zone => zone.zone?.trim());
+        const validItems = dragDropItems.filter(item => item.trim());
+        payload.options = [...validZones.map(zone => zone.zone), ...validItems];
+        payload.correctAnswer = JSON.stringify({ zones: validZones, items: validItems });
       }
       
       // Include attachment URL if present
@@ -495,19 +496,7 @@ export default function CreateQuestionModal({ open, onOpenChange, questionCatego
                 name="subjectId"
                 render={({ field }) => (
                   <FormItem>
-                    <div className="flex items-center justify-between mb-2">
-                      <FormLabel>Subject</FormLabel>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setShowCreateSubjectModal(true)}
-                        className="h-auto p-1 text-primary hover:text-primary/80"
-                        title="Add new subject"
-                      >
-                        <Plus className="h-3 w-3" />
-                      </Button>
-                    </div>
+                    <FormLabel>Subject</FormLabel>
                     <Select onValueChange={(value) => field.onChange(parseInt(value))} defaultValue={field.value?.toString()}>
                       <FormControl>
                         <SelectTrigger>
@@ -727,11 +716,6 @@ export default function CreateQuestionModal({ open, onOpenChange, questionCatego
           </form>
         </Form>
       </DialogContent>
-      
-      <CreateSubjectModal
-        open={showCreateSubjectModal}
-        onOpenChange={setShowCreateSubjectModal}
-      />
     </Dialog>
   );
 }
