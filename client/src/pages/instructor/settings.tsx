@@ -81,8 +81,23 @@ export default function SettingsPage() {
   // Initialize settings when data loads
   useEffect(() => {
     if (currentSettings) {
-      setGlobalSettings(currentSettings.global || { assignmentCoefficient: 0.4, examCoefficient: 0.6 });
-      setCourseSettings(currentSettings.courses || {});
+      // Convert string coefficients to numbers
+      const global = currentSettings.global || { assignmentCoefficient: '0.4000', examCoefficient: '0.6000' };
+      setGlobalSettings({
+        assignmentCoefficient: parseFloat(global.assignmentCoefficient),
+        examCoefficient: parseFloat(global.examCoefficient)
+      });
+      
+      // Convert course settings
+      const courses = currentSettings.courses || {};
+      const convertedCourses: Record<number, { assignmentCoefficient: number; examCoefficient: number }> = {};
+      for (const [courseId, settings] of Object.entries(courses)) {
+        convertedCourses[parseInt(courseId)] = {
+          assignmentCoefficient: parseFloat((settings as any).assignmentCoefficient),
+          examCoefficient: parseFloat((settings as any).examCoefficient)
+        };
+      }
+      setCourseSettings(convertedCourses);
     }
   }, [currentSettings]);
 
