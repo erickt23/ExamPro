@@ -31,14 +31,20 @@ export function calculateFinalGrade(
   assignmentScore: number,
   assignmentMaxScore: number,
   examScore: number,
-  examMaxScore: number
+  examMaxScore: number,
+  assignmentCoeff?: number,
+  examCoeff?: number
 ): number {
   const assignmentPercentage = assignmentMaxScore > 0 ? (assignmentScore / assignmentMaxScore) * 100 : 0;
   const examPercentage = examMaxScore > 0 ? (examScore / examMaxScore) * 100 : 0;
   
+  // Use provided coefficients or fall back to defaults
+  const aCoeff = assignmentCoeff ?? GRADE_CALCULATION_CONFIG.ASSIGNMENT_COEFFICIENT;
+  const eCoeff = examCoeff ?? GRADE_CALCULATION_CONFIG.EXAM_COEFFICIENT;
+  
   const finalGrade = (
-    assignmentPercentage * GRADE_CALCULATION_CONFIG.ASSIGNMENT_COEFFICIENT +
-    examPercentage * GRADE_CALCULATION_CONFIG.EXAM_COEFFICIENT
+    assignmentPercentage * aCoeff +
+    examPercentage * eCoeff
   );
   
   return Math.round(finalGrade * 100) / 100; // Round to 2 decimal places

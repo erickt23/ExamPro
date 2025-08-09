@@ -11,6 +11,7 @@ import {
   homeworkSubmissions,
   homeworkAnswers,
   gradeSettings,
+  finalizedGrades,
   type User,
   type UpsertUser,
   type InsertSubject,
@@ -29,6 +30,8 @@ import {
   type HomeworkAnswer,
   type InsertGradeSettings,
   type GradeSettings,
+  type InsertFinalizedGrade,
+  type FinalizedGrade,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, asc, and, or, count, avg, sum, like, ilike, inArray, sql, ne, isNull } from "drizzle-orm";
@@ -159,6 +162,12 @@ export interface IStorage {
   setGlobalGradeSettings(settings: { assignmentCoefficient: number; examCoefficient: number }): Promise<GradeSettings>;
   setCourseGradeSettings(courseId: number, settings: { assignmentCoefficient: number; examCoefficient: number }): Promise<GradeSettings>;
   getGradeSettingsForCourse(courseId?: number): Promise<GradeSettings | undefined>;
+  
+  // Grade finalization operations
+  finalizeGradesForSubject(subjectId: number, finalizedBy: string): Promise<FinalizedGrade[]>;
+  isSubjectGradesFinalized(subjectId: number): Promise<boolean>;
+  getFinalizedGradesForSubject(subjectId: number): Promise<FinalizedGrade[]>;
+  unfinalizeGradesForSubject(subjectId: number): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1213,6 +1222,83 @@ export class DatabaseStorage implements IStorage {
       .limit(1);
     
     return globalSetting;
+  }
+
+  // Grade finalization operations
+  async finalizeGradesForSubject(subjectId: number, finalizedBy: string): Promise<FinalizedGrade[]> {
+    // Get all students with grades for this subject
+    const studentGrades = await this.getInstructorStudentGrades(finalizedBy);
+    const subjectGrades = studentGrades.filter(grade => grade.subjectId === subjectId);
+    
+    // Get current grade settings for this subject
+    const gradeSettings = await this.getGradeSettingsForCourse(subjectId);
+    const assignmentCoeff = gradeSettings ? Number(gradeSettings.assignmentCoefficient) : 0.4;
+    const examCoeff = gradeSettings ? Number(gradeSettings.examCoefficient) : 0.6;
+    
+    // Create finalized grade records
+    const finalizedGradeData: InsertFinalizedGrade[] = subjectGrades.map(grade => {
+      const assignmentPercentage = grade.totalAssignmentMaxScore > 0 
+        ? (grade.totalAssignmentScore / grade.totalAssignmentMaxScore) * 100 
+        : 0;
+      const examPercentage = grade.totalExamMaxScore > 0 
+        ? (grade.totalExamScore / grade.totalExamMaxScore) * 100 
+        : 0;
+      const finalGrade = (assignmentPercentage * assignmentCoeff) + (examPercentage * examCoeff);
+      
+      return {
+        studentId: grade.studentId,
+        subjectId: grade.subjectId,
+        finalGrade: finalGrade.toFixed(2),
+        assignmentScore: grade.totalAssignmentScore.toFixed(2),
+        assignmentMaxScore: grade.totalAssignmentMaxScore.toFixed(2),
+        examScore: grade.totalExamScore.toFixed(2),
+        examMaxScore: grade.totalExamMaxScore.toFixed(2),
+        assignmentCoefficient: assignmentCoeff.toFixed(4),
+        examCoefficient: examCoeff.toFixed(4),
+        finalizedBy,
+      };
+    });
+    
+    // Insert finalized grades (replace if they already exist)
+    const results: FinalizedGrade[] = [];
+    for (const gradeData of finalizedGradeData) {
+      const [finalizedGrade] = await db
+        .insert(finalizedGrades)
+        .values(gradeData)
+        .onConflictDoUpdate({
+          target: [finalizedGrades.studentId, finalizedGrades.subjectId],
+          set: {
+            ...gradeData,
+            finalizedAt: new Date(),
+          },
+        })
+        .returning();
+      results.push(finalizedGrade);
+    }
+    
+    return results;
+  }
+
+  async isSubjectGradesFinalized(subjectId: number): Promise<boolean> {
+    const [result] = await db
+      .select({ count: count() })
+      .from(finalizedGrades)
+      .where(eq(finalizedGrades.subjectId, subjectId));
+    
+    return result.count > 0;
+  }
+
+  async getFinalizedGradesForSubject(subjectId: number): Promise<FinalizedGrade[]> {
+    return await db
+      .select()
+      .from(finalizedGrades)
+      .where(eq(finalizedGrades.subjectId, subjectId));
+  }
+
+  async unfinalizeGradesForSubject(subjectId: number): Promise<void> {
+    await db
+      .delete(finalizedGrades)
+      .where(eq(finalizedGrades.subjectId, subjectId));
   }
 }
 

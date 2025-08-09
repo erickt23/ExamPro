@@ -34,6 +34,138 @@ import {
 } from "lucide-react";
 import { calculateFinalGrade } from "@shared/gradeConfig";
 
+// Component for displaying subject grades with finalization controls
+function SubjectGradesCard({ 
+  subject, 
+  gradeSettings, 
+  onFinalize, 
+  onUnfinalize, 
+  finalizeLoading, 
+  unfinalizeLoading 
+}: any) {
+  const { data: finalizationStatus, isLoading: statusLoading } = useQuery({
+    queryKey: [`/api/finalize-grades/${subject.subjectId}/status`],
+    queryFn: async () => {
+      const response = await fetch(`/api/finalize-grades/${subject.subjectId}/status`);
+      if (!response.ok) throw new Error(`${response.status}: ${response.statusText}`);
+      return response.json();
+    },
+    retry: false,
+  });
+
+  const isFinalized = finalizationStatus?.isFinalized || false;
+
+  // Get coefficients for this subject (course-specific or global)
+  const subjectSettings = gradeSettings?.courses?.[subject.subjectId] || gradeSettings?.global;
+  const assignmentCoeff = subjectSettings ? Number(subjectSettings.assignmentCoefficient) : 0.4;
+  const examCoeff = subjectSettings ? Number(subjectSettings.examCoefficient) : 0.6;
+
+  return (
+    <Card className={`mb-6 ${isFinalized ? 'border-blue-200 bg-blue-50' : ''}`}>
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle className="flex items-center gap-2">
+              {subject.subjectName}
+              {isFinalized && (
+                <Badge variant="outline" className="bg-blue-100 text-blue-800">
+                  Finalized
+                </Badge>
+              )}
+            </CardTitle>
+            <p className="text-sm text-gray-600 mt-1">
+              Formula: {(assignmentCoeff * 100).toFixed(0)}% Assignments + {(examCoeff * 100).toFixed(0)}% Exams
+              {isFinalized && " (locked coefficients)"}
+            </p>
+          </div>
+          <div className="flex gap-2">
+            {isFinalized ? (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onUnfinalize(subject.subjectId)}
+                disabled={unfinalizeLoading}
+              >
+                {unfinalizeLoading ? "Unfinalizing..." : "Unfinalize Grades"}
+              </Button>
+            ) : (
+              <Button
+                size="sm"
+                onClick={() => onFinalize(subject.subjectId)}
+                disabled={finalizeLoading}
+              >
+                {finalizeLoading ? "Finalizing..." : "Finalize Grades"}
+              </Button>
+            )}
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Student</TableHead>
+              <TableHead>Assignment Score</TableHead>
+              <TableHead>Exam Score</TableHead>
+              <TableHead>Final Grade</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {subject.students.map((grade: any, index: number) => {
+              const finalGrade = calculateFinalGrade(
+                grade.totalAssignmentScore,
+                grade.totalAssignmentMaxScore,
+                grade.totalExamScore,
+                grade.totalExamMaxScore,
+                assignmentCoeff,
+                examCoeff
+              );
+              
+              const assignmentPercentage = grade.totalAssignmentMaxScore > 0 
+                ? ((grade.totalAssignmentScore / grade.totalAssignmentMaxScore) * 100).toFixed(1)
+                : "N/A";
+              
+              const examPercentage = grade.totalExamMaxScore > 0 
+                ? ((grade.totalExamScore / grade.totalExamMaxScore) * 100).toFixed(1)
+                : "N/A";
+
+              return (
+                <TableRow key={`${grade.studentId}-${grade.subjectId}-${index}`}>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <User className="h-4 w-4" />
+                      {grade.studentName}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="text-sm">
+                      {grade.totalAssignmentScore}/{grade.totalAssignmentMaxScore}
+                      <br />
+                      <span className="text-gray-500">({assignmentPercentage}%)</span>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="text-sm">
+                      {grade.totalExamScore}/{grade.totalExamMaxScore}
+                      <br />
+                      <span className="text-gray-500">({examPercentage}%)</span>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className={`font-bold text-lg ${isFinalized ? 'text-blue-700' : ''}`}>
+                      {finalGrade.toFixed(1)}%
+                    </div>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
+      </CardContent>
+    </Card>
+  );
+}
+
 // Component for listing submissions to grade
 function GradingList() {
   const [, navigate] = useLocation();
@@ -76,6 +208,12 @@ function GradingList() {
     retry: false,
   });
 
+  // Fetch grade settings for coefficient display
+  const { data: gradeSettings } = useQuery({
+    queryKey: ["/api/grade-settings"],
+    retry: false,
+  });
+
   const handleGradeExamSubmission = (submissionId: number) => {
     navigate(`/grading/${submissionId}`);
   };
@@ -83,6 +221,86 @@ function GradingList() {
   const handleGradeHomeworkSubmission = (submissionId: number) => {
     navigate(`/homework-grading/${submissionId}`);
   };
+
+  // Grade finalization mutations
+  const finalizeGradesMutation = useMutation({
+    mutationFn: async (subjectId: number) => {
+      return await apiRequest("POST", `/api/finalize-grades/${subjectId}`);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Grades Finalized",
+        description: "Course grades have been finalized and are now immune to coefficient changes.",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/instructor-student-grades"] });
+    },
+    onError: (error) => {
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
+      toast({
+        title: "Error",
+        description: "Failed to finalize grades.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const unfinalizeGradesMutation = useMutation({
+    mutationFn: async (subjectId: number) => {
+      return await apiRequest("DELETE", `/api/finalize-grades/${subjectId}`);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Grades Unfinalized",
+        description: "Course grades are now editable and will reflect coefficient changes.",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/instructor-student-grades"] });
+    },
+    onError: (error) => {
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
+      toast({
+        title: "Error",
+        description: "Failed to unfinalize grades.",
+        variant: "destructive",
+      });
+    },
+  });
+
+
+
+  // Group grades by subject
+  const gradesBySubject = studentGrades?.reduce((acc: any, grade: any) => {
+    if (!acc[grade.subjectId]) {
+      acc[grade.subjectId] = {
+        subjectId: grade.subjectId,
+        subjectName: grade.subjectName,
+        students: []
+      };
+    }
+    acc[grade.subjectId].students.push(grade);
+    return acc;
+  }, {}) || {};
+
+  const subjects = Object.values(gradesBySubject);
 
   if (examLoading || homeworkLoading || gradesLoading) {
     return (
@@ -240,86 +458,38 @@ function GradingList() {
         </TabsContent>
 
         <TabsContent value="final-grades">
-          <Card>
-            <CardHeader>
-              <CardTitle>Final Grades by Course</CardTitle>
-              <p className="text-sm text-gray-600">
-                Final Grade = 40% Assignments + 60% Exams (coefficients configurable in grade settings)
+          <div className="space-y-4">
+            <div>
+              <h2 className="text-xl font-semibold">Final Grades by Course</h2>
+              <p className="text-sm text-gray-600 mt-1">
+                Finalize grades to lock them against coefficient changes. Finalized grades are immune to settings modifications.
               </p>
-            </CardHeader>
-            <CardContent>
-              {!studentGrades || studentGrades.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
+            </div>
+            
+            {!studentGrades || studentGrades.length === 0 ? (
+              <Card>
+                <CardContent className="text-center py-8 text-gray-500">
                   <Calculator className="h-12 w-12 mx-auto mb-4 text-gray-300" />
                   <p>No student grades available</p>
                   <p className="text-sm mt-2">Students need to complete and receive graded assignments and exams to see final grades</p>
-                </div>
-              ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Student</TableHead>
-                      <TableHead>Course</TableHead>
-                      <TableHead>Assignment Score</TableHead>
-                      <TableHead>Exam Score</TableHead>
-                      <TableHead>Final Grade</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {studentGrades.map((grade: any, index: number) => {
-                      const finalGrade = calculateFinalGrade(
-                        grade.totalAssignmentScore,
-                        grade.totalAssignmentMaxScore,
-                        grade.totalExamScore,
-                        grade.totalExamMaxScore
-                      );
-                      
-                      const assignmentPercentage = grade.totalAssignmentMaxScore > 0 
-                        ? ((grade.totalAssignmentScore / grade.totalAssignmentMaxScore) * 100).toFixed(1)
-                        : "N/A";
-                      
-                      const examPercentage = grade.totalExamMaxScore > 0 
-                        ? ((grade.totalExamScore / grade.totalExamMaxScore) * 100).toFixed(1)
-                        : "N/A";
-
-                      return (
-                        <TableRow key={`${grade.studentId}-${grade.subjectId}-${index}`}>
-                          <TableCell>
-                            <div className="flex items-center gap-2">
-                              <User className="h-4 w-4" />
-                              {grade.studentName}
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div className="font-medium">{grade.subjectName}</div>
-                          </TableCell>
-                          <TableCell>
-                            <div className="text-sm">
-                              {grade.totalAssignmentScore}/{grade.totalAssignmentMaxScore}
-                              <br />
-                              <span className="text-gray-500">({assignmentPercentage}%)</span>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div className="text-sm">
-                              {grade.totalExamScore}/{grade.totalExamMaxScore}
-                              <br />
-                              <span className="text-gray-500">({examPercentage}%)</span>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div className="font-bold text-lg">
-                              {finalGrade.toFixed(1)}%
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                  </TableBody>
-                </Table>
-              )}
-            </CardContent>
-          </Card>
+                </CardContent>
+              </Card>
+            ) : (
+              <div>
+                {subjects.map((subject: any) => (
+                  <SubjectGradesCard
+                    key={subject.subjectId}
+                    subject={subject}
+                    gradeSettings={gradeSettings}
+                    onFinalize={(subjectId: number) => finalizeGradesMutation.mutate(subjectId)}
+                    onUnfinalize={(subjectId: number) => unfinalizeGradesMutation.mutate(subjectId)}
+                    finalizeLoading={finalizeGradesMutation.isPending}
+                    unfinalizeLoading={unfinalizeGradesMutation.isPending}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
         </TabsContent>
       </Tabs>
     </div>

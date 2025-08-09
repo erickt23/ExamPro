@@ -9,7 +9,8 @@ import {
   integer,
   boolean,
   decimal,
-  pgEnum
+  pgEnum,
+  unique
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
@@ -63,6 +64,24 @@ export const gradeSettings = pgTable("grade_settings", {
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
+
+// Final grades table - stores finalized grades that are immune to coefficient changes
+export const finalizedGrades = pgTable("finalized_grades", {
+  id: serial("id").primaryKey(),
+  studentId: varchar("student_id").notNull(),
+  subjectId: integer("subject_id").references(() => subjects.id).notNull(),
+  finalGrade: decimal("final_grade", { precision: 5, scale: 2 }).notNull(),
+  assignmentScore: decimal("assignment_score", { precision: 5, scale: 2 }).notNull(),
+  assignmentMaxScore: decimal("assignment_max_score", { precision: 5, scale: 2 }).notNull(),
+  examScore: decimal("exam_score", { precision: 5, scale: 2 }).notNull(),
+  examMaxScore: decimal("exam_max_score", { precision: 5, scale: 2 }).notNull(),
+  assignmentCoefficient: decimal("assignment_coefficient", { precision: 5, scale: 4 }).notNull(),
+  examCoefficient: decimal("exam_coefficient", { precision: 5, scale: 4 }).notNull(),
+  finalizedBy: varchar("finalized_by").notNull(),
+  finalizedAt: timestamp("finalized_at").defaultNow(),
+}, (table) => ({
+  uniqueStudentSubject: unique().on(table.studentId, table.subjectId),
+}));
 
 // Questions table
 export const questions = pgTable("questions", {
@@ -344,6 +363,21 @@ export const gradeSettingsRelations = relations(gradeSettings, ({ one }) => ({
   }),
 }));
 
+export const finalizedGradesRelations = relations(finalizedGrades, ({ one }) => ({
+  student: one(users, {
+    fields: [finalizedGrades.studentId],
+    references: [users.id],
+  }),
+  subject: one(subjects, {
+    fields: [finalizedGrades.subjectId],
+    references: [subjects.id],
+  }),
+  finalizer: one(users, {
+    fields: [finalizedGrades.finalizedBy],
+    references: [users.id],
+  }),
+}));
+
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({
   createdAt: true,
@@ -404,6 +438,11 @@ export const insertGradeSettingsSchema = createInsertSchema(gradeSettings).omit(
   updatedAt: true,
 });
 
+export const insertFinalizedGradeSchema = createInsertSchema(finalizedGrades).omit({
+  id: true,
+  finalizedAt: true,
+});
+
 // Types
 export type UpsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
@@ -423,3 +462,5 @@ export type HomeworkSubmission = typeof homeworkSubmissions.$inferSelect;
 export type HomeworkAnswer = typeof homeworkAnswers.$inferSelect;
 export type InsertGradeSettings = z.infer<typeof insertGradeSettingsSchema>;
 export type GradeSettings = typeof gradeSettings.$inferSelect;
+export type InsertFinalizedGrade = z.infer<typeof insertFinalizedGradeSchema>;
+export type FinalizedGrade = typeof finalizedGrades.$inferSelect;

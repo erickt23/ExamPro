@@ -1604,6 +1604,79 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Grade Finalization API
+  app.post('/api/finalize-grades/:subjectId', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (user?.role !== 'instructor') {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const subjectId = parseInt(req.params.subjectId);
+      if (isNaN(subjectId)) {
+        return res.status(400).json({ message: "Invalid subject ID" });
+      }
+
+      // Verify subject exists
+      const subject = await storage.getSubjectById(subjectId);
+      if (!subject) {
+        return res.status(404).json({ message: "Subject not found" });
+      }
+
+      const finalizedGrades = await storage.finalizeGradesForSubject(subjectId, userId);
+      res.json({ message: "Grades finalized successfully", finalizedGrades });
+    } catch (error) {
+      console.error("Error finalizing grades:", error);
+      res.status(500).json({ message: "Failed to finalize grades" });
+    }
+  });
+
+  app.delete('/api/finalize-grades/:subjectId', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (user?.role !== 'instructor') {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const subjectId = parseInt(req.params.subjectId);
+      if (isNaN(subjectId)) {
+        return res.status(400).json({ message: "Invalid subject ID" });
+      }
+
+      await storage.unfinalizeGradesForSubject(subjectId);
+      res.json({ message: "Grades unfinalized successfully" });
+    } catch (error) {
+      console.error("Error unfinalizing grades:", error);
+      res.status(500).json({ message: "Failed to unfinalize grades" });
+    }
+  });
+
+  app.get('/api/finalize-grades/:subjectId/status', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (user?.role !== 'instructor') {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const subjectId = parseInt(req.params.subjectId);
+      if (isNaN(subjectId)) {
+        return res.status(400).json({ message: "Invalid subject ID" });
+      }
+
+      const isFinalized = await storage.isSubjectGradesFinalized(subjectId);
+      res.json({ isFinalized });
+    } catch (error) {
+      console.error("Error checking finalization status:", error);
+      res.status(500).json({ message: "Failed to check finalization status" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
