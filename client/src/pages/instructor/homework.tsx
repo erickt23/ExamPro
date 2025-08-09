@@ -27,7 +27,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { BookOpen, Plus, Search, Clock, Users, Eye, Edit, CheckCircle, X, Filter } from "lucide-react";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { BookOpen, Plus, Search, Clock, Users, Eye, Edit, CheckCircle, X, Filter, ChevronDown, ChevronRight, ChevronLeft, MoreVertical, FileText, Archive, Trash2 } from "lucide-react";
 
 interface HomeworkAssignment {
   id: number;
@@ -70,6 +77,9 @@ export default function InstructorHomeworkPage() {
     difficulty: "all",
   });
   const [showQuestionFilters, setShowQuestionFilters] = useState(false);
+  const [expandedHomeworkIds, setExpandedHomeworkIds] = useState<Set<number>>(new Set());
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -1019,91 +1029,253 @@ export default function InstructorHomeworkPage() {
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         </div>
       ) : (
-        <div className="grid gap-4">
-          {filteredHomework.length === 0 ? (
-            <Card>
-              <CardContent className="text-center py-8">
-                <BookOpen className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-600 mb-2">No homework assignments found</h3>
-                <p className="text-gray-500 mb-4">
-                  {searchTerm || statusFilter !== "all" 
-                    ? "Try adjusting your search or filter criteria"
-                    : "Create your first homework assignment to get started"
-                  }
-                </p>
-                {!searchTerm && statusFilter === "all" && (
-                  <Button onClick={() => setShowCreateModal(true)}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Create First Homework
+        filteredHomework.length === 0 ? (
+          <div className="text-center py-12">
+            <BookOpen className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <p className="text-gray-500 text-lg mb-2">No homework assignments found</p>
+            <p className="text-gray-400">
+              {searchTerm || statusFilter !== "all" 
+                ? "Try adjusting your search or filter criteria"
+                : "Create your first homework assignment to get started"
+              }
+            </p>
+            {!searchTerm && statusFilter === "all" && (
+              <Button onClick={() => setShowCreateModal(true)} className="mt-4">
+                <Plus className="h-4 w-4 mr-2" />
+                Create First Homework
+              </Button>
+            )}
+          </div>
+        ) : (() => {
+          // Sort and paginate homework
+          const sortedHomework = filteredHomework.sort((a: any, b: any) => {
+            // Sort archived homework to the bottom
+            if (a.status === 'archived' && b.status !== 'archived') return 1;
+            if (b.status === 'archived' && a.status !== 'archived') return -1;
+            // Otherwise sort by creation date (newest first)
+            return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+          });
+          
+          const totalItems = sortedHomework.length;
+          const totalPages = Math.ceil(totalItems / itemsPerPage);
+          const startIndex = (currentPage - 1) * itemsPerPage;
+          const endIndex = startIndex + itemsPerPage;
+          const paginatedHomework = sortedHomework.slice(startIndex, endIndex);
+
+          return (
+            <div className="space-y-4">
+              <div className="bg-white rounded-lg border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-[50px]"></TableHead>
+                      <TableHead>Homework Title</TableHead>
+                      <TableHead>Subject</TableHead>
+                      <TableHead>Due Date</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {paginatedHomework.map((hw: any, index: number) => {
+                      const isExpanded = expandedHomeworkIds.has(hw.id);
+                      const toggleExpanded = () => {
+                        const newExpanded = new Set(expandedHomeworkIds);
+                        if (isExpanded) {
+                          newExpanded.delete(hw.id);
+                        } else {
+                          newExpanded.add(hw.id);
+                        }
+                        setExpandedHomeworkIds(newExpanded);
+                      };
+
+                      return (
+                        <>
+                          <TableRow 
+                            key={hw.id} 
+                            className={`cursor-pointer hover:bg-gray-100 ${index % 2 === 0 ? "bg-white" : "bg-gray-50"}`}
+                            onClick={toggleExpanded}
+                          >
+                            <TableCell>
+                              <div className="flex items-center justify-center">
+                                {isExpanded ? (
+                                  <ChevronDown className="h-4 w-4 text-gray-500" />
+                                ) : (
+                                  <ChevronRight className="h-4 w-4 text-gray-500" />
+                                )}
+                              </div>
+                            </TableCell>
+                            <TableCell className="font-medium">
+                              <div>
+                                <div className="font-semibold">{hw.title}</div>
+                                <div className="text-sm text-gray-600 line-clamp-1">{hw.description}</div>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              {subjects.find((s: any) => s.id === hw.subjectId)?.name || 'Unknown Subject'}
+                            </TableCell>
+                            <TableCell>
+                              {hw.dueDate ? new Date(hw.dueDate).toLocaleDateString('en-US', {
+                                year: 'numeric',
+                                month: 'short',
+                                day: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              }) : 'No due date'}
+                            </TableCell>
+                            <TableCell>
+                              {getStatusBadge(hw.status)}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm"
+                                  onClick={() => handleViewDetails(hw)}
+                                  title="View details"
+                                >
+                                  <Eye className="h-4 w-4" />
+                                </Button>
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="sm" title="More actions">
+                                      <MoreVertical className="h-4 w-4" />
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end">
+                                    <DropdownMenuItem onClick={() => handleEditClick(hw)}>
+                                      <Edit className="h-4 w-4 mr-2" />
+                                      Edit Homework
+                                    </DropdownMenuItem>
+                                    {hw.status === 'draft' && (
+                                      <DropdownMenuItem 
+                                        onClick={() => handlePublish(hw.id)}
+                                        disabled={publishHomeworkMutation.isPending}
+                                      >
+                                        <CheckCircle className="h-4 w-4 mr-2" />
+                                        Publish
+                                      </DropdownMenuItem>
+                                    )}
+                                    {(hw.status === 'active' || hw.status === 'completed') && (
+                                      <DropdownMenuItem onClick={() => console.log('Archive', hw.id)}>
+                                        <Archive className="h-4 w-4 mr-2" />
+                                        Archive Homework
+                                      </DropdownMenuItem>
+                                    )}
+                                    <DropdownMenuItem 
+                                      onClick={() => console.log('Delete', hw.id)}
+                                      className="text-red-600 focus:text-red-600"
+                                    >
+                                      <Trash2 className="h-4 w-4 mr-2" />
+                                      Delete Homework
+                                    </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                          
+                          {/* Expanded Details Row */}
+                          {isExpanded && (
+                            <TableRow className={`${index % 2 === 0 ? "bg-gray-50" : "bg-gray-100"}`}>
+                              <TableCell colSpan={6}>
+                                <div className="p-4 space-y-4">
+                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="space-y-3">
+                                      <h4 className="font-medium text-gray-900 flex items-center gap-2">
+                                        <BookOpen className="h-4 w-4" />
+                                        Assignment Details
+                                      </h4>
+                                      <div className="space-y-2 text-sm">
+                                        <div className="flex justify-between">
+                                          <span className="text-gray-600">Description:</span>
+                                          <span className="font-medium max-w-xs text-right">
+                                            {hw.description || 'No description'}
+                                          </span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                          <span className="text-gray-600">Created:</span>
+                                          <span className="font-medium">
+                                            {new Date(hw.createdAt).toLocaleDateString('en-US', {
+                                              year: 'numeric',
+                                              month: 'short',
+                                              day: 'numeric'
+                                            })}
+                                          </span>
+                                        </div>
+                                      </div>
+                                    </div>
+                                    
+                                    <div className="space-y-3">
+                                      <h4 className="font-medium text-gray-900 flex items-center gap-2">
+                                        <Users className="h-4 w-4" />
+                                        Statistics
+                                      </h4>
+                                      <div className="space-y-2 text-sm">
+                                        <div className="flex justify-between">
+                                          <span className="text-gray-600">Questions:</span>
+                                          <span className="font-medium">0</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                          <span className="text-gray-600">Submissions:</span>
+                                          <span className="font-medium">0</span>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          )}
+                        </>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+
+              {/* Pagination Controls */}
+              <div className="flex items-center justify-between px-2">
+                <div className="text-sm text-gray-700">
+                  Showing {startIndex + 1} to {Math.min(endIndex, totalItems)} of {totalItems} assignments
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                    disabled={currentPage === 1}
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                    Previous
                   </Button>
-                )}
-              </CardContent>
-            </Card>
-          ) : (
-            filteredHomework.map((hw) => (
-              <Card key={hw.id} className="hover:shadow-md transition-shadow">
-                <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <CardTitle className="text-lg">{hw.title}</CardTitle>
-                      <p className="text-gray-600 mt-1 line-clamp-2">{hw.description}</p>
-                    </div>
-                    {getStatusBadge(hw.status)}
-                  </div>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <div className="flex items-center gap-4 text-sm text-gray-500">
-                    {hw.dueDate && (
-                      <div className="flex items-center gap-1">
-                        <Clock className="h-4 w-4" />
-                        Due: {new Date(hw.dueDate).toLocaleDateString('en-US', {
-                          year: 'numeric',
-                          month: 'short',
-                          day: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        })}
-                      </div>
-                    )}
-                    <div className="flex items-center gap-1">
-                      <BookOpen className="h-4 w-4" />
-                      {subjects.find((s: any) => s.id === hw.subjectId)?.name || 'Unknown Subject'}
-                    </div>
-                  </div>
-                  
-                  <div className="flex gap-2 mt-4">
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => handleViewDetails(hw)}
-                    >
-                      <Eye className="h-4 w-4 mr-1" />
-                      View Details
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => handleEditClick(hw)}
-                    >
-                      <Edit className="h-4 w-4 mr-1" />
-                      Edit
-                    </Button>
-                    {hw.status === 'draft' && (
-                      <Button 
+                  <div className="flex items-center gap-1">
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                      <Button
+                        key={page}
+                        variant={currentPage === page ? "default" : "outline"}
                         size="sm"
-                        onClick={() => handlePublish(hw.id)}
-                        disabled={publishHomeworkMutation.isPending}
+                        onClick={() => setCurrentPage(page)}
+                        className="min-w-[2.5rem]"
                       >
-                        <CheckCircle className="h-4 w-4 mr-1" />
-                        {publishHomeworkMutation.isPending ? 'Publishing...' : 'Publish'}
+                        {page}
                       </Button>
-                    )}
+                    ))}
                   </div>
-                </CardContent>
-              </Card>
-            ))
-          )}
-        </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                    disabled={currentPage === totalPages}
+                  >
+                    Next
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            </div>
+          );
+        })()
       )}
 
       {/* Info Alert */}
