@@ -534,48 +534,7 @@ export default function InstructorExams() {
                                         </div>
                                       </div>
                                       
-                                      {/* Action Buttons */}
-                                      <div className="flex items-center gap-2 pt-4 border-t border-gray-200">
-                                        {exam.status === 'draft' ? (
-                                          <>
-                                            <Button 
-                                              variant="outline" 
-                                              size="sm"
-                                              onClick={() => handleEditExam(exam.id)}
-                                            >
-                                              <Edit className="h-4 w-4 mr-1" />
-                                              Edit Configuration
-                                            </Button>
-                                            <Button 
-                                              onClick={() => handlePreviewExam(exam.id)}
-                                              size="sm"
-                                              className="bg-blue-600 hover:bg-blue-700 text-white"
-                                            >
-                                              <Eye className="h-4 w-4 mr-1" />
-                                              Preview & Publish
-                                            </Button>
-                                          </>
-                                        ) : (
-                                          <>
-                                            <Button 
-                                              variant="outline" 
-                                              size="sm"
-                                              onClick={() => handlePreviewExam(exam.id)}
-                                            >
-                                              <Eye className="h-4 w-4 mr-1" />
-                                              Preview
-                                            </Button>
-                                            <Button 
-                                              variant="outline" 
-                                              size="sm"
-                                              onClick={() => handleViewResults(exam.id)}
-                                            >
-                                              <FileText className="h-4 w-4 mr-1" />
-                                              View Results
-                                            </Button>
-                                          </>
-                                        )}
-                                      </div>
+
                                     </div>
                                   </TableCell>
                                 </TableRow>
