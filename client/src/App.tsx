@@ -14,6 +14,7 @@ import InstructorGrading from "@/pages/instructor/grading";
 import InstructorAnalytics from "@/pages/instructor/analytics";
 import InstructorStudents from "@/pages/instructor/students";
 import InstructorHomework from "@/pages/instructor/homework";
+import InstructorSettings from "@/pages/instructor/settings";
 import StudentDashboard from "@/pages/student/dashboard";
 import StudentHomework from "@/pages/student/homework";
 import StudentHomeworkTaking from "@/pages/student/homework-taking";
@@ -60,6 +61,7 @@ function Router() {
           <Route path="/homework-grading/:submissionId" component={InstructorGrading} />
           <Route path="/analytics" component={InstructorAnalytics} />
           <Route path="/students" component={InstructorStudents} />
+          <Route path="/settings" component={InstructorSettings} />
         </>
       ) : (
         <>

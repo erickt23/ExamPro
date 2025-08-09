@@ -10,6 +10,7 @@ import {
   homeworkQuestions,
   homeworkSubmissions,
   homeworkAnswers,
+  gradeSettings,
   type User,
   type UpsertUser,
   type InsertSubject,
@@ -26,9 +27,11 @@ import {
   type HomeworkQuestion,
   type HomeworkSubmission,
   type HomeworkAnswer,
+  type InsertGradeSettings,
+  type GradeSettings,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, asc, and, or, count, avg, sum, like, ilike, inArray, sql, ne } from "drizzle-orm";
+import { eq, desc, asc, and, or, count, avg, sum, like, ilike, inArray, sql, ne, isNull } from "drizzle-orm";
 
 export interface IStorage {
   // User operations - mandatory for Replit Auth
@@ -150,6 +153,12 @@ export interface IStorage {
     totalExamScore: number;
     totalExamMaxScore: number;
   }[]>;
+
+  // Grade settings operations
+  getGradeSettings(): Promise<{ global: GradeSettings; courses: Record<number, GradeSettings> }>;
+  setGlobalGradeSettings(settings: { assignmentCoefficient: number; examCoefficient: number }): Promise<GradeSettings>;
+  setCourseGradeSettings(courseId: number, settings: { assignmentCoefficient: number; examCoefficient: number }): Promise<GradeSettings>;
+  getGradeSettingsForCourse(courseId?: number): Promise<GradeSettings | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1085,7 +1094,8 @@ export class DatabaseStorage implements IStorage {
       }
 
       // Add to result only if student has grades in at least one subject
-      for (const grades of subjectMap.values()) {
+      const subjectEntries = Array.from(subjectMap.values());
+      for (const grades of subjectEntries) {
         if (grades.totalAssignmentMaxScore > 0 || grades.totalExamMaxScore > 0) {
           result.push({
             studentId: student.studentId,
@@ -1097,6 +1107,112 @@ export class DatabaseStorage implements IStorage {
     }
 
     return result;
+  }
+
+  // Grade settings operations
+  async getGradeSettings(): Promise<{ global: GradeSettings; courses: Record<number, GradeSettings> }> {
+    const settings = await db.select().from(gradeSettings);
+    
+    const global = settings.find(s => s.courseId === null) || {
+      id: 0,
+      courseId: null,
+      assignmentCoefficient: '0.4000',
+      examCoefficient: '0.6000',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    } as GradeSettings;
+
+    const courses: Record<number, GradeSettings> = {};
+    settings.filter(s => s.courseId !== null).forEach(s => {
+      if (s.courseId) {
+        courses[s.courseId] = s;
+      }
+    });
+
+    return { global, courses };
+  }
+
+  async setGlobalGradeSettings(settingsData: { assignmentCoefficient: number; examCoefficient: number }): Promise<GradeSettings> {
+    const existingGlobal = await db
+      .select()
+      .from(gradeSettings)
+      .where(isNull(gradeSettings.courseId))
+      .limit(1);
+
+    if (existingGlobal.length > 0) {
+      const [updated] = await db
+        .update(gradeSettings)
+        .set({
+          assignmentCoefficient: settingsData.assignmentCoefficient.toString(),
+          examCoefficient: settingsData.examCoefficient.toString(),
+          updatedAt: new Date(),
+        })
+        .where(isNull(gradeSettings.courseId))
+        .returning();
+      return updated;
+    } else {
+      const [created] = await db
+        .insert(gradeSettings)
+        .values({
+          courseId: null,
+          assignmentCoefficient: settingsData.assignmentCoefficient.toString(),
+          examCoefficient: settingsData.examCoefficient.toString(),
+        })
+        .returning();
+      return created;
+    }
+  }
+
+  async setCourseGradeSettings(courseId: number, settingsData: { assignmentCoefficient: number; examCoefficient: number }): Promise<GradeSettings> {
+    const existingCourse = await db
+      .select()
+      .from(gradeSettings)
+      .where(eq(gradeSettings.courseId, courseId))
+      .limit(1);
+
+    if (existingCourse.length > 0) {
+      const [updated] = await db
+        .update(gradeSettings)
+        .set({
+          assignmentCoefficient: settingsData.assignmentCoefficient.toString(),
+          examCoefficient: settingsData.examCoefficient.toString(),
+          updatedAt: new Date(),
+        })
+        .where(eq(gradeSettings.courseId, courseId))
+        .returning();
+      return updated;
+    } else {
+      const [created] = await db
+        .insert(gradeSettings)
+        .values({
+          courseId,
+          assignmentCoefficient: settingsData.assignmentCoefficient.toString(),
+          examCoefficient: settingsData.examCoefficient.toString(),
+        })
+        .returning();
+      return created;
+    }
+  }
+
+  async getGradeSettingsForCourse(courseId?: number): Promise<GradeSettings | undefined> {
+    if (courseId) {
+      const [courseSetting] = await db
+        .select()
+        .from(gradeSettings)
+        .where(eq(gradeSettings.courseId, courseId))
+        .limit(1);
+      
+      if (courseSetting) return courseSetting;
+    }
+
+    // Fall back to global settings
+    const [globalSetting] = await db
+      .select()
+      .from(gradeSettings)
+      .where(isNull(gradeSettings.courseId))
+      .limit(1);
+    
+    return globalSetting;
   }
 }
 

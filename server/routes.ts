@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
-import { insertQuestionSchema, insertExamSchema, insertHomeworkAssignmentSchema } from "@shared/schema";
+import { insertQuestionSchema, insertExamSchema, insertHomeworkAssignmentSchema, insertGradeSettingsSchema } from "@shared/schema";
 import { z } from "zod";
 import multer from "multer";
 import * as XLSX from "xlsx";
@@ -1500,6 +1500,107 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching instructor student grades:", error);
       res.status(500).json({ message: "Failed to fetch instructor student grades" });
+    }
+  });
+
+  // Grade Settings API endpoints
+  app.get('/api/grade-settings', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+
+      if (user?.role !== 'instructor') {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const settings = await storage.getGradeSettings();
+      res.json(settings);
+    } catch (error) {
+      console.error("Error fetching grade settings:", error);
+      res.status(500).json({ message: "Failed to fetch grade settings" });
+    }
+  });
+
+  app.post('/api/grade-settings/global', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+
+      if (user?.role !== 'instructor') {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const { assignmentCoefficient, examCoefficient } = req.body;
+
+      // Validate coefficients
+      if (typeof assignmentCoefficient !== 'number' || typeof examCoefficient !== 'number') {
+        return res.status(400).json({ message: "Invalid coefficient values" });
+      }
+
+      if (assignmentCoefficient < 0 || assignmentCoefficient > 1 || examCoefficient < 0 || examCoefficient > 1) {
+        return res.status(400).json({ message: "Coefficients must be between 0 and 1" });
+      }
+
+      if (Math.abs((assignmentCoefficient + examCoefficient) - 1) > 0.001) {
+        return res.status(400).json({ message: "Coefficients must sum to 1.0" });
+      }
+
+      const settings = await storage.setGlobalGradeSettings({
+        assignmentCoefficient,
+        examCoefficient
+      });
+
+      res.json(settings);
+    } catch (error) {
+      console.error("Error saving global grade settings:", error);
+      res.status(500).json({ message: "Failed to save global grade settings" });
+    }
+  });
+
+  app.post('/api/grade-settings/course/:courseId', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      const courseId = parseInt(req.params.courseId);
+
+      if (user?.role !== 'instructor') {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      if (isNaN(courseId)) {
+        return res.status(400).json({ message: "Invalid course ID" });
+      }
+
+      const { assignmentCoefficient, examCoefficient } = req.body;
+
+      // Validate coefficients
+      if (typeof assignmentCoefficient !== 'number' || typeof examCoefficient !== 'number') {
+        return res.status(400).json({ message: "Invalid coefficient values" });
+      }
+
+      if (assignmentCoefficient < 0 || assignmentCoefficient > 1 || examCoefficient < 0 || examCoefficient > 1) {
+        return res.status(400).json({ message: "Coefficients must be between 0 and 1" });
+      }
+
+      if (Math.abs((assignmentCoefficient + examCoefficient) - 1) > 0.001) {
+        return res.status(400).json({ message: "Coefficients must sum to 1.0" });
+      }
+
+      // Verify course exists
+      const course = await storage.getSubjectById(courseId);
+      if (!course) {
+        return res.status(404).json({ message: "Course not found" });
+      }
+
+      const settings = await storage.setCourseGradeSettings(courseId, {
+        assignmentCoefficient,
+        examCoefficient
+      });
+
+      res.json(settings);
+    } catch (error) {
+      console.error("Error saving course grade settings:", error);
+      res.status(500).json({ message: "Failed to save course grade settings" });
     }
   });
 

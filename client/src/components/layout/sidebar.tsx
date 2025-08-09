@@ -12,7 +12,8 @@ import {
   GraduationCap,
   ClipboardList,
   Notebook,
-  PenTool
+  PenTool,
+  Settings
 } from "lucide-react";
 
 interface SidebarProps {
@@ -65,6 +66,11 @@ export default function Sidebar({ className }: SidebarProps) {
       title: "Students",
       href: "/students",
       icon: Users,
+    },
+    {
+      title: "Settings",
+      href: "/settings",
+      icon: Settings,
     },
   ];
 

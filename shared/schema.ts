@@ -54,6 +54,16 @@ export const subjects = pgTable("subjects", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Grade Settings table
+export const gradeSettings = pgTable("grade_settings", {
+  id: serial("id").primaryKey(),
+  courseId: integer("course_id").references(() => subjects.id), // null means global settings
+  assignmentCoefficient: decimal("assignment_coefficient", { precision: 5, scale: 4 }).notNull().default("0.4000"),
+  examCoefficient: decimal("exam_coefficient", { precision: 5, scale: 4 }).notNull().default("0.6000"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Questions table
 export const questions = pgTable("questions", {
   id: serial("id").primaryKey(),
@@ -327,6 +337,13 @@ export const homeworkAnswersRelations = relations(homeworkAnswers, ({ one }) => 
   }),
 }));
 
+export const gradeSettingsRelations = relations(gradeSettings, ({ one }) => ({
+  course: one(subjects, {
+    fields: [gradeSettings.courseId],
+    references: [subjects.id],
+  }),
+}));
+
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({
   createdAt: true,
@@ -381,6 +398,12 @@ export const insertSubjectSchema = createInsertSchema(subjects).omit({
   updatedAt: true,
 });
 
+export const insertGradeSettingsSchema = createInsertSchema(gradeSettings).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 // Types
 export type UpsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
@@ -398,3 +421,5 @@ export type HomeworkAssignment = typeof homeworkAssignments.$inferSelect;
 export type HomeworkQuestion = typeof homeworkQuestions.$inferSelect;
 export type HomeworkSubmission = typeof homeworkSubmissions.$inferSelect;
 export type HomeworkAnswer = typeof homeworkAnswers.$inferSelect;
+export type InsertGradeSettings = z.infer<typeof insertGradeSettingsSchema>;
+export type GradeSettings = typeof gradeSettings.$inferSelect;
