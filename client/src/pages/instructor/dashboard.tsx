@@ -104,7 +104,7 @@ export default function InstructorDashboard() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading...</p>
+          <p className="text-muted-foreground">{t('common.loading')}</p>
         </div>
       </div>
     );
@@ -118,8 +118,8 @@ export default function InstructorDashboard() {
         <main className="flex-1 overflow-y-auto">
           <div className="p-6">
             <div className="mb-6">
-              <h2 className="text-2xl font-bold text-gray-900">Dashboard</h2>
-              <p className="text-gray-600 mt-1">Overview of your teaching activities and recent updates</p>
+              <h2 className="text-2xl font-bold text-gray-900">{t('dashboard.title')}</h2>
+              <p className="text-gray-600 mt-1">{t('dashboard.description')}</p>
             </div>
 
             {/* Stats Cards */}
@@ -128,7 +128,7 @@ export default function InstructorDashboard() {
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-gray-600">Total Questions</p>
+                      <p className="text-sm font-medium text-gray-600">{t('dashboard.totalQuestions')}</p>
                       <p className="text-2xl font-bold text-gray-900">
                         {statsLoading ? "..." : (stats as any)?.totalQuestions || 0}
                       </p>
@@ -149,7 +149,7 @@ export default function InstructorDashboard() {
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-gray-600">Active Exams</p>
+                      <p className="text-sm font-medium text-gray-600">{t('dashboard.activeExams')}</p>
                       <p className="text-2xl font-bold text-gray-900">
                         {statsLoading ? "..." : (stats as any)?.activeExams || 0}
                       </p>

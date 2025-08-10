@@ -33,7 +33,8 @@ export const en = {
 
   // Dashboard
   dashboard: {
-    title: 'Instructor Dashboard',
+    title: 'Dashboard',
+    description: 'Overview of your teaching activities and recent updates',
     overview: 'Overview',
     totalQuestions: 'Total Questions',
     activeExams: 'Active Exams',
@@ -53,7 +54,13 @@ export const en = {
     welcomeBack: 'Welcome back!',
     quickStats: 'Quick Statistics',
     recentActivity: 'Recent Activity',
-    upcomingDeadlines: 'Upcoming Deadlines'
+    upcomingDeadlines: 'Upcoming Deadlines',
+    student: 'Student',
+    submittedOn: 'Submitted On',
+    status: 'Status',
+    actions: 'Actions',
+    viewSubmission: 'View Submission',
+    completedSubmissions: 'Completed Submissions'
   },
 
   // Questions
@@ -69,9 +76,11 @@ export const en = {
     filterBySubject: 'Filter by Subject',
     filterByType: 'Filter by Type',
     filterByDifficulty: 'Filter by Difficulty',
+    filterByBloomsTaxonomy: 'Filter by Bloom\'s Taxonomy',
     allSubjects: 'All Subjects',
     allTypes: 'All Types',
     allDifficulties: 'All Difficulties',
+    allBloomsTaxonomy: 'All Taxonomy Levels',
     questionText: 'Question Text',
     type: 'Type',
     difficulty: 'Difficulty',
@@ -201,7 +210,18 @@ export const en = {
     viewSubmission: 'View Submission',
     totalPoints: 'Total Points',
     earnedPoints: 'Earned Points',
-    percentage: 'Percentage'
+    percentage: 'Percentage',
+    finalized: 'Finalized',
+    finalizing: 'Finalizing...',
+    unfinalizing: 'Unfinalizing...',
+    lockedCoefficients: '(locked coefficients)',
+    formula: 'Formula',
+    assignmentScore: 'Assignment Score',
+    examScore: 'Exam Score',
+    finalizeGrades: 'Finalize Grades',
+    unfinalizeGrades: 'Unfinalize Grades',
+    coefficients: 'Grade Coefficients',
+    student: 'Student'
   },
 
   // Settings
@@ -236,142 +256,52 @@ export const en = {
     profile: 'Profile'
   },
 
-  // Tables
-  table: {
-    name: 'Name',
-    title: 'Title',
-    description: 'Description',
-    status: 'Status',
-    createdAt: 'Created At',
-    updatedAt: 'Updated At',
-    actions: 'Actions',
-    noData: 'No data available',
+  // Common/Shared Elements
+  common: {
     loading: 'Loading...',
-    rowsPerPage: 'Rows per page',
-    page: 'Page',
-    of: 'of',
-    previous: 'Previous',
-    next: 'Next',
-    first: 'First',
-    last: 'Last'
-  },
-
-  // Common Actions
-  actions: {
-    create: 'Create',
-    edit: 'Edit',
-    delete: 'Delete',
     save: 'Save',
     cancel: 'Cancel',
-    submit: 'Submit',
+    delete: 'Delete',
+    edit: 'Edit',
     view: 'View',
+    create: 'Create',
+    add: 'Add',
+    remove: 'Remove',
     search: 'Search',
     filter: 'Filter',
     clear: 'Clear',
-    clearAll: 'Clear All',
-    export: 'Export',
-    import: 'Import',
-    print: 'Print',
-    refresh: 'Refresh',
-    loading: 'Loading...',
-    noData: 'No data available',
+    all: 'All',
+    none: 'None',
+    yes: 'Yes',
+    no: 'No',
+    ok: 'OK',
     close: 'Close',
-    open: 'Open',
-    expand: 'Expand',
-    collapse: 'Collapse',
-    select: 'Select',
-    selectAll: 'Select All',
-    deselectAll: 'Deselect All'
-  },
-
-  // Status Labels
-  status: {
-    draft: 'Draft',
-    active: 'Active',
-    inactive: 'Inactive',
-    archived: 'Archived',
-    pending: 'Pending',
-    completed: 'Completed',
-    graded: 'Graded',
-    submitted: 'Submitted',
-    overdue: 'Overdue',
-    scheduled: 'Scheduled',
-    published: 'Published',
-    expired: 'Expired'
-  },
-
-  // Form Labels
-  form: {
+    back: 'Back',
+    next: 'Next',
+    previous: 'Previous',
+    submit: 'Submit',
+    confirm: 'Confirm',
+    actions: 'Actions',
+    status: 'Status',
+    name: 'Name',
+    title: 'Title',
+    description: 'Description',
+    date: 'Date',
+    time: 'Time',
+    score: 'Score',
+    points: 'Points',
+    percentage: 'Percentage',
+    total: 'Total',
+    noData: 'No data available',
+    noResults: 'No results found',
+    searchPlaceholder: 'Search...',
+    selectPlaceholder: 'Select an option',
     required: 'Required',
     optional: 'Optional',
-    selectOption: 'Select an option',
-    selectOptions: 'Select options',
-    enterText: 'Enter text',
-    enterValue: 'Enter value',
-    chooseFile: 'Choose file',
-    uploadFile: 'Upload file',
-    browse: 'Browse',
-    dragDrop: 'Drag and drop files here',
-    or: 'or',
-    maxFileSize: 'Maximum file size',
-    allowedTypes: 'Allowed file types',
-    fieldRequired: 'This field is required',
-    invalidEmail: 'Please enter a valid email address',
-    invalidFormat: 'Invalid format',
-    tooShort: 'Too short',
-    tooLong: 'Too long'
-  },
-
-  // Messages
-  messages: {
-    success: 'Operation completed successfully',
-    error: 'An error occurred',
-    warning: 'Warning',
-    info: 'Information',
-    confirmDelete: 'Are you sure you want to delete this item?',
-    confirmDeleteMultiple: 'Are you sure you want to delete {count} items?',
-    unsavedChanges: 'You have unsaved changes. Do you want to continue?',
-    sessionExpired: 'Your session has expired. Please log in again.',
-    noPermission: 'You do not have permission to perform this action',
-    networkError: 'Network error. Please check your connection.',
-    serverError: 'Server error. Please try again later.',
-    actionCompleted: 'Action completed successfully',
-    changesSaved: 'Changes saved successfully',
-    itemCreated: 'Item created successfully',
-    itemUpdated: 'Item updated successfully',
-    itemDeleted: 'Item deleted successfully'
-  },
-
-  // Time and Dates
-  time: {
-    minutes: 'minutes',
-    hours: 'hours',
-    days: 'days',
-    weeks: 'weeks',
-    months: 'months',
-    years: 'years',
-    ago: 'ago',
-    remaining: 'remaining',
-    due: 'due',
-    overdue: 'overdue',
-    today: 'Today',
-    yesterday: 'Yesterday',
-    tomorrow: 'Tomorrow',
-    thisWeek: 'This week',
-    nextWeek: 'Next week',
-    thisMonth: 'This month',
-    nextMonth: 'Next month'
-  },
-
-  // Numbers and Counts
-  count: {
-    item: 'item',
-    items: 'items',
-    selected: 'selected',
-    total: 'total',
-    showing: 'showing',
-    outOf: 'out of',
-    resultsFound: 'results found',
-    noResults: 'no results found'
+    student: 'Student',
+    instructor: 'Instructor',
+    subject: 'Subject',
+    type: 'Type',
+    difficulty: 'Difficulty'
   }
 };
