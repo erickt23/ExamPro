@@ -7,6 +7,11 @@ EduExam Pro is a full-stack web application for creating, managing, and grading 
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
+Navigation terminology preferences:
+- "Exam Questions" → "Exam Question Bank"
+- "Homework Questions" → "Assignment Question Bank" 
+- "Homework Assignment" → "Assignment Management"
+- "Exams" → "Exam Management"
 
 ## System Architecture
 

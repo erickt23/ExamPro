@@ -160,8 +160,8 @@ export default function InstructorHomeworkQuestions() {
           <div className="p-6">
             <div className="mb-6 flex justify-between items-center">
               <div>
-                <h2 className="text-2xl font-bold text-gray-900">Homework Question Bank</h2>
-                <p className="text-gray-600 mt-1">Manage your collection of homework questions</p>
+                <h2 className="text-2xl font-bold text-gray-900">Assignment Question Bank</h2>
+                <p className="text-gray-600 mt-1">Manage your collection of assignment questions</p>
               </div>
               <div className="flex gap-2">
                 <Button 
@@ -177,7 +177,7 @@ export default function InstructorHomeworkQuestions() {
                   className="bg-primary hover:bg-primary/90"
                 >
                   <Plus className="h-4 w-4 mr-2" />
-                  Create Homework Question
+                  Create Assignment Question
                 </Button>
               </div>
             </div>

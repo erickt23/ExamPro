@@ -456,10 +456,10 @@ export default function InstructorHomeworkPage() {
         <div>
           <h1 className="text-3xl font-bold flex items-center gap-2">
             <BookOpen className="h-8 w-8" />
-            Homework Management
+            Assignment Management
           </h1>
           <p className="text-gray-600 mt-1">
-            Create and manage homework assignments from your dedicated homework question bank
+            Create and manage homework assignments from your dedicated assignment question bank
           </p>
         </div>
         

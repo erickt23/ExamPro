@@ -33,22 +33,22 @@ export default function Sidebar({ className }: SidebarProps) {
       icon: LayoutDashboard,
     },
     {
-      title: "Exam Questions",
+      title: "Exam Question Bank",
       href: "/questions",
       icon: BookOpen,
     },
     {
-      title: "Homework Questions",
+      title: "Assignment Question Bank",
       href: "/homework-questions",
       icon: PenTool,
     },
     {
-      title: "Homework Assignment",
+      title: "Assignment Management",
       href: "/homework",
       icon: Notebook,
     },
     {
-      title: "Exams",
+      title: "Exam Management",
       href: "/exams",
       icon: FileText,
     },
