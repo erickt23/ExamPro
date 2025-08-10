@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useToast } from "@/hooks/use-toast";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -34,6 +35,7 @@ import {
 export default function InstructorQuestions() {
   const { toast } = useToast();
   const { isAuthenticated, isLoading } = useAuth();
+  const { t } = useTranslation();
   const [showCreateModal, setShowCreateModal] = useState(false);
 
   const [showEditModal, setShowEditModal] = useState(false);
@@ -159,8 +161,8 @@ export default function InstructorQuestions() {
           <div className="p-6">
             <div className="mb-6 flex justify-between items-center">
               <div>
-                <h2 className="text-2xl font-bold text-gray-900">Exam Question Bank</h2>
-                <p className="text-gray-600 mt-1">Manage your collection of exam questions</p>
+                <h2 className="text-2xl font-bold text-gray-900">{t('questions.examQuestionBank')}</h2>
+                <p className="text-gray-600 mt-1">{t('questions.description')}</p>
               </div>
               <div className="flex gap-2">
                 <Button 
@@ -176,7 +178,7 @@ export default function InstructorQuestions() {
                   className="bg-primary hover:bg-primary/90"
                 >
                   <Plus className="h-4 w-4 mr-2" />
-                  Create Question
+                  {t('questions.createQuestion')}
                 </Button>
               </div>
             </div>

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useToast } from "@/hooks/use-toast";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { queryClient, apiRequest } from "@/lib/queryClient";
@@ -55,6 +56,7 @@ interface Subject {
 export default function InstructorHomeworkPage() {
   const { toast } = useToast();
   const { isAuthenticated, isLoading } = useAuth();
+  const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -456,10 +458,10 @@ export default function InstructorHomeworkPage() {
         <div>
           <h1 className="text-3xl font-bold flex items-center gap-2">
             <BookOpen className="h-8 w-8" />
-            Assignment Management
+            {t('nav.assignmentManagement')}
           </h1>
           <p className="text-gray-600 mt-1">
-            Create and manage homework assignments from your dedicated assignment question bank
+            {t('assignments.description')}
           </p>
         </div>
         

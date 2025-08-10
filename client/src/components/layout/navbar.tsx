@@ -1,4 +1,5 @@
 import { useAuth } from "@/hooks/useAuth";
+import { useTranslation } from "@/hooks/useTranslation";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -9,10 +10,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import LanguageSelector from "@/components/language-selector";
 import { GraduationCap, Bell, ChevronDown } from "lucide-react";
 
 export default function Navbar() {
   const { user, isAuthenticated } = useAuth();
+  const { t } = useTranslation();
 
   if (!isAuthenticated) return null;
 
@@ -41,6 +44,8 @@ export default function Navbar() {
           </div>
           
           <div className="flex items-center space-x-4">
+            <LanguageSelector />
+            
             <Button variant="ghost" size="sm" className="relative">
               <Bell className="h-5 w-5" />
               <span className="absolute -top-1 -right-1 h-4 w-4 bg-destructive text-destructive-foreground text-xs rounded-full flex items-center justify-center">
@@ -60,11 +65,11 @@ export default function Navbar() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuItem>Profile</DropdownMenuItem>
-                <DropdownMenuItem>Settings</DropdownMenuItem>
+                <DropdownMenuItem>{t('settings.profile')}</DropdownMenuItem>
+                <DropdownMenuItem>{t('nav.settings')}</DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => window.location.href = '/api/logout'}>
-                  Sign out
+                  {t('auth.logout')}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

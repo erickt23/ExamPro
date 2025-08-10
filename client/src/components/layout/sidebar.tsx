@@ -1,6 +1,7 @@
 import { cn } from "@/lib/utils";
 import { useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
+import { useTranslation } from "@/hooks/useTranslation";
 import {
   BarChart3,
   BookOpen,
@@ -23,52 +24,53 @@ interface SidebarProps {
 export default function Sidebar({ className }: SidebarProps) {
   const [location, setLocation] = useLocation();
   const { user } = useAuth();
+  const { t } = useTranslation();
 
   const isInstructor = user?.role === 'instructor';
 
   const instructorNavItems = [
     {
-      title: "Dashboard",
+      title: t('nav.dashboard'),
       href: "/",
       icon: LayoutDashboard,
     },
     {
-      title: "Exam Question Bank",
+      title: t('nav.examQuestionBank'),
       href: "/questions",
       icon: BookOpen,
     },
     {
-      title: "Assignment Question Bank",
+      title: t('nav.assignmentQuestionBank'),
       href: "/homework-questions",
       icon: PenTool,
     },
     {
-      title: "Assignment Management",
+      title: t('nav.assignmentManagement'),
       href: "/homework",
       icon: Notebook,
     },
     {
-      title: "Exam Management",
+      title: t('nav.examManagement'),
       href: "/exams",
       icon: FileText,
     },
     {
-      title: "Grading",
+      title: t('nav.grading'),
       href: "/grading",
       icon: CheckCircle,
     },
     {
-      title: "Analytics",
+      title: t('nav.analytics'),
       href: "/analytics",
       icon: BarChart3,
     },
     {
-      title: "Students",
+      title: t('nav.students'),
       href: "/students",
       icon: Users,
     },
     {
-      title: "Settings",
+      title: t('nav.settings'),
       href: "/settings",
       icon: Settings,
     },
@@ -76,22 +78,22 @@ export default function Sidebar({ className }: SidebarProps) {
 
   const studentNavItems = [
     {
-      title: "Dashboard",
+      title: t('nav.dashboard'),
       href: "/",
       icon: LayoutDashboard,
     },
     {
-      title: "Homework",
+      title: t('nav.homework'),
       href: "/homework",
       icon: Notebook,
     },
     {
-      title: "Exams",
+      title: t('nav.exams'),
       href: "/exams",
       icon: FileText,
     },
     {
-      title: "Grades",
+      title: t('nav.grades'),
       href: "/grades",
       icon: ClipboardList,
     },
