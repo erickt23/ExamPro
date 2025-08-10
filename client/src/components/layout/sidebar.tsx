@@ -165,8 +165,8 @@ export default function Sidebar({ className }: SidebarProps) {
 
       <aside 
         className={cn(
-          "bg-white shadow-sm border-r border-gray-200 overflow-y-auto transition-all duration-300 z-40",
-          isCollapsed ? "w-16" : "w-64",
+          "bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 shadow-lg border-r border-indigo-200/30 transition-all duration-300 z-40",
+          isCollapsed ? "w-16 overflow-hidden" : "w-64 overflow-y-auto",
           "md:relative md:translate-x-0 fixed h-full",
           isMobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0",
           className
@@ -177,7 +177,7 @@ export default function Sidebar({ className }: SidebarProps) {
           <Button
             variant="outline"
             size="sm"
-            className="h-6 w-6 rounded-full p-0 bg-white shadow-md"
+            className="h-6 w-6 rounded-full p-0 bg-gradient-to-r from-blue-500 to-indigo-600 text-white border-0 shadow-lg hover:from-blue-600 hover:to-indigo-700"
             onClick={() => setIsCollapsed(!isCollapsed)}
           >
             {isCollapsed ? (
@@ -188,7 +188,7 @@ export default function Sidebar({ className }: SidebarProps) {
           </Button>
         </div>
 
-        <div className="p-4">
+        <div className={cn("transition-all duration-300", isCollapsed ? "p-2" : "p-4")}>
           <nav className="space-y-2">
             {navItems.map((item) => {
               const isActive = location === item.href;
@@ -202,25 +202,28 @@ export default function Sidebar({ className }: SidebarProps) {
                     }
                   }}
                   className={cn(
-                    "w-full flex items-center px-3 py-2 rounded-lg text-left transition-colors",
+                    "w-full flex items-center px-3 py-2 rounded-xl text-left transition-all duration-200 group",
                     isCollapsed ? "justify-center" : "space-x-3",
                     isActive
-                      ? "text-primary bg-primary/10"
-                      : "text-gray-600 hover:bg-gray-50"
+                      ? "text-white bg-gradient-to-r from-blue-500 to-indigo-600 shadow-lg transform scale-105"
+                      : "text-gray-700 hover:bg-gradient-to-r hover:from-blue-400/20 hover:to-indigo-500/20 hover:text-indigo-700 hover:shadow-md hover:transform hover:scale-105"
                   )}
                   title={isCollapsed ? item.title : undefined}
                 >
-                  <item.icon className="h-5 w-5 flex-shrink-0" />
-                  {!isCollapsed && <span className="truncate">{item.title}</span>}
+                  <item.icon className={cn(
+                    "h-5 w-5 flex-shrink-0 transition-all duration-200",
+                    isActive ? "text-white drop-shadow-sm" : "text-gray-600 group-hover:text-indigo-600"
+                  )} />
+                  {!isCollapsed && <span className={cn("truncate font-medium", isActive ? "text-white" : "text-gray-700 group-hover:text-indigo-700")}>{item.title}</span>}
                 </button>
               );
             })}
           </nav>
           
           {quickActions.length > 0 && !isCollapsed && (
-            <div className="mt-8 pt-4 border-t border-gray-200">
+            <div className="mt-8 pt-4 border-t border-indigo-200/40">
               <div className="px-3 py-2">
-                <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                <h3 className="text-xs font-semibold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent uppercase tracking-wider">
                   Quick Actions
                 </h3>
               </div>
@@ -229,10 +232,10 @@ export default function Sidebar({ className }: SidebarProps) {
                   <button
                     key={index}
                     onClick={action.action}
-                    className="w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors"
+                    className="w-full flex items-center space-x-3 px-3 py-2 rounded-xl text-gray-700 hover:bg-gradient-to-r hover:from-green-400/20 hover:to-emerald-500/20 hover:text-emerald-700 hover:shadow-md transition-all duration-200 transform hover:scale-105 group"
                   >
-                    <action.icon className="h-5 w-5" />
-                    <span>{action.title}</span>
+                    <action.icon className="h-5 w-5 text-gray-600 group-hover:text-emerald-600 transition-colors duration-200" />
+                    <span className="font-medium">{action.title}</span>
                   </button>
                 ))}
               </div>
