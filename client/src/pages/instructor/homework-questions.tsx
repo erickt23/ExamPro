@@ -169,14 +169,14 @@ export default function InstructorHomeworkQuestions() {
                 <Button 
                   onClick={() => setShowImportModal(true)} 
                   variant="outline"
-                  className="border-primary text-primary hover:bg-primary hover:text-white"
+                  className="border-0 bg-gradient-to-r from-slate-50 via-blue-50 to-indigo-50 text-indigo-700 hover:bg-gradient-to-r hover:from-blue-500 hover:to-indigo-600 hover:text-white shadow-md hover:shadow-lg transition-all duration-200 transform hover:scale-105"
                 >
                   <Upload className="h-4 w-4 mr-2" />
                   Import from Excel
                 </Button>
                 <Button 
                   onClick={() => setShowCreateModal(true)}
-                  className="bg-primary hover:bg-primary/90"
+                  className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
                 >
                   <Plus className="h-4 w-4 mr-2" />
                   {t('questions.createAssignmentQuestion')}

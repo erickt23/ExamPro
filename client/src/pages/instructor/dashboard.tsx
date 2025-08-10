@@ -277,7 +277,7 @@ export default function InstructorDashboard() {
                                 </p>
                               </div>
                               <Link href={`/grading/${submission.id}`}>
-                                <button className="text-primary hover:text-primary/80 text-sm font-medium flex items-center gap-1">
+                                <button className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white text-sm font-medium flex items-center gap-1 px-3 py-1.5 rounded-md shadow-md hover:shadow-lg transition-all duration-200 transform hover:scale-105">
                                   <Eye className="h-4 w-4" />
                                   Grade
                                 </button>
@@ -304,7 +304,7 @@ export default function InstructorDashboard() {
                                 </p>
                               </div>
                               <Link href={`/homework-grading/${submission.id}`}>
-                                <button className="text-primary hover:text-primary/80 text-sm font-medium flex items-center gap-1">
+                                <button className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white text-sm font-medium flex items-center gap-1 px-3 py-1.5 rounded-md shadow-md hover:shadow-lg transition-all duration-200 transform hover:scale-105">
                                   <Eye className="h-4 w-4" />
                                   Grade
                                 </button>

@@ -701,12 +701,14 @@ export default function CreateQuestionModal({ open, onOpenChange, questionCatego
                 type="button" 
                 variant="secondary"
                 disabled={createQuestionMutation.isPending}
+                className="bg-gradient-to-r from-slate-50 via-blue-50 to-indigo-50 text-indigo-700 hover:bg-gradient-to-r hover:from-blue-400/20 hover:to-indigo-500/20 hover:text-indigo-800 shadow-md hover:shadow-lg transition-all duration-200 transform hover:scale-105"
               >
                 Save as Draft
               </Button>
               <Button 
                 type="submit"
                 disabled={createQuestionMutation.isPending}
+                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
               >
                 {createQuestionMutation.isPending ? "Creating..." : "Create Question"}
               </Button>
