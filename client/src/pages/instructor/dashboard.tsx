@@ -115,8 +115,8 @@ export default function InstructorDashboard() {
       <Navbar />
       <div className="flex">
         <Sidebar />
-        <main className="flex-1 overflow-y-auto">
-          <div className="p-6">
+        <main className="flex-1 overflow-y-auto md:ml-0 transition-all duration-300">
+          <div className="p-6 md:pl-6">
             <div className="mb-6">
               <h2 className="text-2xl font-bold text-gray-900">{t('dashboard.title')}</h2>
               <p className="text-gray-600 mt-1">{t('dashboard.description')}</p>

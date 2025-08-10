@@ -7,7 +7,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Globe } from "lucide-react";
 
 interface LanguageSelectorProps {
   className?: string;
@@ -26,17 +25,37 @@ export default function LanguageSelector({ className }: LanguageSelectorProps) {
     }
   };
 
+  const getLanguageFlag = (lang: Language) => {
+    switch (lang) {
+      case 'en':
+        return '🇺🇸';
+      case 'fr':
+        return '🇫🇷';
+      case 'ht':
+        return '🇭🇹';
+      default:
+        return '🌐';
+    }
+  };
+
   return (
     <div className={`flex items-center gap-2 ${className}`}>
-      <Globe className="h-4 w-4 text-gray-500" />
       <Select value={language} onValueChange={handleLanguageChange}>
-        <SelectTrigger className="w-[180px]">
-          <SelectValue placeholder={t('language.selectLanguage')} />
+        <SelectTrigger className="w-[120px]">
+          <SelectValue>
+            <div className="flex items-center gap-2">
+              <span className="text-lg">{getLanguageFlag(language)}</span>
+              <span className="hidden sm:inline">{languageNames[language]}</span>
+            </div>
+          </SelectValue>
         </SelectTrigger>
         <SelectContent>
           {Object.entries(languageNames).map(([code, name]) => (
             <SelectItem key={code} value={code}>
-              {name}
+              <div className="flex items-center gap-2">
+                <span className="text-lg">{getLanguageFlag(code as Language)}</span>
+                <span>{name}</span>
+              </div>
             </SelectItem>
           ))}
         </SelectContent>
