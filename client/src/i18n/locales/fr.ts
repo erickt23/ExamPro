@@ -1,307 +1,377 @@
 export const fr = {
   // Navigation
   nav: {
-    dashboard: "Tableau de bord",
-    examQuestionBank: "Banque de questions d'examen",
-    assignmentQuestionBank: "Banque de questions de devoir",
-    assignmentManagement: "Gestion des devoirs",
-    examManagement: "Gestion des examens",
-    grading: "Notation",
-    analytics: "Analyses",
-    students: "Étudiants",
-    settings: "Paramètres",
-    homework: "Devoirs",
-    exams: "Examens",
-    grades: "Notes"
-  },
-
-  // Common actions
-  actions: {
-    create: "Créer",
-    edit: "Modifier",
-    delete: "Supprimer",
-    save: "Enregistrer",
-    cancel: "Annuler",
-    close: "Fermer",
-    view: "Voir",
-    search: "Rechercher",
-    filter: "Filtrer",
-    import: "Importer",
-    export: "Exporter",
-    submit: "Soumettre",
-    back: "Retour",
-    next: "Suivant",
-    previous: "Précédent",
-    loading: "Chargement...",
-    saving: "Enregistrement...",
-    deleting: "Suppression...",
-    archive: "Archiver",
-    publish: "Publier"
+    dashboard: 'Tableau de Bord',
+    examQuestionBank: 'Banque de Questions d\'Examen',
+    assignmentQuestionBank: 'Banque de Questions de Devoir',
+    examManagement: 'Gestion d\'Examens',
+    assignmentManagement: 'Gestion de Devoirs',
+    gradingCenter: 'Centre de Notes',
+    settings: 'Paramètres',
+    grading: 'Notation',
+    analytics: 'Analytique',
+    students: 'Étudiants',
+    homework: 'Devoirs',
+    exams: 'Examens',
+    grades: 'Notes'
   },
 
   // Authentication
   auth: {
-    login: "Se connecter",
-    logout: "Se déconnecter",
-    unauthorized: "Non autorisé",
-    loggedOut: "Vous êtes déconnecté. Reconnexion en cours...",
-    loginRedirect: "Reconnexion en cours..."
-  },
-
-  // Dashboard
-  dashboard: {
-    welcome: "Bienvenue sur EduExam Pro",
-    instructorWelcome: "Tableau de bord enseignant",
-    studentWelcome: "Tableau de bord étudiant",
-    totalQuestions: "Total des questions",
-    activeExams: "Examens actifs",
-    totalStudents: "Total des étudiants",
-    recentActivity: "Activité récente",
-    quickActions: "Actions rapides",
-    upcomingExams: "Examens à venir",
-    completedExams: "Examens terminés",
-    pendingGrades: "Notes en attente"
-  },
-
-  // Question Bank
-  questions: {
-    title: "Banque de questions",
-    examQuestionBank: "Banque de questions d'examen",
-    assignmentQuestionBank: "Banque de questions de devoir",
-    description: "Gérez votre collection de questions d'examen",
-    assignmentDescription: "Gérez votre collection de questions de devoir",
-    createQuestion: "Créer une question",
-    createAssignmentQuestion: "Créer une question de devoir",
-    editQuestion: "Modifier la question",
-    deleteQuestion: "Supprimer la question",
-    questionText: "Texte de la question",
-    questionType: "Type de question",
-    difficulty: "Difficulté",
-    subject: "Matière",
-    points: "Points",
-    bloomsTaxonomy: "Taxonomie de Bloom",
-    tags: "Étiquettes",
-    usage: "Utilisation",
-    lastUsed: "Dernière utilisation",
-    createdAt: "Créé le",
-    importFromExcel: "Importer depuis Excel",
-    noQuestions: "Aucune question trouvée",
-    questionDetails: "Détails de la question"
-  },
-
-  // Question Types
-  questionTypes: {
-    multipleChoice: "Choix multiple",
-    shortAnswer: "Réponse courte",
-    essay: "Dissertation",
-    fillBlank: "Remplir les blancs",
-    matching: "Correspondance",
-    ranking: "Classement",
-    dragDrop: "Glisser-déposer",
-    trueFalse: "Vrai/Faux"
-  },
-
-  // Difficulty Levels
-  difficulty: {
-    easy: "Facile",
-    medium: "Moyen",
-    hard: "Difficile"
-  },
-
-  // Exam Management
-  exams: {
-    title: "Gestion des examens",
-    description: "Créez, planifiez et gérez vos examens",
-    createExam: "Créer un examen",
-    editExam: "Modifier l'examen",
-    examTitle: "Titre de l'examen",
-    examDescription: "Description de l'examen",
-    timeLimit: "Limite de temps",
-    attempts: "Tentatives",
-    startDate: "Date de début",
-    endDate: "Date de fin",
-    password: "Mot de passe",
-    randomizeQuestions: "Mélanger les questions",
-    status: "Statut",
-    draft: "Brouillon",
-    active: "Actif",
-    archived: "Archivé",
-    expired: "Expiré",
-    scheduled: "Programmé",
-    studentsEnrolled: "Étudiants inscrits",
-    submissions: "Soumissions",
-    averageScore: "Score moyen",
-    duration: "Durée",
-    questions: "Questions",
-    noExams: "Aucun examen trouvé",
-    examResults: "Résultats de l'examen",
-    preview: "Aperçu",
-    duplicate: "Dupliquer"
-  },
-
-  // Assignment Management
-  assignments: {
-    title: "Gestion des devoirs",
-    description: "Créez et gérez les devoirs depuis votre banque de questions de devoir dédiée",
-    createAssignment: "Créer un devoir",
-    editAssignment: "Modifier le devoir",
-    assignmentTitle: "Titre du devoir",
-    assignmentDescription: "Description du devoir",
-    dueDate: "Date d'échéance",
-    noAssignments: "Aucun devoir trouvé",
-    selectQuestions: "Sélectionner les questions de devoir",
-    availableQuestions: "Questions de devoir disponibles",
-    selectedQuestions: "Questions sélectionnées",
-    noQuestionsFound: "Aucune question de devoir trouvée. Créez d'abord des questions de devoir dans la section Banque de questions de devoir.",
-    assignmentDetails: "Détails du devoir"
-  },
-
-  // Grading
-  grading: {
-    title: "Notation",
-    description: "Notez les soumissions des étudiants et gérez les notes",
-    pendingGrades: "Notes en attente",
-    gradedSubmissions: "Soumissions notées",
-    studentName: "Nom de l'étudiant",
-    submissionDate: "Date de soumission",
-    score: "Score",
-    grade: "Note",
-    feedback: "Commentaires",
-    autoGraded: "Noté automatiquement",
-    manualGrading: "Notation manuelle requise",
-    finalizeGrades: "Finaliser les notes",
-    gradeFinalized: "Note finalisée",
-    gradeSettings: "Paramètres de notation",
-    assignmentWeight: "Poids des devoirs",
-    examWeight: "Poids des examens",
-    finalGrade: "Note finale",
-    coefficient: "Coefficient"
-  },
-
-  // Analytics
-  analytics: {
-    title: "Analyses",
-    description: "Consultez les analyses de performance et les statistiques",
-    examPerformance: "Performance aux examens",
-    questionAnalysis: "Analyse des questions",
-    studentProgress: "Progrès des étudiants",
-    averageScore: "Score moyen",
-    passRate: "Taux de réussite",
-    completionRate: "Taux d'achèvement",
-    timeSpent: "Temps passé",
-    difficultyDistribution: "Répartition par difficulté",
-    topPerformers: "Meilleurs performers",
-    strugglingStudents: "Étudiants en difficulté"
-  },
-
-  // Settings
-  settings: {
-    title: "Paramètres",
-    description: "Gérez les paramètres de l'application",
-    general: "Paramètres généraux",
-    subjects: "Matières",
-    gradeSettings: "Paramètres de notation",
-    language: "Langue",
-    profile: "Profil",
-    preferences: "Préférences",
-    subjectManagement: "Gestion des matières",
-    createSubject: "Créer une matière",
-    editSubject: "Modifier la matière",
-    subjectName: "Nom de la matière",
-    subjectDescription: "Description de la matière",
-    noSubjects: "Aucune matière trouvée"
+    unauthorized: 'Non Autorisé',
+    loggedOut: 'Vous êtes déconnecté. Reconnexion en cours...',
+    logout: 'Se Déconnecter'
   },
 
   // Language Selector
   language: {
-    english: "English",
-    french: "Français",
-    haitianCreole: "Kreyòl Ayisyen",
-    selectLanguage: "Sélectionner la langue"
+    selectLanguage: 'Sélectionner la Langue',
+    english: 'English',
+    french: 'Français',
+    haitianCreole: 'Kreyòl Ayisyen'
   },
 
-  // Forms
-  forms: {
-    required: "Ce champ est obligatoire",
-    invalidEmail: "Veuillez saisir un email valide",
-    minLength: "La longueur minimale est de {{min}} caractères",
-    maxLength: "La longueur maximale est de {{max}} caractères",
-    selectOption: "Veuillez sélectionner une option",
-    enterValue: "Veuillez saisir une valeur",
-    chooseFile: "Choisir un fichier",
-    dragDropFiles: "Glissez et déposez les fichiers ici, ou cliquez pour sélectionner"
+  // Dashboard
+  dashboard: {
+    title: 'Tableau de Bord Instructeur',
+    overview: 'Vue d\'Ensemble',
+    totalQuestions: 'Total des Questions',
+    activeExams: 'Examens Actifs',
+    enrolledStudents: 'Étudiants Inscrits',
+    pendingReviews: 'Révisions en Attente',
+    recentExams: 'Examens Récents',
+    pendingSubmissions: 'Soumissions en Attente',
+    recentHomework: 'Devoirs Récents',
+    pendingHomework: 'Soumissions de Devoirs en Attente',
+    noRecentExams: 'Aucun examen récent trouvé',
+    noPendingSubmissions: 'Aucune soumission en attente',
+    noRecentHomework: 'Aucun devoir récent trouvé',
+    noPendingHomework: 'Aucune soumission de devoir en attente',
+    viewAll: 'Voir Tout',
+    grade: 'Noter',
+    loading: 'Chargement...',
+    welcomeBack: 'Bon retour !',
+    quickStats: 'Statistiques Rapides',
+    recentActivity: 'Activité Récente',
+    upcomingDeadlines: 'Échéances à Venir'
   },
 
-  // Messages and Notifications
+  // Questions
+  questions: {
+    examQuestionBank: 'Banque de Questions d\'Examen',
+    assignmentQuestionBank: 'Banque de Questions de Devoir',
+    description: 'Gérer votre collection de questions d\'examen',
+    assignmentDescription: 'Gérer votre collection de questions de devoir',
+    createQuestion: 'Créer une Question',
+    createAssignmentQuestion: 'Créer une Question de Devoir',
+    importQuestions: 'Importer des Questions',
+    searchPlaceholder: 'Rechercher des questions...',
+    filterBySubject: 'Filtrer par Matière',
+    filterByType: 'Filtrer par Type',
+    filterByDifficulty: 'Filtrer par Difficulté',
+    allSubjects: 'Toutes les Matières',
+    allTypes: 'Tous les Types',
+    allDifficulties: 'Toutes les Difficultés',
+    questionText: 'Texte de la Question',
+    type: 'Type',
+    difficulty: 'Difficulté',
+    subject: 'Matière',
+    usageCount: 'Nombre d\'Utilisations',
+    actions: 'Actions',
+    edit: 'Modifier',
+    duplicate: 'Dupliquer',
+    delete: 'Supprimer',
+    preview: 'Aperçu',
+    noQuestions: 'Aucune question trouvée',
+    createFirst: 'Créez votre première question pour commencer',
+    filters: 'Filtres',
+    clearFilters: 'Effacer les Filtres',
+    showingResults: 'Affichage de {count} résultats',
+    bloomsTaxonomy: 'Taxonomie de Bloom',
+    lastUsed: 'Dernière Utilisation',
+    createdDate: 'Date de Création'
+  },
+
+  // Question Types
+  questionTypes: {
+    multipleChoice: 'Choix Multiple',
+    shortAnswer: 'Réponse Courte',
+    essay: 'Essai',
+    fillInBlank: 'Remplir les Blancs',
+    matching: 'Correspondance',
+    ranking: 'Classement/Ordre',
+    dragAndDrop: 'Glisser-Déposer'
+  },
+
+  // Difficulty Levels
+  difficulty: {
+    easy: 'Facile',
+    medium: 'Moyen',
+    hard: 'Difficile'
+  },
+
+  // Bloom's Taxonomy
+  blooms: {
+    remember: 'Se Souvenir',
+    understand: 'Comprendre',
+    apply: 'Appliquer',
+    analyze: 'Analyser',
+    evaluate: 'Évaluer',
+    create: 'Créer'
+  },
+
+  // Assignments
+  assignments: {
+    description: 'Créer et gérer des devoirs à partir de votre banque de questions de devoirs dédiée',
+    createAssignment: 'Créer un Devoir',
+    title: 'Titre du Devoir',
+    titlePlaceholder: 'Entrez le titre du devoir',
+    assignmentDescription: 'Description',
+    descriptionPlaceholder: 'Entrez la description du devoir',
+    subject: 'Matière',
+    selectSubject: 'Sélectionner une matière',
+    dueDate: 'Date d\'Échéance',
+    status: 'Statut',
+    createdAt: 'Créé',
+    actions: 'Actions',
+    viewDetails: 'Voir les Détails',
+    editAssignment: 'Modifier le Devoir',
+    archiveAssignment: 'Archiver le Devoir',
+    deleteAssignment: 'Supprimer le Devoir',
+    noAssignments: 'Aucun devoir trouvé',
+    createFirstAssignment: 'Créez votre premier devoir pour commencer',
+    searchAssignments: 'Rechercher des devoirs...',
+    filterByStatus: 'Filtrer par Statut',
+    allStatuses: 'Tous les Statuts'
+  },
+
+  // Exam Management
+  exams: {
+    title: 'Gestion d\'Examens',
+    description: 'Créer et gérer des examens en utilisant les questions de votre banque de questions',
+    createExam: 'Créer un Examen',
+    examTitle: 'Titre de l\'Examen',
+    titlePlaceholder: 'Entrez le titre de l\'examen',
+    examDescription: 'Description de l\'Examen',
+    descriptionPlaceholder: 'Entrez la description de l\'examen',
+    timeLimit: 'Limite de Temps',
+    attempts: 'Tentatives Autorisées',
+    password: 'Protection par Mot de Passe',
+    randomizeQuestions: 'Randomiser les Questions',
+    showResults: 'Montrer les Résultats aux Étudiants',
+    scheduledDate: 'Date Programmée',
+    status: 'Statut',
+    totalQuestions: 'Total des Questions',
+    duration: 'Durée',
+    studentsEnrolled: 'Étudiants Inscrits',
+    submissions: 'Soumissions',
+    actions: 'Actions',
+    searchExams: 'Rechercher des examens...',
+    noExams: 'Aucun examen trouvé',
+    createFirstExam: 'Créez votre premier examen pour commencer'
+  },
+
+  // Grading Center
+  grading: {
+    title: 'Centre de Notes',
+    description: 'Noter les soumissions d\'étudiants et gérer les notes finales',
+    studentName: 'Nom de l\'Étudiant',
+    studentEmail: 'Email de l\'Étudiant',
+    examTitle: 'Titre de l\'Examen',
+    assignmentTitle: 'Titre du Devoir',
+    submissionDate: 'Date de Soumission',
+    submittedAt: 'Soumis le',
+    score: 'Score',
+    status: 'Statut',
+    finalGrade: 'Note Finale',
+    assignmentGrade: 'Note de Devoir',
+    examGrade: 'Note d\'Examen',
+    gradeBreakdown: 'Répartition des Notes',
+    pendingGrade: 'En Attente',
+    gradedStatus: 'Noté',
+    autoGraded: 'Auto-noté',
+    manualReview: 'Révision Manuelle Requise',
+    noSubmissions: 'Aucune soumission trouvée',
+    gradingFilters: 'Filtres de Notation',
+    allSubmissions: 'Toutes les Soumissions',
+    pendingOnly: 'En Attente Seulement',
+    gradedOnly: 'Notées Seulement',
+    searchStudent: 'Rechercher par nom d\'étudiant...',
+    gradeNow: 'Noter Maintenant',
+    viewSubmission: 'Voir la Soumission',
+    totalPoints: 'Points Totaux',
+    earnedPoints: 'Points Obtenus',
+    percentage: 'Pourcentage'
+  },
+
+  // Settings
+  settings: {
+    title: 'Paramètres',
+    description: 'Gérer vos préférences système et configurations',
+    subjects: 'Gestion des Matières',
+    subjectsDescription: 'Gérer les matières pour organiser les questions et devoirs',
+    addSubject: 'Ajouter une Matière',
+    editSubject: 'Modifier la Matière',
+    subjectName: 'Nom de la Matière',
+    subjectNamePlaceholder: 'Entrez le nom de la matière',
+    subjectDescription: 'Description de la Matière',
+    subjectDescriptionPlaceholder: 'Entrez la description de la matière (optionnel)',
+    gradeSettings: 'Paramètres de Notes',
+    gradeSettingsDescription: 'Configurer comment les notes finales sont calculées',
+    assignmentWeight: 'Poids des Devoirs',
+    examWeight: 'Poids des Examens',
+    language: 'Préférences de Langue',
+    languageDescription: 'Choisissez votre langue préférée pour l\'interface',
+    selectLanguage: 'Sélectionner la Langue',
+    save: 'Sauvegarder les Changements',
+    cancel: 'Annuler',
+    delete: 'Supprimer',
+    confirm: 'Confirmer',
+    success: 'Paramètres sauvegardés avec succès',
+    error: 'Erreur lors de la sauvegarde des paramètres',
+    deleteConfirm: 'Êtes-vous sûr de vouloir supprimer cette matière ?',
+    deleteWarning: 'Cette action ne peut pas être annulée.',
+    noSubjects: 'Aucune matière trouvée',
+    createFirstSubject: 'Créez votre première matière pour commencer',
+    profile: 'Profil'
+  },
+
+  // Tables
+  table: {
+    name: 'Nom',
+    title: 'Titre',
+    description: 'Description',
+    status: 'Statut',
+    createdAt: 'Créé le',
+    updatedAt: 'Mis à Jour le',
+    actions: 'Actions',
+    noData: 'Aucune donnée disponible',
+    loading: 'Chargement...',
+    rowsPerPage: 'Lignes par page',
+    page: 'Page',
+    of: 'sur',
+    previous: 'Précédent',
+    next: 'Suivant',
+    first: 'Premier',
+    last: 'Dernier'
+  },
+
+  // Common Actions
+  actions: {
+    create: 'Créer',
+    edit: 'Modifier',
+    delete: 'Supprimer',
+    save: 'Sauvegarder',
+    cancel: 'Annuler',
+    submit: 'Soumettre',
+    view: 'Voir',
+    search: 'Rechercher',
+    filter: 'Filtrer',
+    clear: 'Effacer',
+    clearAll: 'Tout Effacer',
+    export: 'Exporter',
+    import: 'Importer',
+    print: 'Imprimer',
+    refresh: 'Actualiser',
+    loading: 'Chargement...',
+    noData: 'Aucune donnée disponible',
+    close: 'Fermer',
+    open: 'Ouvrir',
+    expand: 'Développer',
+    collapse: 'Réduire',
+    select: 'Sélectionner',
+    selectAll: 'Tout Sélectionner',
+    deselectAll: 'Tout Désélectionner'
+  },
+
+  // Status Labels
+  status: {
+    draft: 'Brouillon',
+    active: 'Actif',
+    inactive: 'Inactif',
+    archived: 'Archivé',
+    pending: 'En Attente',
+    completed: 'Terminé',
+    graded: 'Noté',
+    submitted: 'Soumis',
+    overdue: 'En Retard',
+    scheduled: 'Programmé',
+    published: 'Publié',
+    expired: 'Expiré'
+  },
+
+  // Form Labels
+  form: {
+    required: 'Requis',
+    optional: 'Optionnel',
+    selectOption: 'Sélectionner une option',
+    selectOptions: 'Sélectionner des options',
+    enterText: 'Entrez le texte',
+    enterValue: 'Entrez une valeur',
+    chooseFile: 'Choisir un fichier',
+    uploadFile: 'Télécharger un fichier',
+    browse: 'Parcourir',
+    dragDrop: 'Glisser et déposer des fichiers ici',
+    or: 'ou',
+    maxFileSize: 'Taille maximale du fichier',
+    allowedTypes: 'Types de fichiers autorisés',
+    fieldRequired: 'Ce champ est requis',
+    invalidEmail: 'Veuillez entrer une adresse email valide',
+    invalidFormat: 'Format invalide',
+    tooShort: 'Trop court',
+    tooLong: 'Trop long'
+  },
+
+  // Messages
   messages: {
-    success: "Succès",
-    error: "Erreur",
-    warning: "Avertissement",
-    info: "Information",
-    confirmDelete: "Êtes-vous sûr de vouloir supprimer cet élément ?",
-    deleteSuccess: "Élément supprimé avec succès",
-    saveSuccess: "Modifications enregistrées avec succès",
-    createSuccess: "Élément créé avec succès",
-    updateSuccess: "Élément mis à jour avec succès",
-    operationSuccess: "Opération terminée avec succès",
-    operationFailed: "L'opération a échoué",
-    networkError: "Erreur réseau. Veuillez réessayer.",
-    serverError: "Erreur serveur. Veuillez réessayer plus tard.",
-    validationError: "Veuillez vérifier vos données et réessayer.",
-    noDataFound: "Aucune donnée trouvée",
-    loadingData: "Chargement des données...",
-    processingRequest: "Traitement de votre demande..."
+    success: 'Opération terminée avec succès',
+    error: 'Une erreur s\'est produite',
+    warning: 'Avertissement',
+    info: 'Information',
+    confirmDelete: 'Êtes-vous sûr de vouloir supprimer cet élément ?',
+    confirmDeleteMultiple: 'Êtes-vous sûr de vouloir supprimer {count} éléments ?',
+    unsavedChanges: 'Vous avez des modifications non sauvegardées. Voulez-vous continuer ?',
+    sessionExpired: 'Votre session a expiré. Veuillez vous reconnecter.',
+    noPermission: 'Vous n\'avez pas la permission d\'effectuer cette action',
+    networkError: 'Erreur réseau. Veuillez vérifier votre connexion.',
+    serverError: 'Erreur serveur. Veuillez réessayer plus tard.',
+    actionCompleted: 'Action terminée avec succès',
+    changesSaved: 'Modifications sauvegardées avec succès',
+    itemCreated: 'Élément créé avec succès',
+    itemUpdated: 'Élément mis à jour avec succès',
+    itemDeleted: 'Élément supprimé avec succès'
   },
 
-  // Pagination
-  pagination: {
-    showing: "Affichage",
-    of: "sur",
-    entries: "entrées",
-    page: "Page",
-    rowsPerPage: "Lignes par page",
-    first: "Premier",
-    last: "Dernier",
-    noData: "Aucune donnée à afficher"
-  },
-
-  // Filters
-  filters: {
-    allSubjects: "Toutes les matières",
-    allTypes: "Tous les types",
-    allLevels: "Tous les niveaux",
-    allStatuses: "Tous les statuts",
-    searchPlaceholder: "Rechercher...",
-    resetFilters: "Réinitialiser les filtres",
-    applyFilters: "Appliquer les filtres"
-  },
-
-  // Time and Date
+  // Time and Dates
   time: {
-    minutes: "minutes",
-    hours: "heures",
-    days: "jours",
-    weeks: "semaines",
-    months: "mois",
-    years: "années",
-    ago: "il y a",
-    remaining: "restant",
-    expired: "expiré",
-    noTimeLimit: "Pas de limite de temps",
-    unlimited: "Illimité"
+    minutes: 'minutes',
+    hours: 'heures',
+    days: 'jours',
+    weeks: 'semaines',
+    months: 'mois',
+    years: 'années',
+    ago: 'il y a',
+    remaining: 'restant',
+    due: 'dû',
+    overdue: 'en retard',
+    today: 'Aujourd\'hui',
+    yesterday: 'Hier',
+    tomorrow: 'Demain',
+    thisWeek: 'Cette semaine',
+    nextWeek: 'La semaine prochaine',
+    thisMonth: 'Ce mois',
+    nextMonth: 'Le mois prochain'
   },
 
-  // Student specific
-  student: {
-    takeExam: "Passer l'examen",
-    submitExam: "Soumettre l'examen",
-    viewResults: "Voir les résultats",
-    myGrades: "Mes notes",
-    myHomework: "Mes devoirs",
-    completedHomework: "Devoirs terminés",
-    pendingHomework: "Devoirs en attente",
-    overdueHomework: "Devoirs en retard",
-    submitHomework: "Soumettre le devoir",
-    homeworkSubmitted: "Devoir soumis"
+  // Numbers and Counts
+  count: {
+    item: 'élément',
+    items: 'éléments',
+    selected: 'sélectionné',
+    total: 'total',
+    showing: 'affichage',
+    outOf: 'sur',
+    resultsFound: 'résultats trouvés',
+    noResults: 'aucun résultat trouvé'
   }
 };

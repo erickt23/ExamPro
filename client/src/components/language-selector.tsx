@@ -16,10 +16,20 @@ interface LanguageSelectorProps {
 export default function LanguageSelector({ className }: LanguageSelectorProps) {
   const { language, changeLanguage, t } = useTranslation();
 
+  const handleLanguageChange = (value: Language) => {
+    if (value !== language) {
+      changeLanguage(value);
+      // Force page reload to refresh all content with new language
+      setTimeout(() => {
+        window.location.reload();
+      }, 100);
+    }
+  };
+
   return (
     <div className={`flex items-center gap-2 ${className}`}>
       <Globe className="h-4 w-4 text-gray-500" />
-      <Select value={language} onValueChange={(value: Language) => changeLanguage(value)}>
+      <Select value={language} onValueChange={handleLanguageChange}>
         <SelectTrigger className="w-[180px]">
           <SelectValue placeholder={t('language.selectLanguage')} />
         </SelectTrigger>

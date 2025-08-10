@@ -1,307 +1,377 @@
 export const ht = {
   // Navigation
   nav: {
-    dashboard: "Tablo kòmand",
-    examQuestionBank: "Bank kesyon egzamen",
-    assignmentQuestionBank: "Bank kesyon devwa",
-    assignmentManagement: "Jesyon devwa",
-    examManagement: "Jesyon egzamen",
-    grading: "Nòt",
-    analytics: "Analiz",
-    students: "Elèv yo",
-    settings: "Paramèt",
-    homework: "Devwa",
-    exams: "Egzamen",
-    grades: "Nòt yo"
-  },
-
-  // Common actions
-  actions: {
-    create: "Kreye",
-    edit: "Modifye",
-    delete: "Efase",
-    save: "Konsève",
-    cancel: "Anile",
-    close: "Fèmen",
-    view: "Gade",
-    search: "Chèche",
-    filter: "Filtre",
-    import: "Enpòte",
-    export: "Ekspòte",
-    submit: "Soumèt",
-    back: "Retounen",
-    next: "Pwochen",
-    previous: "Anvan",
-    loading: "N ap chaje...",
-    saving: "N ap konsève...",
-    deleting: "N ap efase...",
-    archive: "Achive",
-    publish: "Pibliye"
+    dashboard: 'Tab Kòmand',
+    examQuestionBank: 'Depo Kesyon Egzamen',
+    assignmentQuestionBank: 'Depo Kesyon Devwa',
+    examManagement: 'Jesyon Egzamen',
+    assignmentManagement: 'Jesyon Devwa',
+    gradingCenter: 'Sant Nòt',
+    settings: 'Konfigirasyon',
+    grading: 'Bay Nòt',
+    analytics: 'Analitik',
+    students: 'Elèv yo',
+    homework: 'Devwa yo',
+    exams: 'Egzamen yo',
+    grades: 'Nòt yo'
   },
 
   // Authentication
   auth: {
-    login: "Konekte",
-    logout: "Dekonekte",
-    unauthorized: "Pa otorize",
-    loggedOut: "Ou dekonekte. N ap konekte w ankò...",
-    loginRedirect: "N ap konekte w ankò..."
-  },
-
-  // Dashboard
-  dashboard: {
-    welcome: "Byenvini nan EduExam Pro",
-    instructorWelcome: "Tablo kòmand pwofesè",
-    studentWelcome: "Tablo kòmand elèv",
-    totalQuestions: "Total kesyon",
-    activeExams: "Egzamen aktif",
-    totalStudents: "Total elèv",
-    recentActivity: "Aktivite resan",
-    quickActions: "Aksyon rapid",
-    upcomingExams: "Egzamen k ap vini",
-    completedExams: "Egzamen ki fini",
-    pendingGrades: "Nòt k ap tann"
-  },
-
-  // Question Bank
-  questions: {
-    title: "Bank kesyon",
-    examQuestionBank: "Bank kesyon egzamen",
-    assignmentQuestionBank: "Bank kesyon devwa",
-    description: "Jere koleksyon kesyon egzamen w yo",
-    assignmentDescription: "Jere koleksyon kesyon devwa w yo",
-    createQuestion: "Kreye kesyon",
-    createAssignmentQuestion: "Kreye kesyon devwa",
-    editQuestion: "Modifye kesyon",
-    deleteQuestion: "Efase kesyon",
-    questionText: "Tèks kesyon",
-    questionType: "Kalite kesyon",
-    difficulty: "Difikilte",
-    subject: "Matye",
-    points: "Pwen",
-    bloomsTaxonomy: "Taksonomi Bloom",
-    tags: "Etikèt",
-    usage: "Itilizasyon",
-    lastUsed: "Dènye itilizasyon",
-    createdAt: "Kreye nan",
-    importFromExcel: "Enpòte nan Excel",
-    noQuestions: "Pa gen kesyon",
-    questionDetails: "Detay kesyon"
-  },
-
-  // Question Types
-  questionTypes: {
-    multipleChoice: "Chwa miltip",
-    shortAnswer: "Repons kout",
-    essay: "Konpozisyon",
-    fillBlank: "Ranpli espas vid",
-    matching: "Matche",
-    ranking: "Klase",
-    dragDrop: "Trennen depoze",
-    trueFalse: "Vre/Fo"
-  },
-
-  // Difficulty Levels
-  difficulty: {
-    easy: "Fasil",
-    medium: "Mwayen",
-    hard: "Difisil"
-  },
-
-  // Exam Management
-  exams: {
-    title: "Jesyon egzamen",
-    description: "Kreye, pwograme ak jere egzamen w yo",
-    createExam: "Kreye egzamen",
-    editExam: "Modifye egzamen",
-    examTitle: "Tit egzamen",
-    examDescription: "Deskripsyon egzamen",
-    timeLimit: "Limit tan",
-    attempts: "Tantativ",
-    startDate: "Dat kòmanse",
-    endDate: "Dat fini",
-    password: "Modpas",
-    randomizeQuestions: "Melanje kesyon",
-    status: "Estati",
-    draft: "Bouyon",
-    active: "Aktif",
-    archived: "Nan achiv",
-    expired: "Ekspire",
-    scheduled: "Pwograme",
-    studentsEnrolled: "Elèv enskriri",
-    submissions: "Soumèt yo",
-    averageScore: "Mwayèn nòt",
-    duration: "Dire",
-    questions: "Kesyon",
-    noExams: "Pa gen egzamen",
-    examResults: "Rezilta egzamen",
-    preview: "Previzyon",
-    duplicate: "Duplique"
-  },
-
-  // Assignment Management
-  assignments: {
-    title: "Jesyon devwa",
-    description: "Kreye ak jere devwa yo nan bank kesyon devwa dedye w la",
-    createAssignment: "Kreye devwa",
-    editAssignment: "Modifye devwa",
-    assignmentTitle: "Tit devwa",
-    assignmentDescription: "Deskripsyon devwa",
-    dueDate: "Dat limit",
-    noAssignments: "Pa gen devwa",
-    selectQuestions: "Chwazi kesyon devwa",
-    availableQuestions: "Kesyon devwa disponib",
-    selectedQuestions: "Kesyon chwazi",
-    noQuestionsFound: "Pa gen kesyon devwa. Kreye kesyon devwa yo nan seksyon Bank kesyon devwa a anvan.",
-    assignmentDetails: "Detay devwa"
-  },
-
-  // Grading
-  grading: {
-    title: "Nòt",
-    description: "Bay nòt soumèt elèv yo ak jere nòt yo",
-    pendingGrades: "Nòt k ap tann",
-    gradedSubmissions: "Soumèt ki gen nòt",
-    studentName: "Non elèv",
-    submissionDate: "Dat soumèt",
-    score: "Nòt",
-    grade: "Nòt",
-    feedback: "Kòmantè",
-    autoGraded: "Nòt otomatik",
-    manualGrading: "Nòt manual ki nesesè",
-    finalizeGrades: "Finalize nòt",
-    gradeFinalized: "Nòt finalize",
-    gradeSettings: "Paramèt nòt",
-    assignmentWeight: "Pwa devwa",
-    examWeight: "Pwa egzamen",
-    finalGrade: "Nòt final",
-    coefficient: "Koefisyan"
-  },
-
-  // Analytics
-  analytics: {
-    title: "Analiz",
-    description: "Gade analiz pèfòmans ak estatistik",
-    examPerformance: "Pèfòmans egzamen",
-    questionAnalysis: "Analiz kesyon",
-    studentProgress: "Pwogrè elèv",
-    averageScore: "Mwayèn nòt",
-    passRate: "To reisit",
-    completionRate: "To konplete",
-    timeSpent: "Tan pase",
-    difficultyDistribution: "Distribisyon difikilte",
-    topPerformers: "Pi bon pèfòmè",
-    strugglingStudents: "Elèv k ap gen difikilte"
-  },
-
-  // Settings
-  settings: {
-    title: "Paramèt",
-    description: "Jere paramèt aplikasyon an",
-    general: "Paramèt jeneral",
-    subjects: "Matye yo",
-    gradeSettings: "Paramèt nòt",
-    language: "Lang",
-    profile: "Pwofil",
-    preferences: "Preferans",
-    subjectManagement: "Jesyon matye",
-    createSubject: "Kreye matye",
-    editSubject: "Modifye matye",
-    subjectName: "Non matye",
-    subjectDescription: "Deskripsyon matye",
-    noSubjects: "Pa gen matye"
+    unauthorized: 'Pa Otorize',
+    loggedOut: 'Ou dekonekte. Y ap konekte ou ankò...',
+    logout: 'Dekonekte'
   },
 
   // Language Selector
   language: {
-    english: "English",
-    french: "Français",
-    haitianCreole: "Kreyòl Ayisyen",
-    selectLanguage: "Chwazi lang"
+    selectLanguage: 'Chwazi Lang',
+    english: 'English',
+    french: 'Français',
+    haitianCreole: 'Kreyòl Ayisyen'
   },
 
-  // Forms
-  forms: {
-    required: "Jaden sa a obligatwa",
-    invalidEmail: "Tanpri antre yon imèl valab",
-    minLength: "Longè minimum se {{min}} karaktè",
-    maxLength: "Longè maksimòm se {{max}} karaktè",
-    selectOption: "Tanpri chwazi yon opsyon",
-    enterValue: "Tanpri antre yon valè",
-    chooseFile: "Chwazi yon fichye",
-    dragDropFiles: "Trennen depoze fichye yo isit la, oswa klike pou chwazi"
+  // Dashboard
+  dashboard: {
+    title: 'Tab Kòmand Enstriktè',
+    overview: 'Apèsi',
+    totalQuestions: 'Total Kesyon',
+    activeExams: 'Egzamen Aktif',
+    enrolledStudents: 'Elèv Enskri',
+    pendingReviews: 'Revizyon k ap Tann',
+    recentExams: 'Egzamen Resan',
+    pendingSubmissions: 'Soumèt k ap Tann',
+    recentHomework: 'Devwa Resan',
+    pendingHomework: 'Soumèt Devwa k ap Tann',
+    noRecentExams: 'Pa gen egzamen resan',
+    noPendingSubmissions: 'Pa gen soumèt k ap tann',
+    noRecentHomework: 'Pa gen devwa resan',
+    noPendingHomework: 'Pa gen soumèt devwa k ap tann',
+    viewAll: 'Wè Tout',
+    grade: 'Bay Nòt',
+    loading: 'Y ap Chaje...',
+    welcomeBack: 'Byenvini tounen!',
+    quickStats: 'Estatistik Rapid',
+    recentActivity: 'Aktivite Resan',
+    upcomingDeadlines: 'Delè k ap Vini'
   },
 
-  // Messages and Notifications
+  // Questions
+  questions: {
+    examQuestionBank: 'Depo Kesyon Egzamen',
+    assignmentQuestionBank: 'Depo Kesyon Devwa',
+    description: 'Jere koleksyon kesyon egzamen ou yo',
+    assignmentDescription: 'Jere koleksyon kesyon devwa ou yo',
+    createQuestion: 'Kreye Kesyon',
+    createAssignmentQuestion: 'Kreye Kesyon Devwa',
+    importQuestions: 'Enpòte Kesyon',
+    searchPlaceholder: 'Chèche kesyon...',
+    filterBySubject: 'Filtre pa Matye',
+    filterByType: 'Filtre pa Kalite',
+    filterByDifficulty: 'Filtre pa Difikilte',
+    allSubjects: 'Tout Matye',
+    allTypes: 'Tout Kalite',
+    allDifficulties: 'Tout Difikilte',
+    questionText: 'Tèks Kesyon',
+    type: 'Kalite',
+    difficulty: 'Difikilte',
+    subject: 'Matye',
+    usageCount: 'Kantite Itilizasyon',
+    actions: 'Aksyon',
+    edit: 'Modifye',
+    duplicate: 'Kopi',
+    delete: 'Efase',
+    preview: 'Apèsi',
+    noQuestions: 'Pa gen kesyon',
+    createFirst: 'Kreye premye kesyon ou pou kòmanse',
+    filters: 'Filtè',
+    clearFilters: 'Efase Filtè',
+    showingResults: 'Y ap montre {count} rezilta',
+    bloomsTaxonomy: 'Taksonomi Bloom',
+    lastUsed: 'Dènye Itilizasyon',
+    createdDate: 'Dat Kreyasyon'
+  },
+
+  // Question Types
+  questionTypes: {
+    multipleChoice: 'Chwa Miltip',
+    shortAnswer: 'Repons Kout',
+    essay: 'Konpozisyon',
+    fillInBlank: 'Ranpli Blan',
+    matching: 'Matche',
+    ranking: 'Klase/Òdone',
+    dragAndDrop: 'Trennen ak Lage'
+  },
+
+  // Difficulty Levels
+  difficulty: {
+    easy: 'Fasil',
+    medium: 'Mwayen',
+    hard: 'Difisil'
+  },
+
+  // Bloom's Taxonomy
+  blooms: {
+    remember: 'Sonje',
+    understand: 'Konprann',
+    apply: 'Aplike',
+    analyze: 'Analize',
+    evaluate: 'Evalye',
+    create: 'Kreye'
+  },
+
+  // Assignments
+  assignments: {
+    description: 'Kreye ak jere devwa yo soti nan depo kesyon devwa dedye ou an',
+    createAssignment: 'Kreye Devwa',
+    title: 'Tit Devwa',
+    titlePlaceholder: 'Antre tit devwa a',
+    assignmentDescription: 'Deskripsyon',
+    descriptionPlaceholder: 'Antre deskripsyon devwa a',
+    subject: 'Matye',
+    selectSubject: 'Chwazi yon matye',
+    dueDate: 'Dat Delè',
+    status: 'Estati',
+    createdAt: 'Kreye',
+    actions: 'Aksyon',
+    viewDetails: 'Wè Detay',
+    editAssignment: 'Modifye Devwa',
+    archiveAssignment: 'Achive Devwa',
+    deleteAssignment: 'Efase Devwa',
+    noAssignments: 'Pa gen devwa',
+    createFirstAssignment: 'Kreye premye devwa ou pou kòmanse',
+    searchAssignments: 'Chèche devwa...',
+    filterByStatus: 'Filtre pa Estati',
+    allStatuses: 'Tout Estati'
+  },
+
+  // Exam Management
+  exams: {
+    title: 'Jesyon Egzamen',
+    description: 'Kreye ak jere egzamen yo lè w sèvi ak kesyon nan depo kesyon ou an',
+    createExam: 'Kreye Egzamen',
+    examTitle: 'Tit Egzamen',
+    titlePlaceholder: 'Antre tit egzamen an',
+    examDescription: 'Deskripsyon Egzamen',
+    descriptionPlaceholder: 'Antre deskripsyon egzamen an',
+    timeLimit: 'Limit Tan',
+    attempts: 'Tantativ Otorize',
+    password: 'Pwoteksyon pa Modpas',
+    randomizeQuestions: 'Melanje Kesyon',
+    showResults: 'Montre Rezilta yo bay Elèv',
+    scheduledDate: 'Dat Programme',
+    status: 'Estati',
+    totalQuestions: 'Total Kesyon',
+    duration: 'Dire',
+    studentsEnrolled: 'Elèv Enskri',
+    submissions: 'Soumèt',
+    actions: 'Aksyon',
+    searchExams: 'Chèche egzamen...',
+    noExams: 'Pa gen egzamen',
+    createFirstExam: 'Kreye premye egzamen ou pou kòmanse'
+  },
+
+  // Grading Center
+  grading: {
+    title: 'Sant Nòt',
+    description: 'Bay nòt soumèt elèv yo ak jere nòt final yo',
+    studentName: 'Non Elèv',
+    studentEmail: 'Imel Elèv',
+    examTitle: 'Tit Egzamen',
+    assignmentTitle: 'Tit Devwa',
+    submissionDate: 'Dat Soumèt',
+    submittedAt: 'Soumèt nan',
+    score: 'Kòt',
+    status: 'Estati',
+    finalGrade: 'Nòt Final',
+    assignmentGrade: 'Nòt Devwa',
+    examGrade: 'Nòt Egzamen',
+    gradeBreakdown: 'Depo Nòt',
+    pendingGrade: 'K ap Tann',
+    gradedStatus: 'Gen Nòt',
+    autoGraded: 'Nòt Otomatik',
+    manualReview: 'Bezwen Revizyon Manual',
+    noSubmissions: 'Pa gen soumèt',
+    gradingFilters: 'Filtè Nòt',
+    allSubmissions: 'Tout Soumèt',
+    pendingOnly: 'Sèlman sa k ap Tann',
+    gradedOnly: 'Sèlman sa ki Gen Nòt',
+    searchStudent: 'Chèche pa non elèv...',
+    gradeNow: 'Bay Nòt Kounye a',
+    viewSubmission: 'Wè Soumèt',
+    totalPoints: 'Pwen Total',
+    earnedPoints: 'Pwen Genyen',
+    percentage: 'Pousantaj'
+  },
+
+  // Settings
+  settings: {
+    title: 'Konfigirasyon',
+    description: 'Jere preferans sistèm ou ak konfigirasyon yo',
+    subjects: 'Jesyon Matye',
+    subjectsDescription: 'Jere matye yo pou òganize kesyon ak devwa',
+    addSubject: 'Ajoute Matye',
+    editSubject: 'Modifye Matye',
+    subjectName: 'Non Matye',
+    subjectNamePlaceholder: 'Antre non matye a',
+    subjectDescription: 'Deskripsyon Matye',
+    subjectDescriptionPlaceholder: 'Antre deskripsyon matye a (opsyonèl)',
+    gradeSettings: 'Konfigirasyon Nòt',
+    gradeSettingsDescription: 'Konfigire fason yo kalkile nòt final yo',
+    assignmentWeight: 'Pwa Devwa',
+    examWeight: 'Pwa Egzamen',
+    language: 'Preferans Lang',
+    languageDescription: 'Chwazi lang ou prefere pou entèfas la',
+    selectLanguage: 'Chwazi Lang',
+    save: 'Sove Chanjman',
+    cancel: 'Anile',
+    delete: 'Efase',
+    confirm: 'Konfime',
+    success: 'Konfigirasyon sove ak siksè',
+    error: 'Erè nan sove konfigirasyon yo',
+    deleteConfirm: 'Èske ou kwè ou vle efase matye sa a?',
+    deleteWarning: 'Aksyon sa a pa ka defèt.',
+    noSubjects: 'Pa gen matye',
+    createFirstSubject: 'Kreye premye matye ou pou kòmanse',
+    profile: 'Pwofil'
+  },
+
+  // Tables
+  table: {
+    name: 'Non',
+    title: 'Tit',
+    description: 'Deskripsyon',
+    status: 'Estati',
+    createdAt: 'Kreye nan',
+    updatedAt: 'Mèt ajou nan',
+    actions: 'Aksyon',
+    noData: 'Pa gen done disponib',
+    loading: 'Y ap Chaje...',
+    rowsPerPage: 'Ranje pa paj',
+    page: 'Paj',
+    of: 'sou',
+    previous: 'Anvan',
+    next: 'Apre',
+    first: 'Premye',
+    last: 'Dènye'
+  },
+
+  // Common Actions
+  actions: {
+    create: 'Kreye',
+    edit: 'Modifye',
+    delete: 'Efase',
+    save: 'Sove',
+    cancel: 'Anile',
+    submit: 'Soumèt',
+    view: 'Wè',
+    search: 'Chèche',
+    filter: 'Filtre',
+    clear: 'Efase',
+    clearAll: 'Efase Tout',
+    export: 'Ekspòte',
+    import: 'Enpòte',
+    print: 'Enprime',
+    refresh: 'Aktyalize',
+    loading: 'Y ap Chaje...',
+    noData: 'Pa gen done disponib',
+    close: 'Fèmen',
+    open: 'Ouvri',
+    expand: 'Elaji',
+    collapse: 'Retresi',
+    select: 'Chwazi',
+    selectAll: 'Chwazi Tout',
+    deselectAll: 'Pa Chwazi Tout'
+  },
+
+  // Status Labels
+  status: {
+    draft: 'Bwouyon',
+    active: 'Aktif',
+    inactive: 'Enaktif',
+    archived: 'Achive',
+    pending: 'K ap Tann',
+    completed: 'Fini',
+    graded: 'Gen Nòt',
+    submitted: 'Soumèt',
+    overdue: 'An Reta',
+    scheduled: 'Programme',
+    published: 'Pibliye',
+    expired: 'Ekspire'
+  },
+
+  // Form Labels
+  form: {
+    required: 'Obligatwa',
+    optional: 'Opsyonèl',
+    selectOption: 'Chwazi yon opsyon',
+    selectOptions: 'Chwazi opsyon yo',
+    enterText: 'Antre tèks',
+    enterValue: 'Antre yon valè',
+    chooseFile: 'Chwazi fichye',
+    uploadFile: 'Telechaje fichye',
+    browse: 'Navige',
+    dragDrop: 'Trennen ak lage fichye yo isit la',
+    or: 'oswa',
+    maxFileSize: 'Tay maksimòm fichye',
+    allowedTypes: 'Kalite fichye otorize',
+    fieldRequired: 'Jaden sa a obligatwa',
+    invalidEmail: 'Tanpri antre yon adrès imel valab',
+    invalidFormat: 'Fòma pa valab',
+    tooShort: 'Twò kout',
+    tooLong: 'Twò long'
+  },
+
+  // Messages
   messages: {
-    success: "Siksè",
-    error: "Erè",
-    warning: "Avètisman",
-    info: "Enfomasyon",
-    confirmDelete: "Ou kwè ou vle efase bagay sa a?",
-    deleteSuccess: "Bagay la efase ak siksè",
-    saveSuccess: "Chanjman yo konsève ak siksè",
-    createSuccess: "Bagay la kreye ak siksè",
-    updateSuccess: "Bagay la mete ajou ak siksè",
-    operationSuccess: "Operasyon an fini ak siksè",
-    operationFailed: "Operasyon an echwe",
-    networkError: "Erè rezo. Tanpri eseye ankò.",
-    serverError: "Erè sèvè. Tanpri eseye ankò pi ta.",
-    validationError: "Tanpri verifye done w yo epi eseye ankò.",
-    noDataFound: "Pa gen done",
-    loadingData: "N ap chaje done yo...",
-    processingRequest: "N ap trete demann ou an..."
+    success: 'Operasyon fini ak siksè',
+    error: 'Yon erè rive',
+    warning: 'Avètismàn',
+    info: 'Enfòmasyon',
+    confirmDelete: 'Èske ou kwè ou vle efase eleman sa a?',
+    confirmDeleteMultiple: 'Èske ou kwè ou vle efase {count} eleman?',
+    unsavedChanges: 'Ou gen chanjman ki pa sove. Èske ou vle kontinye?',
+    sessionExpired: 'Sesyon ou an ekspire. Tanpri konekte ankò.',
+    noPermission: 'Ou pa gen otorizasyon pou fè aksyon sa a',
+    networkError: 'Erè rezo. Tanpri verifye koneksyon ou an.',
+    serverError: 'Erè sèvè. Tanpri eseye ankò pi ta.',
+    actionCompleted: 'Aksyon fini ak siksè',
+    changesSaved: 'Chanjman yo sove ak siksè',
+    itemCreated: 'Eleman kreye ak siksè',
+    itemUpdated: 'Eleman mèt ajou ak siksè',
+    itemDeleted: 'Eleman efase ak siksè'
   },
 
-  // Pagination
-  pagination: {
-    showing: "N ap montre",
-    of: "nan",
-    entries: "antre",
-    page: "Paj",
-    rowsPerPage: "Liy nan chak paj",
-    first: "Premye",
-    last: "Dènye",
-    noData: "Pa gen done pou montre"
-  },
-
-  // Filters
-  filters: {
-    allSubjects: "Tout matye",
-    allTypes: "Tout kalite",
-    allLevels: "Tout nivo",
-    allStatuses: "Tout estati",
-    searchPlaceholder: "Chèche...",
-    resetFilters: "Reinitilaize filtre",
-    applyFilters: "Aplike filtre"
-  },
-
-  // Time and Date
+  // Time and Dates
   time: {
-    minutes: "minit",
-    hours: "èdtan",
-    days: "jou",
-    weeks: "semèn",
-    months: "mwa",
-    years: "ane",
-    ago: "depi",
-    remaining: "ki rete",
-    expired: "ekspire",
-    noTimeLimit: "Pa gen limit tan",
-    unlimited: "San limit"
+    minutes: 'minit',
+    hours: 'lè',
+    days: 'jou',
+    weeks: 'semèn',
+    months: 'mwa',
+    years: 'ane',
+    ago: 'de sa',
+    remaining: 'ki rete',
+    due: 'dwe',
+    overdue: 'an reta',
+    today: 'Jodi a',
+    yesterday: 'Yè',
+    tomorrow: 'Demen',
+    thisWeek: 'Semèn sa a',
+    nextWeek: 'Semèn k ap vini an',
+    thisMonth: 'Mwa sa a',
+    nextMonth: 'Mwa k ap vini an'
   },
 
-  // Student specific
-  student: {
-    takeExam: "Pran egzamen",
-    submitExam: "Soumèt egzamen",
-    viewResults: "Gade rezilta",
-    myGrades: "Nòt mwen",
-    myHomework: "Devwa mwen",
-    completedHomework: "Devwa ki fini",
-    pendingHomework: "Devwa k ap tann",
-    overdueHomework: "Devwa ki an reta",
-    submitHomework: "Soumèt devwa",
-    homeworkSubmitted: "Devwa soumèt"
+  // Numbers and Counts
+  count: {
+    item: 'eleman',
+    items: 'eleman yo',
+    selected: 'chwazi',
+    total: 'total',
+    showing: 'y ap montre',
+    outOf: 'sou',
+    resultsFound: 'rezilta jwenn',
+    noResults: 'pa gen rezilta jwenn'
   }
 };

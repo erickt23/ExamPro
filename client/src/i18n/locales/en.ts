@@ -1,307 +1,377 @@
 export const en = {
   // Navigation
   nav: {
-    dashboard: "Dashboard",
-    examQuestionBank: "Exam Question Bank",
-    assignmentQuestionBank: "Assignment Question Bank",
-    assignmentManagement: "Assignment Management",
-    examManagement: "Exam Management",
-    grading: "Grading",
-    analytics: "Analytics",
-    students: "Students",
-    settings: "Settings",
-    homework: "Homework",
-    exams: "Exams",
-    grades: "Grades"
-  },
-
-  // Common actions
-  actions: {
-    create: "Create",
-    edit: "Edit",
-    delete: "Delete",
-    save: "Save",
-    cancel: "Cancel",
-    close: "Close",
-    view: "View",
-    search: "Search",
-    filter: "Filter",
-    import: "Import",
-    export: "Export",
-    submit: "Submit",
-    back: "Back",
-    next: "Next",
-    previous: "Previous",
-    loading: "Loading...",
-    saving: "Saving...",
-    deleting: "Deleting...",
-    archive: "Archive",
-    publish: "Publish"
+    dashboard: 'Dashboard',
+    examQuestionBank: 'Exam Question Bank',
+    assignmentQuestionBank: 'Assignment Question Bank',
+    examManagement: 'Exam Management',
+    assignmentManagement: 'Assignment Management',
+    gradingCenter: 'Grading Center',
+    settings: 'Settings',
+    grading: 'Grading',
+    analytics: 'Analytics',
+    students: 'Students',
+    homework: 'Homework',
+    exams: 'Exams',
+    grades: 'Grades'
   },
 
   // Authentication
   auth: {
-    login: "Log In",
-    logout: "Log Out",
-    unauthorized: "Unauthorized",
-    loggedOut: "You are logged out. Logging in again...",
-    loginRedirect: "Logging in again..."
-  },
-
-  // Dashboard
-  dashboard: {
-    welcome: "Welcome to EduExam Pro",
-    instructorWelcome: "Instructor Dashboard",
-    studentWelcome: "Student Dashboard",
-    totalQuestions: "Total Questions",
-    activeExams: "Active Exams",
-    totalStudents: "Total Students",
-    recentActivity: "Recent Activity",
-    quickActions: "Quick Actions",
-    upcomingExams: "Upcoming Exams",
-    completedExams: "Completed Exams",
-    pendingGrades: "Pending Grades"
-  },
-
-  // Question Bank
-  questions: {
-    title: "Question Bank",
-    examQuestionBank: "Exam Question Bank",
-    assignmentQuestionBank: "Assignment Question Bank",
-    description: "Manage your collection of exam questions",
-    assignmentDescription: "Manage your collection of assignment questions",
-    createQuestion: "Create Question",
-    createAssignmentQuestion: "Create Assignment Question",
-    editQuestion: "Edit Question",
-    deleteQuestion: "Delete Question",
-    questionText: "Question Text",
-    questionType: "Question Type",
-    difficulty: "Difficulty",
-    subject: "Subject",
-    points: "Points",
-    bloomsTaxonomy: "Bloom's Taxonomy",
-    tags: "Tags",
-    usage: "Usage",
-    lastUsed: "Last Used",
-    createdAt: "Created",
-    importFromExcel: "Import from Excel",
-    noQuestions: "No questions found",
-    questionDetails: "Question Details"
-  },
-
-  // Question Types
-  questionTypes: {
-    multipleChoice: "Multiple Choice",
-    shortAnswer: "Short Answer",
-    essay: "Essay",
-    fillBlank: "Fill in the Blank",
-    matching: "Matching",
-    ranking: "Ranking",
-    dragDrop: "Drag and Drop",
-    trueFalse: "True/False"
-  },
-
-  // Difficulty Levels
-  difficulty: {
-    easy: "Easy",
-    medium: "Medium",
-    hard: "Hard"
-  },
-
-  // Exam Management
-  exams: {
-    title: "Exam Management",
-    description: "Create, schedule, and manage your exams",
-    createExam: "Create Exam",
-    editExam: "Edit Exam",
-    examTitle: "Exam Title",
-    examDescription: "Exam Description",
-    timeLimit: "Time Limit",
-    attempts: "Attempts",
-    startDate: "Start Date",
-    endDate: "End Date",
-    password: "Password",
-    randomizeQuestions: "Randomize Questions",
-    status: "Status",
-    draft: "Draft",
-    active: "Active",
-    archived: "Archived",
-    expired: "Expired",
-    scheduled: "Scheduled",
-    studentsEnrolled: "Students Enrolled",
-    submissions: "Submissions",
-    averageScore: "Average Score",
-    duration: "Duration",
-    questions: "Questions",
-    noExams: "No exams found",
-    examResults: "Exam Results",
-    preview: "Preview",
-    duplicate: "Duplicate"
-  },
-
-  // Assignment Management
-  assignments: {
-    title: "Assignment Management",
-    description: "Create and manage homework assignments from your dedicated assignment question bank",
-    createAssignment: "Create Assignment",
-    editAssignment: "Edit Assignment",
-    assignmentTitle: "Assignment Title",
-    assignmentDescription: "Assignment Description",
-    dueDate: "Due Date",
-    noAssignments: "No assignments found",
-    selectQuestions: "Select Assignment Questions",
-    availableQuestions: "Available Assignment Questions",
-    selectedQuestions: "Selected Questions",
-    noQuestionsFound: "No assignment questions found. Create assignment questions first in the Assignment Question Bank section.",
-    assignmentDetails: "Assignment Details"
-  },
-
-  // Grading
-  grading: {
-    title: "Grading",
-    description: "Grade student submissions and manage grades",
-    pendingGrades: "Pending Grades",
-    gradedSubmissions: "Graded Submissions",
-    studentName: "Student Name",
-    submissionDate: "Submission Date",
-    score: "Score",
-    grade: "Grade",
-    feedback: "Feedback",
-    autoGraded: "Auto-graded",
-    manualGrading: "Manual Grading Required",
-    finalizeGrades: "Finalize Grades",
-    gradeFinalized: "Grade Finalized",
-    gradeSettings: "Grade Settings",
-    assignmentWeight: "Assignment Weight",
-    examWeight: "Exam Weight",
-    finalGrade: "Final Grade",
-    coefficient: "Coefficient"
-  },
-
-  // Analytics
-  analytics: {
-    title: "Analytics",
-    description: "View performance analytics and statistics",
-    examPerformance: "Exam Performance",
-    questionAnalysis: "Question Analysis",
-    studentProgress: "Student Progress",
-    averageScore: "Average Score",
-    passRate: "Pass Rate",
-    completionRate: "Completion Rate",
-    timeSpent: "Time Spent",
-    difficultyDistribution: "Difficulty Distribution",
-    topPerformers: "Top Performers",
-    strugglingStudents: "Struggling Students"
-  },
-
-  // Settings
-  settings: {
-    title: "Settings",
-    description: "Manage application settings",
-    general: "General Settings",
-    subjects: "Subjects",
-    gradeSettings: "Grade Settings",
-    language: "Language",
-    profile: "Profile",
-    preferences: "Preferences",
-    subjectManagement: "Subject Management",
-    createSubject: "Create Subject",
-    editSubject: "Edit Subject",
-    subjectName: "Subject Name",
-    subjectDescription: "Subject Description",
-    noSubjects: "No subjects found"
+    unauthorized: 'Unauthorized',
+    loggedOut: 'You are logged out. Logging in again...',
+    logout: 'Log Out'
   },
 
   // Language Selector
   language: {
-    english: "English",
-    french: "Français",
-    haitianCreole: "Kreyòl Ayisyen",
-    selectLanguage: "Select Language"
+    selectLanguage: 'Select Language',
+    english: 'English',
+    french: 'Français',
+    haitianCreole: 'Kreyòl Ayisyen'
   },
 
-  // Forms
-  forms: {
-    required: "This field is required",
-    invalidEmail: "Please enter a valid email",
-    minLength: "Minimum length is {{min}} characters",
-    maxLength: "Maximum length is {{max}} characters",
-    selectOption: "Please select an option",
-    enterValue: "Please enter a value",
-    chooseFile: "Choose a file",
-    dragDropFiles: "Drag and drop files here, or click to select"
+  // Dashboard
+  dashboard: {
+    title: 'Instructor Dashboard',
+    overview: 'Overview',
+    totalQuestions: 'Total Questions',
+    activeExams: 'Active Exams',
+    enrolledStudents: 'Enrolled Students',
+    pendingReviews: 'Pending Reviews',
+    recentExams: 'Recent Exams',
+    pendingSubmissions: 'Pending Submissions',
+    recentHomework: 'Recent Assignments',
+    pendingHomework: 'Pending Assignment Submissions',
+    noRecentExams: 'No recent exams found',
+    noPendingSubmissions: 'No pending submissions',
+    noRecentHomework: 'No recent assignments found',
+    noPendingHomework: 'No pending assignment submissions',
+    viewAll: 'View All',
+    grade: 'Grade',
+    loading: 'Loading...',
+    welcomeBack: 'Welcome back!',
+    quickStats: 'Quick Statistics',
+    recentActivity: 'Recent Activity',
+    upcomingDeadlines: 'Upcoming Deadlines'
   },
 
-  // Messages and Notifications
+  // Questions
+  questions: {
+    examQuestionBank: 'Exam Question Bank',
+    assignmentQuestionBank: 'Assignment Question Bank',
+    description: 'Manage your collection of exam questions',
+    assignmentDescription: 'Manage your collection of assignment questions',
+    createQuestion: 'Create Question',
+    createAssignmentQuestion: 'Create Assignment Question',
+    importQuestions: 'Import Questions',
+    searchPlaceholder: 'Search questions...',
+    filterBySubject: 'Filter by Subject',
+    filterByType: 'Filter by Type',
+    filterByDifficulty: 'Filter by Difficulty',
+    allSubjects: 'All Subjects',
+    allTypes: 'All Types',
+    allDifficulties: 'All Difficulties',
+    questionText: 'Question Text',
+    type: 'Type',
+    difficulty: 'Difficulty',
+    subject: 'Subject',
+    usageCount: 'Usage Count',
+    actions: 'Actions',
+    edit: 'Edit',
+    duplicate: 'Duplicate',
+    delete: 'Delete',
+    preview: 'Preview',
+    noQuestions: 'No questions found',
+    createFirst: 'Create your first question to get started',
+    filters: 'Filters',
+    clearFilters: 'Clear Filters',
+    showingResults: 'Showing {count} results',
+    bloomsTaxonomy: "Bloom's Taxonomy",
+    lastUsed: 'Last Used',
+    createdDate: 'Created Date'
+  },
+
+  // Question Types
+  questionTypes: {
+    multipleChoice: 'Multiple Choice',
+    shortAnswer: 'Short Answer',
+    essay: 'Essay',
+    fillInBlank: 'Fill in the Blank',
+    matching: 'Matching',
+    ranking: 'Ranking/Ordering',
+    dragAndDrop: 'Drag and Drop'
+  },
+
+  // Difficulty Levels
+  difficulty: {
+    easy: 'Easy',
+    medium: 'Medium',
+    hard: 'Hard'
+  },
+
+  // Bloom's Taxonomy
+  blooms: {
+    remember: 'Remember',
+    understand: 'Understand',
+    apply: 'Apply',
+    analyze: 'Analyze',
+    evaluate: 'Evaluate',
+    create: 'Create'
+  },
+
+  // Assignments
+  assignments: {
+    description: 'Create and manage homework assignments from your dedicated assignment question bank',
+    createAssignment: 'Create Assignment',
+    title: 'Assignment Title',
+    titlePlaceholder: 'Enter assignment title',
+    assignmentDescription: 'Description',
+    descriptionPlaceholder: 'Enter assignment description',
+    subject: 'Subject',
+    selectSubject: 'Select a subject',
+    dueDate: 'Due Date',
+    status: 'Status',
+    createdAt: 'Created',
+    actions: 'Actions',
+    viewDetails: 'View Details',
+    editAssignment: 'Edit Assignment',
+    archiveAssignment: 'Archive Assignment',
+    deleteAssignment: 'Delete Assignment',
+    noAssignments: 'No assignments found',
+    createFirstAssignment: 'Create your first assignment to get started',
+    searchAssignments: 'Search assignments...',
+    filterByStatus: 'Filter by Status',
+    allStatuses: 'All Statuses'
+  },
+
+  // Exam Management
+  exams: {
+    title: 'Exam Management',
+    description: 'Create and manage exams using questions from your question bank',
+    createExam: 'Create Exam',
+    examTitle: 'Exam Title',
+    titlePlaceholder: 'Enter exam title',
+    examDescription: 'Exam Description',
+    descriptionPlaceholder: 'Enter exam description',
+    timeLimit: 'Time Limit',
+    attempts: 'Attempts Allowed',
+    password: 'Password Protection',
+    randomizeQuestions: 'Randomize Questions',
+    showResults: 'Show Results to Students',
+    scheduledDate: 'Scheduled Date',
+    status: 'Status',
+    totalQuestions: 'Total Questions',
+    duration: 'Duration',
+    studentsEnrolled: 'Students Enrolled',
+    submissions: 'Submissions',
+    actions: 'Actions',
+    searchExams: 'Search exams...',
+    noExams: 'No exams found',
+    createFirstExam: 'Create your first exam to get started'
+  },
+
+  // Grading Center
+  grading: {
+    title: 'Grading Center',
+    description: 'Grade student submissions and manage final grades',
+    studentName: 'Student Name',
+    studentEmail: 'Student Email',
+    examTitle: 'Exam Title',
+    assignmentTitle: 'Assignment Title',
+    submissionDate: 'Submission Date',
+    submittedAt: 'Submitted At',
+    score: 'Score',
+    status: 'Status',
+    finalGrade: 'Final Grade',
+    assignmentGrade: 'Assignment Grade',
+    examGrade: 'Exam Grade',
+    gradeBreakdown: 'Grade Breakdown',
+    pendingGrade: 'Pending',
+    gradedStatus: 'Graded',
+    autoGraded: 'Auto-graded',
+    manualReview: 'Manual Review Required',
+    noSubmissions: 'No submissions found',
+    gradingFilters: 'Grading Filters',
+    allSubmissions: 'All Submissions',
+    pendingOnly: 'Pending Only',
+    gradedOnly: 'Graded Only',
+    searchStudent: 'Search by student name...',
+    gradeNow: 'Grade Now',
+    viewSubmission: 'View Submission',
+    totalPoints: 'Total Points',
+    earnedPoints: 'Earned Points',
+    percentage: 'Percentage'
+  },
+
+  // Settings
+  settings: {
+    title: 'Settings',
+    description: 'Manage your system preferences and configurations',
+    subjects: 'Subject Management',
+    subjectsDescription: 'Manage subjects for organizing questions and assignments',
+    addSubject: 'Add Subject',
+    editSubject: 'Edit Subject',
+    subjectName: 'Subject Name',
+    subjectNamePlaceholder: 'Enter subject name',
+    subjectDescription: 'Subject Description',
+    subjectDescriptionPlaceholder: 'Enter subject description (optional)',
+    gradeSettings: 'Grade Settings',
+    gradeSettingsDescription: 'Configure how final grades are calculated',
+    assignmentWeight: 'Assignment Weight',
+    examWeight: 'Exam Weight',
+    language: 'Language Preferences',
+    languageDescription: 'Choose your preferred language for the interface',
+    selectLanguage: 'Select Language',
+    save: 'Save Changes',
+    cancel: 'Cancel',
+    delete: 'Delete',
+    confirm: 'Confirm',
+    success: 'Settings saved successfully',
+    error: 'Error saving settings',
+    deleteConfirm: 'Are you sure you want to delete this subject?',
+    deleteWarning: 'This action cannot be undone.',
+    noSubjects: 'No subjects found',
+    createFirstSubject: 'Create your first subject to get started',
+    profile: 'Profile'
+  },
+
+  // Tables
+  table: {
+    name: 'Name',
+    title: 'Title',
+    description: 'Description',
+    status: 'Status',
+    createdAt: 'Created At',
+    updatedAt: 'Updated At',
+    actions: 'Actions',
+    noData: 'No data available',
+    loading: 'Loading...',
+    rowsPerPage: 'Rows per page',
+    page: 'Page',
+    of: 'of',
+    previous: 'Previous',
+    next: 'Next',
+    first: 'First',
+    last: 'Last'
+  },
+
+  // Common Actions
+  actions: {
+    create: 'Create',
+    edit: 'Edit',
+    delete: 'Delete',
+    save: 'Save',
+    cancel: 'Cancel',
+    submit: 'Submit',
+    view: 'View',
+    search: 'Search',
+    filter: 'Filter',
+    clear: 'Clear',
+    clearAll: 'Clear All',
+    export: 'Export',
+    import: 'Import',
+    print: 'Print',
+    refresh: 'Refresh',
+    loading: 'Loading...',
+    noData: 'No data available',
+    close: 'Close',
+    open: 'Open',
+    expand: 'Expand',
+    collapse: 'Collapse',
+    select: 'Select',
+    selectAll: 'Select All',
+    deselectAll: 'Deselect All'
+  },
+
+  // Status Labels
+  status: {
+    draft: 'Draft',
+    active: 'Active',
+    inactive: 'Inactive',
+    archived: 'Archived',
+    pending: 'Pending',
+    completed: 'Completed',
+    graded: 'Graded',
+    submitted: 'Submitted',
+    overdue: 'Overdue',
+    scheduled: 'Scheduled',
+    published: 'Published',
+    expired: 'Expired'
+  },
+
+  // Form Labels
+  form: {
+    required: 'Required',
+    optional: 'Optional',
+    selectOption: 'Select an option',
+    selectOptions: 'Select options',
+    enterText: 'Enter text',
+    enterValue: 'Enter value',
+    chooseFile: 'Choose file',
+    uploadFile: 'Upload file',
+    browse: 'Browse',
+    dragDrop: 'Drag and drop files here',
+    or: 'or',
+    maxFileSize: 'Maximum file size',
+    allowedTypes: 'Allowed file types',
+    fieldRequired: 'This field is required',
+    invalidEmail: 'Please enter a valid email address',
+    invalidFormat: 'Invalid format',
+    tooShort: 'Too short',
+    tooLong: 'Too long'
+  },
+
+  // Messages
   messages: {
-    success: "Success",
-    error: "Error",
-    warning: "Warning",
-    info: "Information",
-    confirmDelete: "Are you sure you want to delete this item?",
-    deleteSuccess: "Item deleted successfully",
-    saveSuccess: "Changes saved successfully",
-    createSuccess: "Item created successfully",
-    updateSuccess: "Item updated successfully",
-    operationSuccess: "Operation completed successfully",
-    operationFailed: "Operation failed",
-    networkError: "Network error. Please try again.",
-    serverError: "Server error. Please try again later.",
-    validationError: "Please check your input and try again.",
-    noDataFound: "No data found",
-    loadingData: "Loading data...",
-    processingRequest: "Processing your request..."
+    success: 'Operation completed successfully',
+    error: 'An error occurred',
+    warning: 'Warning',
+    info: 'Information',
+    confirmDelete: 'Are you sure you want to delete this item?',
+    confirmDeleteMultiple: 'Are you sure you want to delete {count} items?',
+    unsavedChanges: 'You have unsaved changes. Do you want to continue?',
+    sessionExpired: 'Your session has expired. Please log in again.',
+    noPermission: 'You do not have permission to perform this action',
+    networkError: 'Network error. Please check your connection.',
+    serverError: 'Server error. Please try again later.',
+    actionCompleted: 'Action completed successfully',
+    changesSaved: 'Changes saved successfully',
+    itemCreated: 'Item created successfully',
+    itemUpdated: 'Item updated successfully',
+    itemDeleted: 'Item deleted successfully'
   },
 
-  // Pagination
-  pagination: {
-    showing: "Showing",
-    of: "of",
-    entries: "entries",
-    page: "Page",
-    rowsPerPage: "Rows per page",
-    first: "First",
-    last: "Last",
-    noData: "No data to display"
-  },
-
-  // Filters
-  filters: {
-    allSubjects: "All Subjects",
-    allTypes: "All Types",
-    allLevels: "All Levels",
-    allStatuses: "All Statuses",
-    searchPlaceholder: "Search...",
-    resetFilters: "Reset Filters",
-    applyFilters: "Apply Filters"
-  },
-
-  // Time and Date
+  // Time and Dates
   time: {
-    minutes: "minutes",
-    hours: "hours",
-    days: "days",
-    weeks: "weeks",
-    months: "months",
-    years: "years",
-    ago: "ago",
-    remaining: "remaining",
-    expired: "expired",
-    noTimeLimit: "No time limit",
-    unlimited: "Unlimited"
+    minutes: 'minutes',
+    hours: 'hours',
+    days: 'days',
+    weeks: 'weeks',
+    months: 'months',
+    years: 'years',
+    ago: 'ago',
+    remaining: 'remaining',
+    due: 'due',
+    overdue: 'overdue',
+    today: 'Today',
+    yesterday: 'Yesterday',
+    tomorrow: 'Tomorrow',
+    thisWeek: 'This week',
+    nextWeek: 'Next week',
+    thisMonth: 'This month',
+    nextMonth: 'Next month'
   },
 
-  // Student specific
-  student: {
-    takeExam: "Take Exam",
-    submitExam: "Submit Exam",
-    viewResults: "View Results",
-    myGrades: "My Grades",
-    myHomework: "My Homework",
-    completedHomework: "Completed Homework",
-    pendingHomework: "Pending Homework",
-    overdueHomework: "Overdue Homework",
-    submitHomework: "Submit Homework",
-    homeworkSubmitted: "Homework Submitted"
+  // Numbers and Counts
+  count: {
+    item: 'item',
+    items: 'items',
+    selected: 'selected',
+    total: 'total',
+    showing: 'showing',
+    outOf: 'out of',
+    resultsFound: 'results found',
+    noResults: 'no results found'
   }
 };
