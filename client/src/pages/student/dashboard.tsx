@@ -316,7 +316,7 @@ export default function StudentDashboard() {
                           </div>
                           <div className="flex items-center space-x-2">
                             {exam.examStatus.canStart ? (
-                              <Button size="sm" onClick={() => handleStartExam(exam)}>
+                              <Button size="sm" onClick={() => handleStartExam(exam)} className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-md hover:shadow-lg transition-all duration-200 transform hover:scale-105">
                                 <Play className="h-4 w-4 mr-1" />
                                 Start
                               </Button>

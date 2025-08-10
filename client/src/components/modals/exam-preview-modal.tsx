@@ -417,7 +417,7 @@ export default function ExamPreviewModal({ open, onOpenChange, examId, onPublish
               <Button
                 onClick={() => publishExamMutation.mutate()}
                 disabled={publishExamMutation.isPending || totalQuestions === 0}
-                className="bg-green-600 hover:bg-green-700"
+                className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
               >
                 {publishExamMutation.isPending ? (
                   "Publishing..."

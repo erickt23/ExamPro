@@ -448,7 +448,7 @@ export default function SettingsPage() {
                       </div>
                       <Button
                         onClick={() => setShowCreateSubjectModal(true)}
-                        className="flex items-center gap-2"
+                        className="flex items-center gap-2 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
                       >
                         <Plus className="h-4 w-4" />
                         Add Subject
@@ -463,7 +463,7 @@ export default function SettingsPage() {
                         <p className="text-sm mb-4">Create your first subject to start organizing your courses</p>
                         <Button
                           onClick={() => setShowCreateSubjectModal(true)}
-                          className="flex items-center gap-2"
+                          className="flex items-center gap-2 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
                         >
                           <Plus className="h-4 w-4" />
                           Create First Subject

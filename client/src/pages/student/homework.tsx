@@ -265,7 +265,7 @@ export default function StudentHomework() {
                                   window.location.href = `/homework/${hw.id}/take`;
                                 }}
                                 disabled={statusInfo.status === "overdue"}
-                                className="flex items-center gap-2"
+                                className={`flex items-center gap-2 ${!submissionInfo.isSubmitted ? 'bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105' : ''}`}
                                 variant={submissionInfo.isSubmitted ? "outline" : "default"}
                               >
                                 <Play className="h-4 w-4" />

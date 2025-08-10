@@ -15,7 +15,7 @@ export default function Landing() {
             </div>
             <Button 
               onClick={() => window.location.href = '/api/login'}
-              className="bg-primary hover:bg-primary/90"
+              className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
             >
               Sign In
             </Button>
@@ -37,7 +37,7 @@ export default function Landing() {
             <Button 
               size="lg"
               onClick={() => window.location.href = '/api/login'}
-              className="bg-primary hover:bg-primary/90 text-lg px-8 py-3"
+              className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 text-lg px-8 py-3"
             >
               Get Started
             </Button>

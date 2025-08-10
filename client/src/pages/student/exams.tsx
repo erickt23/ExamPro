@@ -634,7 +634,7 @@ export default function StudentExams() {
 
                               <Button 
                                 onClick={() => handleStartExam(exam)}
-                                className="w-full"
+                                className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
                               >
                                 <Play className="h-4 w-4 mr-2" />
                                 Start Exam
