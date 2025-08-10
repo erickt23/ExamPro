@@ -943,7 +943,9 @@ export default function InstructorHomeworkPage() {
                     <h3 className="text-xl font-semibold">{selectedHomework.title}</h3>
                     {getStatusBadge(selectedHomework.status)}
                   </div>
-                  <p className="text-gray-600">{selectedHomework.description}</p>
+                  <div className="p-4 bg-gray-50 rounded-lg text-gray-800 text-justify leading-relaxed">
+                    {selectedHomework.description || 'No description provided for this assignment.'}
+                  </div>
                 </div>
                 
                 <div className="grid grid-cols-2 gap-4">
@@ -1106,9 +1108,8 @@ export default function InstructorHomeworkPage() {
                               </div>
                             </TableCell>
                             <TableCell className="font-medium">
-                              <div>
-                                <div className="font-semibold">{hw.title}</div>
-                                <div className="text-sm text-gray-600 line-clamp-1">{hw.description}</div>
+                              <div className="font-semibold truncate max-w-xs" title={hw.title}>
+                                {hw.title}
                               </div>
                             </TableCell>
                             <TableCell>
@@ -1186,12 +1187,12 @@ export default function InstructorHomeworkPage() {
                                         <BookOpen className="h-4 w-4" />
                                         Assignment Details
                                       </h4>
-                                      <div className="space-y-2 text-sm">
-                                        <div className="flex justify-between">
-                                          <span className="text-gray-600">Description:</span>
-                                          <span className="font-medium max-w-xs text-right">
-                                            {hw.description || 'No description'}
-                                          </span>
+                                      <div className="space-y-3 text-sm">
+                                        <div>
+                                          <span className="text-gray-600 font-medium">Description:</span>
+                                          <div className="mt-2 p-3 bg-gray-50 rounded-lg text-gray-800 text-justify leading-relaxed">
+                                            {hw.description || 'No description provided for this assignment.'}
+                                          </div>
                                         </div>
                                         <div className="flex justify-between">
                                           <span className="text-gray-600">Created:</span>
