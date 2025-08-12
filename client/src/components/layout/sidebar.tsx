@@ -218,7 +218,7 @@ export default function Sidebar({ className }: SidebarProps) {
 
       <aside 
         className={cn(
-          "bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 shadow-lg border-r border-indigo-200/30 transition-all duration-300 z-40",
+          "bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-900/95 dark:via-slate-800/95 dark:to-slate-900/95 shadow-lg border-r border-indigo-200/30 dark:border-slate-700/50 transition-all duration-300 z-40",
           // On mobile, always show full width when open, on desktop respect collapsed state
           isMobileOpen ? "w-64 overflow-y-auto" : (
             isCollapsed && window.innerWidth >= 768 ? "w-16 overflow-visible" : "w-64 overflow-y-auto"
@@ -291,8 +291,8 @@ export default function Sidebar({ className }: SidebarProps) {
                       "w-full flex items-center px-3 py-2 rounded-xl text-left transition-all duration-200 group",
                       (isCollapsed && !isMobileOpen) ? "justify-center" : "justify-between",
                       hasActiveChild
-                        ? "text-indigo-700 bg-gradient-to-r from-blue-400/30 to-indigo-500/30 shadow-md"
-                        : "text-gray-700 hover:bg-gradient-to-r hover:from-blue-400/20 hover:to-indigo-500/20 hover:text-indigo-700 hover:shadow-md hover:transform hover:scale-105"
+                        ? "text-indigo-700 dark:text-indigo-300 bg-gradient-to-r from-blue-400/30 to-indigo-500/30 shadow-md"
+                        : "text-gray-700 dark:text-gray-300 hover:bg-gradient-to-r hover:from-blue-400/20 hover:to-indigo-500/20 hover:text-indigo-700 dark:hover:text-indigo-300 hover:shadow-md hover:transform hover:scale-105"
                     )}
                     title={(isCollapsed && !isMobileOpen) ? accordion.title : undefined}
                   >
@@ -302,7 +302,7 @@ export default function Sidebar({ className }: SidebarProps) {
                     )}>
                       <accordion.icon className={cn(
                         "h-5 w-5 flex-shrink-0 transition-all duration-200",
-                        hasActiveChild ? "text-indigo-600" : "text-gray-600 group-hover:text-indigo-600"
+                        hasActiveChild ? "text-indigo-600 dark:text-indigo-400" : "text-gray-600 dark:text-gray-400 group-hover:text-indigo-600"
                       )} />
                       {(!isCollapsed || isMobileOpen) && (
                         <span className={cn(

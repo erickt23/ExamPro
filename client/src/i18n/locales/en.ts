@@ -357,5 +357,13 @@ export const en = {
     subject: 'Subject',
     type: 'Type',
     difficulty: 'Difficulty'
+  },
+
+  // Theme
+  theme: {
+    toggle: 'Toggle theme',
+    light: 'Light',
+    dark: 'Dark',
+    system: 'System',
   }
 };

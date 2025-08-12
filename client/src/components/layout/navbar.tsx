@@ -11,6 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import LanguageSelector from "@/components/language-selector";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { GraduationCap, Bell, ChevronDown } from "lucide-react";
 
 export default function Navbar() {
@@ -28,7 +29,7 @@ export default function Navbar() {
     : user?.email || 'User';
 
   return (
-    <nav className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
+    <nav className="bg-background shadow-sm border-b border-border sticky top-0 z-50">
       <div className="px-3 md:px-6 py-3 md:py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
@@ -47,6 +48,7 @@ export default function Navbar() {
             <div className="hidden sm:block">
               <LanguageSelector />
             </div>
+            <ThemeToggle />
             
             <Button variant="ghost" size="sm" className="relative hidden md:flex">
               <Bell className="h-5 w-5" />

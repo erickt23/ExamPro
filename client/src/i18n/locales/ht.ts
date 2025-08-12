@@ -355,5 +355,13 @@ export const ht = {
     subject: 'Matye',
     type: 'Tip',
     difficulty: 'Difikilte'
+  },
+
+  // Theme
+  theme: {
+    toggle: 'Chanje tem',
+    light: 'Klè',
+    dark: 'Nwa',
+    system: 'Sistèm',
   }
 };

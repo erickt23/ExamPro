@@ -355,5 +355,13 @@ export const fr = {
     subject: 'Matière',
     type: 'Type',
     difficulty: 'Difficulté'
+  },
+
+  // Theme
+  theme: {
+    toggle: 'Changer de thème',
+    light: 'Clair',
+    dark: 'Sombre',
+    system: 'Système',
   }
 };
