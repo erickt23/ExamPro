@@ -140,7 +140,7 @@ export default function InstructorDashboard() {
                   <div className="mt-4 flex items-center text-sm">
                     <ArrowUp className="h-4 w-4 text-green-500 mr-1" />
                     <span className="text-green-500">12%</span>
-                    <span className="text-gray-500 ml-2">vs last month</span>
+                    <span className="text-gray-500 ml-2">{t('dashboard.vsLastMonth')}</span>
                   </div>
                 </CardContent>
               </Card>
@@ -161,7 +161,7 @@ export default function InstructorDashboard() {
                   <div className="mt-4 flex items-center text-sm">
                     <ArrowUp className="h-4 w-4 text-green-500 mr-1" />
                     <span className="text-green-500">3</span>
-                    <span className="text-gray-500 ml-2">new this week</span>
+                    <span className="text-gray-500 ml-2">{t('dashboard.newThisWeek')}</span>
                   </div>
                 </CardContent>
               </Card>
@@ -170,7 +170,7 @@ export default function InstructorDashboard() {
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-gray-600">Students Enrolled</p>
+                      <p className="text-sm font-medium text-gray-600">{t('dashboard.studentsEnrolled')}</p>
                       <p className="text-2xl font-bold text-gray-900">
                         {statsLoading ? "..." : (stats as any)?.totalStudents || 0}
                       </p>
@@ -182,7 +182,7 @@ export default function InstructorDashboard() {
                   <div className="mt-4 flex items-center text-sm">
                     <ArrowUp className="h-4 w-4 text-green-500 mr-1" />
                     <span className="text-green-500">8</span>
-                    <span className="text-gray-500 ml-2">new students</span>
+                    <span className="text-gray-500 ml-2">{t('dashboard.newStudents')}</span>
                   </div>
                 </CardContent>
               </Card>
@@ -191,7 +191,7 @@ export default function InstructorDashboard() {
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-gray-600">Pending Reviews</p>
+                      <p className="text-sm font-medium text-gray-600">{t('dashboard.pendingReviews')}</p>
                       <p className="text-2xl font-bold text-gray-900">
                         {(pendingSubmissions.length || 0) + (pendingHomeworkSubmissions.length || 0)}
                       </p>
@@ -203,7 +203,7 @@ export default function InstructorDashboard() {
                   <div className="mt-4 flex items-center text-sm">
                     <ArrowUp className="h-4 w-4 text-red-500 mr-1" />
                     <span className="text-red-500">5</span>
-                    <span className="text-gray-500 ml-2">need attention</span>
+                    <span className="text-gray-500 ml-2">{t('dashboard.needAttention')}</span>
                   </div>
                 </CardContent>
               </Card>
@@ -213,7 +213,7 @@ export default function InstructorDashboard() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>Recent Exams</CardTitle>
+                  <CardTitle>{t('dashboard.recentExams')}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   {examsLoading ? (
@@ -226,14 +226,14 @@ export default function InstructorDashboard() {
                       ))}
                     </div>
                   ) : (recentExams as any)?.length === 0 ? (
-                    <p className="text-gray-500 text-center py-8">No exams created yet</p>
+                    <p className="text-gray-500 text-center py-8">{t('dashboard.noExamsCreated')}</p>
                   ) : (
                     <div className="space-y-4">
                       {(recentExams as any)?.slice(0, 3).map((exam: any) => (
                         <div key={exam.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                           <div>
                             <h4 className="font-medium text-gray-900">{exam.title}</h4>
-                            <p className="text-sm text-gray-600">{(subjects as any[]).find((s: any) => s.id === exam.subjectId)?.name || 'Unknown Subject'}</p>
+                            <p className="text-sm text-gray-600">{(subjects as any[]).find((s: any) => s.id === exam.subjectId)?.name || t('dashboard.unknownSubject')}</p>
                           </div>
                           <Badge variant={exam.status === 'active' ? 'default' : 'secondary'}>
                             {exam.status}
@@ -250,13 +250,13 @@ export default function InstructorDashboard() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <AlertCircle className="h-5 w-5 text-orange-600" />
-                    Pending Submissions
+{t('dashboard.pendingSubmissions')}
                   </CardTitle>
-                  <CardDescription>Exam and homework submissions requiring manual grading</CardDescription>
+                  <CardDescription>{t('dashboard.examSubmissions')}</CardDescription>
                 </CardHeader>
                 <CardContent>
                   {pendingSubmissions.length === 0 && pendingHomeworkSubmissions.length === 0 ? (
-                    <p className="text-gray-500 text-sm">No pending submissions</p>
+                    <p className="text-gray-500 text-sm">{t('dashboard.noPendingSubmissions')}</p>
                   ) : (
                     <div className="space-y-3">
                       {/* Exam Submissions */}
@@ -269,17 +269,17 @@ export default function InstructorDashboard() {
                             <div key={`exam-${submission.id}`} className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50">
                               <div className="flex-1">
                                 <div className="flex items-center gap-2">
-                                  <p className="font-medium text-sm">{exam?.title || 'Unknown Exam'}</p>
-                                  <Badge variant="outline" className="text-xs">Exam</Badge>
+                                  <p className="font-medium text-sm">{exam?.title || t('dashboard.unknownExam')}</p>
+                                  <Badge variant="outline" className="text-xs">{t('dashboard.exam')}</Badge>
                                 </div>
                                 <p className="text-xs text-gray-600">
-                                  Student ID: {submission.studentId} • Submitted: {formatSubmissionTime(submission.submittedAt)}
+                                  {t('dashboard.studentId')}: {submission.studentId} • {t('dashboard.submitted')}: {formatSubmissionTime(submission.submittedAt)}
                                 </p>
                               </div>
                               <Link href={`/grading/${submission.id}`}>
                                 <button className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white text-sm font-medium flex items-center gap-1 px-3 py-1.5 rounded-md shadow-md hover:shadow-lg transition-all duration-200 transform hover:scale-105">
                                   <Eye className="h-4 w-4" />
-                                  Grade
+                                  {t('dashboard.grade')}
                                 </button>
                               </Link>
                             </div>
@@ -296,17 +296,17 @@ export default function InstructorDashboard() {
                             <div key={`homework-${submission.id}`} className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50">
                               <div className="flex-1">
                                 <div className="flex items-center gap-2">
-                                  <p className="font-medium text-sm">{homework?.title || 'Unknown Homework'}</p>
-                                  <Badge variant="outline" className="text-xs bg-green-50 text-green-700">Homework</Badge>
+                                  <p className="font-medium text-sm">{homework?.title || t('dashboard.unknownHomework')}</p>
+                                  <Badge variant="outline" className="text-xs bg-green-50 text-green-700">{t('dashboard.homework')}</Badge>
                                 </div>
                                 <p className="text-xs text-gray-600">
-                                  Student ID: {submission.studentId} • Submitted: {formatSubmissionTime(submission.submittedAt)}
+                                  {t('dashboard.studentId')}: {submission.studentId} • {t('dashboard.submitted')}: {formatSubmissionTime(submission.submittedAt)}
                                 </p>
                               </div>
                               <Link href={`/homework-grading/${submission.id}`}>
                                 <button className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white text-sm font-medium flex items-center gap-1 px-3 py-1.5 rounded-md shadow-md hover:shadow-lg transition-all duration-200 transform hover:scale-105">
                                   <Eye className="h-4 w-4" />
-                                  Grade
+                                  {t('dashboard.grade')}
                                 </button>
                               </Link>
                             </div>
@@ -315,7 +315,7 @@ export default function InstructorDashboard() {
                       
                       {(pendingSubmissions.length + pendingHomeworkSubmissions.length) > 6 && (
                         <p className="text-xs text-gray-500 text-center pt-2">
-                          +{(pendingSubmissions.length + pendingHomeworkSubmissions.length) - 6} more pending
+                          +{(pendingSubmissions.length + pendingHomeworkSubmissions.length) - 6} {t('dashboard.noPendingSubmissions')}
                         </p>
                       )}
                     </div>
@@ -328,13 +328,13 @@ export default function InstructorDashboard() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <CheckCircle2 className="h-5 w-5 text-green-600" />
-                    Completed Exams
+{t('dashboard.completedExams')}
                   </CardTitle>
-                  <CardDescription>Recently completed student submissions</CardDescription>
+                  <CardDescription>{t('dashboard.completedExamsDescription')}</CardDescription>
                 </CardHeader>
                 <CardContent>
                   {completedSubmissions.length === 0 ? (
-                    <p className="text-gray-500 text-sm">No completed submissions yet</p>
+                    <p className="text-gray-500 text-sm">{t('dashboard.noCompletedExams')}</p>
                   ) : (
                     <div className="space-y-3">
                       {completedSubmissions
@@ -349,10 +349,10 @@ export default function InstructorDashboard() {
                             <div key={submission.id} className="p-3 border rounded-lg hover:bg-gray-50">
                               <div className="flex items-start justify-between">
                                 <div className="flex-1">
-                                  <p className="font-medium text-sm text-gray-900">{exam?.title || 'Unknown Exam'}</p>
+                                  <p className="font-medium text-sm text-gray-900">{exam?.title || t('dashboard.unknownExam')}</p>
                                   <p className="text-xs text-gray-600 mt-1">{subject?.name || 'General'}</p>
                                   <p className="text-xs text-gray-500 mt-1">
-                                    Completed: {formatDetailedSubmissionTime(submission.submittedAt)}
+                                    {t('dashboard.graded')}: {formatDetailedSubmissionTime(submission.submittedAt)}
                                   </p>
                                 </div>
                                 <div className="text-right">
@@ -369,7 +369,7 @@ export default function InstructorDashboard() {
                         })}
                       {completedSubmissions.length > 5 && (
                         <p className="text-xs text-gray-500 text-center pt-2">
-                          +{completedSubmissions.length - 5} more completed
+                          +{completedSubmissions.length - 5} {t('dashboard.graded')}
                         </p>
                       )}
                     </div>
@@ -379,32 +379,32 @@ export default function InstructorDashboard() {
 
               <Card>
                 <CardHeader>
-                  <CardTitle>Quick Stats</CardTitle>
+                  <CardTitle>{t('dashboard.quickStats')}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-6">
                     <div>
                       <div className="flex justify-between items-center mb-2">
-                        <span className="text-sm text-gray-600">Questions by Type</span>
+                        <span className="text-sm text-gray-600">{t('questions.questionsByType')}</span>
                       </div>
                       <div className="space-y-3">
                         <div>
                           <div className="flex justify-between text-sm">
-                            <span>Multiple Choice</span>
+                            <span>{t('questionTypes.multipleChoice')}</span>
                             <span className="font-medium">65%</span>
                           </div>
                           <Progress value={65} className="h-2 mt-1" />
                         </div>
                         <div>
                           <div className="flex justify-between text-sm">
-                            <span>Short Answer</span>
+                            <span>{t('questionTypes.shortAnswer')}</span>
                             <span className="font-medium">25%</span>
                           </div>
                           <Progress value={25} className="h-2 mt-1" />
                         </div>
                         <div>
                           <div className="flex justify-between text-sm">
-                            <span>Essay</span>
+                            <span>{t('questionTypes.essay')}</span>
                             <span className="font-medium">10%</span>
                           </div>
                           <Progress value={10} className="h-2 mt-1" />
