@@ -219,7 +219,10 @@ export default function Sidebar({ className }: SidebarProps) {
       <aside 
         className={cn(
           "bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 shadow-lg border-r border-indigo-200/30 transition-all duration-300 z-40",
-          isCollapsed && window.innerWidth >= 768 ? "w-16 overflow-visible" : "w-64 overflow-y-auto",
+          // On mobile, always show full width when open, on desktop respect collapsed state
+          isMobileOpen ? "w-64 overflow-y-auto" : (
+            isCollapsed && window.innerWidth >= 768 ? "w-16 overflow-visible" : "w-64 overflow-y-auto"
+          ),
           "md:relative md:translate-x-0 fixed h-full",
           isMobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0",
           className
@@ -241,11 +244,12 @@ export default function Sidebar({ className }: SidebarProps) {
           </Button>
         </div>
 
-        <div className={cn("transition-all duration-300", isCollapsed ? "p-2" : "p-4")}>
+        <div className={cn("transition-all duration-300", (isCollapsed && !isMobileOpen) ? "p-2" : "p-4")}>
           <nav className="space-y-2">
             {/* Regular navigation items */}
             {navItems.map((item) => {
               const isActive = location === item.href;
+              const showText = !isCollapsed || isMobileOpen;
               return (
                 <button
                   key={item.href}
@@ -257,18 +261,18 @@ export default function Sidebar({ className }: SidebarProps) {
                   }}
                   className={cn(
                     "w-full flex items-center px-3 py-2 rounded-xl text-left transition-all duration-200 group",
-                    isCollapsed ? "justify-center" : "space-x-3",
+                    showText ? "space-x-3" : "justify-center",
                     isActive
                       ? "text-white bg-gradient-to-r from-blue-500 to-indigo-600 shadow-lg transform scale-105"
                       : "text-gray-700 hover:bg-gradient-to-r hover:from-blue-400/20 hover:to-indigo-500/20 hover:text-indigo-700 hover:shadow-md hover:transform hover:scale-105"
                   )}
-                  title={isCollapsed ? item.title : undefined}
+                  title={!showText ? item.title : undefined}
                 >
                   <item.icon className={cn(
                     "h-5 w-5 flex-shrink-0 transition-all duration-200",
                     isActive ? "text-white drop-shadow-sm" : "text-gray-600 group-hover:text-indigo-600"
                   )} />
-                  {!isCollapsed && <span className={cn("truncate font-medium", isActive ? "text-white" : "text-gray-700 group-hover:text-indigo-700")}>{item.title}</span>}
+                  {showText && <span className={cn("truncate font-medium", isActive ? "text-white" : "text-gray-700 group-hover:text-indigo-700")}>{item.title}</span>}
                 </button>
               );
             })}
@@ -285,22 +289,22 @@ export default function Sidebar({ className }: SidebarProps) {
                     onClick={() => toggleAccordion(accordion.id)}
                     className={cn(
                       "w-full flex items-center px-3 py-2 rounded-xl text-left transition-all duration-200 group",
-                      isCollapsed ? "justify-center" : "justify-between",
+                      (isCollapsed && !isMobileOpen) ? "justify-center" : "justify-between",
                       hasActiveChild
                         ? "text-indigo-700 bg-gradient-to-r from-blue-400/30 to-indigo-500/30 shadow-md"
                         : "text-gray-700 hover:bg-gradient-to-r hover:from-blue-400/20 hover:to-indigo-500/20 hover:text-indigo-700 hover:shadow-md hover:transform hover:scale-105"
                     )}
-                    title={isCollapsed ? accordion.title : undefined}
+                    title={(isCollapsed && !isMobileOpen) ? accordion.title : undefined}
                   >
                     <div className={cn(
                       "flex items-center",
-                      isCollapsed ? "justify-center" : "space-x-3"
+                      (isCollapsed && !isMobileOpen) ? "justify-center" : "space-x-3"
                     )}>
                       <accordion.icon className={cn(
                         "h-5 w-5 flex-shrink-0 transition-all duration-200",
                         hasActiveChild ? "text-indigo-600" : "text-gray-600 group-hover:text-indigo-600"
                       )} />
-                      {!isCollapsed && (
+                      {(!isCollapsed || isMobileOpen) && (
                         <span className={cn(
                           "truncate font-medium",
                           hasActiveChild ? "text-indigo-700" : "text-gray-700 group-hover:text-indigo-700"
@@ -309,7 +313,7 @@ export default function Sidebar({ className }: SidebarProps) {
                         </span>
                       )}
                     </div>
-                    {!isCollapsed && (
+                    {(!isCollapsed || isMobileOpen) && (
                       <div className="transition-transform duration-200">
                         {isExpanded ? (
                           <ChevronDown className="h-4 w-4" />
@@ -320,8 +324,8 @@ export default function Sidebar({ className }: SidebarProps) {
                     )}
                   </button>
                   
-                  {/* Hover Tooltip for Collapsed State */}
-                  {isCollapsed && (
+                  {/* Hover Tooltip for Collapsed State on Desktop Only */}
+                  {isCollapsed && !isMobileOpen && window.innerWidth >= 768 && (
                     <div className="absolute left-full top-0 ml-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-50 pointer-events-none group-hover:pointer-events-auto">
                       <div className="bg-white shadow-xl rounded-lg border border-gray-200 p-3 min-w-56">
                         <div className="px-2 py-1 text-xs font-semibold text-gray-500 uppercase tracking-wide border-b mb-2">
@@ -359,8 +363,8 @@ export default function Sidebar({ className }: SidebarProps) {
                     </div>
                   )}
                   
-                  {/* Accordion Content */}
-                  {!isCollapsed && isExpanded && (
+                  {/* Accordion Content - show when expanded AND (not collapsed OR mobile open) */}
+                  {isExpanded && (!isCollapsed || isMobileOpen) && (
                     <div className="pl-6 space-y-1 animate-in slide-in-from-top-1 duration-200">
                       {accordion.items.map((subItem) => {
                         const isActive = location === subItem.href;
@@ -397,6 +401,7 @@ export default function Sidebar({ className }: SidebarProps) {
             {/* Bottom navigation items for instructor */}
             {isInstructor && instructorBottomNavItems.map((item) => {
               const isActive = location === item.href;
+              const showText = !isCollapsed || isMobileOpen;
               return (
                 <button
                   key={item.href}
@@ -408,18 +413,18 @@ export default function Sidebar({ className }: SidebarProps) {
                   }}
                   className={cn(
                     "w-full flex items-center px-3 py-2 rounded-xl text-left transition-all duration-200 group",
-                    isCollapsed ? "justify-center" : "space-x-3",
+                    showText ? "space-x-3" : "justify-center",
                     isActive
                       ? "text-white bg-gradient-to-r from-blue-500 to-indigo-600 shadow-lg transform scale-105"
                       : "text-gray-700 hover:bg-gradient-to-r hover:from-blue-400/20 hover:to-indigo-500/20 hover:text-indigo-700 hover:shadow-md hover:transform hover:scale-105"
                   )}
-                  title={isCollapsed ? item.title : undefined}
+                  title={!showText ? item.title : undefined}
                 >
                   <item.icon className={cn(
                     "h-5 w-5 flex-shrink-0 transition-all duration-200",
                     isActive ? "text-white drop-shadow-sm" : "text-gray-600 group-hover:text-indigo-600"
                   )} />
-                  {!isCollapsed && <span className={cn("truncate font-medium", isActive ? "text-white" : "text-gray-700 group-hover:text-indigo-700")}>{item.title}</span>}
+                  {showText && <span className={cn("truncate font-medium", isActive ? "text-white" : "text-gray-700 group-hover:text-indigo-700")}>{item.title}</span>}
                 </button>
               );
             })}
