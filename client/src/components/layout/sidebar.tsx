@@ -218,7 +218,7 @@ export default function Sidebar({ className }: SidebarProps) {
 
       <aside 
         className={cn(
-          "bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-900/95 dark:via-slate-800/95 dark:to-slate-900/95 shadow-lg border-r border-indigo-200/30 dark:border-slate-700/50 transition-all duration-300 z-40",
+          "bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:bg-background shadow-lg border-r border-indigo-200/30 dark:border-secondary transition-all duration-300 z-40",
           // On mobile, always show full width when open, on desktop respect collapsed state
           isMobileOpen ? "w-64 overflow-y-auto" : (
             isCollapsed && window.innerWidth >= 768 ? "w-16 overflow-visible" : "w-64 overflow-y-auto"
@@ -264,15 +264,15 @@ export default function Sidebar({ className }: SidebarProps) {
                     showText ? "space-x-3" : "justify-center",
                     isActive
                       ? "text-white bg-gradient-to-r from-blue-500 to-indigo-600 shadow-lg transform scale-105"
-                      : "text-gray-700 hover:bg-gradient-to-r hover:from-blue-400/20 hover:to-indigo-500/20 hover:text-indigo-700 hover:shadow-md hover:transform hover:scale-105"
+                      : "text-gray-700 dark:text-foreground hover:bg-gradient-to-r hover:from-blue-400/20 hover:to-indigo-500/20 dark:hover:bg-secondary hover:text-indigo-700 dark:hover:text-foreground hover:shadow-md hover:transform hover:scale-105"
                   )}
                   title={!showText ? item.title : undefined}
                 >
                   <item.icon className={cn(
                     "h-5 w-5 flex-shrink-0 transition-all duration-200",
-                    isActive ? "text-white drop-shadow-sm" : "text-gray-600 group-hover:text-indigo-600"
+                    isActive ? "text-white drop-shadow-sm" : "text-gray-600 dark:text-muted-foreground group-hover:text-indigo-600 dark:group-hover:text-foreground"
                   )} />
-                  {showText && <span className={cn("truncate font-medium", isActive ? "text-white" : "text-gray-700 group-hover:text-indigo-700")}>{item.title}</span>}
+                  {showText && <span className={cn("truncate font-medium", isActive ? "text-white" : "text-gray-700 dark:text-foreground group-hover:text-indigo-700 dark:group-hover:text-foreground")}>{item.title}</span>}
                 </button>
               );
             })}
@@ -292,7 +292,7 @@ export default function Sidebar({ className }: SidebarProps) {
                       (isCollapsed && !isMobileOpen) ? "justify-center" : "justify-between",
                       hasActiveChild
                         ? "text-indigo-700 dark:text-indigo-300 bg-gradient-to-r from-blue-400/30 to-indigo-500/30 shadow-md"
-                        : "text-gray-700 dark:text-gray-300 hover:bg-gradient-to-r hover:from-blue-400/20 hover:to-indigo-500/20 hover:text-indigo-700 dark:hover:text-indigo-300 hover:shadow-md hover:transform hover:scale-105"
+                        : "text-gray-700 dark:text-foreground hover:bg-gradient-to-r hover:from-blue-400/20 hover:to-indigo-500/20 dark:hover:bg-secondary hover:text-indigo-700 dark:hover:text-foreground hover:shadow-md hover:transform hover:scale-105"
                     )}
                     title={(isCollapsed && !isMobileOpen) ? accordion.title : undefined}
                   >
@@ -302,12 +302,12 @@ export default function Sidebar({ className }: SidebarProps) {
                     )}>
                       <accordion.icon className={cn(
                         "h-5 w-5 flex-shrink-0 transition-all duration-200",
-                        hasActiveChild ? "text-indigo-600 dark:text-indigo-400" : "text-gray-600 dark:text-gray-400 group-hover:text-indigo-600"
+                        hasActiveChild ? "text-indigo-600 dark:text-indigo-400" : "text-gray-600 dark:text-muted-foreground group-hover:text-indigo-600 dark:group-hover:text-foreground"
                       )} />
                       {(!isCollapsed || isMobileOpen) && (
                         <span className={cn(
                           "truncate font-medium",
-                          hasActiveChild ? "text-indigo-700" : "text-gray-700 group-hover:text-indigo-700"
+                          hasActiveChild ? "text-indigo-700 dark:text-indigo-300" : "text-gray-700 dark:text-foreground group-hover:text-indigo-700 dark:group-hover:text-foreground"
                         )}>
                           {accordion.title}
                         </span>
@@ -327,8 +327,8 @@ export default function Sidebar({ className }: SidebarProps) {
                   {/* Hover Tooltip for Collapsed State on Desktop Only */}
                   {isCollapsed && !isMobileOpen && window.innerWidth >= 768 && (
                     <div className="absolute left-full top-0 ml-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-50 pointer-events-none group-hover:pointer-events-auto">
-                      <div className="bg-white shadow-xl rounded-lg border border-gray-200 p-3 min-w-56">
-                        <div className="px-2 py-1 text-xs font-semibold text-gray-500 uppercase tracking-wide border-b mb-2">
+                      <div className="bg-white dark:bg-card shadow-xl rounded-lg border border-gray-200 dark:border-secondary p-3 min-w-56">
+                        <div className="px-2 py-1 text-xs font-semibold text-gray-500 dark:text-muted-foreground uppercase tracking-wide border-b border-gray-200 dark:border-secondary mb-2">
                           {accordion.title}
                         </div>
                         <div className="space-y-1">
@@ -347,14 +347,14 @@ export default function Sidebar({ className }: SidebarProps) {
                                   "w-full flex items-center px-3 py-2 rounded-lg text-left transition-all duration-200 group space-x-3 pointer-events-auto",
                                   isSubActive
                                     ? "text-white bg-gradient-to-r from-blue-500 to-indigo-600 shadow-lg"
-                                    : "text-gray-600 hover:bg-gradient-to-r hover:from-blue-400/20 hover:to-indigo-500/20 hover:text-indigo-600"
+                                    : "text-gray-600 dark:text-muted-foreground hover:bg-gradient-to-r hover:from-blue-400/20 hover:to-indigo-500/20 dark:hover:bg-secondary hover:text-indigo-600 dark:hover:text-foreground"
                                 )}
                               >
                                 <subItem.icon className={cn(
                                   "h-4 w-4 flex-shrink-0 transition-all duration-200",
-                                  isSubActive ? "text-white" : "text-gray-500 group-hover:text-indigo-500"
+                                  isSubActive ? "text-white" : "text-gray-500 dark:text-muted-foreground group-hover:text-indigo-500 dark:group-hover:text-foreground"
                                 )} />
-                                <span className={cn("text-sm truncate", isSubActive ? "text-white" : "text-gray-600 group-hover:text-indigo-600")}>{subItem.title}</span>
+                                <span className={cn("text-sm truncate", isSubActive ? "text-white" : "text-gray-600 dark:text-muted-foreground group-hover:text-indigo-600 dark:group-hover:text-foreground")}>{subItem.title}</span>
                               </button>
                             );
                           })}
@@ -381,14 +381,14 @@ export default function Sidebar({ className }: SidebarProps) {
                               "w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-all duration-200 group text-sm",
                               isActive
                                 ? "text-white bg-gradient-to-r from-blue-500 to-indigo-600 shadow-lg transform scale-105"
-                                : "text-gray-600 hover:bg-gradient-to-r hover:from-blue-400/15 hover:to-indigo-500/15 hover:text-indigo-600 hover:shadow-sm hover:transform hover:scale-105"
+                                : "text-gray-600 dark:text-muted-foreground hover:bg-gradient-to-r hover:from-blue-400/15 hover:to-indigo-500/15 dark:hover:bg-secondary hover:text-indigo-600 dark:hover:text-foreground hover:shadow-sm hover:transform hover:scale-105"
                             )}
                           >
                             <subItem.icon className={cn(
                               "h-4 w-4 flex-shrink-0 transition-all duration-200",
-                              isActive ? "text-white drop-shadow-sm" : "text-gray-500 group-hover:text-indigo-500"
+                              isActive ? "text-white drop-shadow-sm" : "text-gray-500 dark:text-muted-foreground group-hover:text-indigo-500 dark:group-hover:text-foreground"
                             )} />
-                            <span className={cn("truncate font-medium", isActive ? "text-white" : "text-gray-600 group-hover:text-indigo-600")}>{subItem.title}</span>
+                            <span className={cn("truncate font-medium", isActive ? "text-white" : "text-gray-600 dark:text-muted-foreground group-hover:text-indigo-600 dark:group-hover:text-foreground")}>{subItem.title}</span>
                           </button>
                         );
                       })}
@@ -416,22 +416,22 @@ export default function Sidebar({ className }: SidebarProps) {
                     showText ? "space-x-3" : "justify-center",
                     isActive
                       ? "text-white bg-gradient-to-r from-blue-500 to-indigo-600 shadow-lg transform scale-105"
-                      : "text-gray-700 hover:bg-gradient-to-r hover:from-blue-400/20 hover:to-indigo-500/20 hover:text-indigo-700 hover:shadow-md hover:transform hover:scale-105"
+                      : "text-gray-700 dark:text-foreground hover:bg-gradient-to-r hover:from-blue-400/20 hover:to-indigo-500/20 dark:hover:bg-secondary hover:text-indigo-700 dark:hover:text-foreground hover:shadow-md hover:transform hover:scale-105"
                   )}
                   title={!showText ? item.title : undefined}
                 >
                   <item.icon className={cn(
                     "h-5 w-5 flex-shrink-0 transition-all duration-200",
-                    isActive ? "text-white drop-shadow-sm" : "text-gray-600 group-hover:text-indigo-600"
+                    isActive ? "text-white drop-shadow-sm" : "text-gray-600 dark:text-muted-foreground group-hover:text-indigo-600 dark:group-hover:text-foreground"
                   )} />
-                  {showText && <span className={cn("truncate font-medium", isActive ? "text-white" : "text-gray-700 group-hover:text-indigo-700")}>{item.title}</span>}
+                  {showText && <span className={cn("truncate font-medium", isActive ? "text-white" : "text-gray-700 dark:text-foreground group-hover:text-indigo-700 dark:group-hover:text-foreground")}>{item.title}</span>}
                 </button>
               );
             })}
           </nav>
           
           {quickActions.length > 0 && !isCollapsed && (
-            <div className="mt-8 pt-4 border-t border-indigo-200/40">
+            <div className="mt-8 pt-4 border-t border-indigo-200/40 dark:border-secondary">
               <div className="px-3 py-2">
                 <h3 className="text-xs font-semibold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent uppercase tracking-wider">
                   Quick Actions
@@ -442,10 +442,10 @@ export default function Sidebar({ className }: SidebarProps) {
                   <button
                     key={index}
                     onClick={action.action}
-                    className="w-full flex items-center space-x-3 px-3 py-2 rounded-xl text-gray-700 hover:bg-gradient-to-r hover:from-green-400/20 hover:to-emerald-500/20 hover:text-emerald-700 hover:shadow-md transition-all duration-200 transform hover:scale-105 group"
+                    className="w-full flex items-center space-x-3 px-3 py-2 rounded-xl text-gray-700 dark:text-foreground hover:bg-gradient-to-r hover:from-green-400/20 hover:to-emerald-500/20 dark:hover:bg-secondary hover:text-emerald-700 dark:hover:text-foreground hover:shadow-md transition-all duration-200 transform hover:scale-105 group"
                   >
-                    <action.icon className="h-5 w-5 text-gray-600 group-hover:text-emerald-600 transition-colors duration-200" />
-                    <span className="font-medium">{action.title}</span>
+                    <action.icon className="h-5 w-5 text-gray-600 dark:text-muted-foreground group-hover:text-emerald-600 dark:group-hover:text-foreground transition-colors duration-200" />
+                    <span className="font-medium dark:text-foreground">{action.title}</span>
                   </button>
                 ))}
               </div>
