@@ -47,38 +47,39 @@
 }
 
 .dark {
-  --background: hsl(240, 10%, 6%);
-  --foreground: hsl(0, 0%, 93%);
-  --muted: hsl(240, 3%, 12%);
-  --muted-foreground: hsl(240, 5%, 60%);
-  --popover: hsl(240, 10%, 8%);
-  --popover-foreground: hsl(0, 0%, 93%);
-  --card: hsl(240, 10%, 8%);
-  --card-foreground: hsl(0, 0%, 93%);
-  --border: hsl(240, 3%, 18%);
-  --input: hsl(240, 3%, 18%);
-  --primary: hsl(209, 94%, 56%);
+  /* Twitter (Web) Dark Mode Color Palette */
+  --background: hsl(200, 100%, 9%);   /* #15202B - Twitter dark background */
+  --foreground: hsl(0, 0%, 100%);     /* #FFFFFF - Primary text */
+  --muted: hsl(207, 39%, 11%);        /* #192734 - Card background */
+  --muted-foreground: hsl(210, 13%, 54%); /* #8899A6 - Secondary text */
+  --popover: hsl(207, 39%, 11%);
+  --popover-foreground: hsl(0, 0%, 100%);
+  --card: hsl(207, 39%, 11%);         /* #192734 - Card background */
+  --card-foreground: hsl(0, 0%, 100%);
+  --border: hsl(208, 44%, 14%);       /* #22303C - Hover color/borders */
+  --input: hsl(208, 44%, 14%);
+  --primary: hsl(209, 94%, 56%);      /* Keep existing blue primary */
   --primary-foreground: hsl(210, 100%, 99%);
-  --secondary: hsl(240, 3%, 15%);
-  --secondary-foreground: hsl(0, 0%, 90%);
-  --accent: hsl(240, 3%, 18%);
-  --accent-foreground: hsl(0, 0%, 90%);
+  --secondary: hsl(208, 44%, 14%);    /* #22303C - Hover color */
+  --secondary-foreground: hsl(0, 0%, 100%);
+  --accent: hsl(208, 44%, 14%);
+  --accent-foreground: hsl(0, 0%, 100%);
   --destructive: hsl(0, 60%, 50%);
-  --destructive-foreground: hsl(0, 0%, 95%);
+  --destructive-foreground: hsl(0, 0%, 100%);
   --success: hsl(123, 38%, 57%);
-  --success-foreground: hsl(210, 40%, 98%);
+  --success-foreground: hsl(0, 0%, 100%);
   --warning: hsl(25, 95%, 53%);
-  --warning-foreground: hsl(210, 40%, 98%);
-  --ring: hsl(240, 5%, 70%);
+  --warning-foreground: hsl(0, 0%, 100%);
+  --ring: hsl(210, 13%, 54%);
   
-  /* Dark mode sidebar colors */
-  --sidebar-background: hsl(240, 10%, 8%);
-  --sidebar-foreground: hsl(0, 0%, 93%);
+  /* Twitter-inspired sidebar colors */
+  --sidebar-background: hsl(200, 100%, 9%); /* #15202B */
+  --sidebar-foreground: hsl(0, 0%, 100%);
   --sidebar-primary: hsl(209, 94%, 56%);
   --sidebar-primary-foreground: hsl(210, 100%, 99%);
-  --sidebar-accent: hsl(240, 3%, 15%);
-  --sidebar-accent-foreground: hsl(0, 0%, 90%);
-  --sidebar-border: hsl(240, 3%, 18%);
+  --sidebar-accent: hsl(208, 44%, 14%);     /* #22303C */
+  --sidebar-accent-foreground: hsl(0, 0%, 100%);
+  --sidebar-border: hsl(208, 44%, 14%);
   --sidebar-ring: hsl(209, 94%, 56%);
   
   /* Dark mode chart colors */
