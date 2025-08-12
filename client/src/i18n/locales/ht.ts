@@ -230,6 +230,7 @@ export const ht = {
     formula: 'Fòmil',
     assignmentScore: 'Kòt Devwa',
     examScore: 'Kòt Egzamen',
+    finalGrades: 'Nòt Final yo',
     finalizeGrades: 'Finalise Nòt yo',
     unfinalizeGrades: 'Definalise Nòt yo',
     coefficients: 'Koefisyan Nòt yo',

@@ -230,6 +230,7 @@ export const fr = {
     formula: 'Formule',
     assignmentScore: 'Score de Devoir',
     examScore: 'Score d\'Examen',
+    finalGrades: 'Notes Finales',
     finalizeGrades: 'Finaliser les Notes',
     unfinalizeGrades: 'Définaliser les Notes',
     coefficients: 'Coefficients de Notes',
