@@ -162,8 +162,8 @@ export default function InstructorHomeworkQuestions() {
           <div className="p-6">
             <div className="mb-6 flex justify-between items-center">
               <div>
-                <h2 className="text-2xl font-bold text-gray-900">Assignment Bank</h2>
-                <p className="text-gray-600 mt-1">Create and manage your assignment questions</p>
+                <h2 className="text-2xl font-bold text-gray-900">{t('nav.assignmentBank')}</h2>
+                <p className="text-gray-600 mt-1">{t('questions.assignmentDescription')}</p>
               </div>
               <div className="flex gap-2">
                 <Button 
@@ -172,7 +172,7 @@ export default function InstructorHomeworkQuestions() {
                   className="border-0 bg-gradient-to-r from-slate-50 via-blue-50 to-indigo-50 text-indigo-700 hover:bg-gradient-to-r hover:from-blue-500 hover:to-indigo-600 hover:text-white shadow-md hover:shadow-lg transition-all duration-200 transform hover:scale-105"
                 >
                   <Upload className="h-4 w-4 mr-2" />
-                  Import from Excel
+                  {t('questions.importFromExcel')}
                 </Button>
                 <Button 
                   onClick={() => setShowCreateModal(true)}
@@ -189,13 +189,13 @@ export default function InstructorHomeworkQuestions() {
               <CardContent className="p-6">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                   <div>
-                    <Label htmlFor="subject">Subject</Label>
+                    <Label htmlFor="subject">{t('questions.subject')}</Label>
                     <Select value={filters.subjectId} onValueChange={(value) => setFilters(prev => ({...prev, subjectId: value}))}>
                       <SelectTrigger>
-                        <SelectValue placeholder="All Subjects" />
+                        <SelectValue placeholder={t('questions.allSubjects')} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="all">All Subjects</SelectItem>
+                        <SelectItem value="all">{t('questions.allSubjects')}</SelectItem>
                         {(subjects as any[]).map((subject: any) => (
                           <SelectItem key={subject.id} value={subject.id.toString()}>{subject.name}</SelectItem>
                         ))}
@@ -203,40 +203,40 @@ export default function InstructorHomeworkQuestions() {
                     </Select>
                   </div>
                   <div>
-                    <Label htmlFor="questionType">Question Type</Label>
+                    <Label htmlFor="questionType">{t('questions.type')}</Label>
                     <Select value={filters.questionType} onValueChange={(value) => setFilters(prev => ({...prev, questionType: value}))}>
                       <SelectTrigger>
-                        <SelectValue placeholder="All Types" />
+                        <SelectValue placeholder={t('questions.allTypes')} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="all">All Types</SelectItem>
-                        <SelectItem value="multiple_choice">Multiple Choice</SelectItem>
-                        <SelectItem value="short_answer">Short Answer</SelectItem>
-                        <SelectItem value="essay">Essay</SelectItem>
-                        <SelectItem value="fill_blank">Fill in the Blank</SelectItem>
+                        <SelectItem value="all">{t('questions.allTypes')}</SelectItem>
+                        <SelectItem value="multiple_choice">{t('questionTypes.multipleChoice')}</SelectItem>
+                        <SelectItem value="short_answer">{t('questionTypes.shortAnswer')}</SelectItem>
+                        <SelectItem value="essay">{t('questionTypes.essay')}</SelectItem>
+                        <SelectItem value="fill_blank">{t('questionTypes.fillInBlank')}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   <div>
-                    <Label htmlFor="difficulty">Difficulty</Label>
+                    <Label htmlFor="difficulty">{t('questions.difficulty')}</Label>
                     <Select value={filters.difficulty} onValueChange={(value) => setFilters(prev => ({...prev, difficulty: value}))}>
                       <SelectTrigger>
-                        <SelectValue placeholder="All Levels" />
+                        <SelectValue placeholder={t('questions.allLevels')} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="all">All Levels</SelectItem>
-                        <SelectItem value="easy">Easy</SelectItem>
-                        <SelectItem value="medium">Medium</SelectItem>
-                        <SelectItem value="hard">Hard</SelectItem>
+                        <SelectItem value="all">{t('questions.allLevels')}</SelectItem>
+                        <SelectItem value="easy">{t('difficulty.easy')}</SelectItem>
+                        <SelectItem value="medium">{t('difficulty.medium')}</SelectItem>
+                        <SelectItem value="hard">{t('difficulty.hard')}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   <div>
-                    <Label htmlFor="search">Search</Label>
+                    <Label htmlFor="search">{t('questions.search')}</Label>
                     <div className="relative">
                       <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                       <Input
-                        placeholder="Search homework questions..."
+                        placeholder={t('questions.searchPlaceholder')}
                         value={filters.search}
                         onChange={(e) => setFilters(prev => ({...prev, search: e.target.value}))}
                         className="pl-9"
@@ -251,10 +251,10 @@ export default function InstructorHomeworkQuestions() {
             <Card>
               <CardHeader>
                 <div className="flex justify-between items-center">
-                  <CardTitle>Homework Questions ({questions?.length || 0})</CardTitle>
+                  <CardTitle>{t('questions.homeworkQuestions')} ({questions?.length || 0})</CardTitle>
                   <div className="flex items-center space-x-2">
-                    <Button variant="outline" size="sm">Export</Button>
-                    <Button variant="outline" size="sm">Import</Button>
+                    <Button variant="outline" size="sm">{t('questions.export')}</Button>
+                    <Button variant="outline" size="sm">{t('questions.import')}</Button>
                   </div>
                 </div>
               </CardHeader>
@@ -272,8 +272,8 @@ export default function InstructorHomeworkQuestions() {
                 ) : questions?.length === 0 ? (
                   <div className="text-center py-12">
                     <PenTool className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <p className="text-gray-500 text-lg mb-2">No homework questions found</p>
-                    <p className="text-gray-400">Create your first homework question to get started</p>
+                    <p className="text-gray-500 text-lg mb-2">{t('questions.noQuestionsFound')}</p>
+                    <p className="text-gray-400">{t('questions.createFirst')}</p>
                   </div>
                 ) : (
                   <div className="divide-y divide-gray-200">
@@ -300,7 +300,7 @@ export default function InstructorHomeworkQuestions() {
                                 {question.points} pts
                               </Badge>
                               <Badge variant="outline" className="bg-orange-100 text-orange-800">
-                                Homework
+                                {t('nav.assignmentBank')}
                               </Badge>
                             </div>
                             <h4 className="font-medium text-gray-900 mb-2">{question.title || question.questionText.substring(0, 100)}</h4>
@@ -310,15 +310,15 @@ export default function InstructorHomeworkQuestions() {
                             <div className="flex items-center space-x-4 text-sm text-gray-500">
                               <span className="flex items-center">
                                 <Eye className="h-4 w-4 mr-1" />
-                                Used {question.usageCount} times
+                                {t('questions.used')} {question.usageCount} {t('questions.times')}
                               </span>
                               <span className="flex items-center">
                                 <Calendar className="h-4 w-4 mr-1" />
-                                Created: {formatSubmissionTime(question.createdAt)}
+                                {t('questions.created')}: {formatSubmissionTime(question.createdAt)}
                               </span>
                               <span className="flex items-center">
                                 <History className="h-4 w-4 mr-1" />
-                                Version {question.version}
+                                {t('questions.version')} {question.version}
                               </span>
                             </div>
                           </div>
