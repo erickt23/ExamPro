@@ -40,13 +40,17 @@ export default function Sidebar({ className }: SidebarProps) {
 
   const isInstructor = user?.role === 'instructor';
 
-  // Auto-collapse on smaller screens
+  // Auto-collapse on smaller screens and ensure accordions are open on mobile
   useEffect(() => {
     const handleResize = () => {
       const isMobile = window.innerWidth < 768;
       if (isMobile) {
         setIsCollapsed(true);
-        setIsMobileOpen(false);
+        // On mobile, always expand accordions when sidebar opens
+        setExpandedAccordions({
+          examManagement: true,
+          assignmentManagement: true
+        });
       } else {
         setIsCollapsed(false);
       }
@@ -151,10 +155,22 @@ export default function Sidebar({ className }: SidebarProps) {
   const navItems = isInstructor ? instructorNavItems : studentNavItems;
 
   const toggleAccordion = (accordionId: string) => {
-    setExpandedAccordions(prev => ({
-      ...prev,
-      [accordionId]: !prev[accordionId]
-    }));
+    // For collapsed sidebar, we need to expand the sidebar first to show sub-items
+    if (isCollapsed && window.innerWidth >= 768) {
+      setIsCollapsed(false);
+      // Then expand the accordion
+      setTimeout(() => {
+        setExpandedAccordions(prev => ({
+          ...prev,
+          [accordionId]: true
+        }));
+      }, 100);
+    } else {
+      setExpandedAccordions(prev => ({
+        ...prev,
+        [accordionId]: !prev[accordionId]
+      }));
+    }
   };
 
   const isAccordionItemActive = (accordionItems: any[]) => {
@@ -203,7 +219,7 @@ export default function Sidebar({ className }: SidebarProps) {
       <aside 
         className={cn(
           "bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 shadow-lg border-r border-indigo-200/30 transition-all duration-300 z-40",
-          isCollapsed ? "w-16 overflow-hidden" : "w-64 overflow-y-auto",
+          isCollapsed && window.innerWidth >= 768 ? "w-16 overflow-visible" : "w-64 overflow-y-auto",
           "md:relative md:translate-x-0 fixed h-full",
           isMobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0",
           className
@@ -263,10 +279,10 @@ export default function Sidebar({ className }: SidebarProps) {
               const hasActiveChild = isAccordionItemActive(accordion.items);
               
               return (
-                <div key={accordion.id} className="space-y-1">
+                <div key={accordion.id} className="space-y-1 relative group">
                   {/* Accordion Header */}
                   <button
-                    onClick={() => !isCollapsed && toggleAccordion(accordion.id)}
+                    onClick={() => toggleAccordion(accordion.id)}
                     className={cn(
                       "w-full flex items-center px-3 py-2 rounded-xl text-left transition-all duration-200 group",
                       isCollapsed ? "justify-center" : "justify-between",
@@ -303,6 +319,45 @@ export default function Sidebar({ className }: SidebarProps) {
                       </div>
                     )}
                   </button>
+                  
+                  {/* Hover Tooltip for Collapsed State */}
+                  {isCollapsed && (
+                    <div className="absolute left-full top-0 ml-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-50 pointer-events-none group-hover:pointer-events-auto">
+                      <div className="bg-white shadow-xl rounded-lg border border-gray-200 p-3 min-w-56">
+                        <div className="px-2 py-1 text-xs font-semibold text-gray-500 uppercase tracking-wide border-b mb-2">
+                          {accordion.title}
+                        </div>
+                        <div className="space-y-1">
+                          {accordion.items.map((subItem) => {
+                            const isSubActive = location === subItem.href;
+                            return (
+                              <button
+                                key={subItem.href}
+                                onClick={() => {
+                                  setLocation(subItem.href);
+                                  if (window.innerWidth < 768) {
+                                    setIsMobileOpen(false);
+                                  }
+                                }}
+                                className={cn(
+                                  "w-full flex items-center px-3 py-2 rounded-lg text-left transition-all duration-200 group space-x-3 pointer-events-auto",
+                                  isSubActive
+                                    ? "text-white bg-gradient-to-r from-blue-500 to-indigo-600 shadow-lg"
+                                    : "text-gray-600 hover:bg-gradient-to-r hover:from-blue-400/20 hover:to-indigo-500/20 hover:text-indigo-600"
+                                )}
+                              >
+                                <subItem.icon className={cn(
+                                  "h-4 w-4 flex-shrink-0 transition-all duration-200",
+                                  isSubActive ? "text-white" : "text-gray-500 group-hover:text-indigo-500"
+                                )} />
+                                <span className={cn("text-sm truncate", isSubActive ? "text-white" : "text-gray-600 group-hover:text-indigo-600")}>{subItem.title}</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                  )}
                   
                   {/* Accordion Content */}
                   {!isCollapsed && isExpanded && (
