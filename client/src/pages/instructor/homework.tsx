@@ -458,7 +458,7 @@ export default function InstructorHomeworkPage() {
         <div>
           <h1 className="text-3xl font-bold flex items-center gap-2">
             <BookOpen className="h-8 w-8" />
-            Assignments
+{t('nav.assignments')}
           </h1>
           <p className="text-gray-600 mt-1">
             {t('assignments.description')}
@@ -469,7 +469,7 @@ export default function InstructorHomeworkPage() {
           <DialogTrigger asChild>
             <Button>
               <Plus className="h-4 w-4 mr-2" />
-              Create Homework
+              {t('assignments.createAssignment')}
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">

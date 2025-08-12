@@ -109,7 +109,8 @@ export const en = {
     used: 'Used',
     times: 'times',
     created: 'Created',
-    version: 'Version'
+    version: 'Version',
+    questions: 'Questions'
   },
 
   // Question Types

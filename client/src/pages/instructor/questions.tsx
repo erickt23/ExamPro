@@ -161,8 +161,8 @@ export default function InstructorQuestions() {
           <div className="p-6">
             <div className="mb-6 flex justify-between items-center">
               <div>
-                <h2 className="text-2xl font-bold text-gray-900">Question Bank</h2>
-                <p className="text-gray-600 mt-1">Create and manage your exam questions</p>
+                <h2 className="text-2xl font-bold text-gray-900">{t('nav.questionBank')}</h2>
+                <p className="text-gray-600 mt-1">{t('questions.description')}</p>
               </div>
               <div className="flex gap-2">
                 <Button 
@@ -171,7 +171,7 @@ export default function InstructorQuestions() {
                   className="border-primary text-primary hover:bg-primary hover:text-white"
                 >
                   <Upload className="h-4 w-4 mr-2" />
-                  Import from Excel
+                  {t('questions.importFromExcel')}
                 </Button>
                 <Button 
                   onClick={() => setShowCreateModal(true)}
@@ -188,13 +188,13 @@ export default function InstructorQuestions() {
               <CardContent className="p-6">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                   <div>
-                    <Label htmlFor="subject">Subject</Label>
+                    <Label htmlFor="subject">{t('questions.subject')}</Label>
                     <Select value={filters.subjectId} onValueChange={(value) => setFilters(prev => ({...prev, subjectId: value}))}>
                       <SelectTrigger>
-                        <SelectValue placeholder="All Subjects" />
+                        <SelectValue placeholder={t('questions.allSubjects')} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="all">All Subjects</SelectItem>
+                        <SelectItem value="all">{t('questions.allSubjects')}</SelectItem>
                         {(subjects as any[]).map((subject: any) => (
                           <SelectItem key={subject.id} value={subject.id.toString()}>{subject.name}</SelectItem>
                         ))}
@@ -202,43 +202,43 @@ export default function InstructorQuestions() {
                     </Select>
                   </div>
                   <div>
-                    <Label htmlFor="questionType">Question Type</Label>
+                    <Label htmlFor="questionType">{t('questions.type')}</Label>
                     <Select value={filters.questionType} onValueChange={(value) => setFilters(prev => ({...prev, questionType: value}))}>
                       <SelectTrigger>
-                        <SelectValue placeholder="All Types" />
+                        <SelectValue placeholder={t('questions.allTypes')} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="all">All Types</SelectItem>
-                        <SelectItem value="multiple_choice">Multiple Choice</SelectItem>
-                        <SelectItem value="short_answer">Short Answer</SelectItem>
-                        <SelectItem value="essay">Essay</SelectItem>
-                        <SelectItem value="fill_blank">Fill in the Blank</SelectItem>
-                        <SelectItem value="matching">Matching</SelectItem>
-                        <SelectItem value="ranking">Ranking</SelectItem>
-                        <SelectItem value="drag_drop">Drag & Drop</SelectItem>
+                        <SelectItem value="all">{t('questions.allTypes')}</SelectItem>
+                        <SelectItem value="multiple_choice">{t('questionTypes.multipleChoice')}</SelectItem>
+                        <SelectItem value="short_answer">{t('questionTypes.shortAnswer')}</SelectItem>
+                        <SelectItem value="essay">{t('questionTypes.essay')}</SelectItem>
+                        <SelectItem value="fill_blank">{t('questionTypes.fillInBlank')}</SelectItem>
+                        <SelectItem value="matching">{t('questionTypes.matching')}</SelectItem>
+                        <SelectItem value="ranking">{t('questionTypes.ranking')}</SelectItem>
+                        <SelectItem value="drag_drop">{t('questionTypes.dragAndDrop')}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   <div>
-                    <Label htmlFor="difficulty">Difficulty</Label>
+                    <Label htmlFor="difficulty">{t('questions.difficulty')}</Label>
                     <Select value={filters.difficulty} onValueChange={(value) => setFilters(prev => ({...prev, difficulty: value}))}>
                       <SelectTrigger>
-                        <SelectValue placeholder="All Levels" />
+                        <SelectValue placeholder={t('questions.allLevels')} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="all">All Levels</SelectItem>
-                        <SelectItem value="easy">Easy</SelectItem>
-                        <SelectItem value="medium">Medium</SelectItem>
-                        <SelectItem value="hard">Hard</SelectItem>
+                        <SelectItem value="all">{t('questions.allLevels')}</SelectItem>
+                        <SelectItem value="easy">{t('difficulty.easy')}</SelectItem>
+                        <SelectItem value="medium">{t('difficulty.medium')}</SelectItem>
+                        <SelectItem value="hard">{t('difficulty.hard')}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   <div>
-                    <Label htmlFor="search">Search</Label>
+                    <Label htmlFor="search">{t('questions.search')}</Label>
                     <div className="relative">
                       <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                       <Input
-                        placeholder="Search questions..."
+                        placeholder={t('questions.searchPlaceholder')}
                         value={filters.search}
                         onChange={(e) => setFilters(prev => ({...prev, search: e.target.value}))}
                         className="pl-9"
@@ -253,10 +253,10 @@ export default function InstructorQuestions() {
             <Card>
               <CardHeader>
                 <div className="flex justify-between items-center">
-                  <CardTitle>Questions ({questions?.length || 0})</CardTitle>
+                  <CardTitle>{t('questions.questions')} ({questions?.length || 0})</CardTitle>
                   <div className="flex items-center space-x-2">
-                    <Button variant="outline" size="sm">Export</Button>
-                    <Button variant="outline" size="sm">Import</Button>
+                    <Button variant="outline" size="sm">{t('questions.export')}</Button>
+                    <Button variant="outline" size="sm">{t('questions.import')}</Button>
                   </div>
                 </div>
               </CardHeader>
@@ -274,8 +274,8 @@ export default function InstructorQuestions() {
                 ) : questions?.length === 0 ? (
                   <div className="text-center py-12">
                     <BookOpen className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <p className="text-gray-500 text-lg mb-2">No questions found</p>
-                    <p className="text-gray-400">Create your first question to get started</p>
+                    <p className="text-gray-500 text-lg mb-2">{t('questions.noQuestionsFound')}</p>
+                    <p className="text-gray-400">{t('questions.createFirst')}</p>
                   </div>
                 ) : (
                   <div className="divide-y divide-gray-200">

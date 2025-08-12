@@ -109,7 +109,8 @@ export const fr = {
     used: 'Utilisé',
     times: 'fois',
     created: 'Créé',
-    version: 'Version'
+    version: 'Version',
+    questions: 'Questions'
   },
 
   // Question Types
@@ -168,7 +169,7 @@ export const fr = {
   // Exam Management
   exams: {
     title: 'Gestion d\'Examens',
-    description: 'Créer et gérer des examens en utilisant des questions de votre banque de questions',
+    description: 'Créer, programmer et gérer vos examens',
     createExam: 'Créer un Examen',
     examTitle: 'Titre de l\'Examen',
     titlePlaceholder: 'Entrez le titre de l\'examen',

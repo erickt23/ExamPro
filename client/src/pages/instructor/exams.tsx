@@ -272,15 +272,15 @@ export default function InstructorExams() {
             <div className="mb-6">
               <div className="flex justify-between items-center mb-4">
                 <div>
-                  <h2 className="text-2xl font-bold text-gray-900">Exams</h2>
-                  <p className="text-gray-600 mt-1">Create, schedule, and manage your exams</p>
+                  <h2 className="text-2xl font-bold text-gray-900">{t('nav.exams')}</h2>
+                  <p className="text-gray-600 mt-1">{t('exams.description')}</p>
                 </div>
                 <Button 
                   onClick={() => setShowCreateModal(true)}
                   className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
                 >
                   <Plus className="h-4 w-4 mr-2" />
-                  Create Exam
+                  {t('exams.createExam')}
                 </Button>
               </div>
               
@@ -288,7 +288,7 @@ export default function InstructorExams() {
               <div className="relative max-w-md">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                 <Input
-                  placeholder="Search exams by title, description, or subject..."
+                  placeholder={t('exams.searchExams')}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10"
@@ -323,8 +323,8 @@ export default function InstructorExams() {
                 ) : exams?.length === 0 ? (
                   <div className="text-center py-12">
                     <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <p className="text-gray-500 text-lg mb-2">No exams found</p>
-                    <p className="text-gray-400">Create your first exam to get started</p>
+                    <p className="text-gray-500 text-lg mb-2">{t('exams.noExams')}</p>
+                    <p className="text-gray-400">{t('exams.createFirstExam')}</p>
                   </div>
                 ) : (() => {
                   // Sort and paginate exams

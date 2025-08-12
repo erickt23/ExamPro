@@ -109,7 +109,8 @@ export const ht = {
     used: 'Itilize',
     times: 'fwa',
     created: 'Kreye',
-    version: 'Vèsyon'
+    version: 'Vèsyon',
+    questions: 'Kesyon yo'
   },
 
   // Question Types
@@ -168,7 +169,7 @@ export const ht = {
   // Exam Management
   exams: {
     title: 'Jesyon Egzamen',
-    description: 'Kreye ak jere egzamen yo lè w ap sèvi ak kesyon yo soti nan depo kesyon ou',
+    description: 'Kreye, pwograme ak jere egzamen ou yo',
     createExam: 'Kreye Egzamen',
     examTitle: 'Tit Egzamen',
     titlePlaceholder: 'Antre tit egzamen an',
