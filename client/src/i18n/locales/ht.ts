@@ -2,7 +2,7 @@ export const ht = {
   // Navigation
   nav: {
     dashboard: 'Tab Kòmand',
-    questionBank: 'Depo Kesyon',
+    questionBank: 'Depo Egzamen',
     assignmentBank: 'Depo Devwa',
     exams: 'Egzamen yo',
     assignments: 'Devwa yo',
@@ -84,7 +84,7 @@ export const ht = {
 
   // Questions
   questions: {
-    examQuestionBank: 'Depo Kesyon Egzamen',
+    examQuestionBank: 'Depo Egzamen',
     assignmentQuestionBank: 'Depo Kesyon Devwa',
     description: 'Jere koleksyon kesyon egzamen ou yo',
     assignmentDescription: 'Kreye ak jere kesyon devwa ou yo',

@@ -8,18 +8,19 @@ EduExam Pro is a full-stack web application for creating, managing, and grading 
 
 Preferred communication style: Simple, everyday language.
 Navigation terminology preferences:
-- "Exam Questions" → "Question Bank" (under Exam Management accordion)
+- "Exam Questions" → "Exam Bank" (under Exam Management accordion)
 - "Homework Questions" → "Assignment Bank" (under Assignment Management accordion)
 - "Homework Assignment" → "Assignments" (under Assignment Management accordion)
 - "Exams" → "Exams" (under Exam Management accordion)
 
 Recent UI Changes (August 2025):
 - Implemented accordion-style sidebar navigation with two main sections:
-  - "Exam Management" accordion containing "Question Bank" and "Exams"
+  - "Exam Management" accordion containing "Exam Bank" and "Exams"
   - "Assignment Management" accordion containing "Assignment Bank" and "Assignments"
 - Applied vibrant gradient styling system across all primary action buttons
 - Consistent blue-to-indigo gradients with hover effects and scaling animations
 - Updated all page titles to match new menu names for consistency
+- Renamed "Question Bank" to "Exam Bank" across all translations and components (August 2025)
 - Enhanced French and Haitian Creole translation coverage for Assignment Bank interface
 - Added comprehensive navigation translations with proper multi-language sidebar support
 
@@ -59,14 +60,14 @@ The backend is structured with:
 ### Database Schema
 The application uses PostgreSQL with the following main entities:
 - **Users**: Stores user information with role-based access (instructor/student)
-- **Questions**: Question bank with support for multiple question types (multiple choice, short answer, essay, fill-in-blank)
+- **Questions**: Exam bank with support for multiple question types (multiple choice, short answer, essay, fill-in-blank)
 - **Exams**: Exam metadata including settings, scheduling, and configuration
 - **Exam Questions**: Junction table linking exams to questions with order and points
 - **Submissions**: Student exam submissions with completion tracking
 - **Answers**: Individual answer records for each question in a submission
 - **Sessions**: Session storage for authentication
 
-### Question Management
+### Exam Bank Management
 - Support for multiple question types with different difficulty levels
 - Bloom's Taxonomy classification for educational alignment
 - Question reusability across multiple exams
@@ -94,8 +95,8 @@ The application uses PostgreSQL with the following main entities:
 ## Data Flow
 
 1. **Authentication Flow**: Users authenticate via Replit OpenID Connect, sessions are stored in PostgreSQL
-2. **Question Creation**: Instructors create questions that are stored in the question bank for reuse
-3. **Exam Creation**: Instructors select questions from the bank to create exams with specific configurations
+2. **Question Creation**: Instructors create questions that are stored in the exam bank for reuse
+3. **Exam Creation**: Instructors select questions from the exam bank to create exams with specific configurations
 4. **Exam Taking**: Students access assigned exams, submit answers that are stored with completion tracking
 5. **Grading**: Automatic grading for objective questions, manual grading interface for subjective responses
 6. **Analytics**: Real-time statistics and performance tracking for instructors

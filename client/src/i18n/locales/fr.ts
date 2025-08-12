@@ -2,7 +2,7 @@ export const fr = {
   // Navigation
   nav: {
     dashboard: 'Tableau de Bord',
-    questionBank: 'Banque de Questions',
+    questionBank: 'Banque d\'Examens',
     assignmentBank: 'Banque de Devoirs',
     exams: 'Examens',
     assignments: 'Devoirs',
@@ -84,7 +84,7 @@ export const fr = {
 
   // Questions
   questions: {
-    examQuestionBank: 'Banque de Questions d\'Examen',
+    examQuestionBank: 'Banque d\'Examens',
     assignmentQuestionBank: 'Banque de Questions de Devoir',
     description: 'Gérer votre collection de questions d\'examen',
     assignmentDescription: 'Créer et gérer vos questions de devoirs',

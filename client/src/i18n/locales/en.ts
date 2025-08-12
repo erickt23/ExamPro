@@ -2,7 +2,7 @@ export const en = {
   // Navigation
   nav: {
     dashboard: 'Dashboard',
-    questionBank: 'Question Bank',
+    questionBank: 'Exam Bank',
     assignmentBank: 'Assignment Bank',
     exams: 'Exams',
     assignments: 'Assignments',
@@ -86,7 +86,7 @@ export const en = {
 
   // Questions
   questions: {
-    examQuestionBank: 'Exam Question Bank',
+    examQuestionBank: 'Exam Bank',
     assignmentQuestionBank: 'Assignment Question Bank',
     description: 'Manage your collection of exam questions',
     assignmentDescription: 'Manage your collection of assignment questions',
@@ -164,7 +164,7 @@ export const en = {
 
   // Assignments
   assignments: {
-    description: 'Create and manage homework assignments from your dedicated assignment question bank',
+    description: 'Create and manage homework assignments from your dedicated assignment bank',
     createAssignment: 'Create Assignment',
     title: 'Assignment Title',
     titlePlaceholder: 'Enter assignment title',
@@ -190,7 +190,7 @@ export const en = {
   // Exam Management
   exams: {
     title: 'Exam Management',
-    description: 'Create and manage exams using questions from your question bank',
+    description: 'Create and manage exams using questions from your exam bank',
     createExam: 'Create Exam',
     examTitle: 'Exam Title',
     titlePlaceholder: 'Enter exam title',
