@@ -2,8 +2,10 @@ export const ht = {
   // Navigation
   nav: {
     dashboard: 'Tab Kòmand',
-    examQuestionBank: 'Depo Kesyon Egzamen',
-    assignmentQuestionBank: 'Depo Kesyon Devwa',
+    questionBank: 'Depo Kesyon',
+    assignmentBank: 'Depo Devwa',
+    exams: 'Egzamen yo',
+    assignments: 'Devwa yo',
     examManagement: 'Jesyon Egzamen',
     assignmentManagement: 'Jesyon Devwa',
     gradingCenter: 'Sant Nòt',
@@ -12,7 +14,6 @@ export const ht = {
     analytics: 'Analitik',
     students: 'Elèv yo',
     homework: 'Devwa yo',
-    exams: 'Egzamen yo',
     grades: 'Nòt yo'
   },
 
@@ -98,7 +99,17 @@ export const ht = {
     showingResults: 'Y ap montre {count} rezilta',
     bloomsTaxonomy: 'Taksonomi Bloom',
     lastUsed: 'Dènye Itilizasyon',
-    createdDate: 'Dat Kreyasyon'
+    createdDate: 'Dat Kreyasyon',
+    importFromExcel: 'Enpòte depi Excel',
+    export: 'Ekspòte',
+    import: 'Enpòte',
+    search: 'Chèche',
+    homeworkQuestions: 'Kesyon Devwa yo',
+    allLevels: 'Tout Nivo yo',
+    used: 'Itilize',
+    times: 'fwa',
+    created: 'Kreye',
+    version: 'Vèsyon'
   },
 
   // Question Types

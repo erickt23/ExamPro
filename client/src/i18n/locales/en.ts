@@ -2,8 +2,10 @@ export const en = {
   // Navigation
   nav: {
     dashboard: 'Dashboard',
-    examQuestionBank: 'Exam Question Bank',
-    assignmentQuestionBank: 'Assignment Question Bank',
+    questionBank: 'Question Bank',
+    assignmentBank: 'Assignment Bank',
+    exams: 'Exams',
+    assignments: 'Assignments',
     examManagement: 'Exam Management',
     assignmentManagement: 'Assignment Management',
     gradingCenter: 'Grading Center',
@@ -12,7 +14,6 @@ export const en = {
     analytics: 'Analytics',
     students: 'Students',
     homework: 'Homework',
-    exams: 'Exams',
     grades: 'Grades'
   },
 
@@ -98,7 +99,17 @@ export const en = {
     showingResults: 'Showing {count} results',
     bloomsTaxonomy: "Bloom's Taxonomy",
     lastUsed: 'Last Used',
-    createdDate: 'Created Date'
+    createdDate: 'Created Date',
+    importFromExcel: 'Import from Excel',
+    export: 'Export',
+    import: 'Import',
+    search: 'Search',
+    homeworkQuestions: 'Homework Questions',
+    allLevels: 'All Levels',
+    used: 'Used',
+    times: 'times',
+    created: 'Created',
+    version: 'Version'
   },
 
   // Question Types

@@ -68,16 +68,16 @@ export default function Sidebar({ className }: SidebarProps) {
   const instructorAccordionItems = [
     {
       id: 'examManagement',
-      title: 'Exam Management',
+      title: t('nav.examManagement'),
       icon: GraduationCap,
       items: [
         {
-          title: 'Question Bank',
+          title: t('nav.questionBank'),
           href: "/questions",
           icon: BookOpen,
         },
         {
-          title: 'Exams',
+          title: t('nav.exams'),
           href: "/exams",
           icon: FileText,
         },
@@ -85,16 +85,16 @@ export default function Sidebar({ className }: SidebarProps) {
     },
     {
       id: 'assignmentManagement',
-      title: 'Assignment Management',
+      title: t('nav.assignmentManagement'),
       icon: Notebook,
       items: [
         {
-          title: 'Assignment Bank',
+          title: t('nav.assignmentBank'),
           href: "/homework-questions",
           icon: PenTool,
         },
         {
-          title: 'Assignments',
+          title: t('nav.assignments'),
           href: "/homework",
           icon: ClipboardList,
         },

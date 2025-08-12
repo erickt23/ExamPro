@@ -2,8 +2,10 @@ export const fr = {
   // Navigation
   nav: {
     dashboard: 'Tableau de Bord',
-    examQuestionBank: 'Banque de Questions d\'Examen',
-    assignmentQuestionBank: 'Banque de Questions de Devoir',
+    questionBank: 'Banque de Questions',
+    assignmentBank: 'Banque de Devoirs',
+    exams: 'Examens',
+    assignments: 'Devoirs',
     examManagement: 'Gestion d\'Examens',
     assignmentManagement: 'Gestion de Devoirs',
     gradingCenter: 'Centre de Notes',
@@ -12,7 +14,6 @@ export const fr = {
     analytics: 'Analytique',
     students: 'Étudiants',
     homework: 'Devoirs',
-    exams: 'Examens',
     grades: 'Notes'
   },
 
@@ -98,7 +99,17 @@ export const fr = {
     showingResults: 'Affichage de {count} résultats',
     bloomsTaxonomy: 'Taxonomie de Bloom',
     lastUsed: 'Dernière Utilisation',
-    createdDate: 'Date de Création'
+    createdDate: 'Date de Création',
+    importFromExcel: 'Importer depuis Excel',
+    export: 'Exporter',
+    import: 'Importer',
+    search: 'Rechercher',
+    homeworkQuestions: 'Questions de Devoirs',
+    allLevels: 'Tous les Niveaux',
+    used: 'Utilisé',
+    times: 'fois',
+    created: 'Créé',
+    version: 'Version'
   },
 
   // Question Types
