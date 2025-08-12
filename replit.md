@@ -8,10 +8,17 @@ EduExam Pro is a full-stack web application for creating, managing, and grading 
 
 Preferred communication style: Simple, everyday language.
 Navigation terminology preferences:
-- "Exam Questions" → "Exam Question Bank"
-- "Homework Questions" → "Assignment Question Bank" 
-- "Homework Assignment" → "Assignment Management"
-- "Exams" → "Exam Management"
+- "Exam Questions" → "Question Bank" (under Exam Management accordion)
+- "Homework Questions" → "Assignment Bank" (under Assignment Management accordion)
+- "Homework Assignment" → "Assignments" (under Assignment Management accordion)
+- "Exams" → "Exams" (under Exam Management accordion)
+
+Recent UI Changes (August 2025):
+- Implemented accordion-style sidebar navigation with two main sections:
+  - "Exam Management" accordion containing "Question Bank" and "Exams"
+  - "Assignment Management" accordion containing "Assignment Bank" and "Assignments"
+- Applied vibrant gradient styling system across all primary action buttons
+- Consistent blue-to-indigo gradients with hover effects and scaling animations
 
 ## System Architecture
 
