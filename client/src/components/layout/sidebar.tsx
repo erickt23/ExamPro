@@ -201,7 +201,7 @@ export default function Sidebar({ className }: SidebarProps) {
       {/* Mobile overlay */}
       {isMobileOpen && (
         <div 
-          className="md:hidden fixed inset-0 z-40 bg-black bg-opacity-50"
+          className="md:hidden fixed inset-0 z-40 bg-black/50"
           onClick={() => setIsMobileOpen(false)}
         />
       )}
@@ -218,7 +218,7 @@ export default function Sidebar({ className }: SidebarProps) {
 
       <aside 
         className={cn(
-          "bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:bg-background shadow-lg border-r border-indigo-200/30 dark:border-secondary transition-all duration-300 z-40",
+          "bg-white dark:bg-background shadow-lg border-r border-indigo-200/30 dark:border-secondary transition-all duration-300 z-40",
           // On mobile, always show full width when open, on desktop respect collapsed state
           isMobileOpen ? "w-64 overflow-y-auto" : (
             isCollapsed && window.innerWidth >= 768 ? "w-16 overflow-visible" : "w-64 overflow-y-auto"
