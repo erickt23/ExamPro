@@ -162,8 +162,8 @@ export default function InstructorHomeworkQuestions() {
           <div className="p-6">
             <div className="mb-6 flex justify-between items-center">
               <div>
-                <h2 className="text-2xl font-bold text-gray-900">{t('questions.assignmentQuestionBank')}</h2>
-                <p className="text-gray-600 mt-1">{t('questions.assignmentDescription')}</p>
+                <h2 className="text-2xl font-bold text-gray-900">Assignment Bank</h2>
+                <p className="text-gray-600 mt-1">Create and manage your assignment questions</p>
               </div>
               <div className="flex gap-2">
                 <Button 

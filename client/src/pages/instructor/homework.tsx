@@ -458,7 +458,7 @@ export default function InstructorHomeworkPage() {
         <div>
           <h1 className="text-3xl font-bold flex items-center gap-2">
             <BookOpen className="h-8 w-8" />
-            {t('nav.assignmentManagement')}
+            Assignments
           </h1>
           <p className="text-gray-600 mt-1">
             {t('assignments.description')}

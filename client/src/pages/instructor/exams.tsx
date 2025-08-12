@@ -272,7 +272,7 @@ export default function InstructorExams() {
             <div className="mb-6">
               <div className="flex justify-between items-center mb-4">
                 <div>
-                  <h2 className="text-2xl font-bold text-gray-900">Exam Management</h2>
+                  <h2 className="text-2xl font-bold text-gray-900">Exams</h2>
                   <p className="text-gray-600 mt-1">Create, schedule, and manage your exams</p>
                 </div>
                 <Button 
