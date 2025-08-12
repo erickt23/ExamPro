@@ -115,15 +115,15 @@ export default function InstructorDashboard() {
       <Navbar />
       <div className="flex">
         <Sidebar />
-        <main className="flex-1 overflow-y-auto md:ml-0 transition-all duration-300">
-          <div className="p-6 md:pl-6">
-            <div className="mb-6">
-              <h2 className="text-2xl font-bold text-gray-900">{t('dashboard.title')}</h2>
-              <p className="text-gray-600 mt-1">{t('dashboard.description')}</p>
+        <main className="flex-1 overflow-y-auto ml-0 transition-all duration-300">
+          <div className="p-3 md:p-6">
+            <div className="mb-4 md:mb-6">
+              <h2 className="text-xl md:text-2xl font-bold text-gray-900">{t('dashboard.title')}</h2>
+              <p className="text-gray-600 mt-1 text-sm md:text-base">{t('dashboard.description')}</p>
             </div>
 
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8">
               <Card>
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
@@ -210,12 +210,12 @@ export default function InstructorDashboard() {
             </div>
 
             {/* Recent Activity */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
               <Card>
-                <CardHeader>
-                  <CardTitle>{t('dashboard.recentExams')}</CardTitle>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-lg md:text-xl">{t('dashboard.recentExams')}</CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="pt-0">
                   {examsLoading ? (
                     <div className="space-y-4">
                       {[...Array(3)].map((_, i) => (

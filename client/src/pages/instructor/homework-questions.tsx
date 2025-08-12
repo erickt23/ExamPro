@@ -158,14 +158,14 @@ export default function InstructorHomeworkQuestions() {
       <Navbar />
       <div className="flex">
         <Sidebar />
-        <main className="flex-1 overflow-y-auto">
-          <div className="p-6">
-            <div className="mb-6 flex justify-between items-center">
+        <main className="flex-1 overflow-y-auto ml-0 transition-all duration-300">
+          <div className="p-3 md:p-6">
+            <div className="mb-4 md:mb-6 flex flex-col md:flex-row md:justify-between md:items-center gap-4">
               <div>
-                <h2 className="text-2xl font-bold text-gray-900">{t('nav.assignmentBank')}</h2>
-                <p className="text-gray-600 mt-1">{t('questions.assignmentDescription')}</p>
+                <h2 className="text-xl md:text-2xl font-bold text-gray-900">{t('nav.assignmentBank')}</h2>
+                <p className="text-gray-600 mt-1 text-sm md:text-base">{t('questions.assignmentDescription')}</p>
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-2 flex-wrap">
                 <Button 
                   onClick={() => setShowImportModal(true)} 
                   variant="outline"
@@ -187,7 +187,7 @@ export default function InstructorHomeworkQuestions() {
             {/* Filters */}
             <Card className="mb-6">
               <CardContent className="p-6">
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
                   <div>
                     <Label htmlFor="subject">{t('questions.subject')}</Label>
                     <Select value={filters.subjectId} onValueChange={(value) => setFilters(prev => ({...prev, subjectId: value}))}>

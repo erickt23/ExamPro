@@ -29,12 +29,12 @@ export default function Navbar() {
 
   return (
     <nav className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
-      <div className="px-6 py-4">
+      <div className="px-3 md:px-6 py-3 md:py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2">
-              <GraduationCap className="h-8 w-8 text-primary" />
-              <h1 className="text-xl font-bold text-primary">EduExam Pro</h1>
+              <GraduationCap className="h-6 w-6 md:h-8 md:w-8 text-primary" />
+              <h1 className="text-lg md:text-xl font-bold text-primary">EduExam Pro</h1>
             </div>
             <div className="hidden md:block">
               <Badge variant="secondary" className="bg-primary text-primary-foreground">
@@ -43,10 +43,12 @@ export default function Navbar() {
             </div>
           </div>
           
-          <div className="flex items-center space-x-4">
-            <LanguageSelector />
+          <div className="flex items-center space-x-2 md:space-x-4">
+            <div className="hidden sm:block">
+              <LanguageSelector />
+            </div>
             
-            <Button variant="ghost" size="sm" className="relative">
+            <Button variant="ghost" size="sm" className="relative hidden md:flex">
               <Bell className="h-5 w-5" />
               <span className="absolute -top-1 -right-1 h-4 w-4 bg-destructive text-destructive-foreground text-xs rounded-full flex items-center justify-center">
                 3

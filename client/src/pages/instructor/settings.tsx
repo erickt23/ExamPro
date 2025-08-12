@@ -410,11 +410,11 @@ export default function SettingsPage() {
       <Navbar />
       <div className="flex">
         <Sidebar />
-        <main className="flex-1 overflow-y-auto">
-          <div className="p-6">
-            <div className="mb-6">
-              <h1 className="text-2xl font-bold text-gray-900">System Settings</h1>
-              <p className="text-gray-600">Configure grade calculation coefficients and system preferences</p>
+        <main className="flex-1 overflow-y-auto ml-0 transition-all duration-300">
+          <div className="p-3 md:p-6">
+            <div className="mb-4 md:mb-6">
+              <h1 className="text-xl md:text-2xl font-bold text-gray-900">System Settings</h1>
+              <p className="text-gray-600 text-sm md:text-base">Configure grade calculation coefficients and system preferences</p>
             </div>
 
             <Tabs defaultValue="subjects" className="w-full">
@@ -471,11 +471,12 @@ export default function SettingsPage() {
                       </div>
                     ) : (() => {
                       // Calculate pagination
-                      const totalItems = subjects.length;
+                      const subjectsArray = Array.isArray(subjects) ? subjects : [];
+                      const totalItems = subjectsArray.length;
                       const totalPages = Math.ceil(totalItems / itemsPerPage);
                       const startIndex = (currentPage - 1) * itemsPerPage;
                       const endIndex = startIndex + itemsPerPage;
-                      const paginatedSubjects = subjects.slice(startIndex, endIndex);
+                      const paginatedSubjects = subjectsArray.slice(startIndex, endIndex);
                       
                       return (
                         <div className="space-y-4">

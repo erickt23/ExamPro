@@ -452,11 +452,11 @@ export default function InstructorHomeworkPage() {
       <Navbar />
       <div className="flex">
         <Sidebar />
-        <main className="flex-1 overflow-y-auto">
-          <div className="p-6">
+        <main className="flex-1 overflow-y-auto ml-0 transition-all duration-300">
+          <div className="p-3 md:p-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2">
+          <h1 className="text-xl md:text-3xl font-bold flex items-center gap-2">
             <BookOpen className="h-8 w-8" />
 {t('nav.assignments')}
           </h1>

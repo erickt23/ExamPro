@@ -269,12 +269,12 @@ export default function InstructorExams() {
       <Navbar />
       <div className="flex">
         <Sidebar />
-        <main className="flex-1 overflow-y-auto">
-          <div className="p-6">
+        <main className="flex-1 overflow-y-auto ml-0 transition-all duration-300">
+          <div className="p-3 md:p-6">
             <div className="mb-6">
-              <div className="flex justify-between items-center mb-4">
+              <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-4">
                 <div>
-                  <h2 className="text-2xl font-bold text-gray-900">{t('nav.exams')}</h2>
+                  <h2 className="text-xl md:text-2xl font-bold text-gray-900">{t('nav.exams')}</h2>
                   <p className="text-gray-600 mt-1">{t('exams.description')}</p>
                 </div>
                 <Button 
@@ -401,7 +401,7 @@ export default function InstructorExams() {
                                 </TableCell>
                                 <TableCell>
                                   <div className="text-sm">
-                                    {exam.availableFrom ? formatEasternTime(exam.availableFrom, 'time') : 'Not set'}
+                                    {exam.availableFrom ? formatEasternTime(exam.availableFrom, { includeTime: true }) : 'Not set'}
                                   </div>
                                 </TableCell>
                                 <TableCell>

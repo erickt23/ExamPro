@@ -81,15 +81,15 @@ export default function InstructorAnalytics() {
       <Navbar />
       <div className="flex">
         <Sidebar />
-        <main className="flex-1 overflow-y-auto">
-          <div className="p-6">
-            <div className="mb-6">
-              <h2 className="text-2xl font-bold text-gray-900">Analytics & Reports</h2>
-              <p className="text-gray-600 mt-1">Insights into student performance and exam effectiveness</p>
+        <main className="flex-1 overflow-y-auto ml-0 transition-all duration-300">
+          <div className="p-3 md:p-6">
+            <div className="mb-4 md:mb-6">
+              <h2 className="text-xl md:text-2xl font-bold text-gray-900">Analytics & Reports</h2>
+              <p className="text-gray-600 mt-1 text-sm md:text-base">Insights into student performance and exam effectiveness</p>
             </div>
 
             {/* Analytics Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8">
               <Card>
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between mb-4">
@@ -130,7 +130,7 @@ export default function InstructorAnalytics() {
                     <FileText className="h-5 w-5 text-gray-500" />
                   </div>
                   <p className="text-3xl font-bold text-gray-900">
-                    {statsLoading ? "..." : instructorStats?.totalQuestions || 0}
+                    {statsLoading ? "..." : (instructorStats as any)?.totalQuestions || 0}
                   </p>
                   <p className="text-sm text-green-600 mt-2">+42 this month</p>
                 </CardContent>

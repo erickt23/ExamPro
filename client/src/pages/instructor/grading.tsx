@@ -315,8 +315,8 @@ function GradingList() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">{t('grading.title')}</h1>
-        <p className="text-gray-600">{t('grading.description')}</p>
+        <h1 className="text-xl md:text-2xl font-bold">{t('grading.title')}</h1>
+        <p className="text-gray-600 text-sm md:text-base">{t('grading.description')}</p>
       </div>
 
       <Tabs defaultValue="exams" className="w-full">
