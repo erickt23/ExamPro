@@ -233,7 +233,27 @@ export const en = {
     finalizeGrades: 'Finalize Grades',
     unfinalizeGrades: 'Unfinalize Grades',
     coefficients: 'Grade Coefficients',
-    student: 'Student'
+    student: 'Student',
+    examSubmissions: 'Exam Submissions',
+    homeworkSubmissions: 'Homework Submissions',
+    examSubmissionsPendingReview: 'Exam Submissions Pending Review',
+    homeworkSubmissionsPendingReview: 'Homework Submissions Pending Review',
+    finalGradesByCourse: 'Final Grades by Course',
+    noExamSubmissions: 'No exam submissions pending review',
+    noHomeworkSubmissions: 'No homework submissions pending review',
+    needsReview: 'Needs Review',
+    grade: 'Grade',
+    exam: 'Exam',
+    homework: 'Homework',
+    submitted: 'Submitted',
+    actions: 'Actions',
+    backToGradingCenter: 'Back to Grading Center',
+    manualGrading: 'Manual Grading',
+    submissionDetails: 'Submission Details',
+    questionsRequiringManualGrading: 'Questions Requiring Manual Grading',
+    readyToFinalize: 'Ready to finalize?',
+    finalizeGradesMessage: 'Once finalized, grades will be published to the student and cannot be changed.',
+    pendingReview: 'Pending Review'
   },
 
   // Settings

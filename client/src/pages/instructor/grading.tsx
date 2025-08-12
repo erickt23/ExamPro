@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useLocation, useRoute } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useToast } from "@/hooks/use-toast";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -170,6 +171,7 @@ function SubjectGradesCard({
 function GradingList() {
   const [, navigate] = useLocation();
   const { user } = useAuth();
+  const { t } = useTranslation();
   const { toast } = useToast();
 
   // Fetch exam submissions that need grading
@@ -313,46 +315,46 @@ function GradingList() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Grading Center</h1>
-        <p className="text-gray-600">Review and grade student submissions</p>
+        <h1 className="text-2xl font-bold">{t('grading.title')}</h1>
+        <p className="text-gray-600">{t('grading.description')}</p>
       </div>
 
       <Tabs defaultValue="exams" className="w-full">
         <TabsList>
           <TabsTrigger value="exams" className="flex items-center gap-2">
             <BookOpen className="h-4 w-4" />
-            Exam Submissions ({examSubmissions?.length || 0})
+            {t('grading.examSubmissions')} ({examSubmissions?.length || 0})
           </TabsTrigger>
           <TabsTrigger value="homework" className="flex items-center gap-2">
             <Notebook className="h-4 w-4" />
-            Homework Submissions ({homeworkSubmissions?.length || 0})
+            {t('grading.homeworkSubmissions')} ({homeworkSubmissions?.length || 0})
           </TabsTrigger>
           <TabsTrigger value="final-grades" className="flex items-center gap-2">
             <Calculator className="h-4 w-4" />
-            Final Grades
+            {t('grading.finalGrades')}
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="exams">
           <Card>
             <CardHeader>
-              <CardTitle>Exam Submissions Pending Review</CardTitle>
+              <CardTitle>{t('grading.examSubmissionsPendingReview')}</CardTitle>
             </CardHeader>
             <CardContent>
               {!examSubmissions || examSubmissions.length === 0 ? (
                 <div className="text-center py-8 text-gray-500">
                   <FileText className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                  <p>No exam submissions pending review</p>
+                  <p>{t('grading.noExamSubmissions')}</p>
                 </div>
               ) : (
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Student</TableHead>
-                      <TableHead>Exam</TableHead>
-                      <TableHead>Submitted</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Actions</TableHead>
+                      <TableHead>{t('grading.student')}</TableHead>
+                      <TableHead>{t('grading.exam')}</TableHead>
+                      <TableHead>{t('grading.submitted')}</TableHead>
+                      <TableHead>{t('grading.status')}</TableHead>
+                      <TableHead>{t('grading.actions')}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -374,7 +376,7 @@ function GradingList() {
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Badge variant="secondary">Needs Review</Badge>
+                          <Badge variant="secondary">{t('grading.needsReview')}</Badge>
                         </TableCell>
                         <TableCell>
                           <Button
@@ -398,23 +400,23 @@ function GradingList() {
         <TabsContent value="homework">
           <Card>
             <CardHeader>
-              <CardTitle>Homework Submissions Pending Review</CardTitle>
+              <CardTitle>{t('grading.homeworkSubmissionsPendingReview')}</CardTitle>
             </CardHeader>
             <CardContent>
               {!homeworkSubmissions || homeworkSubmissions.length === 0 ? (
                 <div className="text-center py-8 text-gray-500">
                   <Notebook className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                  <p>No homework submissions pending review</p>
+                  <p>{t('grading.noHomeworkSubmissions')}</p>
                 </div>
               ) : (
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Student</TableHead>
-                      <TableHead>Homework</TableHead>
-                      <TableHead>Submitted</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Actions</TableHead>
+                      <TableHead>{t('grading.student')}</TableHead>
+                      <TableHead>{t('grading.homework')}</TableHead>
+                      <TableHead>{t('grading.submitted')}</TableHead>
+                      <TableHead>{t('grading.status')}</TableHead>
+                      <TableHead>{t('grading.actions')}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -436,7 +438,7 @@ function GradingList() {
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Badge variant="secondary">Needs Review</Badge>
+                          <Badge variant="secondary">{t('grading.needsReview')}</Badge>
                         </TableCell>
                         <TableCell>
                           <Button
@@ -445,7 +447,7 @@ function GradingList() {
                             className="flex items-center gap-2"
                           >
                             <Eye className="h-4 w-4" />
-                            Grade
+                            {t('grading.grade')}
                           </Button>
                         </TableCell>
                       </TableRow>
@@ -460,9 +462,9 @@ function GradingList() {
         <TabsContent value="final-grades">
           <div className="space-y-4">
             <div>
-              <h2 className="text-xl font-semibold">Final Grades by Course</h2>
+              <h2 className="text-xl font-semibold">{t('grading.finalGradesByCourse')}</h2>
               <p className="text-sm text-gray-600 mt-1">
-                Finalize grades to lock them against coefficient changes. Finalized grades are immune to settings modifications.
+{t('grading.finalizeGradesMessage')}
               </p>
             </div>
             
@@ -922,6 +924,7 @@ export default function GradingPage() {
   const [examMatch, examParams] = useRoute("/grading/:submissionId");
   const [homeworkMatch, homeworkParams] = useRoute("/homework-grading/:submissionId");
   const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const { t } = useTranslation();
   const { toast } = useToast();
   
   const isHomeworkGrading = !!homeworkMatch;

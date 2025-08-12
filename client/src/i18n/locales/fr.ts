@@ -233,7 +233,27 @@ export const fr = {
     finalizeGrades: 'Finaliser les Notes',
     unfinalizeGrades: 'Définaliser les Notes',
     coefficients: 'Coefficients de Notes',
-    student: 'Étudiant'
+    student: 'Étudiant',
+    examSubmissions: 'Soumissions d\'Examens',
+    homeworkSubmissions: 'Soumissions de Devoirs',
+    examSubmissionsPendingReview: 'Soumissions d\'Examens en Attente de Révision',
+    homeworkSubmissionsPendingReview: 'Soumissions de Devoirs en Attente de Révision',
+    finalGradesByCourse: 'Notes Finales par Cours',
+    noExamSubmissions: 'Aucune soumission d\'examen en attente de révision',
+    noHomeworkSubmissions: 'Aucune soumission de devoir en attente de révision',
+    needsReview: 'Révision Requise',
+    grade: 'Noter',
+    exam: 'Examen',
+    homework: 'Devoir',
+    submitted: 'Soumis',
+    actions: 'Actions',
+    backToGradingCenter: 'Retour au Centre de Notes',
+    manualGrading: 'Notation Manuelle',
+    submissionDetails: 'Détails de la Soumission',
+    questionsRequiringManualGrading: 'Questions Nécessitant une Notation Manuelle',
+    readyToFinalize: 'Prêt à finaliser?',
+    finalizeGradesMessage: 'Une fois finalisées, les notes seront publiées à l\'étudiant et ne pourront pas être modifiées.',
+    pendingReview: 'Révision En Attente'
   },
 
   // Settings

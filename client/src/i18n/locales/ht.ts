@@ -233,7 +233,27 @@ export const ht = {
     finalizeGrades: 'Finalise Nòt yo',
     unfinalizeGrades: 'Definalise Nòt yo',
     coefficients: 'Koefisyan Nòt yo',
-    student: 'Elèv'
+    student: 'Elèv',
+    examSubmissions: 'Soumisyon Egzamen yo',
+    homeworkSubmissions: 'Soumisyon Devwa yo',
+    examSubmissionsPendingReview: 'Soumisyon Egzamen k ap Tann Revizyon',
+    homeworkSubmissionsPendingReview: 'Soumisyon Devwa k ap Tann Revizyon',
+    finalGradesByCourse: 'Nòt Final yo pa Kou',
+    noExamSubmissions: 'Pa gen soumisyon egzamen k ap tann revizyon',
+    noHomeworkSubmissions: 'Pa gen soumisyon devwa k ap tann revizyon',
+    needsReview: 'Bezwen Revizyon',
+    grade: 'Bay Nòt',
+    exam: 'Egzamen',
+    homework: 'Devwa',
+    submitted: 'Soumèt',
+    actions: 'Aksyon yo',
+    backToGradingCenter: 'Tounen nan Sant Nòt',
+    manualGrading: 'Bay Nòt Manyèl',
+    submissionDetails: 'Detay Soumisyon',
+    questionsRequiringManualGrading: 'Kesyon ki Bezwen Bay Nòt Manyèl',
+    readyToFinalize: 'Pare pou finalise?',
+    finalizeGradesMessage: 'Lè yo finalise, nòt yo pral pibliye ba elèv la epi yo pa ka chanje.',
+    pendingReview: 'Revizyon k ap Tann'
   },
 
   // Settings
