@@ -92,18 +92,6 @@ export default function StudentHomeworkTaking() {
     enabled: !!homeworkId && isAuthenticated,
   });
 
-  // Load existing answers when data is available
-  useEffect(() => {
-    if (existingData?.answers && questions.length > 0) {
-      const existingAnswers: Record<number, string> = {};
-      existingData.answers.forEach((answer: any) => {
-        existingAnswers[answer.questionId] = answer.answerText || "";
-      });
-      setAnswers(existingAnswers);
-      setExistingSubmission(existingData.submission);
-    }
-  }, [existingData, questions]);
-
   // Submit homework mutation
   const submitHomeworkMutation = useMutation({
     mutationFn: async (submissionData: any) => {
@@ -161,22 +149,36 @@ export default function StudentHomeworkTaking() {
     retry: false,
   });
 
-  // Load saved progress when available
+  // Load data with priority: saved progress > existing submission
   useEffect(() => {
-    if (savedProgress?.hasProgress && questions.length > 0 && !existingData) {
-      const progressData = savedProgress.progressData;
-      if (progressData) {
-        setAnswers(progressData.answers || {});
-        setCurrentQuestionIndex(progressData.currentQuestionIndex || 0);
-        
-        toast({
-          title: "Progress Restored",
-          description: "Your previous progress has been restored.",
-          variant: "default",
+    if (questions.length > 0) {
+      // Check if there's saved progress first - it takes priority
+      if (savedProgress?.hasProgress) {
+        const progressData = savedProgress.progressData;
+        if (progressData) {
+          setAnswers(progressData.answers || {});
+          setCurrentQuestionIndex(progressData.currentQuestionIndex || 0);
+          
+          toast({
+            title: "Progress Restored",
+            description: "Your previous progress has been restored.",
+            variant: "default",
+          });
+          return; // Exit early, don't load existing submission
+        }
+      }
+      
+      // If no saved progress, load existing submission data
+      if (existingData?.answers) {
+        const existingAnswers: Record<number, string> = {};
+        existingData.answers.forEach((answer: any) => {
+          existingAnswers[answer.questionId] = answer.answerText || "";
         });
+        setAnswers(existingAnswers);
+        setExistingSubmission(existingData.submission);
       }
     }
-  }, [savedProgress, questions, existingData]);
+  }, [savedProgress, existingData, questions]);
 
   // Auto-save effect - save progress every 30 seconds
   useEffect(() => {
