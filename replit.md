@@ -34,6 +34,14 @@ Recent UI Changes (August 2025):
   - Corrected exam status logic to properly handle multiple attempts - students can now retake exams until all attempts are exhausted
   - Enhanced status labels to show remaining attempts information for better user experience
   - Ensures exams remain active until all allowed attempts are completed
+- **Save Progress Functionality** (August 19, 2025):
+  - Implemented comprehensive Save Progress system for both exams and homework assignments
+  - Added database schema extensions with progressData, lastSavedAt, and timeRemainingSeconds fields
+  - Created auto-save functionality that saves progress every 30 seconds during active work
+  - Added manual "Save Progress" buttons to both exam and homework interfaces
+  - Implemented progress restoration when students return to incomplete assignments
+  - Enhanced exam status system to recognize and display "Resume Exam" for in-progress submissions
+  - Students can now safely leave and return to assignments without losing work
 
 ## System Architecture
 

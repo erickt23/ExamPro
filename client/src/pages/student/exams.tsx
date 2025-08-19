@@ -221,18 +221,22 @@ export default function StudentExams() {
     return { ...exam, examStatus };
   });
 
-  // Filter available exams (students can only start available exams)
-  const availableExams = allExamsWithStatus.filter((exam: any) => exam.examStatus.status === 'available');
+  // Filter available and resumable exams (students can start/resume these)
+  const availableExams = allExamsWithStatus.filter((exam: any) => 
+    exam.examStatus.status === 'available' || exam.examStatus.status === 'in_progress'
+  );
   
   // All exams categorized for display
   const upcomingExams = allExamsWithStatus.filter((exam: any) => exam.examStatus.status === 'upcoming');
   const expiredExams = allExamsWithStatus.filter((exam: any) => exam.examStatus.status === 'expired');
   const completedExams = allExamsWithStatus.filter((exam: any) => exam.examStatus.status === 'completed');
+  const inProgressExams = allExamsWithStatus.filter((exam: any) => exam.examStatus.status === 'in_progress');
 
   // Debug: Log all loaded data
   console.log('Student exam dashboard data:', {
     totalExams: exams.length,
     availableExams: availableExams.length,
+    inProgressExams: inProgressExams.length,
     upcomingExams: upcomingExams.length,
     expiredExams: expiredExams.length,
     completedExams: completedExams.length,
@@ -258,6 +262,8 @@ export default function StudentExams() {
     switch (status) {
       case 'available':
         return { variant: 'default' as const, className: 'bg-green-100 text-green-800 hover:bg-green-100' };
+      case 'in_progress':
+        return { variant: 'default' as const, className: 'bg-orange-100 text-orange-800 hover:bg-orange-100' };
       case 'upcoming':
         return { variant: 'secondary' as const, className: 'bg-blue-100 text-blue-800 hover:bg-blue-100' };
       case 'expired':
@@ -297,10 +303,15 @@ export default function StudentExams() {
     
     try {
       setSelectedExam(exam);
-      setExamStartTime(new Date());
-      setTimeRemaining(exam.duration * 60); // Convert minutes to seconds
-      setCurrentQuestionIndex(0);
-      setAnswers({});
+      
+      // For fresh exams, start from beginning
+      if (exam.examStatus?.status !== 'in_progress') {
+        setExamStartTime(new Date());
+        setTimeRemaining(exam.duration * 60); // Convert minutes to seconds
+        setCurrentQuestionIndex(0);
+        setAnswers({});
+      }
+      // For in-progress exams, the useEffect will load saved progress
       
       console.log('Exam started successfully');
     } catch (error) {

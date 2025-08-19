@@ -167,7 +167,7 @@ export function getExamStatus(
   exam: any,
   submissions: any[]
 ): {
-  status: 'upcoming' | 'available' | 'expired' | 'completed';
+  status: 'upcoming' | 'available' | 'expired' | 'completed' | 'in_progress';
   label: string;
   canStart: boolean;
 } {
@@ -177,7 +177,10 @@ export function getExamStatus(
   
   // Get student's submissions for this specific exam
   const examSubmissions = submissions?.filter((sub: any) => sub.examId === exam.id) || [];
-  const attemptsUsed = examSubmissions.length;
+  const attemptsUsed = examSubmissions.filter((sub: any) => sub.status !== 'in_progress').length;
+  
+  // Check for in-progress submissions
+  const inProgressSubmission = examSubmissions.find((sub: any) => sub.status === 'in_progress');
   
   // Check if student has exhausted all allowed attempts
   const hasAttemptsRemaining = exam.attemptsAllowed === -1 || attemptsUsed < exam.attemptsAllowed;
@@ -223,6 +226,20 @@ export function getExamStatus(
       label: 'Expired',
       canStart: false
     };
+  }
+  
+  // Check if there's an in-progress submission (saved progress)
+  if (inProgressSubmission && hasAttemptsRemaining) {
+    const isExpired = availableUntil && now > availableUntil;
+    const isUpcoming = availableFrom && now < availableFrom;
+    
+    if (!isExpired && !isUpcoming) {
+      return {
+        status: 'in_progress',
+        label: 'Resume Exam',
+        canStart: true
+      };
+    }
   }
   
   // Exam is currently available - check if student has attempts remaining
