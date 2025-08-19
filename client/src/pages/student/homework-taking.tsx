@@ -104,34 +104,6 @@ export default function StudentHomeworkTaking() {
     }
   }, [existingData, questions]);
 
-  // Load saved progress when available
-  useEffect(() => {
-    if (savedProgress?.hasProgress && questions.length > 0 && !existingData) {
-      const progressData = savedProgress.progressData;
-      if (progressData) {
-        setAnswers(progressData.answers || {});
-        setCurrentQuestionIndex(progressData.currentQuestionIndex || 0);
-        
-        toast({
-          title: "Progress Restored",
-          description: "Your previous progress has been restored.",
-          variant: "default",
-        });
-      }
-    }
-  }, [savedProgress, questions, existingData]);
-
-  // Auto-save effect - save progress every 30 seconds
-  useEffect(() => {
-    if (homeworkId && Object.keys(answers).length > 0) {
-      const autoSaveTimer = setInterval(() => {
-        handleSaveProgress();
-      }, 30000); // Auto-save every 30 seconds
-
-      return () => clearInterval(autoSaveTimer);
-    }
-  }, [homeworkId, answers, currentQuestionIndex]);
-
   // Submit homework mutation
   const submitHomeworkMutation = useMutation({
     mutationFn: async (submissionData: any) => {
@@ -188,6 +160,34 @@ export default function StudentHomeworkTaking() {
     enabled: !!homeworkId && isAuthenticated,
     retry: false,
   });
+
+  // Load saved progress when available
+  useEffect(() => {
+    if (savedProgress?.hasProgress && questions.length > 0 && !existingData) {
+      const progressData = savedProgress.progressData;
+      if (progressData) {
+        setAnswers(progressData.answers || {});
+        setCurrentQuestionIndex(progressData.currentQuestionIndex || 0);
+        
+        toast({
+          title: "Progress Restored",
+          description: "Your previous progress has been restored.",
+          variant: "default",
+        });
+      }
+    }
+  }, [savedProgress, questions, existingData]);
+
+  // Auto-save effect - save progress every 30 seconds
+  useEffect(() => {
+    if (homeworkId && Object.keys(answers).length > 0) {
+      const autoSaveTimer = setInterval(() => {
+        handleSaveProgress();
+      }, 30000); // Auto-save every 30 seconds
+
+      return () => clearInterval(autoSaveTimer);
+    }
+  }, [homeworkId, answers, currentQuestionIndex]);
 
   const handleAnswerChange = (questionId: number, answer: string) => {
     setAnswers(prev => ({ ...prev, [questionId]: answer }));
