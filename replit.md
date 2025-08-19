@@ -49,6 +49,9 @@ Recent UI Changes (August 2025):
   - Added comprehensive import instructions with detailed examples for advanced question types
   - Created updated Excel template (exam_bank_import_template_updated.xlsx) with examples for all question types
   - Added support for 'category' field to separate exam and homework questions during import
+  - **Implemented duplicate prevention system** - checks title, question text, type, subject, and category to prevent duplicate questions
+  - Added warning display for skipped duplicates with clear feedback in import results
+  - Fixed import modal scrolling and layout for better user experience
 
 ## System Architecture
 

@@ -176,8 +176,30 @@ export default function ImportQuestionsModal({ open, onOpenChange }: ImportQuest
                 <CheckCircle className="h-4 w-4" />
                 <AlertDescription>
                   <strong>{importResults.imported}</strong> questions imported successfully
+                  {importResults.warnings && importResults.warnings.length > 0 && (
+                    <span className="text-yellow-700"> • {importResults.warnings.length} duplicates skipped</span>
+                  )}
+                  {importResults.errors.length > 0 && (
+                    <span className="text-red-700"> • {importResults.errors.length} errors</span>
+                  )}
                 </AlertDescription>
               </Alert>
+
+              {importResults.warnings && importResults.warnings.length > 0 && (
+                <Alert className="border-yellow-200 bg-yellow-50">
+                  <Info className="h-4 w-4 text-yellow-600" />
+                  <AlertDescription className="text-yellow-800">
+                    <strong>{importResults.warnings.length}</strong> duplicate questions skipped:
+                    <div className="mt-2 max-h-40 overflow-y-auto">
+                      <ul className="text-sm list-disc list-inside space-y-1">
+                        {importResults.warnings.map((warning: any, index: number) => (
+                          <li key={index}>Row {warning.row}: {warning.message}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  </AlertDescription>
+                </Alert>
+              )}
 
               {importResults.errors.length > 0 && (
                 <Alert variant="destructive">

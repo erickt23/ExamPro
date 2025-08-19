@@ -383,13 +383,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // Validate and transform row data
           const questionData = await validateAndTransformRow(row, i + 2); // +2 for header row
           
-          // Create question using existing storage interface
-          const question = await storage.createQuestion({
-            ...questionData,
-            instructorId: userId
+          // Check for duplicate questions before creating
+          const existingQuestions = await storage.getQuestions(userId, {
+            search: questionData.title, // Search by title first
+            subjectId: questionData.subjectId,
+            category: questionData.category
           });
           
-          results.imported++;
+          // Check if any existing question has the same title and question text
+          const isDuplicate = existingQuestions.some(existing => 
+            existing.title?.toLowerCase().trim() === questionData.title?.toLowerCase().trim() &&
+            existing.questionText?.toLowerCase().trim() === questionData.questionText?.toLowerCase().trim() &&
+            existing.questionType === questionData.questionType &&
+            existing.subjectId === questionData.subjectId &&
+            existing.category === questionData.category
+          );
+          
+          if (isDuplicate) {
+            (results.warnings as any[]).push({
+              row: i + 2,
+              message: `Duplicate question skipped: "${questionData.title}" already exists`,
+              data: row
+            });
+          } else {
+            // Create question using existing storage interface
+            const question = await storage.createQuestion({
+              ...questionData,
+              instructorId: userId
+            });
+            
+            results.imported++;
+          }
         } catch (error: any) {
           (results.errors as any[]).push({
             row: i + 2,
