@@ -151,6 +151,10 @@ export const submissions = pgTable("submissions", {
   maxScore: decimal("max_score", { precision: 5, scale: 2 }),
   status: varchar("status", { enum: ["in_progress", "submitted", "graded", "pending"] }).notNull().default("in_progress"),
   isLate: boolean("is_late").notNull().default(false),
+  // Progress saving fields
+  progressData: jsonb("progress_data"), // Stores answers, current question, time remaining, etc.
+  lastSavedAt: timestamp("last_saved_at"),
+  timeRemainingSeconds: integer("time_remaining_seconds"), // Track remaining time for resuming
 });
 
 // Student Answers table
@@ -205,6 +209,9 @@ export const homeworkSubmissions = pgTable("homework_submissions", {
   maxScore: decimal("max_score", { precision: 5, scale: 2 }),
   status: varchar("status", { enum: ["in_progress", "submitted", "graded", "pending"] }).notNull().default("in_progress"),
   isLate: boolean("is_late").notNull().default(false),
+  // Progress saving fields
+  progressData: jsonb("progress_data"), // Stores answers, current question, etc.
+  lastSavedAt: timestamp("last_saved_at"),
 });
 
 // Homework Answers table

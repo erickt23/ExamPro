@@ -123,6 +123,38 @@ export default function StudentExams() {
     },
   });
 
+  const saveProgressMutation = useMutation({
+    mutationFn: async (progressData: any) => {
+      await apiRequest("POST", `/api/exams/${selectedExam.id}/save-progress`, progressData);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Progress saved successfully",
+        variant: "default",
+      });
+    },
+    onError: (error: Error) => {
+      console.error("Error saving progress:", error);
+      toast({
+        title: "Error",
+        description: "Failed to save progress",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const { data: savedProgress } = useQuery({
+    queryKey: ["/api/exams", selectedExam?.id, "progress"],
+    queryFn: async () => {
+      const response = await fetch(`/api/exams/${selectedExam.id}/progress`);
+      if (!response.ok) throw new Error(`${response.status}: ${response.statusText}`);
+      return response.json();
+    },
+    enabled: !!selectedExam,
+    retry: false,
+  });
+
   // Timer effect
   useEffect(() => {
     if (selectedExam && examStartTime && timeRemaining !== null && timeRemaining > 0) {
@@ -141,6 +173,36 @@ export default function StudentExams() {
       return () => clearInterval(timer);
     }
   }, [selectedExam, examStartTime, timeRemaining]);
+
+  // Auto-save effect - save progress every 30 seconds
+  useEffect(() => {
+    if (selectedExam && Object.keys(answers).length > 0) {
+      const autoSaveTimer = setInterval(() => {
+        handleSaveProgress();
+      }, 30000); // Auto-save every 30 seconds
+
+      return () => clearInterval(autoSaveTimer);
+    }
+  }, [selectedExam, answers, currentQuestionIndex, timeRemaining]);
+
+  // Load saved progress when exam is selected
+  useEffect(() => {
+    if (savedProgress?.hasProgress && selectedExam && !examStartTime) {
+      const progressData = savedProgress.progressData;
+      if (progressData) {
+        setAnswers(progressData.answers || {});
+        setCurrentQuestionIndex(progressData.currentQuestionIndex || 0);
+        setTimeRemaining(savedProgress.timeRemainingSeconds || selectedExam.duration * 60);
+        setExamStartTime(new Date()); // Start timer from now
+        
+        toast({
+          title: "Progress Restored",
+          description: "Your previous progress has been restored.",
+          variant: "default",
+        });
+      }
+    }
+  }, [savedProgress, selectedExam, examStartTime]);
 
   if (isLoading || !isAuthenticated) {
     return (
@@ -256,6 +318,16 @@ export default function StudentExams() {
       ...prev,
       [questionId]: answer
     }));
+  };
+
+  const handleSaveProgress = () => {
+    if (!selectedExam) return;
+
+    saveProgressMutation.mutate({
+      answers,
+      currentQuestionIndex,
+      timeRemainingSeconds: timeRemaining,
+    });
   };
 
   const handleSubmitExam = () => {
@@ -538,9 +610,14 @@ export default function StudentExams() {
             </Button>
 
             <div className="flex space-x-3">
-              <Button variant="outline">
+              <Button 
+                variant="outline"
+                onClick={handleSaveProgress}
+                disabled={saveProgressMutation.isPending}
+                data-testid="button-save-progress"
+              >
                 <Save className="h-4 w-4 mr-2" />
-                Save Progress
+                {saveProgressMutation.isPending ? 'Saving...' : 'Save Progress'}
               </Button>
               
               {currentQuestionIndex < (examDetails.questions?.length || 1) - 1 ? (

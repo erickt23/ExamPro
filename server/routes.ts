@@ -589,6 +589,78 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Save progress endpoints
+  app.post('/api/exams/:id/save-progress', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const examId = parseInt(req.params.id);
+      const { answers, currentQuestionIndex, timeRemainingSeconds } = req.body;
+
+      // Check if exam exists
+      const exam = await storage.getExamById(examId);
+      if (!exam) {
+        return res.status(404).json({ message: "Exam not found" });
+      }
+
+      // Find existing in-progress submission or create one
+      const existingSubmissions = await storage.getSubmissions(examId, userId);
+      let submission = existingSubmissions.find(sub => sub.status === 'in_progress');
+
+      if (!submission) {
+        // Create a new in-progress submission
+        submission = await storage.createSubmission({
+          examId,
+          studentId: userId,
+          status: 'in_progress',
+        });
+      }
+
+      // Update the submission with progress data
+      const progressData = {
+        answers,
+        currentQuestionIndex,
+        timeRemainingSeconds,
+        savedAt: new Date().toISOString(),
+      };
+
+      await storage.updateSubmission(submission.id, {
+        progressData,
+        lastSavedAt: new Date(),
+        timeRemainingSeconds,
+      });
+
+      res.json({ message: "Progress saved successfully", submissionId: submission.id });
+    } catch (error) {
+      console.error("Error saving exam progress:", error);
+      res.status(500).json({ message: "Failed to save progress" });
+    }
+  });
+
+  app.get('/api/exams/:id/progress', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const examId = parseInt(req.params.id);
+
+      // Find in-progress submission
+      const submissions = await storage.getSubmissions(examId, userId);
+      const inProgressSubmission = submissions.find(sub => sub.status === 'in_progress');
+
+      if (!inProgressSubmission || !inProgressSubmission.progressData) {
+        return res.json({ hasProgress: false });
+      }
+
+      res.json({
+        hasProgress: true,
+        progressData: inProgressSubmission.progressData,
+        lastSavedAt: inProgressSubmission.lastSavedAt,
+        timeRemainingSeconds: inProgressSubmission.timeRemainingSeconds,
+      });
+    } catch (error) {
+      console.error("Error fetching exam progress:", error);
+      res.status(500).json({ message: "Failed to fetch progress" });
+    }
+  });
+
   // Submission routes
   app.post('/api/exams/:id/submit', isAuthenticated, async (req: any, res) => {
     try {
@@ -1408,6 +1480,76 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching homework submissions:", error);
       res.status(500).json({ message: "Failed to fetch homework submissions" });
+    }
+  });
+
+  // Save homework progress endpoints
+  app.post('/api/homework/:id/save-progress', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const homeworkId = parseInt(req.params.id);
+      const { answers, currentQuestionIndex } = req.body;
+
+      // Check if homework exists
+      const homework = await storage.getHomeworkById(homeworkId);
+      if (!homework) {
+        return res.status(404).json({ message: "Homework not found" });
+      }
+
+      // Find existing in-progress submission or create one
+      const existingSubmissions = await storage.getHomeworkSubmissions(homeworkId, userId);
+      let submission = existingSubmissions.find(sub => sub.status === 'in_progress');
+
+      if (!submission) {
+        // Create a new in-progress submission
+        submission = await storage.createHomeworkSubmission({
+          homeworkId,
+          studentId: userId,
+          status: 'in_progress',
+          startedAt: new Date(),
+        });
+      }
+
+      // Update the submission with progress data
+      const progressData = {
+        answers,
+        currentQuestionIndex,
+        savedAt: new Date().toISOString(),
+      };
+
+      await storage.updateHomeworkSubmission(submission.id, {
+        progressData,
+        lastSavedAt: new Date(),
+      });
+
+      res.json({ message: "Progress saved successfully", submissionId: submission.id });
+    } catch (error) {
+      console.error("Error saving homework progress:", error);
+      res.status(500).json({ message: "Failed to save progress" });
+    }
+  });
+
+  app.get('/api/homework/:id/progress', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const homeworkId = parseInt(req.params.id);
+
+      // Find in-progress submission
+      const submissions = await storage.getHomeworkSubmissions(homeworkId, userId);
+      const inProgressSubmission = submissions.find(sub => sub.status === 'in_progress');
+
+      if (!inProgressSubmission || !inProgressSubmission.progressData) {
+        return res.json({ hasProgress: false });
+      }
+
+      res.json({
+        hasProgress: true,
+        progressData: inProgressSubmission.progressData,
+        lastSavedAt: inProgressSubmission.lastSavedAt,
+      });
+    } catch (error) {
+      console.error("Error fetching homework progress:", error);
+      res.status(500).json({ message: "Failed to fetch progress" });
     }
   });
 

@@ -104,6 +104,34 @@ export default function StudentHomeworkTaking() {
     }
   }, [existingData, questions]);
 
+  // Load saved progress when available
+  useEffect(() => {
+    if (savedProgress?.hasProgress && questions.length > 0 && !existingData) {
+      const progressData = savedProgress.progressData;
+      if (progressData) {
+        setAnswers(progressData.answers || {});
+        setCurrentQuestionIndex(progressData.currentQuestionIndex || 0);
+        
+        toast({
+          title: "Progress Restored",
+          description: "Your previous progress has been restored.",
+          variant: "default",
+        });
+      }
+    }
+  }, [savedProgress, questions, existingData]);
+
+  // Auto-save effect - save progress every 30 seconds
+  useEffect(() => {
+    if (homeworkId && Object.keys(answers).length > 0) {
+      const autoSaveTimer = setInterval(() => {
+        handleSaveProgress();
+      }, 30000); // Auto-save every 30 seconds
+
+      return () => clearInterval(autoSaveTimer);
+    }
+  }, [homeworkId, answers, currentQuestionIndex]);
+
   // Submit homework mutation
   const submitHomeworkMutation = useMutation({
     mutationFn: async (submissionData: any) => {
@@ -127,8 +155,51 @@ export default function StudentHomeworkTaking() {
     },
   });
 
+  // Save progress mutation
+  const saveProgressMutation = useMutation({
+    mutationFn: async (progressData: any) => {
+      await apiRequest("POST", `/api/homework/${homeworkId}/save-progress`, progressData);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Progress saved successfully",
+        variant: "default",
+      });
+    },
+    onError: (error: Error) => {
+      console.error("Error saving progress:", error);
+      toast({
+        title: "Error",
+        description: "Failed to save progress",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Fetch saved progress
+  const { data: savedProgress } = useQuery({
+    queryKey: [`/api/homework/${homeworkId}/progress`],
+    queryFn: async () => {
+      const response = await fetch(`/api/homework/${homeworkId}/progress`);
+      if (!response.ok) throw new Error(`${response.status}: ${response.statusText}`);
+      return response.json();
+    },
+    enabled: !!homeworkId && isAuthenticated,
+    retry: false,
+  });
+
   const handleAnswerChange = (questionId: number, answer: string) => {
     setAnswers(prev => ({ ...prev, [questionId]: answer }));
+  };
+
+  const handleSaveProgress = () => {
+    if (!homeworkId) return;
+
+    saveProgressMutation.mutate({
+      answers,
+      currentQuestionIndex,
+    });
   };
 
   const handleSubmitHomework = () => {
@@ -382,6 +453,16 @@ export default function StudentHomeworkTaking() {
               </Button>
 
               <div className="flex gap-2">
+                <Button 
+                  variant="outline"
+                  onClick={handleSaveProgress}
+                  disabled={saveProgressMutation.isPending}
+                  data-testid="button-save-progress"
+                >
+                  <Save className="h-4 w-4 mr-2" />
+                  {saveProgressMutation.isPending ? 'Saving...' : 'Save Progress'}
+                </Button>
+                
                 {currentQuestionIndex < questions.length - 1 ? (
                   <Button
                     onClick={() => setCurrentQuestionIndex(Math.min(questions.length - 1, currentQuestionIndex + 1))}
