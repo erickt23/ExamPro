@@ -42,6 +42,13 @@ Recent UI Changes (August 2025):
   - Implemented progress restoration when students return to incomplete assignments
   - Enhanced exam status system to recognize and display "Resume Exam" for in-progress submissions
   - Students can now safely leave and return to assignments without losing work
+  - Fixed homework progress restoration priority to ensure saved progress takes precedence over existing submissions
+- **Enhanced Question Import System** (August 19, 2025):
+  - Updated Excel import functionality to support all question types: multiple_choice, short_answer, essay, fill_blank, matching, ranking, drag_drop
+  - Enhanced server-side validation to properly parse complex question formats (JSON for matching/ranking, pipe-separated for fill_blank)
+  - Added comprehensive import instructions with detailed examples for advanced question types
+  - Created updated Excel template (exam_bank_import_template_updated.xlsx) with examples for all question types
+  - Added support for 'category' field to separate exam and homework questions during import
 
 ## System Architecture
 

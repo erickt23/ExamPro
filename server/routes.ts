@@ -37,12 +37,12 @@ async function validateAndTransformRow(row: any, rowNumber: number) {
   }
 
   // Validate question type
-  const validTypes = ['multiple_choice', 'short_answer', 'essay', 'fill_blank'];
+  const validTypes = ['multiple_choice', 'short_answer', 'essay', 'fill_blank', 'matching', 'ranking', 'drag_drop'];
   if (!validTypes.includes(row.questionType)) {
     throw new Error(`Invalid question type: ${row.questionType}`);
   }
 
-  // Parse options for multiple choice
+  // Parse options and answers based on question type
   let options = null;
   let correctAnswer = null;
   
@@ -59,6 +59,74 @@ async function validateAndTransformRow(row: any, rowNumber: number) {
     }
     
     correctAnswer = row.correctAnswer || 'A';
+  } else if (row.questionType === 'matching') {
+    if (!row.options) {
+      throw new Error('Matching questions must have options');
+    }
+    
+    // Parse options for matching: "Left1;Left2|Right1;Right2"
+    const parts = row.options.split('|');
+    if (parts.length !== 2) {
+      throw new Error('Matching options must be in format: "Left1;Left2|Right1;Right2"');
+    }
+    
+    const leftItems = parts[0].split(';').map((opt: string) => opt.trim()).filter(Boolean);
+    const rightItems = parts[1].split(';').map((opt: string) => opt.trim()).filter(Boolean);
+    
+    options = { leftItems, rightItems };
+    
+    // Parse correct answer as JSON
+    try {
+      correctAnswer = row.correctAnswer ? JSON.parse(row.correctAnswer) : null;
+    } catch (e) {
+      throw new Error('Matching correct answer must be valid JSON');
+    }
+  } else if (row.questionType === 'ranking') {
+    if (!row.options) {
+      throw new Error('Ranking questions must have options');
+    }
+    
+    // Parse options for ranking: "Item1;Item2;Item3"
+    options = row.options.split(';').map((opt: string) => opt.trim()).filter(Boolean);
+    
+    if (options.length < 2) {
+      throw new Error('Ranking questions must have at least 2 items');
+    }
+    
+    // Parse correct answer as JSON array
+    try {
+      correctAnswer = row.correctAnswer ? JSON.parse(row.correctAnswer) : null;
+    } catch (e) {
+      throw new Error('Ranking correct answer must be valid JSON array');
+    }
+  } else if (row.questionType === 'drag_drop') {
+    if (!row.options) {
+      throw new Error('Drag and drop questions must have options');
+    }
+    
+    // Parse options for drag drop: "Category1;Category2|Item1;Item2"
+    const parts = row.options.split('|');
+    if (parts.length !== 2) {
+      throw new Error('Drag drop options must be in format: "Category1;Category2|Item1;Item2"');
+    }
+    
+    const categories = parts[0].split(';').map((opt: string) => opt.trim()).filter(Boolean);
+    const items = parts[1].split(';').map((opt: string) => opt.trim()).filter(Boolean);
+    
+    options = { categories, items };
+    
+    // Parse correct answer as JSON
+    try {
+      correctAnswer = row.correctAnswer ? JSON.parse(row.correctAnswer) : null;
+    } catch (e) {
+      throw new Error('Drag drop correct answer must be valid JSON');
+    }
+  } else if (row.questionType === 'fill_blank') {
+    // For fill in blank, correctAnswer can be pipe-separated for multiple blanks
+    correctAnswer = row.correctAnswer || '';
+  } else {
+    // For short_answer and essay, no special processing needed
+    correctAnswer = row.correctAnswer || '';
   }
 
   // Look up subject ID from subject name
@@ -72,6 +140,7 @@ async function validateAndTransformRow(row: any, rowNumber: number) {
     title: row.title,
     questionText: row.questionText,
     questionType: row.questionType,
+    category: row.category || 'exam', // Support category field
     subjectId: subject.id,
     difficulty: row.difficulty || 'medium',
     bloomsTaxonomy: row.bloomsTaxonomy || null,

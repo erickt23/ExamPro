@@ -1,0 +1,9 @@
+title,questionText,questionType,subject,difficulty,bloomsTaxonomy,points,options,correctAnswer,explanation,category
+Sample Multiple Choice,"What is the capital of France?",multiple_choice,Geography,easy,remember,1,"Paris;London;Berlin;Madrid",A,"Paris is the capital and largest city of France.",exam
+Sample Short Answer,"Explain the process of photosynthesis.",short_answer,Biology,medium,understand,3,"","","Photosynthesis is the process by which green plants convert light energy into chemical energy.",exam
+Sample Essay,"Discuss the causes and effects of World War I.",essay,History,hard,analyze,10,"","","World War I was caused by complex political tensions and had far-reaching consequences for global politics.",exam
+Sample Fill in Blank,"The chemical symbol for gold is ___ and it has an atomic number of ___.","fill_blank",Chemistry,medium,remember,2,"","Au|79","Gold's chemical symbol comes from its Latin name aurum.",exam
+Sample Matching,"Match the countries with their capitals:",matching,Geography,medium,understand,5,"France;Germany;Italy|Paris;Berlin;Rome","{""France"":""Paris"",""Germany"":""Berlin"",""Italy"":""Rome""}","Each country has a unique capital city.",exam
+Sample Ranking,"Rank these planets by distance from the Sun (closest to farthest):",ranking,Astronomy,medium,apply,4,"Mercury;Venus;Earth;Mars","[""Mercury"",""Venus"",""Earth"",""Mars""]","The order follows the traditional planetary sequence.",exam
+Sample Drag and Drop,"Categorize these animals into their habitats:",drag_drop,Biology,medium,apply,6,"Land;Water|Lion;Eagle;Shark;Dolphin","{""Land"":[""Lion"",""Eagle""],""Water"":[""Shark"",""Dolphin""]}","Animals are adapted to specific environments.",exam
+Homework Sample,"Calculate the area of a rectangle with length 5cm and width 3cm.",short_answer,Mathematics,easy,apply,2,"","15 cm²","Area = length × width = 5 × 3 = 15 cm²",homework

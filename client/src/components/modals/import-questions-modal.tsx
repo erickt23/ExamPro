@@ -113,15 +113,25 @@ export default function ImportQuestionsModal({ open, onOpenChange }: ImportQuest
               <ul className="mt-2 text-sm list-disc list-inside space-y-1">
                 <li><strong>title</strong> - Question title</li>
                 <li><strong>questionText</strong> - The actual question</li>
-                <li><strong>questionType</strong> - multiple_choice, short_answer, essay, or fill_blank</li>
+                <li><strong>questionType</strong> - multiple_choice, short_answer, essay, fill_blank, matching, ranking, or drag_drop</li>
                 <li><strong>subject</strong> - Subject name (e.g., "Mathematics", "Physics", "History")</li>
                 <li><strong>difficulty</strong> - easy, medium, or hard (optional, defaults to medium)</li>
                 <li><strong>bloomsTaxonomy</strong> - remember, understand, apply, analyze, evaluate, create (optional)</li>
                 <li><strong>points</strong> - Point value (optional, defaults to 1)</li>
                 <li><strong>options</strong> - For multiple choice, separated by semicolons (e.g., "Paris;London;Berlin;Madrid")</li>
-                <li><strong>correctAnswer</strong> - For multiple choice (A, B, C, D, etc.)</li>
+                <li><strong>correctAnswer</strong> - For multiple choice (A, B, C, D), matching/ranking (JSON format), or fill_blank (pipe-separated)</li>
                 <li><strong>explanation</strong> - Optional explanation text</li>
+                <li><strong>category</strong> - 'exam' or 'homework' (optional, defaults to 'exam')</li>
               </ul>
+              <div className="mt-3 p-3 bg-blue-50 rounded-md">
+                <p className="text-sm font-medium text-blue-800 mb-2">Advanced Question Types:</p>
+                <ul className="text-xs space-y-1 text-blue-700">
+                  <li><strong>Matching:</strong> options: "Left1;Left2|Right1;Right2", correctAnswer: JSON format</li>
+                  <li><strong>Ranking:</strong> options: "Item1;Item2;Item3", correctAnswer: Array format</li>
+                  <li><strong>Drag & Drop:</strong> options: "Category1;Category2|Item1;Item2", correctAnswer: Object format</li>
+                  <li><strong>Fill in Blank:</strong> correctAnswer: "answer1|answer2|answer3" (for multiple blanks)</li>
+                </ul>
+              </div>
             </AlertDescription>
           </Alert>
 
