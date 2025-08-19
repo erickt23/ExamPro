@@ -29,6 +29,11 @@ Recent UI Changes (August 2025):
   - Colors: Background (#15202B), Card (#192734), Hover (#22303C), Primary Text (#FFFFFF), Secondary Text (#8899A6)
   - Updated all major components (dashboard, sidebar, navbar) with dark mode variants
   - Theme toggle integrated into navbar with full translation support
+- **Multiple Attempts Fix** (August 19, 2025):
+  - Fixed critical bug where edited, duplicated, and republished exams weren't appearing as available for students
+  - Corrected exam status logic to properly handle multiple attempts - students can now retake exams until all attempts are exhausted
+  - Enhanced status labels to show remaining attempts information for better user experience
+  - Ensures exams remain active until all allowed attempts are completed
 
 ## System Architecture
 

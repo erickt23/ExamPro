@@ -177,10 +177,13 @@ export function getExamStatus(
   
   // Get student's submissions for this specific exam
   const examSubmissions = submissions?.filter((sub: any) => sub.examId === exam.id) || [];
-  const hasSubmission = examSubmissions.length > 0;
+  const attemptsUsed = examSubmissions.length;
   
-  // Check if student has completed submissions
-  if (hasSubmission) {
+  // Check if student has exhausted all allowed attempts
+  const hasAttemptsRemaining = exam.attemptsAllowed === -1 || attemptsUsed < exam.attemptsAllowed;
+  
+  // Only mark as completed if no attempts remaining OR exam has unlimited attempts but student has submitted
+  if (attemptsUsed > 0 && !hasAttemptsRemaining) {
     return {
       status: 'completed',
       label: 'Completed',
@@ -202,12 +205,8 @@ export function getExamStatus(
     // Check if the exam was within the valid scheduled time window
     const wasWithinSchedule = !availableFrom || availableFrom <= now;
     
-    // Check if student still had attempts remaining
-    const attemptsUsed = examSubmissions.length;
-    const hasAttemptsRemaining = exam.attemptsAllowed === -1 || attemptsUsed < exam.attemptsAllowed;
-    
     // Check if exam is not yet graded (no submissions exist to grade)
-    const isNotGraded = examSubmissions.length === 0;
+    const isNotGraded = attemptsUsed === 0;
     
     // If all conditions are met, mark as completed instead of expired
     if (wasWithinSchedule && hasAttemptsRemaining && isNotGraded) {
@@ -226,10 +225,19 @@ export function getExamStatus(
     };
   }
   
-  // Exam is currently available
-  return {
-    status: 'available',
-    label: 'Available',
-    canStart: true
-  };
+  // Exam is currently available - check if student has attempts remaining
+  if (hasAttemptsRemaining) {
+    return {
+      status: 'available',
+      label: attemptsUsed > 0 ? `Available (${exam.attemptsAllowed === -1 ? 'Unlimited' : exam.attemptsAllowed - attemptsUsed} attempts remaining)` : 'Available',
+      canStart: true
+    };
+  } else {
+    // Student has used all attempts but exam is still within availability window
+    return {
+      status: 'completed',
+      label: 'Completed',
+      canStart: false
+    };
+  }
 }
