@@ -96,15 +96,15 @@ export default function ImportQuestionsModal({ open, onOpenChange }: ImportQuest
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-2xl">
-        <DialogHeader>
+      <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle className="flex items-center gap-2">
             <Upload className="h-5 w-5" />
             Import Questions from Excel
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-6">
+        <div className="space-y-6 overflow-y-auto flex-1 pr-2">
           {/* Excel Format Information */}
           <Alert>
             <Info className="h-4 w-4" />
@@ -184,14 +184,11 @@ export default function ImportQuestionsModal({ open, onOpenChange }: ImportQuest
                   <AlertCircle className="h-4 w-4" />
                   <AlertDescription>
                     <strong>{importResults.errors.length}</strong> errors occurred:
-                    <div className="mt-2 max-h-32 overflow-y-auto">
+                    <div className="mt-2 max-h-40 overflow-y-auto">
                       <ul className="text-sm list-disc list-inside space-y-1">
-                        {importResults.errors.slice(0, 10).map((error: any, index: number) => (
+                        {importResults.errors.map((error: any, index: number) => (
                           <li key={index}>Row {error.row}: {error.message}</li>
                         ))}
-                        {importResults.errors.length > 10 && (
-                          <li>... and {importResults.errors.length - 10} more errors</li>
-                        )}
                       </ul>
                     </div>
                   </AlertDescription>
@@ -199,19 +196,19 @@ export default function ImportQuestionsModal({ open, onOpenChange }: ImportQuest
               )}
             </div>
           )}
+        </div>
 
-          {/* Actions */}
-          <div className="flex justify-end gap-3">
-            <Button variant="outline" onClick={handleClose}>
-              {importResults ? "Close" : "Cancel"}
-            </Button>
-            <Button 
-              onClick={handleImport} 
-              disabled={!selectedFile || importMutation.isPending}
-            >
-              {importMutation.isPending ? "Importing..." : "Import Questions"}
-            </Button>
-          </div>
+        {/* Fixed Footer Actions */}
+        <div className="flex justify-end gap-3 pt-4 border-t flex-shrink-0">
+          <Button variant="outline" onClick={handleClose}>
+            {importResults ? "Close" : "Cancel"}
+          </Button>
+          <Button 
+            onClick={handleImport} 
+            disabled={!selectedFile || importMutation.isPending}
+          >
+            {importMutation.isPending ? "Importing..." : "Import Questions"}
+          </Button>
         </div>
       </DialogContent>
     </Dialog>
