@@ -279,10 +279,18 @@ export default function StudentExamTaking() {
               onValueChange={(value) => handleAnswerChange(question.questionId, value)}
             >
               {options.map((option: string, index: number) => (
-                <div key={index} className="flex items-center space-x-2">
-                  <RadioGroupItem value={String.fromCharCode(65 + index)} id={`option-${index}`} />
-                  <Label htmlFor={`option-${index}`} className="flex-1 cursor-pointer">
-                    {String.fromCharCode(65 + index)}. {option}
+                <div key={index} className="flex items-start space-x-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800/50 transition-colors">
+                  <RadioGroupItem 
+                    value={String.fromCharCode(65 + index)} 
+                    id={`option-${index}`}
+                    className="mt-0.5 flex-shrink-0"
+                  />
+                  <Label 
+                    htmlFor={`option-${index}`} 
+                    className="flex-1 cursor-pointer text-sm leading-relaxed"
+                  >
+                    <span className="font-medium mr-2">{String.fromCharCode(65 + index)}.</span>
+                    <span>{option}</span>
                   </Label>
                 </div>
               ))}
@@ -296,7 +304,7 @@ export default function StudentExamTaking() {
             placeholder="Enter your answer..."
             value={answer || ''}
             onChange={(e) => handleAnswerChange(question.questionId, e.target.value)}
-            className="w-full"
+            className="w-full text-base"
           />
         );
 
@@ -306,20 +314,21 @@ export default function StudentExamTaking() {
             placeholder="Write your essay response here..."
             value={answer || ''}
             onChange={(e) => handleAnswerChange(question.questionId, e.target.value)}
-            className="w-full min-h-[200px]"
+            className="w-full min-h-[200px] text-base leading-relaxed"
           />
         );
 
       case 'fill_blank':
         const correctAnswers = question.question.correctAnswer ? 
           question.question.correctAnswer.split('|') : [];
-        const blanks = question.question.questionText.split('____');
         
         return (
           <div className="space-y-4">
             {correctAnswers.map((_: string, index: number) => (
-              <div key={index} className="flex items-center space-x-2">
-                <Label className="whitespace-nowrap">Blank {index + 1}:</Label>
+              <div key={index} className="flex flex-col sm:flex-row sm:items-center gap-3">
+                <Label className="text-sm font-medium sm:whitespace-nowrap sm:w-24">
+                  Blank {index + 1}:
+                </Label>
                 <Input
                   placeholder={`Answer for blank ${index + 1}`}
                   value={answer?.[index] || ''}
@@ -328,6 +337,7 @@ export default function StudentExamTaking() {
                     newAnswer[index] = e.target.value;
                     handleAnswerChange(question.questionId, newAnswer);
                   }}
+                  className="flex-1 text-base"
                 />
               </div>
             ))}
@@ -393,32 +403,35 @@ export default function StudentExamTaking() {
       <Navbar />
       
       <div className="flex">
-        <Sidebar />
+        <div className="hidden lg:block">
+          <Sidebar />
+        </div>
         
-        <main className="flex-1 ml-64 p-6">
-          <div className="max-w-4xl mx-auto">
+        <main className="flex-1 lg:ml-64 p-4 lg:p-6 w-full min-w-0">
+          <div className="max-w-4xl mx-auto w-full">
             {/* Exam Header */}
             <div className="mb-6">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
                   <Link href="/exams">
                     <Button variant="ghost" size="sm">
                       <ArrowLeft className="h-4 w-4 mr-2" />
-                      Back to Exams
+                      <span className="hidden sm:inline">Back to Exams</span>
+                      <span className="sm:hidden">Back</span>
                     </Button>
                   </Link>
                   <div>
-                    <h1 className="text-2xl font-bold text-foreground dark:text-foreground">{exam.title}</h1>
-                    <p className="text-muted-foreground">
+                    <h1 className="text-xl lg:text-2xl font-bold text-foreground dark:text-foreground line-clamp-2">{exam.title}</h1>
+                    <p className="text-muted-foreground text-sm">
                       Question {currentQuestionIndex + 1} of {questions.length}
                     </p>
                   </div>
                 </div>
                 
-                <div className="flex items-center space-x-4">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
                   {timeRemaining !== null && (
-                    <div className={`flex items-center px-3 py-1 rounded-lg ${
-                      timeRemaining < 300 ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'
+                    <div className={`flex items-center px-3 py-2 rounded-lg text-sm ${
+                      timeRemaining < 300 ? 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300' : 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300'
                     }`}>
                       <Clock className="h-4 w-4 mr-2" />
                       <span className="font-mono">{formatTime(timeRemaining)}</span>
@@ -430,9 +443,11 @@ export default function StudentExamTaking() {
                     variant="outline" 
                     size="sm"
                     disabled={saveProgressMutation.isPending}
+                    className="w-full sm:w-auto"
                   >
                     <Save className="h-4 w-4 mr-2" />
-                    {saveProgressMutation.isPending ? "Saving..." : "Save Progress"}
+                    <span className="hidden sm:inline">{saveProgressMutation.isPending ? "Saving..." : "Save Progress"}</span>
+                    <span className="sm:hidden">{saveProgressMutation.isPending ? "..." : "Save"}</span>
                   </Button>
                 </div>
               </div>
@@ -442,42 +457,46 @@ export default function StudentExamTaking() {
 
             {/* Question Card */}
             <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="flex items-center">
-                    <FileText className="h-5 w-5 mr-2" />
-                    Question {currentQuestionIndex + 1}
+              <CardHeader className="pb-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <CardTitle className="flex items-center text-lg">
+                    <FileText className="h-5 w-5 mr-2 flex-shrink-0" />
+                    <span className="line-clamp-1">Question {currentQuestionIndex + 1}</span>
                   </CardTitle>
-                  <Badge variant="secondary">
+                  <Badge variant="secondary" className="self-start sm:self-center">
                     {currentQuestion.points} point{currentQuestion.points !== 1 ? 's' : ''}
                   </Badge>
                 </div>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="prose max-w-none">
-                  <p className="text-lg">{currentQuestion.question.questionText}</p>
+                  <p className="text-base lg:text-lg leading-relaxed">{currentQuestion.question.questionText}</p>
                 </div>
 
-                {renderQuestion(currentQuestion)}
+                <div className="mt-6">
+                  {renderQuestion(currentQuestion)}
+                </div>
               </CardContent>
             </Card>
 
             {/* Navigation */}
-            <div className="flex justify-between items-center mt-6">
+            <div className="flex flex-col sm:flex-row sm:justify-between items-center mt-6 gap-4">
               <Button
                 variant="outline"
                 onClick={() => setCurrentQuestionIndex(Math.max(0, currentQuestionIndex - 1))}
                 disabled={currentQuestionIndex === 0}
+                className="w-full sm:w-auto"
               >
-                Previous Question
+                <span className="hidden sm:inline">Previous Question</span>
+                <span className="sm:hidden">Previous</span>
               </Button>
 
-              <div className="flex space-x-3">
+              <div className="flex flex-col sm:flex-row w-full sm:w-auto gap-3">
                 {currentQuestionIndex === questions.length - 1 ? (
                   <Button
                     onClick={handleSubmitExam}
                     disabled={isSubmitting || submitExamMutation.isPending}
-                    className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700"
+                    className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 w-full sm:w-auto"
                   >
                     <Upload className="h-4 w-4 mr-2" />
                     {isSubmitting || submitExamMutation.isPending ? "Submitting..." : "Submit Exam"}
@@ -485,9 +504,10 @@ export default function StudentExamTaking() {
                 ) : (
                   <Button
                     onClick={() => setCurrentQuestionIndex(Math.min(questions.length - 1, currentQuestionIndex + 1))}
-                    className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700"
+                    className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 w-full sm:w-auto"
                   >
-                    Next Question
+                    <span className="hidden sm:inline">Next Question</span>
+                    <span className="sm:hidden">Next</span>
                   </Button>
                 )}
               </div>
