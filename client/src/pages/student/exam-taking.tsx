@@ -94,9 +94,12 @@ export default function StudentExamTaking() {
   // Initialize timer and load saved progress
   useEffect(() => {
     if (exam && questions.length > 0) {
+      console.log("Initializing exam timer. Exam:", { id: exam.id, timeLimit: exam.timeLimit });
+      
       const submission = mySubmissions.find((s: any) => s.examId === examId && s.status === 'in_progress');
       
       if (submission && submission.progressData) {
+        console.log("Found existing submission with progress");
         // Load saved progress
         try {
           const savedData = typeof submission.progressData === 'string' 
@@ -112,11 +115,14 @@ export default function StudentExamTaking() {
           
           // Calculate remaining time
           if (submission.timeRemainingSeconds) {
+            console.log("Using saved time remaining:", submission.timeRemainingSeconds);
             setTimeRemaining(submission.timeRemainingSeconds);
           } else if (exam.timeLimit && submission.startedAt) {
             const elapsed = Math.floor((Date.now() - new Date(submission.startedAt).getTime()) / 1000);
             const remaining = (exam.timeLimit * 60) - elapsed;
-            setTimeRemaining(Math.max(0, remaining));
+            const calculatedTime = Math.max(0, remaining);
+            console.log("Calculated time remaining:", calculatedTime);
+            setTimeRemaining(calculatedTime);
           }
           
           setExamStartTime(new Date(submission.startedAt));
@@ -124,9 +130,15 @@ export default function StudentExamTaking() {
           console.error("Error loading saved progress:", error);
         }
       } else {
+        console.log("Starting new exam session");
         // Initialize new exam session
         if (exam.timeLimit) {
-          setTimeRemaining(exam.timeLimit * 60);
+          const initialTime = exam.timeLimit * 60;
+          console.log("Setting initial timer:", initialTime, "seconds");
+          setTimeRemaining(initialTime);
+        } else {
+          console.log("No time limit set for this exam");
+          setTimeRemaining(null);
         }
         setExamStartTime(new Date());
       }
@@ -429,12 +441,24 @@ export default function StudentExamTaking() {
                 </div>
                 
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
-                  {timeRemaining !== null && (
-                    <div className={`flex items-center px-3 py-2 rounded-lg text-sm ${
-                      timeRemaining < 300 ? 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300' : 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300'
-                    }`}>
+                  {exam && exam.timeLimit && exam.timeLimit > 0 ? (
+                    timeRemaining !== null && timeRemaining > 0 ? (
+                      <div className={`flex items-center px-3 py-2 rounded-lg text-sm ${
+                        timeRemaining < 300 ? 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300' : 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300'
+                      }`}>
+                        <Clock className="h-4 w-4 mr-2" />
+                        <span className="font-mono">{formatTime(timeRemaining)}</span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center px-3 py-2 rounded-lg text-sm bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-300">
+                        <Clock className="h-4 w-4 mr-2" />
+                        <span className="font-mono">Loading...</span>
+                      </div>
+                    )
+                  ) : (
+                    <div className="flex items-center px-3 py-2 rounded-lg text-sm bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300">
                       <Clock className="h-4 w-4 mr-2" />
-                      <span className="font-mono">{formatTime(timeRemaining)}</span>
+                      <span className="text-sm">No time limit</span>
                     </div>
                   )}
                   
