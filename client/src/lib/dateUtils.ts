@@ -170,6 +170,8 @@ export function getExamStatus(
   status: 'upcoming' | 'available' | 'expired' | 'completed' | 'in_progress';
   label: string;
   canStart: boolean;
+  attemptsUsed: number;
+  attemptsRemaining: number;
 } {
   const now = new Date();
   const availableFrom = exam.availableFrom ? new Date(exam.availableFrom) : null;
@@ -184,13 +186,16 @@ export function getExamStatus(
   
   // Check if student has exhausted all allowed attempts
   const hasAttemptsRemaining = exam.attemptsAllowed === -1 || attemptsUsed < exam.attemptsAllowed;
+  const attemptsRemaining = exam.attemptsAllowed === -1 ? 999 : Math.max(0, exam.attemptsAllowed - attemptsUsed);
   
   // Only mark as completed if no attempts remaining OR exam has unlimited attempts but student has submitted
   if (attemptsUsed > 0 && !hasAttemptsRemaining) {
     return {
       status: 'completed',
       label: 'Completed',
-      canStart: false
+      canStart: false,
+      attemptsUsed,
+      attemptsRemaining
     };
   }
   
@@ -199,7 +204,9 @@ export function getExamStatus(
     return {
       status: 'upcoming',
       label: 'Upcoming',
-      canStart: false
+      canStart: false,
+      attemptsUsed,
+      attemptsRemaining
     };
   }
   
@@ -216,7 +223,9 @@ export function getExamStatus(
       return {
         status: 'completed',
         label: 'Completed',
-        canStart: false
+        canStart: false,
+        attemptsUsed,
+        attemptsRemaining
       };
     }
     
@@ -224,7 +233,9 @@ export function getExamStatus(
     return {
       status: 'expired',
       label: 'Expired',
-      canStart: false
+      canStart: false,
+      attemptsUsed,
+      attemptsRemaining
     };
   }
   
@@ -237,7 +248,9 @@ export function getExamStatus(
       return {
         status: 'in_progress',
         label: 'Resume Exam',
-        canStart: true
+        canStart: true,
+        attemptsUsed,
+        attemptsRemaining
       };
     }
   }
@@ -247,14 +260,18 @@ export function getExamStatus(
     return {
       status: 'available',
       label: attemptsUsed > 0 ? `Available (${exam.attemptsAllowed === -1 ? 'Unlimited' : exam.attemptsAllowed - attemptsUsed} attempts remaining)` : 'Available',
-      canStart: true
+      canStart: true,
+      attemptsUsed,
+      attemptsRemaining
     };
   } else {
     // Student has used all attempts but exam is still within availability window
     return {
       status: 'completed',
       label: 'Completed',
-      canStart: false
+      canStart: false,
+      attemptsUsed,
+      attemptsRemaining
     };
   }
 }

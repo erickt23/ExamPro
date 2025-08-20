@@ -675,6 +675,17 @@ export default function StudentExams() {
                                   <span className="text-gray-600">Total Points:</span>
                                   <span>{exam.totalPoints}</span>
                                 </div>
+                                <div className="flex justify-between">
+                                  <span className="text-gray-600">Attempts:</span>
+                                  <span>
+                                    {exam.examStatus.attemptsUsed}/{exam.attemptsAllowed === -1 ? '∞' : exam.attemptsAllowed}
+                                    {exam.examStatus.attemptsRemaining > 0 && exam.attemptsAllowed !== -1 && (
+                                      <span className="text-green-600 ml-1">
+                                        ({exam.examStatus.attemptsRemaining} left)
+                                      </span>
+                                    )}
+                                  </span>
+                                </div>
                                 {exam.availableUntil && (
                                   <div className="flex justify-between">
                                     <span className="text-gray-600">Due:</span>

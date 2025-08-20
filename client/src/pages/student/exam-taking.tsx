@@ -110,8 +110,8 @@ export default function StudentExamTaking() {
             setCurrentQuestionIndex(savedData.currentQuestionIndex);
           }
           
-          // Calculate remaining time
-          if (submission.timeRemainingSeconds) {
+          // Use saved time remaining if available, otherwise calculate from start time
+          if (submission.timeRemainingSeconds !== null && submission.timeRemainingSeconds !== undefined) {
             setTimeRemaining(submission.timeRemainingSeconds);
           } else if (exam.duration && submission.startedAt) {
             const elapsed = Math.floor((Date.now() - new Date(submission.startedAt).getTime()) / 1000);
@@ -122,6 +122,13 @@ export default function StudentExamTaking() {
           setExamStartTime(new Date(submission.startedAt));
         } catch (error) {
           console.error("Error loading saved progress:", error);
+          // Fallback to new session
+          if (exam.duration) {
+            setTimeRemaining(exam.duration * 60);
+          } else {
+            setTimeRemaining(null);
+          }
+          setExamStartTime(new Date());
         }
       } else {
         // Initialize new exam session
@@ -242,8 +249,40 @@ export default function StudentExamTaking() {
     if (isSubmitting) return;
     setIsSubmitting(true);
     
+    // Convert answers to the format expected by the server
+    const formattedAnswers = Object.entries(answers).map(([questionId, answer]) => {
+      if (Array.isArray(answer)) {
+        // For fill_blank questions, answer is an array
+        return {
+          questionId: parseInt(questionId),
+          answerText: JSON.stringify(answer),
+          selectedOption: null,
+          attachmentUrl: null,
+          linkUrl: null,
+        };
+      } else if (typeof answer === 'object' && answer !== null) {
+        // For other question types with object structure
+        return {
+          questionId: parseInt(questionId),
+          answerText: answer.text || '',
+          selectedOption: answer.selectedOption || null,
+          attachmentUrl: answer.attachmentUrl || null,
+          linkUrl: answer.linkUrl || null,
+        };
+      } else {
+        // For simple string answers
+        return {
+          questionId: parseInt(questionId),
+          answerText: answer || '',
+          selectedOption: null,
+          attachmentUrl: null,
+          linkUrl: null,
+        };
+      }
+    });
+    
     const submissionData = {
-      answers,
+      answers: formattedAnswers,
       timeRemaining: timeRemaining || 0,
       submittedAt: new Date().toISOString()
     };
@@ -324,6 +363,9 @@ export default function StudentExamTaking() {
         const correctAnswers = question.question.correctAnswer ? 
           question.question.correctAnswer.split('|') : [];
         
+        // Ensure answer is an array for fill_blank questions
+        const currentAnswers = Array.isArray(answer) ? answer : (answer ? [answer] : []);
+        
         return (
           <div className="space-y-4">
             {correctAnswers.map((_: string, index: number) => (
@@ -333,9 +375,13 @@ export default function StudentExamTaking() {
                 </Label>
                 <Input
                   placeholder={`Answer for blank ${index + 1}`}
-                  value={answer?.[index] || ''}
+                  value={currentAnswers[index] || ''}
                   onChange={(e) => {
-                    const newAnswer = answer ? [...answer] : [];
+                    const newAnswer = [...currentAnswers];
+                    // Ensure array is long enough
+                    while (newAnswer.length <= index) {
+                      newAnswer.push('');
+                    }
                     newAnswer[index] = e.target.value;
                     handleAnswerChange(question.questionId, newAnswer);
                   }}

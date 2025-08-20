@@ -58,6 +58,13 @@ Recent UI Changes (August 2025):
   - Updated routing in App.tsx to properly handle exam taking navigation
   - Migrated from inline exam taking to dedicated page component for better separation of concerns
   - Students can now properly access and take exams without page not found errors
+- **Fixed Multiple Exam System Issues** (August 20, 2025):
+  - **Timer Issue**: Fixed timer property mismatch - database uses `duration` field but frontend was accessing `timeLimit`
+  - **Fill-in-Blank Questions**: Enhanced answer handling to properly support array-based answers for multiple blanks
+  - **Answer Saving**: Improved answer formatting in submission to handle different question types correctly
+  - **Attempts Display**: Updated getExamStatus function to include attempts information and display remaining attempts on exam cards
+  - **Progress Restoration**: Fixed timer preservation when loading saved progress to prevent restart
+  - **Auto-Save Integration**: Enhanced auto-save functionality to work properly with timer and all question types
 
 ## System Architecture
 
