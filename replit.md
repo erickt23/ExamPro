@@ -52,6 +52,12 @@ Recent UI Changes (August 2025):
   - **Implemented duplicate prevention system** - checks title, question text, type, subject, and category to prevent duplicate questions
   - Added warning display for skipped duplicates with clear feedback in import results
   - Fixed import modal scrolling and layout for better user experience
+- **Fixed Exam Taking Routing Issue** (August 20, 2025):
+  - Created dedicated StudentExamTaking component to handle `/exams/:id/take` routes
+  - Fixed critical 404 error where students couldn't access exam taking interface
+  - Updated routing in App.tsx to properly handle exam taking navigation
+  - Migrated from inline exam taking to dedicated page component for better separation of concerns
+  - Students can now properly access and take exams without page not found errors
 
 ## System Architecture
 

@@ -35,7 +35,7 @@ import { getExamStatus } from "@/lib/dateUtils";
 export default function StudentExams() {
   const { toast } = useToast();
   const { user, isAuthenticated, isLoading } = useAuth();
-  const [location] = useLocation();
+  const [location, setLocation] = useLocation();
   const [selectedExam, setSelectedExam] = useState<any>(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<{[key: number]: any}>({});
@@ -276,49 +276,12 @@ export default function StudentExams() {
   };
 
   const handleStartExam = (exam: any) => {
-    console.log('Start exam button clicked for exam:', exam);
-    
-    // Validate exam data
-    if (!exam) {
-      console.error('No exam provided to handleStartExam');
+    if (exam.examStatus.canStart) {
+      setLocation(`/exams/${exam.id}/take`);
+    } else {
       toast({
-        title: "Error",
-        description: "Invalid exam data. Please refresh the page and try again.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    if (!exam.duration || exam.duration <= 0) {
-      console.error('Invalid exam duration:', exam.duration);
-      toast({
-        title: "Error", 
-        description: "This exam has invalid duration settings. Please contact your instructor.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    console.log('Starting exam with duration:', exam.duration, 'minutes');
-    
-    try {
-      setSelectedExam(exam);
-      
-      // For fresh exams, start from beginning
-      if (exam.examStatus?.status !== 'in_progress') {
-        setExamStartTime(new Date());
-        setTimeRemaining(exam.duration * 60); // Convert minutes to seconds
-        setCurrentQuestionIndex(0);
-        setAnswers({});
-      }
-      // For in-progress exams, the useEffect will load saved progress
-      
-      console.log('Exam started successfully');
-    } catch (error) {
-      console.error('Error starting exam:', error);
-      toast({
-        title: "Error",
-        description: "Failed to start exam. Please try again.",
+        title: "Cannot Start Exam",
+        description: exam.examStatus.status === 'upcoming' ? 'This exam is not yet available' : 'This exam cannot be started',
         variant: "destructive",
       });
     }
