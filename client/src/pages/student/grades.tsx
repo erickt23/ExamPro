@@ -233,9 +233,21 @@ export default function StudentGrades() {
                               <div className="flex items-center space-x-3 mb-2">
                                 <h3 className="font-semibold text-gray-900">{grade.exam?.title}</h3>
                                 {percentage !== null && (
-                                  <Badge className={getScoreColorBg(percentage)}>
-                                    {percentage.toFixed(1)}%
-                                  </Badge>
+                                  <div className="flex items-center space-x-2">
+                                    <Badge className={getScoreColorBg(percentage)}>
+                                      {percentage.toFixed(1)}%
+                                    </Badge>
+                                    {grade.isHighestScore && (
+                                      <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100">
+                                        Highest Score
+                                      </Badge>
+                                    )}
+                                    {grade.attemptNumber > 1 && (
+                                      <Badge variant="outline" className="text-xs">
+                                        Attempt #{grade.attemptNumber}
+                                      </Badge>
+                                    )}
+                                  </div>
                                 )}
                               </div>
                               <p className="text-sm text-gray-600 mb-1">{grade.exam?.subject}</p>

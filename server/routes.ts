@@ -2,10 +2,11 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
-import { insertQuestionSchema, insertExamSchema, insertHomeworkAssignmentSchema, insertGradeSettingsSchema } from "@shared/schema";
+import { insertQuestionSchema, insertExamSchema, insertHomeworkAssignmentSchema, insertGradeSettingsSchema, submissions } from "@shared/schema";
 import { z } from "zod";
 import multer from "multer";
 import * as XLSX from "xlsx";
+import { eq, and, desc, max } from "drizzle-orm";
 import {
   ObjectStorageService,
   ObjectNotFoundError,
@@ -24,6 +25,34 @@ const upload = multer({
     cb(null, allowedTypes.includes(file.mimetype));
   }
 });
+
+// Helper function to update highest score for student-exam combination
+async function updateHighestScore(examId: number, studentId: string, submissionId: number, currentScore: number) {
+  try {
+    // Get all graded submissions for this student-exam combination
+    const allSubmissions = await storage.getSubmissions(examId, studentId);
+    const gradedSubmissions = allSubmissions.filter(sub => sub.status === 'graded' && sub.totalScore);
+
+    // Reset all isHighestScore flags for this student-exam combination
+    for (const submission of allSubmissions) {
+      await storage.updateSubmission(submission.id, { isHighestScore: false });
+    }
+
+    // Find the submission with the highest score
+    if (gradedSubmissions.length > 0) {
+      const highestScoreSubmission = gradedSubmissions.reduce((highest: any, current: any) => {
+        const currentTotalScore = parseFloat(current.totalScore || '0');
+        const highestTotalScore = parseFloat(highest.totalScore || '0');
+        return currentTotalScore > highestTotalScore ? current : highest;
+      });
+
+      // Mark the highest scoring submission
+      await storage.updateSubmission(highestScoreSubmission.id, { isHighestScore: true });
+    }
+  } catch (error) {
+    console.error("Error updating highest score:", error);
+  }
+}
 
 // Helper function to validate and transform Excel row
 async function validateAndTransformRow(row: any, rowNumber: number) {
@@ -955,6 +984,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         status: finalStatus,
       });
 
+      // Check and update highest score for this student-exam combination
+      await updateHighestScore(examId, userId, submission.id, totalScore);
+
       res.json(updatedSubmission);
     } catch (error) {
       console.error("Error submitting exam:", error);
@@ -985,16 +1017,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Students can only see their own submissions
         const submissions = await storage.getSubmissions(undefined, userId);
         
-        // Hide scores for pending submissions
+        // Hide scores for pending submissions and mark highest scores
         const filteredSubmissions = submissions.map(submission => {
           if (submission.status === 'pending') {
             return {
               ...submission,
               totalScore: null,
-              maxScore: null
+              maxScore: null,
+              isHighestScore: false
             };
           }
-          return submission;
+          return {
+            ...submission,
+            isHighestScore: submission.isHighestScore || false
+          };
         });
         
         res.json(filteredSubmissions);
@@ -1206,6 +1242,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         maxScore: maxScore.toString(),
         status: 'graded'
       });
+
+      // Check and update highest score for this student-exam combination
+      await updateHighestScore(submission.examId, submission.studentId, submissionId, totalScore);
 
       res.json(updatedSubmission);
     } catch (error) {

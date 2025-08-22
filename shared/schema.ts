@@ -151,6 +151,7 @@ export const submissions = pgTable("submissions", {
   maxScore: decimal("max_score", { precision: 5, scale: 2 }),
   status: varchar("status", { enum: ["in_progress", "submitted", "graded", "pending"] }).notNull().default("in_progress"),
   isLate: boolean("is_late").notNull().default(false),
+  isHighestScore: boolean("is_highest_score").notNull().default(false), // Track which attempt has the highest score
   // Progress saving fields
   progressData: jsonb("progress_data"), // Stores answers, current question, time remaining, etc.
   lastSavedAt: timestamp("last_saved_at"),
