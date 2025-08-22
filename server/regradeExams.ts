@@ -26,6 +26,11 @@ async function regradeSubmission(submissionId: number): Promise<{ totalScore: nu
     if (question.questionType === 'essay' || question.questionType === 'short_answer') {
       score = parseFloat(answer.score?.toString() || '0');
       console.log(`Subjective question ${question.id}: keeping existing score ${score}/${question.points}`);
+    }
+    // Skip fill-blank questions without correct answers as they need manual grading
+    else if (question.questionType === 'fill_blank' && !question.correctAnswer) {
+      score = parseFloat(answer.score?.toString() || '0');
+      console.log(`Fill-blank question ${question.id} without correct answer: keeping existing score ${score}/${question.points}`);
     } else {
       // Auto-grade objective questions
       if (question.questionType === 'multiple_choice' && 

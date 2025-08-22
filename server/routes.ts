@@ -818,8 +818,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         let score = 0;
         maxScore += question.points;
 
-        // Check if this is a subjective question
+        // Check if this is a subjective question or a fill-blank question without correct answer
         if (question.questionType === 'essay' || question.questionType === 'short_answer') {
+          hasSubjectiveQuestions = true;
+        }
+        // Fill-blank questions without correct answers need manual grading
+        if (question.questionType === 'fill_blank' && !question.correctAnswer) {
           hasSubjectiveQuestions = true;
         }
 
@@ -828,8 +832,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             answer.selectedOption === question.correctAnswer) {
           score = question.points;
         }
-        // Auto-grade fill-in-the-blank questions
-        else if (question.questionType === 'fill_blank') {
+        // Auto-grade fill-in-the-blank questions (only if they have correct answers)
+        else if (question.questionType === 'fill_blank' && question.correctAnswer) {
           try {
             // Handle different formats for correct answers
             let correctAnswers = [];
