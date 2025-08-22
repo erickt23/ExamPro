@@ -656,6 +656,7 @@ export default function StudentExamTaking() {
         const items = (dragDropData.items || []).map((item: any) => 
           typeof item === 'string' ? item : (item?.name || item?.item || String(item))
         );
+        // Change to array-based storage for multiple items per zone
         const currentPlacements = answer || {};
         
         // Debug log to see what we have
@@ -668,7 +669,7 @@ export default function StudentExamTaking() {
                 <strong>Instructions:</strong> Drag items from the bank and drop them into the correct zones.
               </p>
               <p className="text-xs text-orange-600 dark:text-orange-300">
-                Each item can only be placed in one zone.
+                You can place multiple items in each zone. Click the × to remove items.
               </p>
             </div>
             
@@ -684,7 +685,12 @@ export default function StudentExamTaking() {
                 <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600">
                   <h4 className="text-sm font-medium mb-3 text-gray-700 dark:text-gray-300">Item Bank</h4>
                   <div className="flex flex-wrap gap-2">
-                    {items.filter((item: string) => !Object.values(currentPlacements).includes(item)).map((item: string, index: number) => (
+                    {items.filter((item: string) => {
+                      // Check if item is in any zone (supporting multiple items per zone)
+                      return !Object.values(currentPlacements).some((zoneItems: any) => 
+                        Array.isArray(zoneItems) ? zoneItems.includes(item) : zoneItems === item
+                      );
+                    }).map((item: string, index: number) => (
                       <div
                         key={index}
                         className="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md cursor-move hover:shadow-md transition-shadow text-sm"
@@ -710,37 +716,77 @@ export default function StudentExamTaking() {
                         const draggedItem = e.dataTransfer.getData('text/plain');
                         const newPlacements = { ...currentPlacements };
                         
-                        // Remove item from any existing zone
+                        // Remove item from any existing zone (handle both array and single item formats)
                         Object.keys(newPlacements).forEach(key => {
-                          if (newPlacements[key] === draggedItem) {
+                          if (Array.isArray(newPlacements[key])) {
+                            newPlacements[key] = newPlacements[key].filter((item: string) => item !== draggedItem);
+                            if (newPlacements[key].length === 0) {
+                              delete newPlacements[key];
+                            }
+                          } else if (newPlacements[key] === draggedItem) {
                             delete newPlacements[key];
                           }
                         });
                         
-                        // Add to new zone
-                        newPlacements[zoneIndex] = draggedItem;
+                        // Add to new zone (use array to support multiple items)
+                        if (!newPlacements[zoneIndex]) {
+                          newPlacements[zoneIndex] = [];
+                        }
+                        if (!Array.isArray(newPlacements[zoneIndex])) {
+                          newPlacements[zoneIndex] = [newPlacements[zoneIndex]];
+                        }
+                        newPlacements[zoneIndex].push(draggedItem);
+                        
                         handleAnswerChange(question.questionId, newPlacements);
                       }}
                       onDragOver={(e) => e.preventDefault()}
                     >
                       <h4 className="text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">{String(zone)}</h4>
-                      {currentPlacements[zoneIndex] && (
-                        <div className="inline-block px-3 py-2 bg-blue-100 dark:bg-blue-900/50 border border-blue-200 dark:border-blue-700 rounded-md text-sm">
-                          {currentPlacements[zoneIndex]}
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="ml-2 h-auto p-0 text-xs"
-                            onClick={() => {
-                              const newPlacements = { ...currentPlacements };
-                              delete newPlacements[zoneIndex];
-                              handleAnswerChange(question.questionId, newPlacements);
-                            }}
-                          >
-                            ×
-                          </Button>
-                        </div>
-                      )}
+                      <div className="min-h-8 flex flex-wrap gap-2">
+                        {currentPlacements[zoneIndex] && (
+                          Array.isArray(currentPlacements[zoneIndex]) ? 
+                            currentPlacements[zoneIndex].map((item: string, itemIndex: number) => (
+                              <div key={itemIndex} className="inline-block px-3 py-2 bg-blue-100 dark:bg-blue-900/50 border border-blue-200 dark:border-blue-700 rounded-md text-sm">
+                                {String(item)}
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  className="ml-2 h-auto p-0 text-xs"
+                                  onClick={() => {
+                                    const newPlacements = { ...currentPlacements };
+                                    if (Array.isArray(newPlacements[zoneIndex])) {
+                                      newPlacements[zoneIndex] = newPlacements[zoneIndex].filter((_: string, i: number) => i !== itemIndex);
+                                      if (newPlacements[zoneIndex].length === 0) {
+                                        delete newPlacements[zoneIndex];
+                                      }
+                                    }
+                                    handleAnswerChange(question.questionId, newPlacements);
+                                  }}
+                                >
+                                  ×
+                                </Button>
+                              </div>
+                            )) :
+                            <div className="inline-block px-3 py-2 bg-blue-100 dark:bg-blue-900/50 border border-blue-200 dark:border-blue-700 rounded-md text-sm">
+                              {String(currentPlacements[zoneIndex])}
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="ml-2 h-auto p-0 text-xs"
+                                onClick={() => {
+                                  const newPlacements = { ...currentPlacements };
+                                  delete newPlacements[zoneIndex];
+                                  handleAnswerChange(question.questionId, newPlacements);
+                                }}
+                              >
+                                ×
+                              </Button>
+                            </div>
+                        )}
+                        {(!currentPlacements[zoneIndex] || (Array.isArray(currentPlacements[zoneIndex]) && currentPlacements[zoneIndex].length === 0)) && (
+                          <div className="text-xs text-gray-400 dark:text-gray-500 italic">Drop items here</div>
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>

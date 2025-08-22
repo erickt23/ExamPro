@@ -79,6 +79,11 @@ Recent UI Changes (August 2025):
     - **Data Structure Handling**: Added robust parsing for both string and object formats with comprehensive error handling
     - **Debug Logging**: Added console logging to help troubleshoot question data parsing issues
     - **Fallback Mechanisms**: Implemented multiple data source fallbacks (options, correctAnswer) for reliable question rendering
+  - **Enhanced Drag-and-Drop Functionality** (August 22, 2025):
+    - **Multiple Items per Zone**: Updated drag-and-drop questions to support multiple items in each drop zone
+    - **Array-based Storage**: Changed answer format to use arrays for zones, maintaining backward compatibility
+    - **Improved UI**: Added visual indicators for empty zones and better item management with individual remove buttons
+    - **Enhanced Item Filtering**: Updated item bank to properly filter out items that are placed in any zone (supporting arrays)
 
 ## System Architecture
 
