@@ -108,9 +108,21 @@ export default function Sidebar({ className }: SidebarProps) {
 
   const instructorBottomNavItems = [
     {
+      id: 'gradingCenter',
       title: t('nav.grading'),
-      href: "/grading",
       icon: CheckCircle,
+      items: [
+        {
+          title: t('nav.submissionsReview'),
+          href: "/grading",
+          icon: FileText,
+        },
+        {
+          title: t('nav.examResults'),
+          href: "/exam-results",
+          icon: BarChart3,
+        },
+      ]
     },
     {
       title: t('nav.analytics'),
@@ -400,15 +412,91 @@ export default function Sidebar({ className }: SidebarProps) {
 
             {/* Bottom navigation items for instructor */}
             {isInstructor && instructorBottomNavItems.map((item) => {
+              // Handle accordion items (items with nested items property)
+              if ('items' in item && item.items) {
+                const isExpanded = expandedAccordions[item.id || ''] || false;
+                const isAccordionActive = isAccordionItemActive(item.items);
+                const showText = !isCollapsed || isMobileOpen;
+
+                return (
+                  <div key={item.id} className="space-y-1">
+                    {/* Accordion Header */}
+                    <button
+                      onClick={() => toggleAccordion(item.id || '')}
+                      className={cn(
+                        "w-full flex items-center px-3 py-2 rounded-xl text-left transition-all duration-200 group",
+                        showText ? "space-x-3" : "justify-center",
+                        isAccordionActive 
+                          ? "text-white bg-gradient-to-r from-blue-500 to-indigo-600 shadow-lg"
+                          : "text-gray-700 dark:text-foreground hover:bg-gradient-to-r hover:from-blue-400/20 hover:to-indigo-500/20 dark:hover:bg-secondary hover:text-indigo-700 dark:hover:text-foreground hover:shadow-md"
+                      )}
+                      title={!showText ? item.title : undefined}
+                    >
+                      <item.icon className={cn(
+                        "h-5 w-5 flex-shrink-0 transition-all duration-200",
+                        isAccordionActive ? "text-white drop-shadow-sm" : "text-gray-600 dark:text-muted-foreground group-hover:text-indigo-600 dark:group-hover:text-foreground"
+                      )} />
+                      {showText && (
+                        <div className="flex items-center justify-between w-full">
+                          <span className={cn("truncate font-medium", isAccordionActive ? "text-white" : "text-gray-700 dark:text-foreground group-hover:text-indigo-700 dark:group-hover:text-foreground")}>{item.title}</span>
+                          {!isCollapsed && (
+                            <ChevronDown className={cn(
+                              "h-4 w-4 transition-transform duration-200",
+                              isExpanded && "transform rotate-180",
+                              isAccordionActive ? "text-white/80" : "text-gray-400 dark:text-muted-foreground group-hover:text-indigo-500 dark:group-hover:text-foreground"
+                            )} />
+                          )}
+                        </div>
+                      )}
+                    </button>
+                    
+                    {/* Accordion Content */}
+                    {isExpanded && (!isCollapsed || isMobileOpen) && (
+                      <div className="pl-6 space-y-1 animate-in slide-in-from-top-1 duration-200">
+                        {item.items.map((subItem) => {
+                          const isActive = location === subItem.href;
+                          return (
+                            <button
+                              key={subItem.href}
+                              onClick={() => {
+                                setLocation(subItem.href);
+                                if (window.innerWidth < 768) {
+                                  setIsMobileOpen(false);
+                                }
+                              }}
+                              className={cn(
+                                "w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-all duration-200 group text-sm",
+                                isActive
+                                  ? "text-white bg-gradient-to-r from-blue-500 to-indigo-600 shadow-lg transform scale-105"
+                                  : "text-gray-600 dark:text-muted-foreground hover:bg-gradient-to-r hover:from-blue-400/15 hover:to-indigo-500/15 dark:hover:bg-secondary hover:text-indigo-600 dark:hover:text-foreground hover:shadow-sm hover:transform hover:scale-105"
+                              )}
+                            >
+                              <subItem.icon className={cn(
+                                "h-4 w-4 flex-shrink-0 transition-all duration-200",
+                                isActive ? "text-white drop-shadow-sm" : "text-gray-500 dark:text-muted-foreground group-hover:text-indigo-500 dark:group-hover:text-foreground"
+                              )} />
+                              <span className={cn("truncate font-medium", isActive ? "text-white" : "text-gray-600 dark:text-muted-foreground group-hover:text-indigo-600 dark:group-hover:text-foreground")}>{subItem.title}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              }
+
+              // Handle regular items (items with href property)
               const isActive = location === item.href;
               const showText = !isCollapsed || isMobileOpen;
               return (
                 <button
                   key={item.href}
                   onClick={() => {
-                    setLocation(item.href);
-                    if (window.innerWidth < 768) {
-                      setIsMobileOpen(false);
+                    if (item.href) {
+                      setLocation(item.href);
+                      if (window.innerWidth < 768) {
+                        setIsMobileOpen(false);
+                      }
                     }
                   }}
                   className={cn(

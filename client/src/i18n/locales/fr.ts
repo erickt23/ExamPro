@@ -11,6 +11,8 @@ export const fr = {
     gradingCenter: 'Centre de Notes',
     settings: 'Paramètres',
     grading: 'Centre de Notes',
+    submissionsReview: 'Révision des Soumissions',
+    examResults: 'Résultats d\'Examens',
     analytics: 'Analytique',
     students: 'Étudiants',
     homework: 'Devoirs',

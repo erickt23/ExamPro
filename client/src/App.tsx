@@ -12,6 +12,7 @@ import InstructorQuestions from "@/pages/instructor/questions";
 import InstructorHomeworkQuestions from "@/pages/instructor/homework-questions";
 import InstructorExams from "@/pages/instructor/exams";
 import InstructorGrading from "@/pages/instructor/grading";
+import InstructorExamResults from "@/pages/instructor/exam-results";
 import InstructorAnalytics from "@/pages/instructor/analytics";
 import InstructorStudents from "@/pages/instructor/students";
 import InstructorHomework from "@/pages/instructor/homework";
@@ -61,6 +62,7 @@ function Router() {
           <Route path="/grading" component={InstructorGrading} />
           <Route path="/grading/:submissionId" component={InstructorGrading} />
           <Route path="/homework-grading/:submissionId" component={InstructorGrading} />
+          <Route path="/exam-results" component={InstructorExamResults} />
           <Route path="/analytics" component={InstructorAnalytics} />
           <Route path="/students" component={InstructorStudents} />
           <Route path="/settings" component={InstructorSettings} />

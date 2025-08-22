@@ -12,7 +12,9 @@ Navigation terminology preferences:
 - "Homework Questions" → "Assignment Bank" (under Assignment Management accordion)
 - "Homework Assignment" → "Assignments" (under Assignment Management accordion)
 - "Exams" → "Exams" (under Exam Management accordion)
-- "Grading" (sidebar menu) → "Grading Center"
+- "Grading" (sidebar menu) → "Grading Center" (now an expandable menu)
+  - Submenu 1: "Submissions Review" (links to /grading)
+  - Submenu 2: "Exam Results" (links to /exam-results)
 - "Grading Center" (page title) → "Submissions Review"
 - Applied vibrant gradient styling system across all primary action buttons
 - Consistent blue-to-indigo gradients with hover effects and scaling animations
@@ -45,6 +47,12 @@ Navigation terminology preferences:
 - Partial credit calculation for complex question types
 - Drag-Drop Correct Answer Configuration
 - Smart Answer Comparison with case-insensitive matching and JSON parsing
+- **Nested Sidebar Navigation Structure** (August 22, 2025):
+  - **Grading Center Submenu**: Implemented expandable "Grading Center" menu with two subpages
+  - **Submissions Review**: Existing grading functionality for reviewing and grading student submissions
+  - **Exam Results Page**: Standalone page replicating exam results modal functionality with comprehensive analytics
+  - **Multi-language Support**: Full translation support for new navigation structure across English, French, and Haitian Creole
+  - **Consistent Theming**: Applied Twitter Web dark mode styling throughout new components
 - **Enhanced Auto-Grader for Drag-and-Drop and Matching Questions** (August 22, 2025):
   - **Comprehensive Answer Key Storage**: Properly structured JSON format for storing correct answers in both question types
   - **Drag-and-Drop Grading**: Each question has slots (targets) with exactly one correct item per slot, supports zone-based scoring

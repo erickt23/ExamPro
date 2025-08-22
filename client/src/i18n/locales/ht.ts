@@ -11,6 +11,8 @@ export const ht = {
     gradingCenter: 'Sant Nòt',
     settings: 'Konfigirasyon',
     grading: 'Sant Nòt',
+    submissionsReview: 'Revizyon Soumisyon yo',
+    examResults: 'Rezilta Egzamen yo',
     analytics: 'Analitik',
     students: 'Elèv yo',
     homework: 'Devwa yo',

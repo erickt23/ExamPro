@@ -11,6 +11,8 @@ export const en = {
     gradingCenter: 'Grading Center',
     settings: 'Settings',
     grading: 'Grading Center',
+    submissionsReview: 'Submissions Review',
+    examResults: 'Exam Results',
     analytics: 'Analytics',
     students: 'Students',
     homework: 'Homework',
