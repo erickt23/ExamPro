@@ -176,9 +176,9 @@ function GradingList() {
 
   // Fetch exam submissions that need grading
   const { data: examSubmissions, isLoading: examLoading } = useQuery({
-    queryKey: ["/api/submissions", { status: "submitted", userRole: "instructor", userId: user?.id }],
+    queryKey: ["/api/submissions", { status: "pending", userRole: "instructor", userId: user?.id }],
     queryFn: async () => {
-      const response = await fetch(`/api/submissions?status=submitted&userRole=instructor&userId=${user?.id}`);
+      const response = await fetch(`/api/submissions?status=pending&userRole=instructor&userId=${user?.id}`);
       if (!response.ok) throw new Error(`${response.status}: ${response.statusText}`);
       return response.json();
     },
