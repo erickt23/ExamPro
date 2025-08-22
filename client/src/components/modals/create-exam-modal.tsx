@@ -126,6 +126,16 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
     }
   }, [selectionMethod, randomQuestionCount, questions]);
 
+  // Calculate total points automatically based on selected questions
+  React.useEffect(() => {
+    const questionsToCalculate = selectionMethod === 'manual' ? selectedQuestions : randomQuestions;
+    const totalPoints = questionsToCalculate.reduce((sum, question) => sum + (question.points || 1), 0);
+    
+    if (totalPoints > 0) {
+      form.setValue('totalPoints', totalPoints);
+    }
+  }, [selectedQuestions, randomQuestions, selectionMethod, form]);
+
   const createExamMutation = useMutation({
     mutationFn: async (data: CreateExamForm) => {
       // First create the exam
@@ -457,38 +467,61 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
 
                 {/* Selected Questions */}
                 {selectedQuestions.length > 0 && (
-                  <div className="max-w-full">
-                    <Label>Selected Questions ({selectedQuestions.length})</Label>
-                    <div className="mt-2 space-y-2 max-h-32 overflow-y-auto overflow-x-hidden max-w-full">
-                      {selectedQuestions.map((question, index) => (
-                        <div key={question.id} className="flex items-start gap-2 p-2 bg-blue-50 rounded max-w-full">
-                          <div className="flex-1 min-w-0 overflow-hidden">
-                            <div className="flex flex-wrap items-center gap-1 mb-1 overflow-hidden">
-                              <span className="text-sm font-medium flex-shrink-0">{index + 1}.</span>
-                              <Badge className={`${getQuestionTypeColor(question.questionType)} flex-shrink-0`} variant="secondary">
-                                {formatQuestionType(question.questionType)}
-                              </Badge>
-                              {question.difficulty && (
-                                <Badge variant="outline" className="capitalize text-xs flex-shrink-0">{question.difficulty}</Badge>
-                              )}
-                              {question.bloomsTaxonomy && (
-                                <Badge variant="outline" className="capitalize text-xs flex-shrink-0">{question.bloomsTaxonomy}</Badge>
-                              )}
+                  <div className="space-y-4 max-w-full">
+                    <div>
+                      <Label>Selected Questions ({selectedQuestions.length})</Label>
+                      <div className="mt-2 space-y-2 max-h-32 overflow-y-auto overflow-x-hidden max-w-full">
+                        {selectedQuestions.map((question, index) => (
+                          <div key={question.id} className="flex items-start gap-2 p-2 bg-blue-50 rounded max-w-full">
+                            <div className="flex-1 min-w-0 overflow-hidden">
+                              <div className="flex flex-wrap items-center gap-1 mb-1 overflow-hidden">
+                                <span className="text-sm font-medium flex-shrink-0">{index + 1}.</span>
+                                <Badge className={`${getQuestionTypeColor(question.questionType)} flex-shrink-0`} variant="secondary">
+                                  {formatQuestionType(question.questionType)}
+                                </Badge>
+                                {question.difficulty && (
+                                  <Badge variant="outline" className="capitalize text-xs flex-shrink-0">{question.difficulty}</Badge>
+                                )}
+                                {question.bloomsTaxonomy && (
+                                  <Badge variant="outline" className="capitalize text-xs flex-shrink-0">{question.bloomsTaxonomy}</Badge>
+                                )}
+                                <span className="text-xs text-gray-500 flex-shrink-0">{question.points} pts</span>
+                              </div>
+                              <p className="text-sm truncate" style={{maxWidth: 'calc(100% - 2rem)'}}>{question.questionText}</p>
                             </div>
-                            <p className="text-sm truncate" style={{maxWidth: 'calc(100% - 2rem)'}}>{question.questionText}</p>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => removeQuestion(question.id)}
+                              className="flex-shrink-0 ml-2"
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
                           </div>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => removeQuestion(question.id)}
-                            className="flex-shrink-0 ml-2"
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      ))}
+                        ))}
+                      </div>
                     </div>
+
+                    {/* Points Summary Card */}
+                    <Card className="bg-gradient-to-r from-green-50 to-blue-50 border-green-200">
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h4 className="font-medium text-gray-900">Exam Summary</h4>
+                            <p className="text-sm text-gray-600">
+                              {selectedQuestions.length} question{selectedQuestions.length !== 1 ? 's' : ''} selected
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-2xl font-bold text-green-600">
+                              {selectedQuestions.reduce((sum, q) => sum + (q.points || 1), 0)}
+                            </div>
+                            <div className="text-sm text-gray-600">Total Points</div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
                   </div>
                 )}
 
@@ -568,41 +601,63 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
 
                 {/* Randomly Selected Questions Preview */}
                 {randomQuestions.length > 0 && (
-                  <div>
-                    <Label>Randomly Selected Questions ({randomQuestions.length})</Label>
-                    <div className="mt-2 space-y-2 max-h-40 overflow-y-auto border rounded-lg">
-                      {randomQuestions.map((question, index) => (
-                        <div key={question.id} className="p-3 bg-green-50 border-l-4 border-green-400">
-                          <div className="flex items-center space-x-2">
-                            <span className="text-sm font-medium">{index + 1}.</span>
-                            <div className="flex-1">
-                              <div className="flex items-center space-x-2 mb-1">
-                                <Badge className={getQuestionTypeColor(question.questionType)} variant="secondary">
-                                  {formatQuestionType(question.questionType)}
-                                </Badge>
-                                <Badge variant="outline">Subject {question.subjectId}</Badge>
-                                {question.difficulty && (
-                                  <Badge variant="outline" className="capitalize text-xs">{question.difficulty}</Badge>
-                                )}
-                                {question.bloomsTaxonomy && (
-                                  <Badge variant="outline" className="capitalize text-xs">{question.bloomsTaxonomy}</Badge>
-                                )}
-                                <span className="text-xs text-gray-500">{question.points} pts</span>
+                  <div className="space-y-4">
+                    <div>
+                      <Label>Randomly Selected Questions ({randomQuestions.length})</Label>
+                      <div className="mt-2 space-y-2 max-h-40 overflow-y-auto border rounded-lg">
+                        {randomQuestions.map((question, index) => (
+                          <div key={question.id} className="p-3 bg-green-50 border-l-4 border-green-400">
+                            <div className="flex items-center space-x-2">
+                              <span className="text-sm font-medium">{index + 1}.</span>
+                              <div className="flex-1">
+                                <div className="flex items-center space-x-2 mb-1">
+                                  <Badge className={getQuestionTypeColor(question.questionType)} variant="secondary">
+                                    {formatQuestionType(question.questionType)}
+                                  </Badge>
+                                  <Badge variant="outline">Subject {question.subjectId}</Badge>
+                                  {question.difficulty && (
+                                    <Badge variant="outline" className="capitalize text-xs">{question.difficulty}</Badge>
+                                  )}
+                                  {question.bloomsTaxonomy && (
+                                    <Badge variant="outline" className="capitalize text-xs">{question.bloomsTaxonomy}</Badge>
+                                  )}
+                                  <span className="text-xs text-gray-500">{question.points} pts</span>
+                                </div>
+                                <p className="text-sm text-gray-900 truncate">
+                                  {question.questionText}
+                                </p>
                               </div>
-                              <p className="text-sm text-gray-900 truncate">
-                                {question.questionText}
-                              </p>
                             </div>
                           </div>
+                        ))}
+                      </div>
+                      <div className="mt-2 p-3 bg-blue-50 rounded-lg">
+                        <p className="text-sm text-blue-800">
+                          <strong>Note:</strong> These questions were randomly selected. 
+                          The selection will change if you modify the number of questions or refresh the selection.
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Points Summary Card for Random Questions */}
+                    <Card className="bg-gradient-to-r from-orange-50 to-yellow-50 border-orange-200">
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h4 className="font-medium text-gray-900">Random Selection Summary</h4>
+                            <p className="text-sm text-gray-600">
+                              {randomQuestions.length} question{randomQuestions.length !== 1 ? 's' : ''} randomly selected
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-2xl font-bold text-orange-600">
+                              {randomQuestions.reduce((sum, q) => sum + (q.points || 1), 0)}
+                            </div>
+                            <div className="text-sm text-gray-600">Total Points</div>
+                          </div>
                         </div>
-                      ))}
-                    </div>
-                    <div className="mt-2 p-3 bg-blue-50 rounded-lg">
-                      <p className="text-sm text-blue-800">
-                        <strong>Note:</strong> These questions were randomly selected. 
-                        The selection will change if you modify the number of questions or refresh the selection.
-                      </p>
-                    </div>
+                      </CardContent>
+                    </Card>
                   </div>
                 )}
 
@@ -644,20 +699,48 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
               <FormField
                 control={form.control}
                 name="totalPoints"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Total Points</FormLabel>
-                    <FormControl>
-                      <Input 
-                        type="number" 
-                        min="1" 
-                        {...field} 
-                        onChange={(e) => field.onChange(parseInt(e.target.value))}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+                render={({ field }) => {
+                  const questionsToCalculate = selectionMethod === 'manual' ? selectedQuestions : randomQuestions;
+                  const calculatedPoints = questionsToCalculate.reduce((sum, question) => sum + (question.points || 1), 0);
+                  const isAutoCalculated = questionsToCalculate.length > 0;
+                  
+                  return (
+                    <FormItem>
+                      <FormLabel className="flex items-center gap-2">
+                        Total Points
+                        {isAutoCalculated && (
+                          <Badge variant="secondary" className="text-xs bg-green-100 text-green-800">
+                            Auto-calculated
+                          </Badge>
+                        )}
+                      </FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Input 
+                            type="number" 
+                            min="1" 
+                            {...field} 
+                            onChange={(e) => field.onChange(parseInt(e.target.value))}
+                            className={isAutoCalculated ? "bg-green-50 border-green-200" : ""}
+                          />
+                          {isAutoCalculated && (
+                            <div className="absolute inset-y-0 right-3 flex items-center">
+                              <span className="text-xs text-green-600 font-medium">
+                                = {calculatedPoints} pts
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      </FormControl>
+                      {isAutoCalculated && (
+                        <FormDescription className="text-green-600 text-xs">
+                          Points automatically calculated from {questionsToCalculate.length} selected question{questionsToCalculate.length !== 1 ? 's' : ''}
+                        </FormDescription>
+                      )}
+                      <FormMessage />
+                    </FormItem>
+                  );
+                }}
               />
 
             </div>

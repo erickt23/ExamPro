@@ -65,6 +65,13 @@ Recent UI Changes (August 2025):
   - **Attempts Display**: Updated getExamStatus function to include attempts information and display remaining attempts on exam cards
   - **Progress Restoration**: Fixed timer preservation when loading saved progress to prevent restart
   - **Auto-Save Integration**: Enhanced auto-save functionality to work properly with timer and all question types
+- **Enhanced Question Types and Exam Creation** (August 22, 2025):
+  - **Advanced Question Types**: Implemented complete support for matching, ranking/ordering, and drag-and-drop question types
+  - **Enhanced Fill-in-Blank**: Improved interface with multiple blank support and visual instructions
+  - **Question Creation Modal**: Updated to properly format complex data structures for advanced question types
+  - **Automatic Points Calculation**: Exam creation now automatically calculates total points based on selected questions
+  - **Visual Points Indicators**: Added real-time points summary cards and auto-calculated badges in exam creation interface
+  - **Enhanced Question Selection**: Improved manual and random question selection with visual feedback and summary cards
 
 ## System Architecture
 
