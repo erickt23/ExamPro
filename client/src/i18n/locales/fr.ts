@@ -10,7 +10,7 @@ export const fr = {
     assignmentManagement: 'Gestion de Devoirs',
     gradingCenter: 'Centre de Notes',
     settings: 'Paramètres',
-    grading: 'Notation',
+    grading: 'Centre de Notes',
     analytics: 'Analytique',
     students: 'Étudiants',
     homework: 'Devoirs',
@@ -213,7 +213,7 @@ export const fr = {
 
   // Grading Center
   grading: {
-    title: 'Centre de Notes',
+    title: 'Notation',
     description: 'Noter les soumissions des étudiants et gérer les notes finales',
     studentName: 'Nom de l\'Étudiant',
     studentEmail: 'Email de l\'Étudiant',

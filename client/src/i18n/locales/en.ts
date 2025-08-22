@@ -10,7 +10,7 @@ export const en = {
     assignmentManagement: 'Assignment Management',
     gradingCenter: 'Grading Center',
     settings: 'Settings',
-    grading: 'Grading',
+    grading: 'Grading Center',
     analytics: 'Analytics',
     students: 'Students',
     homework: 'Homework',
@@ -215,7 +215,7 @@ export const en = {
 
   // Grading Center
   grading: {
-    title: 'Grading Center',
+    title: 'Grading',
     description: 'Grade student submissions and manage final grades',
     studentName: 'Student Name',
     studentEmail: 'Student Email',

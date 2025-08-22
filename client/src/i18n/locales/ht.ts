@@ -10,7 +10,7 @@ export const ht = {
     assignmentManagement: 'Jesyon Devwa',
     gradingCenter: 'Sant Nòt',
     settings: 'Konfigirasyon',
-    grading: 'Bay Nòt',
+    grading: 'Sant Nòt',
     analytics: 'Analitik',
     students: 'Elèv yo',
     homework: 'Devwa yo',
@@ -213,7 +213,7 @@ export const ht = {
 
   // Grading Center
   grading: {
-    title: 'Sant Nòt',
+    title: 'Bay Nòt',
     description: 'Bay nòt soumisyon elèv yo ak jere nòt final yo',
     studentName: 'Non Elèv',
     studentEmail: 'Imel Elèv',

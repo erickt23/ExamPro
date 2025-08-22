@@ -12,6 +12,8 @@ Navigation terminology preferences:
 - "Homework Questions" → "Assignment Bank" (under Assignment Management accordion)
 - "Homework Assignment" → "Assignments" (under Assignment Management accordion)
 - "Exams" → "Exams" (under Exam Management accordion)
+- "Grading" (sidebar menu) → "Grading Center"
+- "Grading Center" (page title) → "Grading"
 - Applied vibrant gradient styling system across all primary action buttons
 - Consistent blue-to-indigo gradients with hover effects and scaling animations
 - Updated all page titles to match new menu names for consistency
