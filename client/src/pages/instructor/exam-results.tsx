@@ -1,7 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { isUnauthorizedError } from "@/lib/authUtils";
 import { formatSubmissionTime, formatDetailedSubmissionTime } from "@/lib/dateUtils";
+import Navbar from "@/components/layout/navbar";
+import Sidebar from "@/components/layout/sidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -26,8 +30,24 @@ import { useTranslation } from "@/hooks/useTranslation";
 export default function ExamResults() {
   const { t } = useTranslation();
   const { toast } = useToast();
+  const { isAuthenticated, isLoading } = useAuth();
   const [selectedExamId, setSelectedExamId] = useState<number | null>(null);
   const [expandedSubmission, setExpandedSubmission] = useState<number | null>(null);
+
+  // Redirect if not authenticated
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      toast({
+        title: t('auth.unauthorized'),
+        description: t('auth.loggedOut'),
+        variant: "destructive",
+      });
+      setTimeout(() => {
+        window.location.href = "/api/login";
+      }, 500);
+      return;
+    }
+  }, [isAuthenticated, isLoading, toast, t]);
 
   // Fetch exams for the dropdown
   const { data: exams = [] } = useQuery({
@@ -120,7 +140,7 @@ export default function ExamResults() {
               if (typeof parsed === 'object' && parsed !== null) {
                 return Object.entries(parsed).map(([left, right], i) => (
                   <div key={i} className="text-sm mb-1">
-                    <span className="font-medium">{left}</span> → <span>{right}</span>
+                    <span className="font-medium">{left}</span> → <span>{String(right)}</span>
                   </div>
                 ));
               }
@@ -153,7 +173,7 @@ export default function ExamResults() {
               if (typeof parsed === 'object' && parsed !== null) {
                 return Object.entries(parsed).map(([zone, item], i) => (
                   <div key={i} className="text-sm mb-1">
-                    <span className="font-medium">{zone}:</span> <span>{item}</span>
+                    <span className="font-medium">{zone}:</span> <span>{String(item)}</span>
                   </div>
                 ));
               }
@@ -265,62 +285,81 @@ export default function ExamResults() {
     );
   };
 
-  return (
-    <div className="flex-1 space-y-6 p-8">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-            {t('nav.examResults')}
-          </h1>
-          <p className="text-gray-600 dark:text-muted-foreground">
-            View detailed exam analytics and student performance
-          </p>
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading...</p>
         </div>
       </div>
+    );
+  }
 
-      {/* Exam Selection */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Search className="h-5 w-5" />
-            Select Exam
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Select value={selectedExamId?.toString()} onValueChange={(value) => setSelectedExamId(Number(value))}>
-            <SelectTrigger className="max-w-md">
-              <SelectValue placeholder="Choose an exam to view results..." />
-            </SelectTrigger>
-            <SelectContent>
-              {exams.map((exam: any) => (
-                <SelectItem key={exam.id} value={exam.id.toString()}>
-                  {exam.title}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </CardContent>
-      </Card>
+  if (!isAuthenticated) {
+    return null;
+  }
 
-      {selectedExamId && examData && (
-        <div className="space-y-6">
-          <div className="flex items-center gap-2">
-            <BarChart3 className="h-6 w-6 text-blue-600" />
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-foreground">
-              Results: {examData.title}
-            </h2>
+  return (
+    <div className="min-h-screen bg-background">
+      <Navbar />
+      <div className="flex">
+        <Sidebar />
+        <main className="flex-1 space-y-6 p-8">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                {t('nav.examResults')}
+              </h1>
+              <p className="text-gray-600 dark:text-muted-foreground">
+                View detailed exam analytics and student performance
+              </p>
+            </div>
           </div>
 
-          <Tabs defaultValue="overview" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="overview">Overview</TabsTrigger>
-              <TabsTrigger value="submissions">Submissions</TabsTrigger>
-              <TabsTrigger value="analytics">Analytics</TabsTrigger>
-            </TabsList>
+          {/* Exam Selection */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Search className="h-5 w-5" />
+                Select Exam
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Select value={selectedExamId?.toString()} onValueChange={(value) => setSelectedExamId(Number(value))}>
+                <SelectTrigger className="max-w-md">
+                  <SelectValue placeholder="Choose an exam to view results..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {exams.map((exam: any) => (
+                    <SelectItem key={exam.id} value={exam.id.toString()}>
+                      {exam.title}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </CardContent>
+          </Card>
 
-            <TabsContent value="overview" className="space-y-6">
-              {/* Key Metrics */}
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {selectedExamId && examData && (
+            <div className="space-y-6">
+              <div className="flex items-center gap-2">
+                <BarChart3 className="h-6 w-6 text-blue-600" />
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-foreground">
+                  Results: {examData.title}
+                </h2>
+              </div>
+
+              <Tabs defaultValue="overview" className="space-y-6">
+                <TabsList className="grid w-full grid-cols-3">
+                  <TabsTrigger value="overview">Overview</TabsTrigger>
+                  <TabsTrigger value="submissions">Submissions</TabsTrigger>
+                  <TabsTrigger value="analytics">Analytics</TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="overview" className="space-y-6">
+                  {/* Key Metrics */}
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <Card>
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between">
@@ -383,15 +422,15 @@ export default function ExamResults() {
                       </div>
                     </div>
                   </CardContent>
-                </Card>
-              </div>
+                  </Card>
+                  </div>
 
-              {/* Exam Info */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Exam Information</CardTitle>
-                </CardHeader>
-                <CardContent>
+                  {/* Exam Info */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Exam Information</CardTitle>
+                    </CardHeader>
+                    <CardContent>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div>
                       <span className="text-sm font-medium text-gray-500 dark:text-muted-foreground">Total Points</span>
@@ -413,40 +452,40 @@ export default function ExamResults() {
                         {examData.maxAttempts || 'Unlimited'}
                       </p>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
+                    </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
 
-            <TabsContent value="submissions" className="space-y-6">
-              {submissions.length > 0 ? (
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-foreground">
-                    Student Submissions ({submissions.length})
-                  </h3>
-                  {submissions.map((submission: any) => (
-                    <SubmissionCard key={submission.id} submission={submission} />
-                  ))}
-                </div>
-              ) : (
-                <Card>
-                  <CardContent className="p-8 text-center">
-                    <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <p className="text-gray-500 dark:text-muted-foreground">No submissions found for this exam.</p>
-                  </CardContent>
-                </Card>
-              )}
-            </TabsContent>
+                <TabsContent value="submissions" className="space-y-6">
+                  {submissions.length > 0 ? (
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-foreground">
+                        Student Submissions ({submissions.length})
+                      </h3>
+                      {submissions.map((submission: any) => (
+                        <SubmissionCard key={submission.id} submission={submission} />
+                      ))}
+                    </div>
+                  ) : (
+                    <Card>
+                      <CardContent className="p-8 text-center">
+                        <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                        <p className="text-gray-500 dark:text-muted-foreground">No submissions found for this exam.</p>
+                      </CardContent>
+                    </Card>
+                  )}
+                </TabsContent>
 
-            <TabsContent value="analytics" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <BarChart3 className="h-5 w-5" />
-                    Performance Analytics
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
+                <TabsContent value="analytics" className="space-y-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <BarChart3 className="h-5 w-5" />
+                        Performance Analytics
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-4">
                       <h4 className="font-semibold text-gray-900 dark:text-foreground">Score Distribution</h4>
@@ -497,22 +536,24 @@ export default function ExamResults() {
                         )}
                       </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
-        </div>
-      )}
+                    </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+              </Tabs>
+            </div>
+          )}
 
-      {!selectedExamId && (
-        <Card>
-          <CardContent className="p-8 text-center">
-            <BarChart3 className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-500 dark:text-muted-foreground">Select an exam above to view detailed results and analytics.</p>
-          </CardContent>
-        </Card>
-      )}
+          {!selectedExamId && (
+            <Card>
+              <CardContent className="p-8 text-center">
+                <BarChart3 className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-500 dark:text-muted-foreground">Select an exam above to view detailed results and analytics.</p>
+              </CardContent>
+            </Card>
+          )}
+        </main>
+      </div>
     </div>
   );
 }
