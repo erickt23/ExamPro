@@ -447,8 +447,13 @@ export default function StudentExamTaking() {
           }
         }
         
-        const leftItems = matchingData.left || [];
-        const rightItems = matchingData.right || [];
+        // Ensure items are arrays of strings
+        const leftItems = (matchingData.left || []).map((item: any) => 
+          typeof item === 'string' ? item : (item?.name || item?.text || String(item))
+        );
+        const rightItems = (matchingData.right || []).map((item: any) => 
+          typeof item === 'string' ? item : (item?.name || item?.text || String(item))
+        );
         const currentMatches = answer || {};
         
         // Debug log to see what we have
@@ -477,7 +482,7 @@ export default function StudentExamTaking() {
                   <div key={index} className="flex flex-col sm:flex-row sm:items-center gap-3 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border">
                     <div className="sm:w-1/2">
                       <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                        {index + 1}. {leftItem}
+                        {index + 1}. {String(leftItem)}
                       </Label>
                     </div>
                     <div className="sm:w-1/2">
@@ -497,7 +502,7 @@ export default function StudentExamTaking() {
                         <option value="">Select a match...</option>
                         {rightItems.map((rightItem: string, rightIndex: number) => (
                           <option key={rightIndex} value={rightItem}>
-                            {String.fromCharCode(65 + rightIndex)}. {rightItem}
+                            {String.fromCharCode(65 + rightIndex)}. {String(rightItem)}
                           </option>
                         ))}
                       </select>
@@ -510,10 +515,25 @@ export default function StudentExamTaking() {
         );
 
       case 'ranking':
-        const rankingItems = question.question.options ? 
-          (Array.isArray(question.question.options) ? question.question.options : 
-            (typeof question.question.options === 'string' ? 
-              JSON.parse(question.question.options) : [])) : [];
+        // Ensure ranking items are strings
+        let rankingItems = [];
+        try {
+          if (question.question.options) {
+            if (Array.isArray(question.question.options)) {
+              rankingItems = question.question.options.map((item: any) => 
+                typeof item === 'string' ? item : (item?.name || item?.text || String(item))
+              );
+            } else if (typeof question.question.options === 'string') {
+              const parsed = JSON.parse(question.question.options);
+              rankingItems = (Array.isArray(parsed) ? parsed : []).map((item: any) => 
+                typeof item === 'string' ? item : (item?.name || item?.text || String(item))
+              );
+            }
+          }
+        } catch (e) {
+          console.error('Error parsing ranking options:', e);
+          rankingItems = [];
+        }
         
         const currentRanking = Array.isArray(answer) ? answer : [];
         
@@ -629,8 +649,13 @@ export default function StudentExamTaking() {
           }
         }
         
-        const zones = dragDropData.zones || [];
-        const items = dragDropData.items || [];
+        // Ensure zones and items are arrays of strings
+        const zones = (dragDropData.zones || []).map((zone: any) => 
+          typeof zone === 'string' ? zone : (zone?.name || zone?.zone || String(zone))
+        );
+        const items = (dragDropData.items || []).map((item: any) => 
+          typeof item === 'string' ? item : (item?.name || item?.item || String(item))
+        );
         const currentPlacements = answer || {};
         
         // Debug log to see what we have
@@ -665,10 +690,10 @@ export default function StudentExamTaking() {
                         className="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md cursor-move hover:shadow-md transition-shadow text-sm"
                         draggable
                         onDragStart={(e) => {
-                          e.dataTransfer.setData('text/plain', item);
+                          e.dataTransfer.setData('text/plain', String(item));
                         }}
                       >
-                        {item}
+                        {String(item)}
                       </div>
                     ))}
                   </div>
@@ -698,7 +723,7 @@ export default function StudentExamTaking() {
                       }}
                       onDragOver={(e) => e.preventDefault()}
                     >
-                      <h4 className="text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">{zone}</h4>
+                      <h4 className="text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">{String(zone)}</h4>
                       {currentPlacements[zoneIndex] && (
                         <div className="inline-block px-3 py-2 bg-blue-100 dark:bg-blue-900/50 border border-blue-200 dark:border-blue-700 rounded-md text-sm">
                           {currentPlacements[zoneIndex]}
