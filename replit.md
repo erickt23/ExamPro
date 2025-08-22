@@ -72,6 +72,13 @@ Recent UI Changes (August 2025):
   - **Automatic Points Calculation**: Exam creation now automatically calculates total points based on selected questions
   - **Visual Points Indicators**: Added real-time points summary cards and auto-calculated badges in exam creation interface
   - **Enhanced Question Selection**: Improved manual and random question selection with visual feedback and summary cards
+  - **Fixed Advanced Question Types Rendering** (August 22, 2025):
+    - **Fill-in-Blank Questions**: Fixed issue where no text fields appeared - now properly detects blank count and creates input fields
+    - **Matching Questions**: Enhanced data parsing with multiple fallback strategies to ensure matching items are always displayed
+    - **Drag-and-Drop Questions**: Improved item bank rendering and drag functionality with proper visual feedback
+    - **Data Structure Handling**: Added robust parsing for both string and object formats with comprehensive error handling
+    - **Debug Logging**: Added console logging to help troubleshoot question data parsing issues
+    - **Fallback Mechanisms**: Implemented multiple data source fallbacks (options, correctAnswer) for reliable question rendering
 
 ## System Architecture
 

@@ -360,8 +360,26 @@ export default function StudentExamTaking() {
         );
 
       case 'fill_blank':
-        const correctAnswers = question.question.correctAnswer ? 
-          question.question.correctAnswer.split('|') : [];
+        // Handle both stored string and parsed array for correct answers
+        let correctAnswers = [];
+        if (question.question.correctAnswer) {
+          if (typeof question.question.correctAnswer === 'string') {
+            correctAnswers = question.question.correctAnswer.split('|').filter((a: string) => a.trim());
+          } else if (Array.isArray(question.question.correctAnswer)) {
+            correctAnswers = question.question.correctAnswer;
+          }
+        }
+        
+        // If no correct answers found, try to parse from question text by counting blanks
+        if (correctAnswers.length === 0) {
+          const blankCount = (question.question.questionText.match(/___/g) || []).length;
+          if (blankCount > 0) {
+            correctAnswers = Array(blankCount).fill('');
+          } else {
+            // Default to 2 blanks if we can't determine
+            correctAnswers = ['', ''];
+          }
+        }
         
         // Ensure answer is an array for fill_blank questions
         const currentAnswers = Array.isArray(answer) ? answer : [];
@@ -401,14 +419,40 @@ export default function StudentExamTaking() {
         );
 
       case 'matching':
-        const matchingData = question.question.options ? 
-          (typeof question.question.options === 'string' ? 
-            JSON.parse(question.question.options) : question.question.options) : 
-          { left: [], right: [] };
+        // Handle both stored string and object for matching data
+        let matchingData = { left: [], right: [] };
+        if (question.question.options) {
+          if (typeof question.question.options === 'string') {
+            try {
+              matchingData = JSON.parse(question.question.options);
+            } catch (e) {
+              console.error('Error parsing matching options:', e);
+            }
+          } else if (typeof question.question.options === 'object') {
+            matchingData = question.question.options;
+          }
+        }
+        
+        // Fallback to correctAnswer if options are empty
+        if ((!matchingData.left || matchingData.left.length === 0) && question.question.correctAnswer) {
+          try {
+            const fallbackData = typeof question.question.correctAnswer === 'string' 
+              ? JSON.parse(question.question.correctAnswer) 
+              : question.question.correctAnswer;
+            if (fallbackData && (fallbackData.left || fallbackData.right)) {
+              matchingData = fallbackData;
+            }
+          } catch (e) {
+            console.error('Error parsing correctAnswer for matching:', e);
+          }
+        }
         
         const leftItems = matchingData.left || [];
         const rightItems = matchingData.right || [];
         const currentMatches = answer || {};
+        
+        // Debug log to see what we have
+        console.log('Matching question data:', { leftItems, rightItems, matchingData, question });
         
         return (
           <div className="space-y-4">
@@ -420,39 +464,48 @@ export default function StudentExamTaking() {
                 Select the corresponding option for each item.
               </p>
             </div>
-            <div className="grid gap-4">
-              {leftItems.map((leftItem: string, index: number) => (
-                <div key={index} className="flex flex-col sm:flex-row sm:items-center gap-3 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border">
-                  <div className="sm:w-1/2">
-                    <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      {index + 1}. {leftItem}
-                    </Label>
+            
+            {leftItems.length === 0 && rightItems.length === 0 ? (
+              <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+                <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                  No matching items found. Please contact your instructor.
+                </p>
+              </div>
+            ) : (
+              <div className="grid gap-4">
+                {leftItems.map((leftItem: string, index: number) => (
+                  <div key={index} className="flex flex-col sm:flex-row sm:items-center gap-3 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border">
+                    <div className="sm:w-1/2">
+                      <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        {index + 1}. {leftItem}
+                      </Label>
+                    </div>
+                    <div className="sm:w-1/2">
+                      <select
+                        value={currentMatches[index] || ''}
+                        onChange={(e) => {
+                          const newMatches = { ...currentMatches };
+                          if (e.target.value) {
+                            newMatches[index] = e.target.value;
+                          } else {
+                            delete newMatches[index];
+                          }
+                          handleAnswerChange(question.questionId, newMatches);
+                        }}
+                        className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                      >
+                        <option value="">Select a match...</option>
+                        {rightItems.map((rightItem: string, rightIndex: number) => (
+                          <option key={rightIndex} value={rightItem}>
+                            {String.fromCharCode(65 + rightIndex)}. {rightItem}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
                   </div>
-                  <div className="sm:w-1/2">
-                    <select
-                      value={currentMatches[index] || ''}
-                      onChange={(e) => {
-                        const newMatches = { ...currentMatches };
-                        if (e.target.value) {
-                          newMatches[index] = e.target.value;
-                        } else {
-                          delete newMatches[index];
-                        }
-                        handleAnswerChange(question.questionId, newMatches);
-                      }}
-                      className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-                    >
-                      <option value="">Select a match...</option>
-                      {rightItems.map((rightItem: string, rightIndex: number) => (
-                        <option key={rightIndex} value={rightItem}>
-                          {String.fromCharCode(65 + rightIndex)}. {rightItem}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
         );
 
@@ -548,14 +601,40 @@ export default function StudentExamTaking() {
         );
 
       case 'drag_drop':
-        const dragDropData = question.question.options ? 
-          (typeof question.question.options === 'string' ? 
-            JSON.parse(question.question.options) : question.question.options) : 
-          { zones: [], items: [] };
+        // Handle both stored string and object for drag-drop data
+        let dragDropData = { zones: [], items: [] };
+        if (question.question.options) {
+          if (typeof question.question.options === 'string') {
+            try {
+              dragDropData = JSON.parse(question.question.options);
+            } catch (e) {
+              console.error('Error parsing drag-drop options:', e);
+            }
+          } else if (typeof question.question.options === 'object') {
+            dragDropData = question.question.options;
+          }
+        }
+        
+        // Fallback to correctAnswer if options are empty
+        if ((!dragDropData.zones || dragDropData.zones.length === 0) && question.question.correctAnswer) {
+          try {
+            const fallbackData = typeof question.question.correctAnswer === 'string' 
+              ? JSON.parse(question.question.correctAnswer) 
+              : question.question.correctAnswer;
+            if (fallbackData && (fallbackData.zones || fallbackData.items)) {
+              dragDropData = fallbackData;
+            }
+          } catch (e) {
+            console.error('Error parsing correctAnswer for drag-drop:', e);
+          }
+        }
         
         const zones = dragDropData.zones || [];
         const items = dragDropData.items || [];
         const currentPlacements = answer || {};
+        
+        // Debug log to see what we have
+        console.log('Drag-drop question data:', { zones, items, dragDropData, question });
         
         return (
           <div className="space-y-4">
@@ -568,70 +647,80 @@ export default function StudentExamTaking() {
               </p>
             </div>
             
-            {/* Item Bank */}
-            <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600">
-              <h4 className="text-sm font-medium mb-3 text-gray-700 dark:text-gray-300">Item Bank</h4>
-              <div className="flex flex-wrap gap-2">
-                {items.filter((item: string) => !Object.values(currentPlacements).includes(item)).map((item: string, index: number) => (
-                  <div
-                    key={index}
-                    className="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md cursor-move hover:shadow-md transition-shadow text-sm"
-                    draggable
-                    onDragStart={(e) => {
-                      e.dataTransfer.setData('text/plain', item);
-                    }}
-                  >
-                    {item}
-                  </div>
-                ))}
+            {items.length === 0 ? (
+              <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+                <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                  No draggable items found. Please contact your instructor.
+                </p>
               </div>
-            </div>
-            
-            {/* Drop Zones */}
-            <div className="grid gap-4 md:grid-cols-2">
-              {zones.map((zone: string, zoneIndex: number) => (
-                <div
-                  key={zoneIndex}
-                  className="min-h-24 p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800/50"
-                  onDrop={(e) => {
-                    e.preventDefault();
-                    const draggedItem = e.dataTransfer.getData('text/plain');
-                    const newPlacements = { ...currentPlacements };
-                    
-                    // Remove item from any existing zone
-                    Object.keys(newPlacements).forEach(key => {
-                      if (newPlacements[key] === draggedItem) {
-                        delete newPlacements[key];
-                      }
-                    });
-                    
-                    // Add to new zone
-                    newPlacements[zoneIndex] = draggedItem;
-                    handleAnswerChange(question.questionId, newPlacements);
-                  }}
-                  onDragOver={(e) => e.preventDefault()}
-                >
-                  <h4 className="text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">{zone}</h4>
-                  {currentPlacements[zoneIndex] && (
-                    <div className="inline-block px-3 py-2 bg-blue-100 dark:bg-blue-900/50 border border-blue-200 dark:border-blue-700 rounded-md text-sm">
-                      {currentPlacements[zoneIndex]}
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="ml-2 h-auto p-0 text-xs"
-                        onClick={() => {
-                          const newPlacements = { ...currentPlacements };
-                          delete newPlacements[zoneIndex];
-                          handleAnswerChange(question.questionId, newPlacements);
+            ) : (
+              <>
+                {/* Item Bank */}
+                <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600">
+                  <h4 className="text-sm font-medium mb-3 text-gray-700 dark:text-gray-300">Item Bank</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {items.filter((item: string) => !Object.values(currentPlacements).includes(item)).map((item: string, index: number) => (
+                      <div
+                        key={index}
+                        className="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md cursor-move hover:shadow-md transition-shadow text-sm"
+                        draggable
+                        onDragStart={(e) => {
+                          e.dataTransfer.setData('text/plain', item);
                         }}
                       >
-                        ×
-                      </Button>
-                    </div>
-                  )}
+                        {item}
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              ))}
-            </div>
+                
+                {/* Drop Zones */}
+                <div className="grid gap-4 md:grid-cols-2">
+                  {zones.map((zone: string, zoneIndex: number) => (
+                    <div
+                      key={zoneIndex}
+                      className="min-h-24 p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800/50"
+                      onDrop={(e) => {
+                        e.preventDefault();
+                        const draggedItem = e.dataTransfer.getData('text/plain');
+                        const newPlacements = { ...currentPlacements };
+                        
+                        // Remove item from any existing zone
+                        Object.keys(newPlacements).forEach(key => {
+                          if (newPlacements[key] === draggedItem) {
+                            delete newPlacements[key];
+                          }
+                        });
+                        
+                        // Add to new zone
+                        newPlacements[zoneIndex] = draggedItem;
+                        handleAnswerChange(question.questionId, newPlacements);
+                      }}
+                      onDragOver={(e) => e.preventDefault()}
+                    >
+                      <h4 className="text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">{zone}</h4>
+                      {currentPlacements[zoneIndex] && (
+                        <div className="inline-block px-3 py-2 bg-blue-100 dark:bg-blue-900/50 border border-blue-200 dark:border-blue-700 rounded-md text-sm">
+                          {currentPlacements[zoneIndex]}
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="ml-2 h-auto p-0 text-xs"
+                            onClick={() => {
+                              const newPlacements = { ...currentPlacements };
+                              delete newPlacements[zoneIndex];
+                              handleAnswerChange(question.questionId, newPlacements);
+                            }}
+                          >
+                            ×
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
           </div>
         );
 
