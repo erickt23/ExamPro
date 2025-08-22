@@ -479,16 +479,35 @@ export default function StudentExamTaking() {
             console.error('Error parsing correctAnswer for matching:', e);
           }
         }
-        const currentMatches = answer || {};
         
-        // Debug log to see what we have
-        console.log('Matching question data:', { 
-          leftItems, 
-          rightItems, 
-          rawOptions: question.question.options,
-          rawCorrectAnswer: question.question.correctAnswer,
-          question 
-        });
+        // Create a stable shuffle for right items using the question ID as seed
+        // This ensures the same randomization every time for the same question
+        const shuffleArray = (array: string[], seed: number): string[] => {
+          const shuffled = [...array];
+          let currentIndex = shuffled.length;
+          let temporaryValue, randomIndex;
+          
+          // Use a simple seeded random number generator
+          const random = () => {
+            const x = Math.sin(seed++) * 10000;
+            return x - Math.floor(x);
+          };
+          
+          while (0 !== currentIndex) {
+            randomIndex = Math.floor(random() * currentIndex);
+            currentIndex--;
+            
+            temporaryValue = shuffled[currentIndex];
+            shuffled[currentIndex] = shuffled[randomIndex];
+            shuffled[randomIndex] = temporaryValue;
+          }
+          
+          return shuffled;
+        };
+        
+        // Shuffle right items for display using question ID as seed for consistency
+        const shuffledRightItems = shuffleArray(rightItems, question.questionId);
+        const currentMatches = answer || {};
         
         return (
           <div className="space-y-4">
@@ -531,7 +550,7 @@ export default function StudentExamTaking() {
                         className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                       >
                         <option value="">Select a match...</option>
-                        {rightItems.map((rightItem: string, rightIndex: number) => (
+                        {shuffledRightItems.map((rightItem: string, rightIndex: number) => (
                           <option key={rightIndex} value={rightItem}>
                             {String.fromCharCode(65 + rightIndex)}. {String(rightItem)}
                           </option>

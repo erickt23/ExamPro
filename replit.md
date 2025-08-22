@@ -56,6 +56,10 @@ Navigation terminology preferences:
   - **All fill-in-the-blank questions require manual grading** regardless of whether correct answers are set
   - **Submissions with fill-blank questions are marked as "pending"** and appear in instructor grading interface
   - **No auto-grading for fill-blank questions** to ensure human judgment for contextual answers
+- **Matching Question Randomization** (August 22, 2025):
+  - **Right-side options are randomized** during exam taking to prevent positional matching
+  - **Seeded randomization** using question ID ensures consistent order for each question across attempts
+  - **Preserved answer integrity** maintains correct grading while providing fair assessment experience
 
 ## System Architecture
 
