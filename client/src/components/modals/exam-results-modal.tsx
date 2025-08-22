@@ -509,7 +509,7 @@ function SubmissionCard({ submission, isExpanded, onToggleExpand, getStatusBadge
                   )}
                   
                   {/* Student's answer - show for all question types */}
-                  {(answer.answerText || answer.selectedOption || answer.question?.questionType === 'multiple_choice') && (
+                  {(answer.answerText || answer.selectedOption || answer.question?.questionType) && (
                     <div>
                       <p className="text-sm text-gray-600 mb-1">Student's Answer:</p>
                       <div className="bg-gray-50 p-3 rounded text-sm">
@@ -529,9 +529,19 @@ function SubmissionCard({ submission, isExpanded, onToggleExpand, getStatusBadge
                           <div className="space-y-2">
                             {(() => {
                               try {
+                                // Handle empty or missing answer
+                                if (!answer.answerText || answer.answerText.trim() === '' || answer.answerText === '{}') {
+                                  return <span className="text-gray-500">No answer provided</span>;
+                                }
+                                
                                 const studentAnswer = typeof answer.answerText === 'string' 
                                   ? JSON.parse(answer.answerText) 
                                   : answer.answerText;
+                                
+                                // Check if student answer is empty object
+                                if (typeof studentAnswer === 'object' && Object.keys(studentAnswer).length === 0) {
+                                  return <span className="text-gray-500">No answer provided</span>;
+                                }
                                 
                                 let questionPairs = [];
                                 if (answer.question.options) {
@@ -546,16 +556,20 @@ function SubmissionCard({ submission, isExpanded, onToggleExpand, getStatusBadge
                                   questionPairs = Array.isArray(correctData) ? correctData : [];
                                 }
                                 
+                                if (questionPairs.length === 0) {
+                                  return <span className="text-gray-500">No question pairs available</span>;
+                                }
+                                
                                 return questionPairs.map((pair: any, index: number) => {
                                   const studentSelection = studentAnswer[index] || 'No answer';
                                   return (
                                     <div key={index} className="flex items-center justify-between p-2 bg-white rounded border">
                                       <span className="font-medium">{pair.left}</span>
                                       <span className="text-gray-600">→</span>
-                                      <span className={`font-medium ${studentSelection === pair.right ? 'text-green-600' : 'text-red-600'}`}>
+                                      <span className={`font-medium ${studentSelection === pair.right ? 'text-green-600' : studentSelection === 'No answer' ? 'text-gray-500' : 'text-red-600'}`}>
                                         {studentSelection}
                                       </span>
-                                      {studentSelection !== pair.right && (
+                                      {studentSelection !== pair.right && studentSelection !== 'No answer' && (
                                         <span className="text-xs text-gray-500">
                                           (Correct: {pair.right})
                                         </span>
@@ -566,9 +580,7 @@ function SubmissionCard({ submission, isExpanded, onToggleExpand, getStatusBadge
                               } catch (error) {
                                 console.error('Error parsing matching answer:', error);
                                 return (
-                                  <span className="text-red-600">
-                                    Error displaying matching answer: {answer.answerText}
-                                  </span>
+                                  <span className="text-gray-500">No answer provided</span>
                                 );
                               }
                             })()}
