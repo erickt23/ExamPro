@@ -52,6 +52,10 @@ Navigation terminology preferences:
   - **Flexible Data Format Support**: Handles JSON arrays, objects, and key-value mappings for robust answer processing
   - **Enhanced Error Handling**: Comprehensive try-catch blocks with detailed logging for troubleshooting complex question types
   - **Testing API Endpoint**: `/api/admin/test-grading` for validating grading logic with real answer key scenarios
+- **Fill-in-the-Blank Manual Grading Policy** (August 22, 2025):
+  - **All fill-in-the-blank questions require manual grading** regardless of whether correct answers are set
+  - **Submissions with fill-blank questions are marked as "pending"** and appear in instructor grading interface
+  - **No auto-grading for fill-blank questions** to ensure human judgment for contextual answers
 
 ## System Architecture
 

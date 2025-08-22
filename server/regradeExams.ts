@@ -23,82 +23,16 @@ async function regradeSubmission(submissionId: number): Promise<{ totalScore: nu
     maxScore += question.points;
 
     // Skip subjective questions as they need manual grading
-    if (question.questionType === 'essay' || question.questionType === 'short_answer') {
+    if (question.questionType === 'essay' || question.questionType === 'short_answer' || question.questionType === 'fill_blank') {
       score = parseFloat(answer.score?.toString() || '0');
-      console.log(`Subjective question ${question.id}: keeping existing score ${score}/${question.points}`);
-    }
-    // Skip fill-blank questions without correct answers as they need manual grading
-    else if (question.questionType === 'fill_blank' && !question.correctAnswer) {
-      score = parseFloat(answer.score?.toString() || '0');
-      console.log(`Fill-blank question ${question.id} without correct answer: keeping existing score ${score}/${question.points}`);
+      console.log(`Subjective/manual question ${question.id} (${question.questionType}): keeping existing score ${score}/${question.points}`);
     } else {
       // Auto-grade objective questions
       if (question.questionType === 'multiple_choice' && 
           answer.selectedOption === question.correctAnswer) {
         score = question.points;
       }
-      // Auto-grade fill-in-the-blank questions
-      else if (question.questionType === 'fill_blank') {
-        try {
-          // Handle different formats for correct answers
-          let correctAnswers = [];
-          if (Array.isArray(question.correctAnswer)) {
-            correctAnswers = question.correctAnswer;
-          } else if (typeof question.correctAnswer === 'string') {
-            // Try pipe-separated format first
-            if (question.correctAnswer.includes('|')) {
-              correctAnswers = question.correctAnswer.split('|').map((a: string) => a.trim());
-            } else {
-              // Try JSON format
-              try {
-                correctAnswers = JSON.parse(question.correctAnswer);
-              } catch {
-                // Single answer format
-                correctAnswers = [question.correctAnswer];
-              }
-            }
-          }
-          
-          // Handle different formats for student answers
-          let studentAnswers = [];
-          if (Array.isArray(answer.answerText)) {
-            studentAnswers = answer.answerText;
-          } else if (typeof answer.answerText === 'string') {
-            // Try pipe-separated format first
-            if (answer.answerText.includes('|')) {
-              studentAnswers = answer.answerText.split('|').map((a: string) => a.trim());
-            } else {
-              // Try JSON format
-              try {
-                studentAnswers = JSON.parse(answer.answerText);
-              } catch {
-                // Single answer format
-                studentAnswers = [answer.answerText];
-              }
-            }
-          }
-          
-          let correctCount = 0;
-          const totalBlanks = correctAnswers.length;
-          
-          for (let i = 0; i < totalBlanks; i++) {
-            const studentAnswer = studentAnswers[i] || '';
-            const correctAnswer = correctAnswers[i] || '';
-            
-            if (studentAnswer && correctAnswer &&
-                studentAnswer.toLowerCase().trim() === correctAnswer.toLowerCase().trim()) {
-              correctCount++;
-            }
-          }
-          
-          // Partial credit for fill-in-the-blank
-          score = totalBlanks > 0 ? (correctCount / totalBlanks) * question.points : 0;
-          console.log(`Fill-blank question ${question.id}: ${correctCount}/${totalBlanks} correct, score: ${score}/${question.points}`);
-        } catch (error) {
-          console.error(`Error grading fill-blank question ${question.id}:`, error);
-          score = 0;
-        }
-      }
+
       // Auto-grade matching questions with enhanced answer key support
       else if (question.questionType === 'matching') {
         try {

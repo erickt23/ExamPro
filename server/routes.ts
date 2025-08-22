@@ -818,12 +818,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         let score = 0;
         maxScore += question.points;
 
-        // Check if this is a subjective question or a fill-blank question without correct answer
-        if (question.questionType === 'essay' || question.questionType === 'short_answer') {
-          hasSubjectiveQuestions = true;
-        }
-        // Fill-blank questions without correct answers need manual grading
-        if (question.questionType === 'fill_blank' && !question.correctAnswer) {
+        // Check if this is a subjective question
+        if (question.questionType === 'essay' || question.questionType === 'short_answer' || question.questionType === 'fill_blank') {
           hasSubjectiveQuestions = true;
         }
 
@@ -832,69 +828,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             answer.selectedOption === question.correctAnswer) {
           score = question.points;
         }
-        // Auto-grade fill-in-the-blank questions (only if they have correct answers)
-        else if (question.questionType === 'fill_blank' && question.correctAnswer) {
-          try {
-            // Handle different formats for correct answers
-            let correctAnswers = [];
-            if (Array.isArray(question.correctAnswer)) {
-              correctAnswers = question.correctAnswer;
-            } else if (typeof question.correctAnswer === 'string') {
-              // Try pipe-separated format first
-              if (question.correctAnswer.includes('|')) {
-                correctAnswers = question.correctAnswer.split('|').map((a: string) => a.trim());
-              } else {
-                // Try JSON format
-                try {
-                  correctAnswers = JSON.parse(question.correctAnswer);
-                } catch {
-                  // Single answer format
-                  correctAnswers = [question.correctAnswer];
-                }
-              }
-            }
-            
-            // Handle different formats for student answers
-            let studentAnswers = [];
-            if (Array.isArray(answer.answerText)) {
-              studentAnswers = answer.answerText;
-            } else if (typeof answer.answerText === 'string') {
-              // Try pipe-separated format first
-              if (answer.answerText.includes('|')) {
-                studentAnswers = answer.answerText.split('|').map((a: string) => a.trim());
-              } else {
-                // Try JSON format
-                try {
-                  studentAnswers = JSON.parse(answer.answerText);
-                } catch {
-                  // Single answer format
-                  studentAnswers = [answer.answerText];
-                }
-              }
-            }
-            
-            let correctCount = 0;
-            const totalBlanks = correctAnswers.length;
-            
-            for (let i = 0; i < totalBlanks; i++) {
-              const studentAnswer = studentAnswers[i] || '';
-              const correctAnswer = correctAnswers[i] || '';
-              
-              if (studentAnswer && correctAnswer &&
-                  studentAnswer.toLowerCase().trim() === correctAnswer.toLowerCase().trim()) {
-                correctCount++;
-              }
-            }
-            
-            // Partial credit for fill-in-the-blank
-            score = totalBlanks > 0 ? (correctCount / totalBlanks) * question.points : 0;
-            console.log(`Fill-blank grading: ${correctCount}/${totalBlanks} correct, score: ${score}/${question.points}`);
-          } catch (error) {
-            console.error('Error grading fill-blank question:', error);
-            // Default to 0 if grading fails
-            score = 0;
-          }
-        }
+
         // Auto-grade matching questions
         else if (question.questionType === 'matching') {
           try {
