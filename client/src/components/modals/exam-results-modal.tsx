@@ -508,16 +508,27 @@ function SubmissionCard({ submission, isExpanded, onToggleExpand, getStatusBadge
                     </div>
                   )}
                   
-                  {/* Student's answer */}
-                  {answer.answerText && (
+                  {/* Student's answer - show for all question types */}
+                  {(answer.answerText || answer.selectedOption || answer.question?.questionType === 'multiple_choice') && (
                     <div>
                       <p className="text-sm text-gray-600 mb-1">Student's Answer:</p>
                       <div className="bg-gray-50 p-3 rounded text-sm">
-                        {answer.question?.questionType === 'matching' ? (
+                        {answer.question?.questionType === 'multiple_choice' ? (
+                          // Multiple choice - show selected option
+                          <div>
+                            <span className="font-medium">Selected: </span>
+                            <span className={`font-medium ${answer.selectedOption === answer.question.correctAnswer ? 'text-green-600' : 'text-red-600'}`}>
+                              {answer.selectedOption || 'No answer'}
+                            </span>
+                            {answer.selectedOption !== answer.question.correctAnswer && (
+                              <span className="text-gray-500"> (Correct: {answer.question.correctAnswer})</span>
+                            )}
+                          </div>
+                        ) : answer.question?.questionType === 'matching' ? (
+                          // Matching - show readable pairs
                           <div className="space-y-2">
                             {(() => {
                               try {
-                                // Parse student answers and question pairs
                                 const studentAnswer = typeof answer.answerText === 'string' 
                                   ? JSON.parse(answer.answerText) 
                                   : answer.answerText;
@@ -562,8 +573,110 @@ function SubmissionCard({ submission, isExpanded, onToggleExpand, getStatusBadge
                               }
                             })()}
                           </div>
+                        ) : answer.question?.questionType === 'drag_drop' ? (
+                          // Drag and drop - show zone placements
+                          <div className="space-y-1">
+                            {(() => {
+                              try {
+                                if (!answer.answerText) {
+                                  return <span className="text-gray-500">No answer provided</span>;
+                                }
+                                
+                                const studentAnswer = typeof answer.answerText === 'string' 
+                                  ? JSON.parse(answer.answerText) 
+                                  : answer.answerText;
+                                
+                                // Handle different drag-drop answer formats
+                                if (studentAnswer.zones && Array.isArray(studentAnswer.zones)) {
+                                  return studentAnswer.zones.map((zone: any, index: number) => (
+                                    <div key={index} className="text-xs">
+                                      <span className="font-medium">{zone.zone}:</span> {zone.items?.join(', ') || 'No items'}
+                                    </div>
+                                  ));
+                                } else if (typeof studentAnswer === 'object') {
+                                  return Object.entries(studentAnswer).map(([item, zone]: [string, any], index: number) => (
+                                    <div key={index} className="text-xs">
+                                      <span className="font-medium">{item}</span> → {zone}
+                                    </div>
+                                  ));
+                                } else {
+                                  return <span>{JSON.stringify(studentAnswer)}</span>;
+                                }
+                              } catch (error) {
+                                console.error('Error parsing drag-drop answer:', error);
+                                return <span className="text-red-600">Error displaying answer</span>;
+                              }
+                            })()}
+                          </div>
+                        ) : answer.question?.questionType === 'ranking' ? (
+                          // Ranking - show ordered list
+                          <div>
+                            {(() => {
+                              try {
+                                if (!answer.answerText) {
+                                  return <span className="text-gray-500">No answer provided</span>;
+                                }
+                                
+                                const studentOrder = Array.isArray(answer.answerText)
+                                  ? answer.answerText
+                                  : JSON.parse(answer.answerText || '[]');
+                                
+                                return (
+                                  <ol className="list-decimal list-inside space-y-1">
+                                    {studentOrder.map((item: string, index: number) => (
+                                      <li key={index} className="text-sm">{item}</li>
+                                    ))}
+                                  </ol>
+                                );
+                              } catch (error) {
+                                console.error('Error parsing ranking answer:', error);
+                                return <span className="text-red-600">Error displaying answer</span>;
+                              }
+                            })()}
+                          </div>
+                        ) : answer.question?.questionType === 'fill_blank' ? (
+                          // Fill in the blank - show answers
+                          <div>
+                            {(() => {
+                              try {
+                                if (!answer.answerText) {
+                                  return <span className="text-gray-500">No answer provided</span>;
+                                }
+                                
+                                let studentAnswers;
+                                if (typeof answer.answerText === 'string') {
+                                  // Try parsing as JSON first, fall back to pipe-separated
+                                  try {
+                                    studentAnswers = JSON.parse(answer.answerText);
+                                  } catch {
+                                    studentAnswers = answer.answerText.split('|');
+                                  }
+                                } else {
+                                  studentAnswers = answer.answerText;
+                                }
+                                
+                                if (Array.isArray(studentAnswers)) {
+                                  return (
+                                    <div className="space-y-1">
+                                      {studentAnswers.map((ans: string, index: number) => (
+                                        <div key={index} className="text-sm">
+                                          <span className="font-medium">Blank {index + 1}:</span> {ans || 'No answer'}
+                                        </div>
+                                      ))}
+                                    </div>
+                                  );
+                                } else {
+                                  return <span>{studentAnswers}</span>;
+                                }
+                              } catch (error) {
+                                console.error('Error parsing fill-blank answer:', error);
+                                return <span className="text-red-600">Error displaying answer</span>;
+                              }
+                            })()}
+                          </div>
                         ) : (
-                          answer.answerText
+                          // Default - show raw answer text for essay, short_answer, etc.
+                          answer.answerText || 'No answer provided'
                         )}
                       </div>
                     </div>
