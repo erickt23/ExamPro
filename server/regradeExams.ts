@@ -46,7 +46,7 @@ async function regradeSubmission(submissionId: number): Promise<{ totalScore: nu
           let correctMatches = 0;
           let totalMatches = 0;
           
-          console.log(`Grading matching question ${question.id}:`, {
+          console.log(`Regrading matching question ${question.id}:`, {
             correctAnswer: JSON.stringify(correctAnswer),
             studentAnswer: JSON.stringify(studentAnswer)
           });
@@ -55,30 +55,23 @@ async function regradeSubmission(submissionId: number): Promise<{ totalScore: nu
           if (Array.isArray(correctAnswer)) {
             totalMatches = correctAnswer.length;
             
-            // Create mapping from left items to their correct right matches
-            const correctMapping: { [key: string]: string } = {};
-            correctAnswer.forEach((pair: any) => {
-              if (pair.left && pair.right) {
-                correctMapping[pair.left] = pair.right;
+            // Check student's answers: format is {0: "selected_option", 1: "another_option", ...}
+            // where index corresponds to the left item position in the array
+            correctAnswer.forEach((pair: any, index: number) => {
+              const studentSelection = studentAnswer[index];
+              if (studentSelection && pair.right && studentSelection === pair.right) {
+                correctMatches++;
               }
             });
-            
-            // Check student's answers against correct mapping
-            if (typeof studentAnswer === 'object' && studentAnswer !== null) {
-              Object.entries(studentAnswer).forEach(([leftItem, rightItem]) => {
-                if (correctMapping[leftItem] === rightItem) {
-                  correctMatches++;
-                }
-              });
-            }
           }
           // Handle object with key-value pairs format: {"A": "B", ...}
           else if (typeof correctAnswer === 'object' && correctAnswer !== null) {
             const correctPairs = Object.entries(correctAnswer);
             totalMatches = correctPairs.length;
             
-            correctPairs.forEach(([leftItem, rightItem]) => {
-              if (studentAnswer[leftItem] === rightItem) {
+            correctPairs.forEach(([leftItem, rightItem], index) => {
+              const studentSelection = studentAnswer[index];
+              if (studentSelection && studentSelection === rightItem) {
                 correctMatches++;
               }
             });
@@ -259,3 +252,5 @@ export async function regradeAllZeroScoreSubmissions(): Promise<void> {
 
   console.log('Re-grading completed successfully!');
 }
+
+export { regradeSubmission };

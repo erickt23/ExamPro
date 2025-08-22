@@ -11,7 +11,7 @@ import {
   ObjectStorageService,
   ObjectNotFoundError,
 } from "./objectStorage";
-import { regradeAllZeroScoreSubmissions } from "./regradeExams";
+import { regradeAllZeroScoreSubmissions, regradeSubmission } from "./regradeExams";
 import { ObjectPermission } from "./objectAcl";
 
 // Configure multer for Excel file uploads
@@ -842,21 +842,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
             let correctMatches = 0;
             let totalMatches = 0;
             
+            console.log(`Grading matching question ${question.id}:`, {
+              correctAnswer: JSON.stringify(correctAnswer),
+              studentAnswer: JSON.stringify(studentAnswer)
+            });
+            
             // Handle array of pairs format: [{left: "A", right: "B"}, ...]
             if (Array.isArray(correctAnswer)) {
               totalMatches = correctAnswer.length;
+              
+              // Create mapping from left items to their correct right matches
+              const correctMapping: { [key: string]: string } = {};
+              correctAnswer.forEach((pair: any) => {
+                if (pair.left && pair.right) {
+                  correctMapping[pair.left] = pair.right;
+                }
+              });
+              
+              // Check student's answers: format is {0: "selected_option", 1: "another_option", ...}
+              // where index corresponds to the left item position in the array
               correctAnswer.forEach((pair: any, index: number) => {
-                if (studentAnswer[index] === pair.right) {
+                const studentSelection = studentAnswer[index];
+                if (studentSelection && pair.right && studentSelection === pair.right) {
                   correctMatches++;
                 }
               });
             }
             // Handle object with key-value pairs format: {"A": "B", ...}
-            else if (typeof correctAnswer === 'object') {
+            else if (typeof correctAnswer === 'object' && correctAnswer !== null) {
               const correctPairs = Object.entries(correctAnswer);
               totalMatches = correctPairs.length;
-              correctPairs.forEach(([left, right], index) => {
-                if (studentAnswer[index] === right) {
+              
+              correctPairs.forEach(([leftItem, rightItem], index) => {
+                const studentSelection = studentAnswer[index];
+                if (studentSelection && studentSelection === rightItem) {
                   correctMatches++;
                 }
               });
@@ -2121,6 +2140,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ message: "Re-grading completed successfully" });
     } catch (error) {
       console.error("Error re-grading submissions:", error);
+      res.status(500).json({ message: "Re-grading failed" });
+    }
+  });
+
+  app.post('/api/admin/regrade-submission/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (user?.role !== 'instructor') {
+        return res.status(403).json({ message: "Access denied" });
+      }
+      
+      const submissionId = parseInt(req.params.id);
+      if (isNaN(submissionId)) {
+        return res.status(400).json({ message: "Invalid submission ID" });
+      }
+      
+      const result = await regradeSubmission(submissionId);
+      res.json({ 
+        message: "Re-grading completed successfully",
+        totalScore: result.totalScore,
+        maxScore: result.maxScore
+      });
+    } catch (error) {
+      console.error("Error re-grading submission:", error);
       res.status(500).json({ message: "Re-grading failed" });
     }
   });
