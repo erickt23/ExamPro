@@ -11,6 +11,7 @@ import {
   ObjectStorageService,
   ObjectNotFoundError,
 } from "./objectStorage";
+import { regradeAllZeroScoreSubmissions } from "./regradeExams";
 import { ObjectPermission } from "./objectAcl";
 
 // Configure multer for Excel file uploads
@@ -829,92 +830,147 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
         // Auto-grade fill-in-the-blank questions
         else if (question.questionType === 'fill_blank') {
-          const correctAnswers = Array.isArray(question.correctAnswer) 
-            ? question.correctAnswer 
-            : JSON.parse(question.correctAnswer || '[]');
-          const studentAnswers = Array.isArray(answer.answerText)
-            ? answer.answerText
-            : JSON.parse(answer.answerText || '[]');
-          
-          let correctCount = 0;
-          const totalBlanks = correctAnswers.length;
-          
-          for (let i = 0; i < totalBlanks; i++) {
-            if (studentAnswers[i] && 
-                studentAnswers[i].toLowerCase().trim() === correctAnswers[i].toLowerCase().trim()) {
-              correctCount++;
+          try {
+            // Handle different formats for correct answers
+            let correctAnswers = [];
+            if (Array.isArray(question.correctAnswer)) {
+              correctAnswers = question.correctAnswer;
+            } else if (typeof question.correctAnswer === 'string') {
+              // Try pipe-separated format first
+              if (question.correctAnswer.includes('|')) {
+                correctAnswers = question.correctAnswer.split('|').map((a: string) => a.trim());
+              } else {
+                // Try JSON format
+                try {
+                  correctAnswers = JSON.parse(question.correctAnswer);
+                } catch {
+                  // Single answer format
+                  correctAnswers = [question.correctAnswer];
+                }
+              }
             }
+            
+            // Handle different formats for student answers
+            let studentAnswers = [];
+            if (Array.isArray(answer.answerText)) {
+              studentAnswers = answer.answerText;
+            } else if (typeof answer.answerText === 'string') {
+              // Try pipe-separated format first
+              if (answer.answerText.includes('|')) {
+                studentAnswers = answer.answerText.split('|').map((a: string) => a.trim());
+              } else {
+                // Try JSON format
+                try {
+                  studentAnswers = JSON.parse(answer.answerText);
+                } catch {
+                  // Single answer format
+                  studentAnswers = [answer.answerText];
+                }
+              }
+            }
+            
+            let correctCount = 0;
+            const totalBlanks = correctAnswers.length;
+            
+            for (let i = 0; i < totalBlanks; i++) {
+              const studentAnswer = studentAnswers[i] || '';
+              const correctAnswer = correctAnswers[i] || '';
+              
+              if (studentAnswer && correctAnswer &&
+                  studentAnswer.toLowerCase().trim() === correctAnswer.toLowerCase().trim()) {
+                correctCount++;
+              }
+            }
+            
+            // Partial credit for fill-in-the-blank
+            score = totalBlanks > 0 ? (correctCount / totalBlanks) * question.points : 0;
+            console.log(`Fill-blank grading: ${correctCount}/${totalBlanks} correct, score: ${score}/${question.points}`);
+          } catch (error) {
+            console.error('Error grading fill-blank question:', error);
+            // Default to 0 if grading fails
+            score = 0;
           }
-          
-          // Partial credit for fill-in-the-blank
-          score = totalBlanks > 0 ? (correctCount / totalBlanks) * question.points : 0;
         }
         // Auto-grade matching questions
         else if (question.questionType === 'matching') {
-          const correctAnswer = typeof question.correctAnswer === 'string' 
-            ? JSON.parse(question.correctAnswer) 
-            : question.correctAnswer;
-          const studentAnswer = typeof answer.answerText === 'string'
-            ? JSON.parse(answer.answerText || '{}')
-            : answer.answerText || {};
-          
-          let correctMatches = 0;
-          let totalMatches = 0;
-          
-          // Handle array of pairs format: [{left: "A", right: "B"}, ...]
-          if (Array.isArray(correctAnswer)) {
-            totalMatches = correctAnswer.length;
-            correctAnswer.forEach((pair: any, index: number) => {
-              if (studentAnswer[index] === pair.right) {
-                correctMatches++;
-              }
-            });
+          try {
+            const correctAnswer = typeof question.correctAnswer === 'string' 
+              ? JSON.parse(question.correctAnswer) 
+              : question.correctAnswer;
+            const studentAnswer = typeof answer.answerText === 'string'
+              ? JSON.parse(answer.answerText || '{}')
+              : answer.answerText || {};
+            
+            let correctMatches = 0;
+            let totalMatches = 0;
+            
+            // Handle array of pairs format: [{left: "A", right: "B"}, ...]
+            if (Array.isArray(correctAnswer)) {
+              totalMatches = correctAnswer.length;
+              correctAnswer.forEach((pair: any, index: number) => {
+                if (studentAnswer[index] === pair.right) {
+                  correctMatches++;
+                }
+              });
+            }
+            // Handle object with key-value pairs format: {"A": "B", ...}
+            else if (typeof correctAnswer === 'object') {
+              const correctPairs = Object.entries(correctAnswer);
+              totalMatches = correctPairs.length;
+              correctPairs.forEach(([left, right], index) => {
+                if (studentAnswer[index] === right) {
+                  correctMatches++;
+                }
+              });
+            }
+            
+            // Partial credit for matching
+            score = totalMatches > 0 ? (correctMatches / totalMatches) * question.points : 0;
+            console.log(`Matching grading: ${correctMatches}/${totalMatches} correct, score: ${score}/${question.points}`);
+          } catch (error) {
+            console.error('Error grading matching question:', error);
+            // Default to 0 if grading fails
+            score = 0;
           }
-          // Handle object with key-value pairs format: {"A": "B", ...}
-          else if (typeof correctAnswer === 'object') {
-            const correctPairs = Object.entries(correctAnswer);
-            totalMatches = correctPairs.length;
-            correctPairs.forEach(([left, right], index) => {
-              if (studentAnswer[index] === right) {
-                correctMatches++;
-              }
-            });
-          }
-          
-          // Partial credit for matching
-          score = totalMatches > 0 ? (correctMatches / totalMatches) * question.points : 0;
         }
         // Auto-grade drag-and-drop questions
         else if (question.questionType === 'drag_drop') {
-          const correctAnswer = typeof question.correctAnswer === 'string' 
-            ? JSON.parse(question.correctAnswer) 
-            : question.correctAnswer;
-          const studentAnswer = typeof answer.answerText === 'string'
-            ? JSON.parse(answer.answerText || '{}')
-            : answer.answerText || {};
-          
-          let correctPlacements = 0;
-          let totalItems = 0;
-          
-          // Count correct placements based on zone assignments
-          if (correctAnswer && correctAnswer.zones) {
-            correctAnswer.zones.forEach((zone: any, zoneIndex: number) => {
-              const correctItems = Array.isArray(zone.items) ? zone.items : [];
-              const studentItems = Array.isArray(studentAnswer[zoneIndex]) 
-                ? studentAnswer[zoneIndex] 
-                : (studentAnswer[zoneIndex] ? [studentAnswer[zoneIndex]] : []);
-              
-              correctItems.forEach((item: string) => {
-                totalItems++;
-                if (studentItems.includes(item)) {
-                  correctPlacements++;
-                }
+          try {
+            const correctAnswer = typeof question.correctAnswer === 'string' 
+              ? JSON.parse(question.correctAnswer) 
+              : question.correctAnswer;
+            const studentAnswer = typeof answer.answerText === 'string'
+              ? JSON.parse(answer.answerText || '{}')
+              : answer.answerText || {};
+            
+            let correctPlacements = 0;
+            let totalItems = 0;
+            
+            // Count correct placements based on zone assignments
+            if (correctAnswer && correctAnswer.zones) {
+              correctAnswer.zones.forEach((zone: any, zoneIndex: number) => {
+                const correctItems = Array.isArray(zone.items) ? zone.items : [];
+                const studentItems = Array.isArray(studentAnswer[zoneIndex]) 
+                  ? studentAnswer[zoneIndex] 
+                  : (studentAnswer[zoneIndex] ? [studentAnswer[zoneIndex]] : []);
+                
+                correctItems.forEach((item: string) => {
+                  totalItems++;
+                  if (studentItems.includes(item)) {
+                    correctPlacements++;
+                  }
+                });
               });
-            });
+            }
+            
+            // Partial credit for drag-and-drop
+            score = totalItems > 0 ? (correctPlacements / totalItems) * question.points : 0;
+            console.log(`Drag-drop grading: ${correctPlacements}/${totalItems} correct, score: ${score}/${question.points}`);
+          } catch (error) {
+            console.error('Error grading drag-drop question:', error);
+            // Default to 0 if grading fails
+            score = 0;
           }
-          
-          // Partial credit for drag-and-drop
-          score = totalItems > 0 ? (correctPlacements / totalItems) * question.points : 0;
         }
         // Auto-grade ranking questions
         else if (question.questionType === 'ranking') {
@@ -971,6 +1027,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Determine final status based on question types
       let finalStatus: 'graded' | 'pending' = 'graded';
+      
+      // Log grading summary
+      console.log(`Exam submission grading summary:`, {
+        examId,
+        studentId: userId,
+        totalScore,
+        maxScore,
+        hasSubjectiveQuestions,
+        answersProcessed: answers.length
+      });
       
       // If there are subjective questions, always mark as pending for manual grading
       if (hasSubjectiveQuestions) {
@@ -2100,6 +2166,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error checking finalization status:", error);
       res.status(500).json({ message: "Failed to check finalization status" });
+    }
+  });
+
+  // Admin route to re-grade all submissions with zero scores
+  app.post('/api/admin/regrade-submissions', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (user?.role !== 'instructor') {
+        return res.status(403).json({ message: "Access denied" });
+      }
+      
+      await regradeAllZeroScoreSubmissions();
+      res.json({ message: "Re-grading completed successfully" });
+    } catch (error) {
+      console.error("Error re-grading submissions:", error);
+      res.status(500).json({ message: "Re-grading failed" });
     }
   });
 
