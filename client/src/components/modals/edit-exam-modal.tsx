@@ -167,6 +167,21 @@ export default function EditExamModal({ open, onOpenChange, examId }: EditExamMo
     }
   }, [examData, form]);
 
+  // Auto-calculate total points based on current exam questions
+  useEffect(() => {
+    if (currentExamQuestions && currentExamQuestions.length > 0) {
+      const calculatedTotalPoints = currentExamQuestions.reduce((sum: number, question: any) => {
+        return sum + (question.points || 0);
+      }, 0);
+      
+      // Only update if the calculated value is different from current form value
+      const currentFormValue = form.getValues('totalPoints');
+      if (calculatedTotalPoints !== currentFormValue && calculatedTotalPoints > 0) {
+        form.setValue('totalPoints', calculatedTotalPoints);
+      }
+    }
+  }, [currentExamQuestions, form]);
+
   const updateExamMutation = useMutation({
     mutationFn: async (data: EditExamForm) => {
       await apiRequest("PUT", `/api/exams/${examId}`, data);
@@ -456,20 +471,31 @@ export default function EditExamModal({ open, onOpenChange, examId }: EditExamMo
               <FormField
                 control={form.control}
                 name="totalPoints"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Total Points</FormLabel>
-                    <FormControl>
-                      <Input 
-                        type="number" 
-                        placeholder="100"
-                        {...field}
-                        onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+                render={({ field }) => {
+                  const calculatedPoints = currentExamQuestions.reduce((sum: number, question: any) => {
+                    return sum + (question.points || 0);
+                  }, 0);
+                  
+                  return (
+                    <FormItem>
+                      <FormLabel>Total Points</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number" 
+                          placeholder="100"
+                          {...field}
+                          onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                        />
+                      </FormControl>
+                      {calculatedPoints > 0 && (
+                        <FormDescription className="text-xs text-green-600 dark:text-green-400">
+                          Auto-calculated from questions: {calculatedPoints} points
+                        </FormDescription>
+                      )}
+                      <FormMessage />
+                    </FormItem>
+                  );
+                }}
               />
 
               <FormField
