@@ -364,17 +364,25 @@ export default function StudentExamTaking() {
           question.question.correctAnswer.split('|') : [];
         
         // Ensure answer is an array for fill_blank questions
-        const currentAnswers = Array.isArray(answer) ? answer : (answer ? [answer] : []);
+        const currentAnswers = Array.isArray(answer) ? answer : [];
         
         return (
           <div className="space-y-4">
+            <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
+              <p className="text-sm text-blue-800 dark:text-blue-200 mb-2">
+                <strong>Instructions:</strong> Fill in each blank with your answer.
+              </p>
+              <p className="text-xs text-blue-600 dark:text-blue-300">
+                Number of blanks to fill: {correctAnswers.length}
+              </p>
+            </div>
             {correctAnswers.map((_: string, index: number) => (
-              <div key={index} className="flex flex-col sm:flex-row sm:items-center gap-3">
+              <div key={index} className="flex flex-col sm:flex-row sm:items-center gap-3 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border">
                 <Label className="text-sm font-medium sm:whitespace-nowrap sm:w-24">
                   Blank {index + 1}:
                 </Label>
                 <Input
-                  placeholder={`Answer for blank ${index + 1}`}
+                  placeholder={`Enter answer for blank ${index + 1}`}
                   value={currentAnswers[index] || ''}
                   onChange={(e) => {
                     const newAnswer = [...currentAnswers];
@@ -389,6 +397,241 @@ export default function StudentExamTaking() {
                 />
               </div>
             ))}
+          </div>
+        );
+
+      case 'matching':
+        const matchingData = question.question.options ? 
+          (typeof question.question.options === 'string' ? 
+            JSON.parse(question.question.options) : question.question.options) : 
+          { left: [], right: [] };
+        
+        const leftItems = matchingData.left || [];
+        const rightItems = matchingData.right || [];
+        const currentMatches = answer || {};
+        
+        return (
+          <div className="space-y-4">
+            <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg border border-green-200 dark:border-green-800">
+              <p className="text-sm text-green-800 dark:text-green-200 mb-2">
+                <strong>Instructions:</strong> Match each item on the left with the correct item on the right.
+              </p>
+              <p className="text-xs text-green-600 dark:text-green-300">
+                Select the corresponding option for each item.
+              </p>
+            </div>
+            <div className="grid gap-4">
+              {leftItems.map((leftItem: string, index: number) => (
+                <div key={index} className="flex flex-col sm:flex-row sm:items-center gap-3 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border">
+                  <div className="sm:w-1/2">
+                    <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      {index + 1}. {leftItem}
+                    </Label>
+                  </div>
+                  <div className="sm:w-1/2">
+                    <select
+                      value={currentMatches[index] || ''}
+                      onChange={(e) => {
+                        const newMatches = { ...currentMatches };
+                        if (e.target.value) {
+                          newMatches[index] = e.target.value;
+                        } else {
+                          delete newMatches[index];
+                        }
+                        handleAnswerChange(question.questionId, newMatches);
+                      }}
+                      className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+                    >
+                      <option value="">Select a match...</option>
+                      {rightItems.map((rightItem: string, rightIndex: number) => (
+                        <option key={rightIndex} value={rightItem}>
+                          {String.fromCharCode(65 + rightIndex)}. {rightItem}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+
+      case 'ranking':
+        const rankingItems = question.question.options ? 
+          (Array.isArray(question.question.options) ? question.question.options : 
+            (typeof question.question.options === 'string' ? 
+              JSON.parse(question.question.options) : [])) : [];
+        
+        const currentRanking = Array.isArray(answer) ? answer : [];
+        
+        return (
+          <div className="space-y-4">
+            <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg border border-purple-200 dark:border-purple-800">
+              <p className="text-sm text-purple-800 dark:text-purple-200 mb-2">
+                <strong>Instructions:</strong> Drag and drop items to rank them in the correct order.
+              </p>
+              <p className="text-xs text-purple-600 dark:text-purple-300">
+                Arrange from most important/highest to least important/lowest.
+              </p>
+            </div>
+            <div className="space-y-2">
+              {rankingItems.map((item: string, index: number) => {
+                const currentPosition = currentRanking.indexOf(item);
+                return (
+                  <div 
+                    key={index}
+                    className="flex items-center gap-3 p-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:shadow-md transition-shadow cursor-move"
+                    draggable
+                    onDragStart={(e) => {
+                      e.dataTransfer.setData('text/plain', item);
+                    }}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      const draggedItem = e.dataTransfer.getData('text/plain');
+                      const newRanking = [...currentRanking];
+                      
+                      // Remove dragged item from current position
+                      const draggedIndex = newRanking.indexOf(draggedItem);
+                      if (draggedIndex > -1) {
+                        newRanking.splice(draggedIndex, 1);
+                      }
+                      
+                      // Insert at new position
+                      const dropIndex = newRanking.indexOf(item);
+                      if (dropIndex > -1) {
+                        newRanking.splice(dropIndex, 0, draggedItem);
+                      } else {
+                        newRanking.push(draggedItem);
+                      }
+                      
+                      handleAnswerChange(question.questionId, newRanking);
+                    }}
+                    onDragOver={(e) => e.preventDefault()}
+                  >
+                    <div className="w-6 h-6 bg-gray-100 dark:bg-gray-700 rounded flex items-center justify-center text-xs font-medium">
+                      {currentPosition >= 0 ? currentPosition + 1 : '?'}
+                    </div>
+                    <div className="flex-1 text-sm">{item}</div>
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          const newRanking = [...currentRanking];
+                          if (!newRanking.includes(item)) {
+                            newRanking.push(item);
+                          }
+                          handleAnswerChange(question.questionId, newRanking);
+                        }}
+                        disabled={currentRanking.includes(item)}
+                      >
+                        Add
+                      </Button>
+                      {currentRanking.includes(item) && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            const newRanking = currentRanking.filter(r => r !== item);
+                            handleAnswerChange(question.questionId, newRanking);
+                          }}
+                        >
+                          Remove
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        );
+
+      case 'drag_drop':
+        const dragDropData = question.question.options ? 
+          (typeof question.question.options === 'string' ? 
+            JSON.parse(question.question.options) : question.question.options) : 
+          { zones: [], items: [] };
+        
+        const zones = dragDropData.zones || [];
+        const items = dragDropData.items || [];
+        const currentPlacements = answer || {};
+        
+        return (
+          <div className="space-y-4">
+            <div className="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-lg border border-orange-200 dark:border-orange-800">
+              <p className="text-sm text-orange-800 dark:text-orange-200 mb-2">
+                <strong>Instructions:</strong> Drag items from the bank and drop them into the correct zones.
+              </p>
+              <p className="text-xs text-orange-600 dark:text-orange-300">
+                Each item can only be placed in one zone.
+              </p>
+            </div>
+            
+            {/* Item Bank */}
+            <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600">
+              <h4 className="text-sm font-medium mb-3 text-gray-700 dark:text-gray-300">Item Bank</h4>
+              <div className="flex flex-wrap gap-2">
+                {items.filter((item: string) => !Object.values(currentPlacements).includes(item)).map((item: string, index: number) => (
+                  <div
+                    key={index}
+                    className="px-3 py-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md cursor-move hover:shadow-md transition-shadow text-sm"
+                    draggable
+                    onDragStart={(e) => {
+                      e.dataTransfer.setData('text/plain', item);
+                    }}
+                  >
+                    {item}
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            {/* Drop Zones */}
+            <div className="grid gap-4 md:grid-cols-2">
+              {zones.map((zone: string, zoneIndex: number) => (
+                <div
+                  key={zoneIndex}
+                  className="min-h-24 p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-800/50"
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    const draggedItem = e.dataTransfer.getData('text/plain');
+                    const newPlacements = { ...currentPlacements };
+                    
+                    // Remove item from any existing zone
+                    Object.keys(newPlacements).forEach(key => {
+                      if (newPlacements[key] === draggedItem) {
+                        delete newPlacements[key];
+                      }
+                    });
+                    
+                    // Add to new zone
+                    newPlacements[zoneIndex] = draggedItem;
+                    handleAnswerChange(question.questionId, newPlacements);
+                  }}
+                  onDragOver={(e) => e.preventDefault()}
+                >
+                  <h4 className="text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">{zone}</h4>
+                  {currentPlacements[zoneIndex] && (
+                    <div className="inline-block px-3 py-2 bg-blue-100 dark:bg-blue-900/50 border border-blue-200 dark:border-blue-700 rounded-md text-sm">
+                      {currentPlacements[zoneIndex]}
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="ml-2 h-auto p-0 text-xs"
+                        onClick={() => {
+                          const newPlacements = { ...currentPlacements };
+                          delete newPlacements[zoneIndex];
+                          handleAnswerChange(question.questionId, newPlacements);
+                        }}
+                      >
+                        ×
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
         );
 

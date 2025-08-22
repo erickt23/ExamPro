@@ -97,15 +97,22 @@ export default function CreateQuestionModal({ open, onOpenChange, questionCatego
         payload.correctAnswer = correctOption;
       } else if (data.questionType === 'matching') {
         const validPairs = matchingPairs.filter(pair => pair.left.trim() && pair.right.trim());
-        payload.options = validPairs.map(pair => `${pair.left}|${pair.right}`);
+        payload.options = JSON.stringify({
+          left: validPairs.map(pair => pair.left),
+          right: validPairs.map(pair => pair.right)
+        });
         payload.correctAnswer = JSON.stringify(validPairs);
       } else if (data.questionType === 'ranking') {
-        payload.options = rankingItems.filter(item => item.trim());
-        payload.correctAnswer = JSON.stringify(rankingItems.filter(item => item.trim()));
+        const validItems = rankingItems.filter(item => item.trim());
+        payload.options = JSON.stringify(validItems);
+        payload.correctAnswer = JSON.stringify(validItems);
       } else if (data.questionType === 'drag_drop') {
-        const validZones = dragDropZones.filter(zone => zone.zone?.trim());
+        const validZones = dragDropZones.filter(zone => zone.zone?.trim()).map(zone => zone.zone);
         const validItems = dragDropItems.filter(item => item.trim());
-        payload.options = [...validZones.map(zone => zone.zone), ...validItems];
+        payload.options = JSON.stringify({
+          zones: validZones,
+          items: validItems
+        });
         payload.correctAnswer = JSON.stringify({ zones: validZones, items: validItems });
       }
       

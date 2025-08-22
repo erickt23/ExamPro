@@ -555,17 +555,57 @@ export default function StudentExams() {
                 )}
 
                 {currentQuestion.question.questionType === 'fill_blank' && (
-                  <div className="space-y-3">
-                    <Label>Fill in the blank:</Label>
-                    <input
-                      type="text"
-                      placeholder="Your answer..."
-                      value={answers[currentQuestion.question.id]?.text || ''}
-                      onChange={(e) => 
-                        handleAnswerChange(currentQuestion.question.id, { text: e.target.value })
-                      }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-primary focus:border-primary"
-                    />
+                  <div className="space-y-4">
+                    <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
+                      <p className="text-sm text-blue-800 dark:text-blue-200 mb-2">
+                        <strong>Instructions:</strong> Fill in each blank with your answer.
+                      </p>
+                    </div>
+                    {currentQuestion.question.correctAnswer?.split('|').map((_: string, index: number) => (
+                      <div key={index} className="flex flex-col sm:flex-row sm:items-center gap-3 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border">
+                        <Label className="text-sm font-medium sm:whitespace-nowrap sm:w-24">
+                          Blank {index + 1}:
+                        </Label>
+                        <Input
+                          placeholder={`Enter answer for blank ${index + 1}`}
+                          value={answers[currentQuestion.question.id]?.[index] || ''}
+                          onChange={(e) => {
+                            const currentAnswers = Array.isArray(answers[currentQuestion.question.id]) ? 
+                              answers[currentQuestion.question.id] : [];
+                            const newAnswers = [...currentAnswers];
+                            while (newAnswers.length <= index) {
+                              newAnswers.push('');
+                            }
+                            newAnswers[index] = e.target.value;
+                            handleAnswerChange(currentQuestion.question.id, newAnswers);
+                          }}
+                          className="flex-1 text-base"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {currentQuestion.question.questionType === 'matching' && (
+                  <div className="space-y-4">
+                    <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg border border-green-200 dark:border-green-800">
+                      <p className="text-sm text-green-800 dark:text-green-200 mb-2">
+                        <strong>Instructions:</strong> Match each item on the left with the correct item on the right.
+                      </p>
+                    </div>
+                    {/* Implementation will match the exam-taking.tsx version */}
+                    <p className="text-sm text-gray-600">Matching questions not yet implemented in this interface. Please use the dedicated exam taking page.</p>
+                  </div>
+                )}
+
+                {(currentQuestion.question.questionType === 'ranking' || currentQuestion.question.questionType === 'drag_drop') && (
+                  <div className="space-y-4">
+                    <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg border border-purple-200 dark:border-purple-800">
+                      <p className="text-sm text-purple-800 dark:text-purple-200 mb-2">
+                        <strong>Instructions:</strong> {currentQuestion.question.questionType === 'ranking' ? 'Rank items in order' : 'Drag and drop items into zones'}.
+                      </p>
+                    </div>
+                    <p className="text-sm text-gray-600">{currentQuestion.question.questionType === 'ranking' ? 'Ranking' : 'Drag and drop'} questions not yet implemented in this interface. Please use the dedicated exam taking page.</p>
                   </div>
                 )}
               </CardContent>
