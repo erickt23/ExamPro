@@ -513,7 +513,58 @@ function SubmissionCard({ submission, isExpanded, onToggleExpand, getStatusBadge
                     <div>
                       <p className="text-sm text-gray-600 mb-1">Student's Answer:</p>
                       <div className="bg-gray-50 p-3 rounded text-sm">
-                        {answer.answerText}
+                        {answer.question?.questionType === 'matching' ? (
+                          <div className="space-y-2">
+                            {(() => {
+                              try {
+                                // Parse student answers and question pairs
+                                const studentAnswer = typeof answer.answerText === 'string' 
+                                  ? JSON.parse(answer.answerText) 
+                                  : answer.answerText;
+                                
+                                let questionPairs = [];
+                                if (answer.question.options) {
+                                  const optionsData = typeof answer.question.options === 'string' 
+                                    ? JSON.parse(answer.question.options) 
+                                    : answer.question.options;
+                                  questionPairs = Array.isArray(optionsData) ? optionsData : [];
+                                } else if (answer.question.correctAnswer) {
+                                  const correctData = typeof answer.question.correctAnswer === 'string'
+                                    ? JSON.parse(answer.question.correctAnswer)
+                                    : answer.question.correctAnswer;
+                                  questionPairs = Array.isArray(correctData) ? correctData : [];
+                                }
+                                
+                                return questionPairs.map((pair: any, index: number) => {
+                                  const studentSelection = studentAnswer[index] || 'No answer';
+                                  return (
+                                    <div key={index} className="flex items-center justify-between p-2 bg-white rounded border">
+                                      <span className="font-medium">{pair.left}</span>
+                                      <span className="text-gray-600">→</span>
+                                      <span className={`font-medium ${studentSelection === pair.right ? 'text-green-600' : 'text-red-600'}`}>
+                                        {studentSelection}
+                                      </span>
+                                      {studentSelection !== pair.right && (
+                                        <span className="text-xs text-gray-500">
+                                          (Correct: {pair.right})
+                                        </span>
+                                      )}
+                                    </div>
+                                  );
+                                });
+                              } catch (error) {
+                                console.error('Error parsing matching answer:', error);
+                                return (
+                                  <span className="text-red-600">
+                                    Error displaying matching answer: {answer.answerText}
+                                  </span>
+                                );
+                              }
+                            })()}
+                          </div>
+                        ) : (
+                          answer.answerText
+                        )}
                       </div>
                     </div>
                   )}
