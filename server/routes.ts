@@ -789,14 +789,124 @@ export async function registerRoutes(app: Express): Promise<Server> {
         maxScore += question.points;
 
         // Check if this is a subjective question
-        if (question.questionType === 'essay' || question.questionType === 'short_answer' || question.questionType === 'fill_blank') {
+        if (question.questionType === 'essay' || question.questionType === 'short_answer') {
           hasSubjectiveQuestions = true;
         }
 
-        // Auto-grade only MCQ questions
+        // Auto-grade multiple question types
         if (question.questionType === 'multiple_choice' && 
             answer.selectedOption === question.correctAnswer) {
           score = question.points;
+        }
+        // Auto-grade fill-in-the-blank questions
+        else if (question.questionType === 'fill_blank') {
+          const correctAnswers = Array.isArray(question.correctAnswer) 
+            ? question.correctAnswer 
+            : JSON.parse(question.correctAnswer || '[]');
+          const studentAnswers = Array.isArray(answer.answerText)
+            ? answer.answerText
+            : JSON.parse(answer.answerText || '[]');
+          
+          let correctCount = 0;
+          const totalBlanks = correctAnswers.length;
+          
+          for (let i = 0; i < totalBlanks; i++) {
+            if (studentAnswers[i] && 
+                studentAnswers[i].toLowerCase().trim() === correctAnswers[i].toLowerCase().trim()) {
+              correctCount++;
+            }
+          }
+          
+          // Partial credit for fill-in-the-blank
+          score = totalBlanks > 0 ? (correctCount / totalBlanks) * question.points : 0;
+        }
+        // Auto-grade matching questions
+        else if (question.questionType === 'matching') {
+          const correctAnswer = typeof question.correctAnswer === 'string' 
+            ? JSON.parse(question.correctAnswer) 
+            : question.correctAnswer;
+          const studentAnswer = typeof answer.answerText === 'string'
+            ? JSON.parse(answer.answerText || '{}')
+            : answer.answerText || {};
+          
+          let correctMatches = 0;
+          let totalMatches = 0;
+          
+          // Handle array of pairs format: [{left: "A", right: "B"}, ...]
+          if (Array.isArray(correctAnswer)) {
+            totalMatches = correctAnswer.length;
+            correctAnswer.forEach((pair: any, index: number) => {
+              if (studentAnswer[index] === pair.right) {
+                correctMatches++;
+              }
+            });
+          }
+          // Handle object with key-value pairs format: {"A": "B", ...}
+          else if (typeof correctAnswer === 'object') {
+            const correctPairs = Object.entries(correctAnswer);
+            totalMatches = correctPairs.length;
+            correctPairs.forEach(([left, right], index) => {
+              if (studentAnswer[index] === right) {
+                correctMatches++;
+              }
+            });
+          }
+          
+          // Partial credit for matching
+          score = totalMatches > 0 ? (correctMatches / totalMatches) * question.points : 0;
+        }
+        // Auto-grade drag-and-drop questions
+        else if (question.questionType === 'drag_drop') {
+          const correctAnswer = typeof question.correctAnswer === 'string' 
+            ? JSON.parse(question.correctAnswer) 
+            : question.correctAnswer;
+          const studentAnswer = typeof answer.answerText === 'string'
+            ? JSON.parse(answer.answerText || '{}')
+            : answer.answerText || {};
+          
+          let correctPlacements = 0;
+          let totalItems = 0;
+          
+          // Count correct placements based on zone assignments
+          if (correctAnswer && correctAnswer.zones) {
+            correctAnswer.zones.forEach((zone: any, zoneIndex: number) => {
+              const correctItems = Array.isArray(zone.items) ? zone.items : [];
+              const studentItems = Array.isArray(studentAnswer[zoneIndex]) 
+                ? studentAnswer[zoneIndex] 
+                : (studentAnswer[zoneIndex] ? [studentAnswer[zoneIndex]] : []);
+              
+              correctItems.forEach((item: string) => {
+                totalItems++;
+                if (studentItems.includes(item)) {
+                  correctPlacements++;
+                }
+              });
+            });
+          }
+          
+          // Partial credit for drag-and-drop
+          score = totalItems > 0 ? (correctPlacements / totalItems) * question.points : 0;
+        }
+        // Auto-grade ranking questions
+        else if (question.questionType === 'ranking') {
+          const correctOrder = Array.isArray(question.correctAnswer) 
+            ? question.correctAnswer 
+            : JSON.parse(question.correctAnswer || '[]');
+          const studentOrder = Array.isArray(answer.answerText)
+            ? answer.answerText
+            : JSON.parse(answer.answerText || '[]');
+          
+          let correctPositions = 0;
+          const totalItems = correctOrder.length;
+          
+          for (let i = 0; i < totalItems; i++) {
+            if (studentOrder[i] === correctOrder[i]) {
+              correctPositions++;
+            }
+          }
+          
+          // Partial credit for ranking
+          score = totalItems > 0 ? (correctPositions / totalItems) * question.points : 0;
         }
 
         totalScore += score;

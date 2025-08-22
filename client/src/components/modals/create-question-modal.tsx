@@ -74,7 +74,7 @@ export default function CreateQuestionModal({ open, onOpenChange, questionCatego
   // State for new question types
   const [matchingPairs, setMatchingPairs] = useState([{ left: '', right: '' }, { left: '', right: '' }]);
   const [rankingItems, setRankingItems] = useState(['', '']);
-  const [dragDropZones, setDragDropZones] = useState([{ zone: '', items: [''] }]);
+  const [dragDropZones, setDragDropZones] = useState([{ zone: '', items: [] as string[] }]);
   const [dragDropItems, setDragDropItems] = useState(['']);
 
   const form = useForm<CreateQuestionForm>({
@@ -97,23 +97,26 @@ export default function CreateQuestionModal({ open, onOpenChange, questionCatego
         payload.correctAnswer = correctOption;
       } else if (data.questionType === 'matching') {
         const validPairs = matchingPairs.filter(pair => pair.left.trim() && pair.right.trim());
-        payload.options = JSON.stringify({
-          left: validPairs.map(pair => pair.left),
-          right: validPairs.map(pair => pair.right)
-        });
-        payload.correctAnswer = JSON.stringify(validPairs);
+        payload.options = validPairs;
+        payload.correctAnswer = validPairs;
       } else if (data.questionType === 'ranking') {
         const validItems = rankingItems.filter(item => item.trim());
-        payload.options = JSON.stringify(validItems);
-        payload.correctAnswer = JSON.stringify(validItems);
+        payload.options = validItems;
+        payload.correctAnswer = validItems;
       } else if (data.questionType === 'drag_drop') {
         const validZones = dragDropZones.filter(zone => zone.zone?.trim()).map(zone => zone.zone);
         const validItems = dragDropItems.filter(item => item.trim());
-        payload.options = JSON.stringify({
+        payload.options = {
           zones: validZones,
           items: validItems
-        });
-        payload.correctAnswer = JSON.stringify({ zones: validZones, items: validItems });
+        };
+        payload.correctAnswer = {
+          zones: dragDropZones.filter(zone => zone.zone?.trim()).map(zone => ({
+            zone: zone.zone,
+            items: zone.items || []
+          })),
+          items: validItems
+        };
       }
       
       // Include attachment URL if present
@@ -220,7 +223,39 @@ export default function CreateQuestionModal({ open, onOpenChange, questionCatego
   };
 
   const addDragDropZone = () => {
-    setDragDropZones([...dragDropZones, { zone: '', items: [''] }]);
+    setDragDropZones([...dragDropZones, { zone: '', items: [] }]);
+  };
+
+  // Toggle item assignment to zones for drag-drop questions
+  const toggleItemInZone = (zoneIndex: number, item: string) => {
+    setDragDropZones(prev => prev.map((zone, index) => {
+      if (index === zoneIndex) {
+        const isSelected = zone.items?.includes(item) || false;
+        if (isSelected) {
+          // Remove item from this zone
+          return {
+            ...zone,
+            items: zone.items?.filter(i => i !== item) || []
+          };
+        } else {
+          // Add item to this zone (and remove from other zones)
+          const newZones = prev.map(z => ({
+            ...z,
+            items: z.items?.filter(i => i !== item) || []
+          }));
+          return {
+            ...zone,
+            items: [...(zone.items || []), item]
+          };
+        }
+      } else {
+        // Remove item from other zones
+        return {
+          ...zone,
+          items: zone.items?.filter(i => i !== item) || []
+        };
+      }
+    }));
   };
 
   const updateDragDropItem = (index: number, value: string) => {
@@ -491,6 +526,42 @@ export default function CreateQuestionModal({ open, onOpenChange, questionCatego
                     Add draggable item
                   </Button>
                 </div>
+
+                {/* Correct Answer Configuration for Drag-Drop */}
+                {dragDropZones.length > 0 && dragDropItems.length > 0 && (
+                  <div className="border-t pt-4">
+                    <Label className="text-sm font-medium text-blue-700">Correct Answer Configuration</Label>
+                    <p className="text-xs text-gray-600 mb-3">Assign each item to its correct zone for automatic grading</p>
+                    <div className="space-y-3">
+                      {dragDropZones.map((zone, zoneIndex) => (
+                        <div key={zoneIndex} className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                          <Label className="text-sm font-medium text-blue-800 dark:text-blue-200 mb-2 block">
+                            {zone.zone || `Zone ${zoneIndex + 1}`}
+                          </Label>
+                          <div className="flex flex-wrap gap-2">
+                            {dragDropItems.map((item, itemIndex) => {
+                              const isSelected = zone.items?.includes(item) || false;
+                              return (
+                                <button
+                                  key={itemIndex}
+                                  type="button"
+                                  onClick={() => toggleItemInZone(zoneIndex, item)}
+                                  className={`px-3 py-1 text-xs rounded-md border transition-colors ${
+                                    isSelected
+                                      ? 'bg-blue-500 text-white border-blue-500'
+                                      : 'bg-white text-gray-700 border-gray-300 hover:bg-blue-100'
+                                  }`}
+                                >
+                                  {item || `Item ${itemIndex + 1}`}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 

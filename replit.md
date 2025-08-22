@@ -84,6 +84,12 @@ Recent UI Changes (August 2025):
     - **Array-based Storage**: Changed answer format to use arrays for zones, maintaining backward compatibility
     - **Improved UI**: Added visual indicators for empty zones and better item management with individual remove buttons
     - **Enhanced Item Filtering**: Updated item bank to properly filter out items that are placed in any zone (supporting arrays)
+  - **Automatic Grading System Enhancement** (August 22, 2025):
+    - **Comprehensive Auto-Grading**: Implemented automatic grading for all question types including matching, drag-and-drop, fill-in-blank, and ranking
+    - **Partial Credit Support**: Added partial credit calculation for complex question types based on correct answers percentage
+    - **Drag-Drop Correct Answer Configuration**: Enhanced question creation modal with visual interface to assign items to correct zones
+    - **Smart Answer Comparison**: Implemented robust answer comparison with case-insensitive matching and JSON parsing
+    - **Grading Algorithm Improvements**: Enhanced grading logic to handle multiple data formats and provide fair scoring
 
 ## System Architecture
 
