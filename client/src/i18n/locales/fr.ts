@@ -213,7 +213,7 @@ export const fr = {
 
   // Grading Center
   grading: {
-    title: 'Notation',
+    title: 'Révision des Soumissions',
     description: 'Noter les soumissions des étudiants et gérer les notes finales',
     studentName: 'Nom de l\'Étudiant',
     studentEmail: 'Email de l\'Étudiant',

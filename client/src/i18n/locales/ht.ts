@@ -213,7 +213,7 @@ export const ht = {
 
   // Grading Center
   grading: {
-    title: 'Bay Nòt',
+    title: 'Revizyon Soumisyon yo',
     description: 'Bay nòt soumisyon elèv yo ak jere nòt final yo',
     studentName: 'Non Elèv',
     studentEmail: 'Imel Elèv',

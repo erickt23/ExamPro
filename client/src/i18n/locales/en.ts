@@ -215,7 +215,7 @@ export const en = {
 
   // Grading Center
   grading: {
-    title: 'Grading',
+    title: 'Submissions Review',
     description: 'Grade student submissions and manage final grades',
     studentName: 'Student Name',
     studentEmail: 'Student Email',
