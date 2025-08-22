@@ -261,20 +261,33 @@ export default function StudentExamTaking() {
           linkUrl: null,
         };
       } else if (typeof answer === 'object' && answer !== null) {
-        // For other question types with object structure
-        return {
-          questionId: parseInt(questionId),
-          answerText: answer.text || '',
-          selectedOption: answer.selectedOption || null,
-          attachmentUrl: answer.attachmentUrl || null,
-          linkUrl: answer.linkUrl || null,
-        };
+        // Check if this is a matching question answer (object with numeric keys)
+        const hasNumericKeys = Object.keys(answer).some(key => !isNaN(Number(key)));
+        if (hasNumericKeys) {
+          // For matching questions, answer is an object like {0: "option1", 1: "option2"}
+          return {
+            questionId: parseInt(questionId),
+            answerText: JSON.stringify(answer),
+            selectedOption: null,
+            attachmentUrl: null,
+            linkUrl: null,
+          };
+        } else {
+          // For other question types with object structure (like essay with attachments)
+          return {
+            questionId: parseInt(questionId),
+            answerText: answer.text || '',
+            selectedOption: answer.selectedOption || null,
+            attachmentUrl: answer.attachmentUrl || null,
+            linkUrl: answer.linkUrl || null,
+          };
+        }
       } else {
-        // For simple string answers
+        // For simple string answers (multiple choice, etc.)
         return {
           questionId: parseInt(questionId),
           answerText: answer || '',
-          selectedOption: null,
+          selectedOption: answer || null,
           attachmentUrl: null,
           linkUrl: null,
         };
