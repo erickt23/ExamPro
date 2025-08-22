@@ -232,6 +232,110 @@ export default function ExamPreviewModal({ open, onOpenChange, examId, onPublish
             </div>
           )}
 
+          {/* Matching Questions */}
+          {question.question?.questionType === 'matching' && (
+            <div className="space-y-4">
+              <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg border border-green-200 dark:border-green-800">
+                <p className="text-sm text-green-800 dark:text-green-200 mb-2">
+                  <strong>Instructions:</strong> Match each item on the left with the correct item on the right.
+                </p>
+                <p className="text-xs text-green-600 dark:text-green-300">
+                  Students will select the corresponding option for each item.
+                </p>
+              </div>
+              
+              {(() => {
+                // Handle different formats for matching data - same logic as exam-taking
+                let leftItems: string[] = [];
+                let rightItems: string[] = [];
+                
+                if (question.question.options) {
+                  let optionsData: any = question.question.options;
+                  
+                  // Parse string data if needed
+                  if (typeof optionsData === 'string') {
+                    try {
+                      optionsData = JSON.parse(optionsData);
+                    } catch (e) {
+                      console.error('Error parsing matching options:', e);
+                      optionsData = [];
+                    }
+                  }
+                  
+                  // Handle array of pair objects format: [{left: "A", right: "B"}, ...]
+                  if (Array.isArray(optionsData) && optionsData.length > 0 && optionsData[0]?.left) {
+                    leftItems = optionsData.map((pair: any) => String(pair.left || ''));
+                    rightItems = optionsData.map((pair: any) => String(pair.right || ''));
+                  }
+                  // Handle object with left/right arrays format: {left: [...], right: [...]}
+                  else if (optionsData.left && optionsData.right) {
+                    leftItems = (optionsData.left || []).map((item: any) => 
+                      typeof item === 'string' ? item : String(item?.name || item?.text || item)
+                    );
+                    rightItems = (optionsData.right || []).map((item: any) => 
+                      typeof item === 'string' ? item : String(item?.name || item?.text || item)
+                    );
+                  }
+                }
+                
+                // Fallback to correctAnswer if no valid options found
+                if (leftItems.length === 0 && rightItems.length === 0 && question.question.correctAnswer) {
+                  try {
+                    let fallbackData = question.question.correctAnswer;
+                    if (typeof fallbackData === 'string') {
+                      fallbackData = JSON.parse(fallbackData);
+                    }
+                    
+                    // Handle array of pair objects in correctAnswer
+                    if (Array.isArray(fallbackData) && fallbackData.length > 0 && fallbackData[0]?.left) {
+                      leftItems = fallbackData.map((pair: any) => String(pair.left || ''));
+                      rightItems = fallbackData.map((pair: any) => String(pair.right || ''));
+                    }
+                  } catch (e) {
+                    console.error('Error parsing correctAnswer for matching:', e);
+                  }
+                }
+                
+                if (leftItems.length === 0 && rightItems.length === 0) {
+                  return (
+                    <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+                      <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                        No matching items found. Please contact your instructor.
+                      </p>
+                    </div>
+                  );
+                }
+                
+                return (
+                  <div className="grid gap-4">
+                    {leftItems.map((leftItem: string, index: number) => (
+                      <div key={index} className="flex flex-col sm:flex-row sm:items-center gap-3 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border">
+                        <div className="sm:w-1/2">
+                          <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                            {index + 1}. {String(leftItem)}
+                          </Label>
+                        </div>
+                        <div className="sm:w-1/2">
+                          <select
+                            disabled
+                            className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400"
+                          >
+                            <option value="">Student will select a match...</option>
+                            {rightItems.map((rightItem: string, rightIndex: number) => (
+                              <option key={rightIndex} value={rightItem}>
+                                {String.fromCharCode(65 + rightIndex)}. {String(rightItem)}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
+            </div>
+          )}
+
           {/* Question Navigation */}
           <div className="flex justify-between items-center mt-6 pt-4 border-t">
             <Button
