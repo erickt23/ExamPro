@@ -419,45 +419,76 @@ export default function StudentExamTaking() {
         );
 
       case 'matching':
-        // Handle both stored string and object for matching data
-        let matchingData = { left: [], right: [] };
+        // Handle different formats for matching data
+        let leftItems: string[] = [];
+        let rightItems: string[] = [];
+        
         if (question.question.options) {
-          if (typeof question.question.options === 'string') {
+          let optionsData: any = question.question.options;
+          
+          // Parse string data if needed
+          if (typeof optionsData === 'string') {
             try {
-              matchingData = JSON.parse(question.question.options);
+              optionsData = JSON.parse(optionsData);
             } catch (e) {
               console.error('Error parsing matching options:', e);
+              optionsData = [];
             }
-          } else if (typeof question.question.options === 'object') {
-            matchingData = question.question.options;
+          }
+          
+          // Handle array of pair objects format: [{left: "A", right: "B"}, ...]
+          if (Array.isArray(optionsData) && optionsData.length > 0 && optionsData[0].left) {
+            leftItems = optionsData.map((pair: any) => String(pair.left || ''));
+            rightItems = optionsData.map((pair: any) => String(pair.right || ''));
+          }
+          // Handle object with left/right arrays format: {left: [...], right: [...]}
+          else if (optionsData.left && optionsData.right) {
+            leftItems = (optionsData.left || []).map((item: any) => 
+              typeof item === 'string' ? item : String(item?.name || item?.text || item)
+            );
+            rightItems = (optionsData.right || []).map((item: any) => 
+              typeof item === 'string' ? item : String(item?.name || item?.text || item)
+            );
+          }
+          // Handle object with leftItems/rightItems format
+          else if (optionsData.leftItems && optionsData.rightItems) {
+            leftItems = (optionsData.leftItems || []).map((item: any) => String(item));
+            rightItems = (optionsData.rightItems || []).map((item: any) => String(item));
           }
         }
         
-        // Fallback to correctAnswer if options are empty
-        if ((!matchingData.left || matchingData.left.length === 0) && question.question.correctAnswer) {
+        // Fallback to correctAnswer if no valid options found
+        if (leftItems.length === 0 && rightItems.length === 0 && question.question.correctAnswer) {
           try {
-            const fallbackData = typeof question.question.correctAnswer === 'string' 
-              ? JSON.parse(question.question.correctAnswer) 
-              : question.question.correctAnswer;
-            if (fallbackData && (fallbackData.left || fallbackData.right)) {
-              matchingData = fallbackData;
+            let fallbackData = question.question.correctAnswer;
+            if (typeof fallbackData === 'string') {
+              fallbackData = JSON.parse(fallbackData);
+            }
+            
+            // Handle array of pair objects in correctAnswer
+            if (Array.isArray(fallbackData) && fallbackData.length > 0 && fallbackData[0].left) {
+              leftItems = fallbackData.map((pair: any) => String(pair.left || ''));
+              rightItems = fallbackData.map((pair: any) => String(pair.right || ''));
+            }
+            // Handle other formats in correctAnswer
+            else if (fallbackData.left && fallbackData.right) {
+              leftItems = (fallbackData.left || []).map((item: any) => String(item));
+              rightItems = (fallbackData.right || []).map((item: any) => String(item));
             }
           } catch (e) {
             console.error('Error parsing correctAnswer for matching:', e);
           }
         }
-        
-        // Ensure items are arrays of strings
-        const leftItems = (matchingData.left || []).map((item: any) => 
-          typeof item === 'string' ? item : (item?.name || item?.text || String(item))
-        );
-        const rightItems = (matchingData.right || []).map((item: any) => 
-          typeof item === 'string' ? item : (item?.name || item?.text || String(item))
-        );
         const currentMatches = answer || {};
         
         // Debug log to see what we have
-        console.log('Matching question data:', { leftItems, rightItems, matchingData, question });
+        console.log('Matching question data:', { 
+          leftItems, 
+          rightItems, 
+          rawOptions: question.question.options,
+          rawCorrectAnswer: question.question.correctAnswer,
+          question 
+        });
         
         return (
           <div className="space-y-4">
