@@ -43,6 +43,15 @@ Navigation terminology preferences:
 - Partial credit calculation for complex question types
 - Drag-Drop Correct Answer Configuration
 - Smart Answer Comparison with case-insensitive matching and JSON parsing
+- **Enhanced Auto-Grader for Drag-and-Drop and Matching Questions** (August 22, 2025):
+  - **Comprehensive Answer Key Storage**: Properly structured JSON format for storing correct answers in both question types
+  - **Drag-and-Drop Grading**: Each question has slots (targets) with exactly one correct item per slot, supports zone-based scoring
+  - **Matching Question Grading**: Each left-hand item has exactly one correct right-hand match, supports partial credit per pair
+  - **Student Response Recording**: Consistent mapping format (slot → answer, left → right) with multiple format support
+  - **Advanced Partial Credit System**: Fair scoring based on correct answers vs total items with detailed breakdown
+  - **Flexible Data Format Support**: Handles JSON arrays, objects, and key-value mappings for robust answer processing
+  - **Enhanced Error Handling**: Comprehensive try-catch blocks with detailed logging for troubleshooting complex question types
+  - **Testing API Endpoint**: `/api/admin/test-grading` for validating grading logic with real answer key scenarios
 
 ## System Architecture
 

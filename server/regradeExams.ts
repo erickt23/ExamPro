@@ -94,7 +94,7 @@ async function regradeSubmission(submissionId: number): Promise<{ totalScore: nu
           score = 0;
         }
       }
-      // Auto-grade matching questions
+      // Auto-grade matching questions with enhanced answer key support
       else if (question.questionType === 'matching') {
         try {
           const correctAnswer = typeof question.correctAnswer === 'string' 
@@ -107,35 +107,53 @@ async function regradeSubmission(submissionId: number): Promise<{ totalScore: nu
           let correctMatches = 0;
           let totalMatches = 0;
           
+          console.log(`Grading matching question ${question.id}:`, {
+            correctAnswer: JSON.stringify(correctAnswer),
+            studentAnswer: JSON.stringify(studentAnswer)
+          });
+          
           // Handle array of pairs format: [{left: "A", right: "B"}, ...]
           if (Array.isArray(correctAnswer)) {
             totalMatches = correctAnswer.length;
-            correctAnswer.forEach((pair: any, index: number) => {
-              if (studentAnswer[index] === pair.right) {
-                correctMatches++;
+            
+            // Create mapping from left items to their correct right matches
+            const correctMapping: { [key: string]: string } = {};
+            correctAnswer.forEach((pair: any) => {
+              if (pair.left && pair.right) {
+                correctMapping[pair.left] = pair.right;
               }
             });
+            
+            // Check student's answers against correct mapping
+            if (typeof studentAnswer === 'object' && studentAnswer !== null) {
+              Object.entries(studentAnswer).forEach(([leftItem, rightItem]) => {
+                if (correctMapping[leftItem] === rightItem) {
+                  correctMatches++;
+                }
+              });
+            }
           }
           // Handle object with key-value pairs format: {"A": "B", ...}
-          else if (typeof correctAnswer === 'object') {
+          else if (typeof correctAnswer === 'object' && correctAnswer !== null) {
             const correctPairs = Object.entries(correctAnswer);
             totalMatches = correctPairs.length;
-            correctPairs.forEach(([left, right], index) => {
-              if (studentAnswer[index] === right) {
+            
+            correctPairs.forEach(([leftItem, rightItem]) => {
+              if (studentAnswer[leftItem] === rightItem) {
                 correctMatches++;
               }
             });
           }
           
-          // Partial credit for matching
+          // Partial credit for matching - each correct pair gets proportional credit
           score = totalMatches > 0 ? (correctMatches / totalMatches) * question.points : 0;
-          console.log(`Matching question ${question.id}: ${correctMatches}/${totalMatches} correct, score: ${score}/${question.points}`);
+          console.log(`Matching question ${question.id}: ${correctMatches}/${totalMatches} correct pairs, score: ${score}/${question.points}`);
         } catch (error) {
           console.error(`Error grading matching question ${question.id}:`, error);
           score = 0;
         }
       }
-      // Auto-grade drag-and-drop questions
+      // Auto-grade drag-and-drop questions with enhanced zone-based scoring
       else if (question.questionType === 'drag_drop') {
         try {
           const correctAnswer = typeof question.correctAnswer === 'string' 
@@ -148,26 +166,54 @@ async function regradeSubmission(submissionId: number): Promise<{ totalScore: nu
           let correctPlacements = 0;
           let totalItems = 0;
           
-          // Count correct placements based on zone assignments
+          console.log(`Grading drag-drop question ${question.id}:`, {
+            correctAnswer: JSON.stringify(correctAnswer),
+            studentAnswer: JSON.stringify(studentAnswer)
+          });
+          
+          // Build mapping from item to correct zone
+          const itemToZoneMapping: { [item: string]: string } = {};
+          
           if (correctAnswer && correctAnswer.zones) {
-            correctAnswer.zones.forEach((zone: any, zoneIndex: number) => {
-              const correctItems = Array.isArray(zone.items) ? zone.items : [];
-              const studentItems = Array.isArray(studentAnswer[zoneIndex]) 
-                ? studentAnswer[zoneIndex] 
-                : (studentAnswer[zoneIndex] ? [studentAnswer[zoneIndex]] : []);
-              
-              correctItems.forEach((item: string) => {
-                totalItems++;
-                if (studentItems.includes(item)) {
-                  correctPlacements++;
-                }
-              });
+            correctAnswer.zones.forEach((zone: any) => {
+              if (zone.zone && Array.isArray(zone.items)) {
+                zone.items.forEach((item: string) => {
+                  if (item && item.trim()) {
+                    itemToZoneMapping[item] = zone.zone;
+                    totalItems++;
+                  }
+                });
+              }
             });
           }
           
-          // Partial credit for drag-and-drop
+          // Check student's placements against correct mapping
+          if (studentAnswer && typeof studentAnswer === 'object') {
+            // Handle different student answer formats
+            if (studentAnswer.zones && Array.isArray(studentAnswer.zones)) {
+              // Format: { zones: [{ zone: "Land", items: ["Lion"] }] }
+              studentAnswer.zones.forEach((studentZone: any) => {
+                if (studentZone.zone && Array.isArray(studentZone.items)) {
+                  studentZone.items.forEach((item: string) => {
+                    if (itemToZoneMapping[item] === studentZone.zone) {
+                      correctPlacements++;
+                    }
+                  });
+                }
+              });
+            } else {
+              // Handle object mapping format: { "Lion": "Land", "Shark": "Water" }
+              Object.entries(studentAnswer).forEach(([item, zone]) => {
+                if (itemToZoneMapping[item] === zone) {
+                  correctPlacements++;
+                }
+              });
+            }
+          }
+          
+          // Partial credit for drag-and-drop - each correctly placed item gets proportional credit
           score = totalItems > 0 ? (correctPlacements / totalItems) * question.points : 0;
-          console.log(`Drag-drop question ${question.id}: ${correctPlacements}/${totalItems} correct, score: ${score}/${question.points}`);
+          console.log(`Drag-drop question ${question.id}: ${correctPlacements}/${totalItems} items correctly placed, score: ${score}/${question.points}`);
         } catch (error) {
           console.error(`Error grading drag-drop question ${question.id}:`, error);
           score = 0;

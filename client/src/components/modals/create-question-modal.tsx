@@ -37,7 +37,7 @@ const createQuestionSchema = z.object({
   questionText: z.string().min(1, "Question text is required"),
   questionType: z.enum(['multiple_choice', 'short_answer', 'essay', 'fill_blank', 'matching', 'ranking', 'drag_drop']),
   category: z.enum(['exam', 'homework']),
-  options: z.array(z.string()).optional(),
+  options: z.union([z.array(z.string()), z.string()]).optional(),
   correctAnswer: z.string().optional(),
   explanation: z.string().optional(),
   attachmentUrl: z.string().optional(),
@@ -97,26 +97,28 @@ export default function CreateQuestionModal({ open, onOpenChange, questionCatego
         payload.correctAnswer = correctOption;
       } else if (data.questionType === 'matching') {
         const validPairs = matchingPairs.filter(pair => pair.left.trim() && pair.right.trim());
-        payload.options = validPairs;
-        payload.correctAnswer = validPairs;
+        payload.options = JSON.stringify(validPairs);
+        payload.correctAnswer = JSON.stringify(validPairs);
       } else if (data.questionType === 'ranking') {
         const validItems = rankingItems.filter(item => item.trim());
-        payload.options = validItems;
-        payload.correctAnswer = validItems;
+        payload.options = JSON.stringify(validItems);
+        payload.correctAnswer = JSON.stringify(validItems);
       } else if (data.questionType === 'drag_drop') {
         const validZones = dragDropZones.filter(zone => zone.zone?.trim()).map(zone => zone.zone);
         const validItems = dragDropItems.filter(item => item.trim());
-        payload.options = {
+        const optionsData = {
           zones: validZones,
           items: validItems
         };
-        payload.correctAnswer = {
+        const answerKeyData = {
           zones: dragDropZones.filter(zone => zone.zone?.trim()).map(zone => ({
             zone: zone.zone,
             items: zone.items || []
           })),
           items: validItems
         };
+        payload.options = JSON.stringify(optionsData);
+        payload.correctAnswer = JSON.stringify(answerKeyData);
       }
       
       // Include attachment URL if present

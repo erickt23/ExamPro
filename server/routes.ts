@@ -2187,6 +2187,146 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Test endpoint for enhanced drag-drop and matching grading
+  app.post("/api/admin/test-grading", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (user?.role !== 'instructor') {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const { questionType, correctAnswer, studentAnswer, points } = req.body;
+      
+      let score = 0;
+      let details = {};
+      
+      if (questionType === 'matching') {
+        try {
+          const correctAnswerParsed = typeof correctAnswer === 'string' 
+            ? JSON.parse(correctAnswer) 
+            : correctAnswer;
+          const studentAnswerParsed = typeof studentAnswer === 'string'
+            ? JSON.parse(studentAnswer || '{}')
+            : studentAnswer || {};
+          
+          let correctMatches = 0;
+          let totalMatches = 0;
+          const matchResults: any[] = [];
+          
+          if (Array.isArray(correctAnswerParsed)) {
+            totalMatches = correctAnswerParsed.length;
+            const correctMapping: { [key: string]: string } = {};
+            correctAnswerParsed.forEach((pair: any) => {
+              if (pair.left && pair.right) {
+                correctMapping[pair.left] = pair.right;
+              }
+            });
+            
+            if (typeof studentAnswerParsed === 'object' && studentAnswerParsed !== null) {
+              Object.entries(studentAnswerParsed).forEach(([leftItem, rightItem]) => {
+                const isCorrect = correctMapping[leftItem] === rightItem;
+                if (isCorrect) correctMatches++;
+                matchResults.push({ 
+                  left: leftItem, 
+                  studentRight: rightItem, 
+                  correctRight: correctMapping[leftItem], 
+                  isCorrect 
+                });
+              });
+            }
+          }
+          
+          score = totalMatches > 0 ? (correctMatches / totalMatches) * (points || 4) : 0;
+          details = { correctMatches, totalMatches, matchResults };
+        } catch (error) {
+          console.error('Matching grading error:', error);
+          details = { error: error instanceof Error ? error.message : 'Unknown error' };
+        }
+      } else if (questionType === 'drag_drop') {
+        try {
+          const correctAnswerParsed = typeof correctAnswer === 'string' 
+            ? JSON.parse(correctAnswer) 
+            : correctAnswer;
+          const studentAnswerParsed = typeof studentAnswer === 'string'
+            ? JSON.parse(studentAnswer || '{}')
+            : studentAnswer || {};
+          
+          let correctPlacements = 0;
+          let totalItems = 0;
+          const itemToZoneMapping: { [item: string]: string } = {};
+          const placementResults: any[] = [];
+          
+          if (correctAnswerParsed && correctAnswerParsed.zones) {
+            correctAnswerParsed.zones.forEach((zone: any) => {
+              if (zone.zone && Array.isArray(zone.items)) {
+                zone.items.forEach((item: string) => {
+                  if (item && item.trim()) {
+                    itemToZoneMapping[item] = zone.zone;
+                    totalItems++;
+                  }
+                });
+              }
+            });
+          }
+          
+          if (studentAnswerParsed && typeof studentAnswerParsed === 'object') {
+            if (studentAnswerParsed.zones && Array.isArray(studentAnswerParsed.zones)) {
+              studentAnswerParsed.zones.forEach((studentZone: any) => {
+                if (studentZone.zone && Array.isArray(studentZone.items)) {
+                  studentZone.items.forEach((item: string) => {
+                    const correctZone = itemToZoneMapping[item];
+                    const isCorrect = correctZone === studentZone.zone;
+                    if (isCorrect) correctPlacements++;
+                    placementResults.push({
+                      item,
+                      studentZone: studentZone.zone,
+                      correctZone,
+                      isCorrect
+                    });
+                  });
+                }
+              });
+            } else {
+              Object.entries(studentAnswerParsed).forEach(([item, zone]) => {
+                const correctZone = itemToZoneMapping[item];
+                const isCorrect = correctZone === zone;
+                if (isCorrect) correctPlacements++;
+                placementResults.push({
+                  item,
+                  studentZone: zone,
+                  correctZone,
+                  isCorrect
+                });
+              });
+            }
+          }
+          
+          score = totalItems > 0 ? (correctPlacements / totalItems) * (points || 4) : 0;
+          details = { correctPlacements, totalItems, placementResults, itemToZoneMapping };
+        } catch (error) {
+          console.error('Drag-drop grading error:', error);
+          details = { error: error instanceof Error ? error.message : 'Unknown error' };
+        }
+      }
+      
+      res.json({
+        questionType,
+        points: points || 4,
+        score: Math.round(score * 100) / 100,
+        percentage: points > 0 ? Math.round((score / points) * 10000) / 100 : 0,
+        details
+      });
+    } catch (error) {
+      console.error('Test grading failed:', error);
+      res.status(500).json({ 
+        error: 'Test grading failed', 
+        details: error instanceof Error ? error.message : 'Unknown error' 
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
