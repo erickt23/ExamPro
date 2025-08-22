@@ -37,6 +37,7 @@ export default function StudentExamTaking() {
   const [timeRemaining, setTimeRemaining] = useState<number | null>(null);
   const [examStartTime, setExamStartTime] = useState<Date | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [warningShown, setWarningShown] = useState(false);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -144,13 +145,32 @@ export default function StudentExamTaking() {
 
   // Timer countdown
   useEffect(() => {
-    if (timeRemaining === null || timeRemaining <= 0) return;
+    if (timeRemaining === null || timeRemaining <= 0 || isSubmitting) return;
 
     const timer = setInterval(() => {
       setTimeRemaining(prev => {
-        if (prev === null || prev <= 1) {
+        if (prev === null) return null;
+        
+        // Show warning when 30 seconds or less remain
+        if (prev <= 30 && prev > 1 && !warningShown) {
+          setWarningShown(true);
+          toast({
+            title: "Time Warning",
+            description: `Only ${prev} seconds remaining! The exam will auto-submit when time runs out.`,
+            variant: "destructive",
+          });
+        }
+        
+        if (prev <= 1) {
           // Auto-submit when time runs out
-          handleSubmitExam();
+          if (!isSubmitting) {
+            toast({
+              title: "Time Expired",
+              description: "Exam time has expired. Auto-submitting your answers...",
+              variant: "destructive",
+            });
+            handleSubmitExam();
+          }
           return 0;
         }
         return prev - 1;
@@ -158,7 +178,7 @@ export default function StudentExamTaking() {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [timeRemaining]);
+  }, [timeRemaining, isSubmitting, warningShown, toast]);
 
   // Auto-save progress
   useEffect(() => {
@@ -946,10 +966,17 @@ export default function StudentExamTaking() {
                   {exam && exam.duration && exam.duration > 0 ? (
                     timeRemaining !== null && timeRemaining > 0 ? (
                       <div className={`flex items-center px-3 py-2 rounded-lg text-sm ${
-                        timeRemaining < 300 ? 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300' : 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300'
+                        timeRemaining <= 30 
+                          ? 'bg-red-600 text-white dark:bg-red-600 dark:text-white animate-pulse border-2 border-red-400' 
+                          : timeRemaining < 300 
+                            ? 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-300 border border-red-300' 
+                            : 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300'
                       }`}>
-                        <Clock className="h-4 w-4 mr-2" />
-                        <span className="font-mono">{formatTime(timeRemaining)}</span>
+                        <Clock className={`h-4 w-4 mr-2 ${timeRemaining <= 30 ? 'animate-bounce' : ''}`} />
+                        <span className="font-mono font-bold">{formatTime(timeRemaining)}</span>
+                        {timeRemaining <= 30 && (
+                          <AlertCircle className="h-4 w-4 ml-2 animate-pulse" />
+                        )}
                       </div>
                     ) : (
                       <div className="flex items-center px-3 py-2 rounded-lg text-sm bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-300">
