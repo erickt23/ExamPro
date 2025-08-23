@@ -318,18 +318,18 @@ export const fr = {
     inProgress: 'En Cours',
     lateSubmission: 'Soumission Tardive',
     pending: 'En Attente',
-    attemptNumber: 'Tentative #{number}',
+    attemptNumber: 'Tentative #{{number}}',
     searchCompletedExams: 'Rechercher des examens terminés...',
     noCompletedExamsFound: 'Aucun examen terminé trouvé',
     adjustSearchCriteria: 'Essayez d\'ajuster vos critères de recherche',
-    showingResults: 'Affichage {start}-{end} sur {total} examens',
+    showingResults: 'Affichage {{start}}-{{end}} sur {{total}} examens',
     previous: 'Précédent',
     next: 'Suivant',
-    page: 'Page {current} sur {total}'
+    page: 'Page {{current}} sur {{total}}'
   },
   examStatus: {
     available: 'Disponible',
-    availableWithAttempts: 'Disponible ({remaining} tentatives restantes)',
+    availableWithAttempts: 'Disponible ({{remaining}} tentatives restantes)',
     resumeExam: 'Reprendre l\'Examen',
     completed: 'Terminé',
     expired: 'Expiré',

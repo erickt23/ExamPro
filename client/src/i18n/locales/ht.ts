@@ -318,18 +318,18 @@ export const ht = {
     inProgress: 'Y ap Fèt',
     lateSubmission: 'Soumisyon An Reta',
     pending: 'K ap Tann',
-    attemptNumber: 'Eseye #{number}',
+    attemptNumber: 'Eseye #{{number}}',
     searchCompletedExams: 'Chèche egzamen yo ki fini...',
     noCompletedExamsFound: 'Pa gen egzamen ki fini yo jwenn',
     adjustSearchCriteria: 'Eseye ajiste kritè rechèch ou yo',
-    showingResults: 'Y ap montre {start}-{end} sou {total} egzamen',
+    showingResults: 'Y ap montre {{start}}-{{end}} sou {{total}} egzamen',
     previous: 'Anvan',
     next: 'Pwochen',
-    page: 'Paj {current} sou {total}'
+    page: 'Paj {{current}} sou {{total}}'
   },
   examStatus: {
     available: 'Disponib',
-    availableWithAttempts: 'Disponib ({remaining} eseye ki rete)',
+    availableWithAttempts: 'Disponib ({{remaining}} eseye ki rete)',
     resumeExam: 'Kontinye Egzamen an',
     completed: 'Fini',
     expired: 'Ekspire',
