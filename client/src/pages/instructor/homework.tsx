@@ -131,7 +131,7 @@ export default function InstructorHomeworkPage() {
   });
   
   // Fetch homework questions for selection
-  const { data: homeworkQuestions = [] } = useQuery({
+  const { data: homeworkQuestionsData } = useQuery({
     queryKey: ["/api/questions", questionFilters, questionSearch, "homework"],
     queryFn: async () => {
       const params = new URLSearchParams();
@@ -148,6 +148,8 @@ export default function InstructorHomeworkPage() {
     retry: false,
     enabled: showCreateModal || showEditModal, // Fetch when either modal is open
   });
+
+  const homeworkQuestions = homeworkQuestionsData?.questions || [];
 
   // Fetch existing homework questions when editing
   const { data: existingHomeworkQuestions = [] } = useQuery({
