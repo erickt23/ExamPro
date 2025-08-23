@@ -7,6 +7,8 @@ import { z } from "zod";
 import multer from "multer";
 import * as XLSX from "xlsx";
 import { eq, and, desc, max } from "drizzle-orm";
+import * as path from "path";
+import * as fs from "fs";
 import {
   ObjectStorageService,
   ObjectNotFoundError,
@@ -2319,6 +2321,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
         error: 'Test grading failed', 
         details: error instanceof Error ? error.message : 'Unknown error' 
       });
+    }
+  });
+
+  // Database backup download route
+  app.get('/api/backup/download/:filename', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (user?.role !== 'instructor') {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const filename = req.params.filename;
+      const filePath = path.join(process.cwd(), 'attached_assets', 'backups', filename);
+      
+      // Security check - ensure file exists and is a .sql file
+      if (!filename.endsWith('.sql') || !fs.existsSync(filePath)) {
+        return res.status(404).json({ message: "Backup file not found" });
+      }
+
+      // Set headers for file download
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      res.setHeader('Content-Type', 'application/sql');
+      
+      // Stream the file
+      const fileStream = fs.createReadStream(filePath);
+      fileStream.pipe(res);
+    } catch (error) {
+      console.error("Error downloading backup:", error);
+      res.status(500).json({ message: "Failed to download backup" });
     }
   });
 
