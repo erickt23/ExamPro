@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useLocation, useRoute } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
@@ -31,7 +31,8 @@ import {
   Eye,
   BookOpen,
   Notebook,
-  Calculator
+  Calculator,
+  CloudUpload
 } from "lucide-react";
 import { calculateFinalGrade } from "@shared/gradeConfig";
 
@@ -504,6 +505,8 @@ function SubmissionGrading({ submissionId, isHomeworkGrading }: { submissionId: 
   const { toast } = useToast();
   const [, navigate] = useLocation();
   const [gradingData, setGradingData] = useState<Record<number, { score: number; feedback: string }>>({});
+  const [saveStatuses, setSaveStatuses] = useState<Record<number, 'idle' | 'saving' | 'saved' | 'error'>>({});
+  const autoSaveTimers = useRef<Record<number, NodeJS.Timeout>>({});
 
   // Convert Google Cloud Storage URL to our authenticated API endpoint
   const getSecureFileUrl = (attachmentUrl: string) => {
@@ -547,25 +550,38 @@ function SubmissionGrading({ submissionId, isHomeworkGrading }: { submissionId: 
     retry: false,
   });
 
-  // Grade individual answer mutation
+  // Grade individual answer mutation with auto-save support
   const gradeAnswerMutation = useMutation({
-    mutationFn: async ({ answerId, score, feedback }: { answerId: number; score: number; feedback: string }) => {
+    mutationFn: async ({ answerId, score, feedback, isAutoSave }: { answerId: number; score: number; feedback: string; isAutoSave?: boolean }) => {
       const endpoint = isHomeworkGrading 
         ? `/api/homework-answers/${answerId}/grade`
         : `/api/answers/${answerId}/grade`;
       await apiRequest("PUT", endpoint, { score, feedback });
+      return { answerId, isAutoSave };
     },
-    onSuccess: () => {
+    onSuccess: ({ answerId, isAutoSave }) => {
       const queryKey = isHomeworkGrading 
         ? ["/api/homework-submissions", submissionId, "grade"]
         : ["/api/submissions", submissionId, "grade"];
       queryClient.invalidateQueries({ queryKey });
-      toast({
-        title: "Success",
-        description: "Grade saved successfully",
-      });
+      
+      setSaveStatuses(prev => ({ ...prev, [answerId]: 'saved' }));
+      
+      if (!isAutoSave) {
+        toast({
+          title: "Success",
+          description: "Grade saved successfully",
+        });
+      }
+      
+      // Clear save status after 3 seconds
+      setTimeout(() => {
+        setSaveStatuses(prev => ({ ...prev, [answerId]: 'idle' }));
+      }, 3000);
     },
-    onError: (error: Error) => {
+    onError: (error: Error, { answerId }) => {
+      setSaveStatuses(prev => ({ ...prev, [answerId]: 'error' }));
+      
       if (isUnauthorizedError(error)) {
         toast({
           title: "Unauthorized",
@@ -582,6 +598,11 @@ function SubmissionGrading({ submissionId, isHomeworkGrading }: { submissionId: 
         description: "Failed to save grade",
         variant: "destructive",
       });
+      
+      // Clear error status after 5 seconds
+      setTimeout(() => {
+        setSaveStatuses(prev => ({ ...prev, [answerId]: 'idle' }));
+      }, 5000);
     },
   });
 
@@ -622,12 +643,37 @@ function SubmissionGrading({ submissionId, isHomeworkGrading }: { submissionId: 
     },
   });
 
+  // Auto-save function with debouncing
+  const autoSaveGrade = useCallback((answerId: number) => {
+    const gradeData = gradingData[answerId];
+    if (!gradeData || (gradeData.score === 0 && !gradeData.feedback)) return;
+    
+    setSaveStatuses(prev => ({ ...prev, [answerId]: 'saving' }));
+    
+    gradeAnswerMutation.mutate({
+      answerId,
+      score: gradeData.score,
+      feedback: gradeData.feedback,
+      isAutoSave: true
+    });
+  }, [gradingData, gradeAnswerMutation]);
+
   const handleScoreChange = (answerId: number, score: string) => {
     const numScore = parseFloat(score) || 0;
     setGradingData(prev => ({
       ...prev,
       [answerId]: { ...prev[answerId], score: numScore }
     }));
+    
+    // Clear existing timer
+    if (autoSaveTimers.current[answerId]) {
+      clearTimeout(autoSaveTimers.current[answerId]);
+    }
+    
+    // Set new auto-save timer (3 seconds delay)
+    autoSaveTimers.current[answerId] = setTimeout(() => {
+      autoSaveGrade(answerId);
+    }, 3000);
   };
 
   const handleFeedbackChange = (answerId: number, feedback: string) => {
@@ -635,22 +681,49 @@ function SubmissionGrading({ submissionId, isHomeworkGrading }: { submissionId: 
       ...prev,
       [answerId]: { ...prev[answerId], feedback }
     }));
+    
+    // Clear existing timer
+    if (autoSaveTimers.current[answerId]) {
+      clearTimeout(autoSaveTimers.current[answerId]);
+    }
+    
+    // Set new auto-save timer (3 seconds delay)
+    autoSaveTimers.current[answerId] = setTimeout(() => {
+      autoSaveGrade(answerId);
+    }, 3000);
   };
 
   const saveGrade = (answerId: number) => {
     const gradeData = gradingData[answerId];
     if (!gradeData) return;
     
+    // Clear auto-save timer since we're manually saving
+    if (autoSaveTimers.current[answerId]) {
+      clearTimeout(autoSaveTimers.current[answerId]);
+    }
+    
+    setSaveStatuses(prev => ({ ...prev, [answerId]: 'saving' }));
+    
     gradeAnswerMutation.mutate({
       answerId,
       score: gradeData.score,
-      feedback: gradeData.feedback
+      feedback: gradeData.feedback,
+      isAutoSave: false
     });
   };
 
   const finalizeSubmission = () => {
     finalizeSubmissionMutation.mutate();
   };
+
+  // Cleanup timers on unmount
+  useEffect(() => {
+    return () => {
+      Object.values(autoSaveTimers.current).forEach(timer => {
+        if (timer) clearTimeout(timer);
+      });
+    };
+  }, []);
 
   const formatQuestionType = (type: string | undefined) => {
     if (!type) return 'Unknown';
@@ -980,7 +1053,7 @@ function SubmissionGrading({ submissionId, isHomeworkGrading }: { submissionId: 
                       />
                     </div>
                   </div>
-                  <div className="mt-3">
+                  <div className="mt-3 flex items-center justify-between">
                     <Button
                       onClick={() => saveGrade(answer.id)}
                       disabled={gradeAnswerMutation.isPending}
@@ -989,6 +1062,28 @@ function SubmissionGrading({ submissionId, isHomeworkGrading }: { submissionId: 
                       <Save className="h-4 w-4" />
                       Save Grade
                     </Button>
+                    
+                    {/* Auto-save status indicator */}
+                    <div className="flex items-center gap-2 text-sm">
+                      {saveStatuses[answer.id] === 'saving' && (
+                        <div className="flex items-center gap-1 text-blue-600">
+                          <CloudUpload className="h-4 w-4 animate-pulse" />
+                          <span>Saving...</span>
+                        </div>
+                      )}
+                      {saveStatuses[answer.id] === 'saved' && (
+                        <div className="flex items-center gap-1 text-green-600">
+                          <CheckCircle className="h-4 w-4" />
+                          <span>Auto-saved</span>
+                        </div>
+                      )}
+                      {saveStatuses[answer.id] === 'error' && (
+                        <div className="flex items-center gap-1 text-red-600">
+                          <span className="h-4 w-4">⚠️</span>
+                          <span>Save failed</span>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
