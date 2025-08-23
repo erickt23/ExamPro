@@ -1,0 +1,156 @@
+
+
+EduExam Pro
+Instructor
+Quick Actions
+Exams
+
+Create and manage exams using questions from your exam bank
+	Exam Title	Start Date	Time	Duration	Status	Actions
+Test Matching 4
+Connaissances générales • 10 points
+	
+8/22/2025, 3:00 PM
+	
+Aug 22, 2025, 3:00 PM
+	
+5 min
+	active
+	
+Test Matching 3
+Connaissances générales • 5 points
+	
+8/22/2025, 7:00 PM
+	
+Aug 22, 2025, 7:00 PM
+	
+5 min
+	draft
+	
+Test Matching 2
+Connaissances générales • 5 points
+	
+8/22/2025, 6:37 PM
+	
+Aug 22, 2025, 6:37 PM
+	
+10 min
+	active
+	
+Exam Matching
+Archives • 3 points
+	
+8/22/2025, 5:30 PM
+	
+Aug 22, 2025, 5:30 PM
+	
+10 min
+	active
+	
+Exam Drag and Drop
+Archives • 4 points
+	
+8/22/2025, 5:29 PM
+	
+Aug 22, 2025, 5:29 PM
+	
+10 min
+	active
+	
+Simple Fill in the Blank
+Archives • 2 points
+	
+8/22/2025, 3:54 PM
+	
+Aug 22, 2025, 3:54 PM
+	
+10 min
+	active
+	
+Exam Fill in the Blank
+Archives • 2 points
+	
+8/22/2025, 3:23 PM
+	
+Aug 22, 2025, 3:23 PM
+	
+90 min
+	active
+	
+Caonabo Bis
+Archives • 9 points
+	
+8/22/2025, 2:19 PM
+	
+Aug 22, 2025, 2:19 PM
+	
+15 min
+	active
+	
+Auto Questions Caonabo
+Archives • 10 points
+	
+8/21/2025, 10:14 PM
+	
+Aug 21, 2025, 10:14 PM
+	
+30 min
+	active
+	
+Archives Test 1ere Periode 2025-2026
+Archives • 100 points
+	
+8/20/2025, 12:55 PM
+	
+Aug 20, 2025, 12:55 PM
+	
+30 min
+	active
+	
+Showing 1 to 10 of 28 exams
+Exam Results: Test Matching 4
+Student Submissions (3)
+
+Student ID: 43280843
+graded
+Submitted: Aug 22, 2025, 8:59 PMTime Taken: 0mStarted: Aug 22, 2025, 8:59 PMScore: 10.00/10.00(100%)
+Questions and Answers
+Question 1
+Matching
+
+Associez chaque élément à sa définition correcte.
+2.00/2.00 pts
+
+Student's Answer:
+Mer→Requin
+Lion→Terre
+Question 2
+Matching
+
+Associez chaque valeur avec sa traduction.
+3.00/3.00 pts
+
+Student's Answer:
+Parole→Pawol
+Bonjou→Bonjour
+Jour→Lajounen
+Question 3
+Matching
+
+Reliez les éléments de gauche aux éléments correspondants à droite:
+5.00/5.00 pts
+
+Student's Answer:
+Jaune→Couleur
+Chien→Canine
+Professeur→Ecole
+Conducteur→Voiture
+Joueur→Football
+
+Student ID: 43280843
+graded
+Submitted: Aug 22, 2025, 7:23 PMTime Taken: 0mStarted: Aug 22, 2025, 7:23 PMScore: 10.00/10.00(100%)
+
+Student ID: 43280843
+in_progress
+Submitted: Not submittedTime Taken: 0mStarted: Aug 22, 2025, 7:16 PM
