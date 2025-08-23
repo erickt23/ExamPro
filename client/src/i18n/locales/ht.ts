@@ -183,8 +183,10 @@ export const ht = {
     noAssignments: 'Pa gen devwa yo jwenn',
     createFirstAssignment: 'Kreye premye devwa ou pou kòmanse',
     searchAssignments: 'Chèche devwa yo...',
+    searchHomeworkAssignments: 'Chèche devwa lakay yo...',
     filterByStatus: 'Filtre pa Eta',
-    allStatuses: 'Tout Eta yo'
+    allStatuses: 'Tout Eta yo',
+    allStatus: 'Tout Eta'
   },
 
   // Exam Management

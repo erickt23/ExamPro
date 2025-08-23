@@ -185,8 +185,10 @@ export const en = {
     noAssignments: 'No assignments found',
     createFirstAssignment: 'Create your first assignment to get started',
     searchAssignments: 'Search assignments...',
+    searchHomeworkAssignments: 'Search homework assignments...',
     filterByStatus: 'Filter by Status',
-    allStatuses: 'All Statuses'
+    allStatuses: 'All Statuses',
+    allStatus: 'All Status'
   },
 
   // Exam Management

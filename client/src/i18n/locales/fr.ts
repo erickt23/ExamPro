@@ -183,8 +183,10 @@ export const fr = {
     noAssignments: 'Aucun devoir trouvé',
     createFirstAssignment: 'Créez votre premier devoir pour commencer',
     searchAssignments: 'Rechercher des devoirs...',
+    searchHomeworkAssignments: 'Rechercher des devoirs à domicile...',
     filterByStatus: 'Filtrer par Statut',
-    allStatuses: 'Tous les Statuts'
+    allStatuses: 'Tous les Statuts',
+    allStatus: 'Tous les Statuts'
   },
 
   // Exam Management

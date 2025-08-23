@@ -646,7 +646,7 @@ export default function InstructorHomeworkPage() {
                     ) : (
                       <div className="divide-y">
                         {homeworkQuestions
-                          .filter(q => !selectedQuestions.find(sq => sq.id === q.id))
+                          .filter((q: any) => !selectedQuestions.find(sq => sq.id === q.id))
                           .map((question: any) => (
                           <div key={question.id} className="p-3 hover:bg-gray-50">
                             <div className="flex items-center justify-between">
@@ -875,7 +875,7 @@ export default function InstructorHomeworkPage() {
                     ) : (
                       <div className="divide-y">
                         {homeworkQuestions
-                          .filter(q => !selectedQuestions.find(sq => sq.id === q.id))
+                          .filter((q: any) => !selectedQuestions.find(sq => sq.id === q.id))
                           .map((question: any) => (
                           <div key={question.id} className="p-3 hover:bg-gray-50">
                             <div className="flex items-center justify-between">
@@ -1007,7 +1007,7 @@ export default function InstructorHomeworkPage() {
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
           <Input
-            placeholder="Search homework assignments..."
+            placeholder={t('assignments.searchHomeworkAssignments')}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10"
@@ -1019,7 +1019,7 @@ export default function InstructorHomeworkPage() {
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Status</SelectItem>
+            <SelectItem value="all">{t('assignments.allStatus')}</SelectItem>
             <SelectItem value="draft">Draft</SelectItem>
             <SelectItem value="active">Active</SelectItem>
             <SelectItem value="archived">Archived</SelectItem>
