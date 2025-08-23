@@ -351,7 +351,7 @@ export const ht = {
   examTaking: {
     backToExams: 'Tounen nan Egzamen yo',
     back: 'Tounen',
-    questionOf: 'Kesyon {current} sou {total}',
+    questionOf: 'Kesyon {{current}} sou {{total}}',
     timeWarning: 'Avètisman Tan',
     timeWarningMessage: 'Gen sèlman {seconds} segonn ki rete! Egzamen an ap soumèt otomatikman lè tan an fini.',
     timeExpired: 'Tan an Fini',
@@ -376,6 +376,8 @@ export const ht = {
     selectCorrectOptions: 'Chwazi bon opsyon yo nan meni an pou chak eleman nan gòch la.',
     dragItemsToZones: 'Rale eleman yo nan rezèv ki disponib la bay bon zòn yo.',
     rankItemsInOrder: 'Klase eleman yo nan bon òd la pa w rale yo.',
+    previous: 'Anvan',
+    next: 'Pwochen',
     previousQuestion: 'Kesyon Anvan an',
     nextQuestion: 'Kesyon Kap Vini an',
     submitExam: 'Soumèt Egzamen',

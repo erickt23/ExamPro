@@ -351,7 +351,7 @@ export const fr = {
   examTaking: {
     backToExams: 'Retour aux Examens',
     back: 'Retour',
-    questionOf: 'Question {current} sur {total}',
+    questionOf: 'Question {{current}} sur {{total}}',
     timeWarning: 'Avertissement de Temps',
     timeWarningMessage: 'Il ne reste que {seconds} secondes ! L\'examen sera soumis automatiquement à la fin du temps.',
     timeExpired: 'Temps Écoulé',
@@ -376,6 +376,8 @@ export const fr = {
     selectCorrectOptions: 'Sélectionnez les bonnes options dans le menu déroulant pour chaque élément à gauche.',
     dragItemsToZones: 'Faites glisser les éléments de la réserve disponible vers les bonnes zones.',
     rankItemsInOrder: 'Classez les éléments dans le bon ordre en les faisant glisser.',
+    previous: 'Précédent',
+    next: 'Suivant',
     previousQuestion: 'Question Précédente',
     nextQuestion: 'Question Suivante',
     submitExam: 'Soumettre l\'Examen',

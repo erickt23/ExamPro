@@ -378,6 +378,8 @@ export const en = {
     selectCorrectOptions: 'Select the correct options from the dropdown for each item on the left.',
     dragItemsToZones: 'Drag items from the available pool to the correct zones.',
     rankItemsInOrder: 'Rank the items in the correct order by dragging them.',
+    previous: 'Previous',
+    next: 'Next',
     previousQuestion: 'Previous Question',
     nextQuestion: 'Next Question',
     submitExam: 'Submit Exam',
