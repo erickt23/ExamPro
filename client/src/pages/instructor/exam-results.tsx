@@ -135,9 +135,6 @@ export default function ExamResults() {
   };
 
   const formatAnswer = (answer: any, questionType: string): React.ReactNode => {
-    // Debug log to understand the data structure
-    console.log('formatAnswer called with:', { answer, questionType, answerType: typeof answer });
-    
     // Check for truly empty answers
     if (answer === null || answer === undefined || answer === '') {
       return <span className="text-gray-500 italic">No answer provided</span>;
@@ -196,6 +193,17 @@ export default function ExamResults() {
           if (typeof answer === 'string') {
             try {
               const parsed = JSON.parse(answer);
+              // Handle array format like [{"left":"Mer","right":"Requin"}]
+              if (Array.isArray(parsed)) {
+                return parsed.map((pair: any, i: number) => (
+                  <div key={i} className="flex items-center gap-2 mb-1">
+                    <span className="font-medium">{extractText(pair.left)}</span>
+                    <span>→</span>
+                    <span>{extractText(pair.right)}</span>
+                  </div>
+                ));
+              }
+              // Handle object format
               if (typeof parsed === 'object' && parsed !== null) {
                 return Object.entries(parsed).map(([left, right], i) => (
                   <div key={i} className="flex items-center gap-2 mb-1">
@@ -430,7 +438,7 @@ export default function ExamResults() {
                             Student's Answer:
                           </div>
                           <div className="space-y-1">
-                            {formatAnswer(answer.answer || answer.studentAnswer, answer.question?.questionType)}
+                            {formatAnswer(answer.answer || answer.studentAnswer || submissionDetails.submission?.answers?.find((a: any) => a.questionId === answer.questionId)?.answer, answer.question?.questionType)}
                           </div>
                         </div>
                         
