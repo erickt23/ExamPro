@@ -63,11 +63,12 @@ function ExamSubmissionCard({ submission }: { submission: any }) {
   };
 
   const formatAnswer = (question: any, answer: any) => {
-    if (!answer || !answer.answer) {
+    // Check both answer.answer and answer.answer_text for compatibility
+    const answerValue = answer?.answer || answer?.answer_text || answer?.answerText;
+    
+    if (!answer || !answerValue) {
       return <span className="text-gray-500 italic">No answer provided</span>;
     }
-
-    const answerValue = answer.answer;
 
     switch (question.type) {
       case 'multiple_choice':
@@ -100,7 +101,7 @@ function ExamSubmissionCard({ submission }: { submission: any }) {
                   <span>{left}</span>
                   <span>→</span>
                   <span className={answer.isCorrect ? "text-green-600" : "text-red-600"}>
-                    {right}
+                    {String(right)}
                   </span>
                 </div>
               ))}
@@ -120,7 +121,7 @@ function ExamSubmissionCard({ submission }: { submission: any }) {
                 <div key={index} className="flex items-center gap-2">
                   <span>{slot}:</span>
                   <span className={answer.isCorrect ? "text-green-600" : "text-red-600"}>
-                    {item}
+                    {String(item)}
                   </span>
                 </div>
               ))}
@@ -250,6 +251,7 @@ function ExamSubmissionCard({ submission }: { submission: any }) {
                 {submissionDetails.submission?.answers?.map((answer: any, index: number) => {
                   const question = submissionDetails.questions?.find((q: any) => q.id === answer.questionId);
                   if (!question) return null;
+
 
                   return (
                     <div key={answer.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
