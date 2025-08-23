@@ -213,13 +213,19 @@ export default function ExamResults() {
   const SubmissionCard = ({ submission }: { submission: any }) => {
     const isExpanded = expandedSubmission === submission.id;
     
+    // Log submission data for debugging
+    console.log('Submission data:', submission);
+    
     // Fetch submission details with answers when expanded
-    const { data: submissionDetails } = useQuery({
+    const { data: submissionDetails, isLoading: detailsLoading, error: detailsError } = useQuery({
       queryKey: ["/api/submissions", submission.id, "grade"],
       queryFn: async () => {
+        console.log(`Fetching details for submission ${submission.id}`);
         const response = await fetch(`/api/submissions/${submission.id}/grade`);
         if (!response.ok) throw new Error(`${response.status}: ${response.statusText}`);
-        return response.json();
+        const data = await response.json();
+        console.log(`Submission ${submission.id} details:`, data);
+        return data;
       },
       enabled: isExpanded,
       retry: false,
@@ -236,7 +242,7 @@ export default function ExamResults() {
               <div>
                 <h4 className="font-semibold text-gray-900 dark:text-foreground">{submission.studentName || 'Student'}</h4>
                 <p className="text-sm text-gray-500 dark:text-muted-foreground">
-                  {formatSubmissionTime(submission.submittedAt)}
+                  ID: {submission.studentId} | Submitted: {submission.submittedAt ? new Date(submission.submittedAt).toLocaleString() : 'Not submitted'}
                 </p>
               </div>
             </div>
@@ -259,30 +265,44 @@ export default function ExamResults() {
           <div className="grid grid-cols-3 gap-4 mb-4">
             <div className="text-center">
               <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-                {submission.score !== null ? Math.round(submission.score) : 'N/A'}%
+                {submission.status === 'graded' && submission.totalScore !== undefined && submission.maxScore 
+                  ? Math.round((submission.totalScore / submission.maxScore) * 100)
+                  : submission.totalScore !== undefined && submission.maxScore 
+                    ? Math.round((submission.totalScore / submission.maxScore) * 100)
+                    : 'N/A'}%
               </div>
               <div className="text-xs text-gray-500 dark:text-muted-foreground">Score</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                {submission.timeSpent ? formatTime(submission.timeSpent) : 'N/A'}
+                {submission.timeTaken ? formatTime(submission.timeTaken) : 'N/A'}
               </div>
-              <div className="text-xs text-gray-500 dark:text-muted-foreground">Time Spent</div>
+              <div className="text-xs text-gray-500 dark:text-muted-foreground">Time Taken</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
-                {submission.answers?.length || 0}
+                {submission.totalScore !== undefined && submission.maxScore
+                  ? `${submission.totalScore}/${submission.maxScore}`
+                  : 'N/A'}
               </div>
-              <div className="text-xs text-gray-500 dark:text-muted-foreground">Answers</div>
+              <div className="text-xs text-gray-500 dark:text-muted-foreground">Points</div>
             </div>
           </div>
 
           {isExpanded && (
             <div className="space-y-4 border-t pt-4">
-              {!submissionDetails ? (
+              {detailsLoading ? (
                 <div className="text-center py-4">
                   <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto mb-2"></div>
                   <p className="text-sm text-gray-600 dark:text-muted-foreground">Loading answers...</p>
+                </div>
+              ) : detailsError ? (
+                <div className="text-center py-4">
+                  <p className="text-sm text-red-600 dark:text-red-400">Error loading submission details: {detailsError.message}</p>
+                </div>
+              ) : !submissionDetails ? (
+                <div className="text-center py-4">
+                  <p className="text-sm text-gray-600 dark:text-muted-foreground">No submission details available.</p>
                 </div>
               ) : (
                 <div className="space-y-4">
