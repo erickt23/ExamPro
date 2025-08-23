@@ -135,6 +135,9 @@ export default function ExamResults() {
   };
 
   const formatAnswer = (answer: any, questionType: string): React.ReactNode => {
+    // Debug log to track answer data retrieval and formatting
+    console.log('formatAnswer called with:', { answer, questionType, answerType: typeof answer });
+    
     // Check for truly empty answers
     if (answer === null || answer === undefined || answer === '') {
       return <span className="text-gray-500 italic">No answer provided</span>;

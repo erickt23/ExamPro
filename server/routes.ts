@@ -815,6 +815,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const question = await storage.getQuestionById(answer.questionId);
         if (!question) continue;
 
+        // Log answer data for debugging
+        console.log(`Processing answer for question ${answer.questionId}:`, {
+          questionType: question.questionType,
+          answerText: answer.answerText,
+          selectedOption: answer.selectedOption,
+          answerLength: answer.answerText?.length || 0
+        });
+
         let score = 0;
         maxScore += question.points;
 
@@ -962,6 +970,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
           linkUrl: answer.linkUrl || null,
           score: score.toString(),
           maxScore: question.points.toString(),
+        });
+
+        // Log the stored answer for verification
+        console.log(`Answer stored for question ${answer.questionId}:`, {
+          answerText: createdAnswer.answerText,
+          score: createdAnswer.score,
+          maxScore: createdAnswer.maxScore
         });
 
         // Set ACL policy on uploaded files
