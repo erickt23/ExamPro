@@ -135,8 +135,11 @@ export default function ExamResults() {
   };
 
   const formatAnswer = (answer: any, questionType: string): React.ReactNode => {
-    // Check for null, undefined, empty string, empty object, or empty array
-    if (!answer || answer === '' || answer === null || answer === undefined) {
+    // Debug log to understand the data structure
+    console.log('formatAnswer called with:', { answer, questionType, answerType: typeof answer });
+    
+    // Check for truly empty answers
+    if (answer === null || answer === undefined || answer === '') {
       return <span className="text-gray-500 italic">No answer provided</span>;
     }
     
@@ -147,6 +150,11 @@ export default function ExamResults() {
     
     if (Array.isArray(answer) && answer.length === 0) {
       return <span className="text-gray-500 italic">No answer provided</span>;
+    }
+    
+    // Handle false, 0, and other falsy values that might be valid answers
+    if (answer === false || answer === 0) {
+      return <span>{String(answer)}</span>;
     }
     
     try {
@@ -173,6 +181,17 @@ export default function ExamResults() {
           }
           return <span>{String(answer)}</span>;
         case 'matching':
+          // Helper function to extract text from objects
+          const extractText = (item: any): string => {
+            if (!item) return '';
+            if (typeof item === 'string') return item;
+            if (typeof item === 'object') {
+              // Try common text properties
+              return item.text || item.label || item.name || item.value || item.content || String(item);
+            }
+            return String(item);
+          };
+
           // Handle string JSON
           if (typeof answer === 'string') {
             try {
@@ -180,9 +199,9 @@ export default function ExamResults() {
               if (typeof parsed === 'object' && parsed !== null) {
                 return Object.entries(parsed).map(([left, right], i) => (
                   <div key={i} className="flex items-center gap-2 mb-1">
-                    <span className="font-medium">{String(left)}</span>
+                    <span className="font-medium">{extractText(left)}</span>
                     <span>→</span>
-                    <span>{String(right)}</span>
+                    <span>{extractText(right)}</span>
                   </div>
                 ));
               }
@@ -194,9 +213,9 @@ export default function ExamResults() {
                   const [left, right] = pair.split(':');
                   return (
                     <div key={i} className="flex items-center gap-2 mb-1">
-                      <span className="font-medium">{String(left)}</span>
+                      <span className="font-medium">{extractText(left)}</span>
                       <span>→</span>
-                      <span>{String(right)}</span>
+                      <span>{extractText(right)}</span>
                     </div>
                   );
                 });
@@ -208,9 +227,9 @@ export default function ExamResults() {
           if (typeof answer === 'object' && answer !== null) {
             return Object.entries(answer).map(([left, right], i) => (
               <div key={i} className="flex items-center gap-2 mb-1">
-                <span className="font-medium">{String(left)}</span>
+                <span className="font-medium">{extractText(left)}</span>
                 <span>→</span>
-                <span>{String(right)}</span>
+                <span>{extractText(right)}</span>
               </div>
             ));
           }
@@ -220,15 +239,15 @@ export default function ExamResults() {
               if (typeof pair === 'object' && pair.left && pair.right) {
                 return (
                   <div key={i} className="flex items-center gap-2 mb-1">
-                    <span className="font-medium">{String(pair.left)}</span>
+                    <span className="font-medium">{extractText(pair.left)}</span>
                     <span>→</span>
-                    <span>{String(pair.right)}</span>
+                    <span>{extractText(pair.right)}</span>
                   </div>
                 );
               }
               return (
                 <div key={i} className="flex items-center gap-2 mb-1">
-                  <span>{String(pair)}</span>
+                  <span>{extractText(pair)}</span>
                 </div>
               );
             });
@@ -411,7 +430,7 @@ export default function ExamResults() {
                             Student's Answer:
                           </div>
                           <div className="space-y-1">
-                            {formatAnswer(answer.studentAnswer, answer.question?.questionType)}
+                            {formatAnswer(answer.answer || answer.studentAnswer, answer.question?.questionType)}
                           </div>
                         </div>
                         
