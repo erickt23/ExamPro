@@ -158,14 +158,30 @@ export default function ExamResults() {
             try {
               const parsed = JSON.parse(answer);
               if (typeof parsed === 'object' && parsed !== null) {
-                return Object.entries(parsed).map(([left, right], i) => (
-                  <div key={i} className="text-sm mb-1">
-                    <span className="font-medium">{left}</span> → <span>{String(right)}</span>
-                  </div>
-                ));
+                return Object.entries(parsed).map(([left, right], i) => {
+                  // Handle both string keys and object values
+                  const leftText = typeof left === 'object' ? JSON.stringify(left) : String(left);
+                  const rightText = typeof right === 'object' ? JSON.stringify(right) : String(right);
+                  return (
+                    <div key={i} className="text-sm mb-1">
+                      <span className="font-medium">{leftText}</span> → <span>{rightText}</span>
+                    </div>
+                  );
+                });
               }
             } catch (e) {
-              // Fallback for malformed JSON
+              // Try as a simple string mapping like "0:1,1:2"
+              if (answer.includes(':') && answer.includes(',')) {
+                const pairs = answer.split(',');
+                return pairs.map((pair, i) => {
+                  const [left, right] = pair.split(':');
+                  return (
+                    <div key={i} className="text-sm mb-1">
+                      <span className="font-medium">Item {left}</span> → <span>Option {right}</span>
+                    </div>
+                  );
+                });
+              }
               return answer;
             }
           }
@@ -191,11 +207,15 @@ export default function ExamResults() {
             try {
               const parsed = JSON.parse(answer);
               if (typeof parsed === 'object' && parsed !== null) {
-                return Object.entries(parsed).map(([zone, item], i) => (
-                  <div key={i} className="text-sm mb-1">
-                    <span className="font-medium">{zone}:</span> <span>{String(item)}</span>
-                  </div>
-                ));
+                return Object.entries(parsed).map(([zone, item], i) => {
+                  const zoneText = typeof zone === 'object' ? JSON.stringify(zone) : String(zone);
+                  const itemText = typeof item === 'object' ? JSON.stringify(item) : String(item);
+                  return (
+                    <div key={i} className="text-sm mb-1">
+                      <span className="font-medium">{zoneText}:</span> <span>{itemText}</span>
+                    </div>
+                  );
+                });
               }
             } catch (e) {
               return answer;
@@ -214,7 +234,15 @@ export default function ExamResults() {
     const isExpanded = expandedSubmission === submission.id;
     
     // Log submission data for debugging
-    console.log('Submission data:', submission);
+    console.log('Submission data:', {
+      id: submission.id,
+      studentId: submission.studentId,
+      timeTaken: submission.timeTaken,
+      totalScore: submission.totalScore,
+      maxScore: submission.maxScore,
+      status: submission.status,
+      student: submission.student
+    });
     
     // Fetch submission details with answers when expanded
     const { data: submissionDetails, isLoading: detailsLoading, error: detailsError } = useQuery({
@@ -240,7 +268,9 @@ export default function ExamResults() {
                 <Users className="h-4 w-4 text-blue-600 dark:text-blue-400" />
               </div>
               <div>
-                <h4 className="font-semibold text-gray-900 dark:text-foreground">{submission.studentName || 'Student'}</h4>
+                <h4 className="font-semibold text-gray-900 dark:text-foreground">
+                  {submission.student ? `${submission.student.firstName} ${submission.student.lastName}` : 'Student'}
+                </h4>
                 <p className="text-sm text-gray-500 dark:text-muted-foreground">
                   ID: {submission.studentId} | Submitted: {submission.submittedAt ? new Date(submission.submittedAt).toLocaleString() : 'Not submitted'}
                 </p>
