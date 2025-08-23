@@ -276,6 +276,63 @@ export const en = {
     cannotStartExam: 'Cannot Start Exam'
   },
 
+  // Student Dashboard
+  studentDashboard: {
+    title: 'Student Dashboard',
+    welcomeBack: 'Welcome back! Here\'s your academic overview.',
+    availableExams: 'Available Exams',
+    completed: 'Completed',
+    upcoming: 'Upcoming',
+    averageScore: 'Average Score',
+    awaitingGrading: 'Awaiting grading',
+    exams: 'Exams',
+    recentHomework: 'Recent Homework',
+    available: 'Available',
+    start: 'Start',
+    due: 'Due',
+    noPendingHomework: 'No pending homework',
+    allAssignmentsUpToDate: 'All assignments are up to date',
+    loading: 'Loading...',
+    minutes: 'minutes'
+  },
+
+  // Student Grades
+  studentGrades: {
+    title: 'Grades & Feedback',
+    description: 'View your exam results and instructor feedback',
+    overallAverage: 'Overall Average',
+    completedExams: 'Completed Exams',
+    highestScore: 'Highest Score', 
+    pendingResults: 'Pending Results',
+    awaitingGrading: 'awaiting grading',
+    ofTotal: 'of {total} total',
+    gradeHistory: 'Grade History',
+    completed: 'Completed:',
+    duration: 'Duration:',
+    timeLimit: 'Time Limit:',
+    invalidDuration: 'Invalid duration',
+    unknown: 'Unknown',
+    started: 'Started',
+    timeUsed: 'Time Used',
+    min: 'min',
+    noGradesYet: 'No grades yet',
+    completeExamToSeeGrades: 'Complete an exam to see your grades here',
+    inProgress: 'In Progress',
+    lateSubmission: 'Late Submission',
+    pending: 'Pending',
+    attemptNumber: 'Attempt #{number}'
+  },
+
+  // Student Homework
+  studentHomework: {
+    title: 'Homework Assignments',
+    description: 'Practice with homework assignments to strengthen your understanding',
+    allSubjects: 'All Subjects',
+    noHomeworkFound: 'No homework assignments found',
+    checkBackLater: 'Check back later for new homework assignments',
+    adjustSearchCriteria: 'Try adjusting your search criteria'
+  },
+
   // Grading Center
   grading: {
     title: 'Grade Review',

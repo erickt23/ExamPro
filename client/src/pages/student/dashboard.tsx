@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useLocation } from "wouter";
 import { formatSubmissionTime, formatSubmissionDuration, getExamStatus, formatEasternTime } from "@/lib/dateUtils";
 import Navbar from "@/components/layout/navbar";
@@ -24,6 +25,7 @@ import {
 export default function StudentDashboard() {
   const { toast } = useToast();
   const { user, isAuthenticated, isLoading } = useAuth();
+  const { t } = useTranslation();
   const [, setLocation] = useLocation();
 
   // Redirect if not authenticated
@@ -74,7 +76,7 @@ export default function StudentDashboard() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading...</p>
+          <p className="text-muted-foreground">{t('studentDashboard.loading')}</p>
         </div>
       </div>
     );
@@ -206,8 +208,8 @@ export default function StudentDashboard() {
         <main className="flex-1 overflow-y-auto">
           <div className="p-6">
             <div className="mb-8">
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">Student Dashboard</h1>
-              <p className="text-gray-600">Welcome back! Here's your academic overview.</p>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">{t('studentDashboard.title')}</h1>
+              <p className="text-gray-600">{t('studentDashboard.welcomeBack')}</p>
             </div>
 
             {/* Stats Cards */}
@@ -219,7 +221,7 @@ export default function StudentDashboard() {
                       <FileText className="h-6 w-6 text-blue-600" />
                     </div>
                     <div className="ml-4">
-                      <p className="text-sm font-medium text-gray-600">Available Exams</p>
+                      <p className="text-sm font-medium text-gray-600">{t('studentDashboard.availableExams')}</p>
                       <p className="text-2xl font-bold text-gray-900">{availableExams.length}</p>
                     </div>
                   </div>
@@ -233,7 +235,7 @@ export default function StudentDashboard() {
                       <CheckCircle className="h-6 w-6 text-green-600" />
                     </div>
                     <div className="ml-4">
-                      <p className="text-sm font-medium text-gray-600">Completed</p>
+                      <p className="text-sm font-medium text-gray-600">{t('studentDashboard.completed')}</p>
                       <p className="text-2xl font-bold text-gray-900">{completedExams.length}</p>
                     </div>
                   </div>
@@ -247,7 +249,7 @@ export default function StudentDashboard() {
                       <Clock className="h-6 w-6 text-yellow-600" />
                     </div>
                     <div className="ml-4">
-                      <p className="text-sm font-medium text-gray-600">Upcoming</p>
+                      <p className="text-sm font-medium text-gray-600">{t('studentDashboard.upcoming')}</p>
                       <p className="text-2xl font-bold text-gray-900">{upcomingExams.length}</p>
                     </div>
                   </div>
@@ -261,14 +263,14 @@ export default function StudentDashboard() {
                       <TrendingUp className="h-6 w-6 text-purple-600" />
                     </div>
                     <div className="ml-4">
-                      <p className="text-sm font-medium text-gray-600">Average Score</p>
+                      <p className="text-sm font-medium text-gray-600">{t('studentDashboard.averageScore')}</p>
                       <p className="text-2xl font-bold text-gray-900">
                         {completedSubmissions.length > 0 ? `${averageScore.toFixed(1)}%` : 'N/A'}
                       </p>
                     </div>
                   </div>
                   <div className="mt-4 flex items-center text-sm">
-                    <span className="text-gray-500">Awaiting grading</span>
+                    <span className="text-gray-500">{t('studentDashboard.awaitingGrading')}</span>
                   </div>
                 </CardContent>
               </Card>
@@ -281,7 +283,7 @@ export default function StudentDashboard() {
                 <CardHeader>
                   <CardTitle className="flex items-center">
                     <Calendar className="h-5 w-5 mr-2" />
-                    Exams
+                    {t('studentDashboard.exams')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -302,7 +304,7 @@ export default function StudentDashboard() {
                                 {exam.examStatus.label}
                               </Badge>
                             </div>
-                            <p className="text-sm text-gray-600">{(subjects as any[]).find((s: any) => s.id === exam.subjectId)?.name || 'Unknown Subject'} • {exam.duration} minutes</p>
+                            <p className="text-sm text-gray-600">{(subjects as any[]).find((s: any) => s.id === exam.subjectId)?.name || 'Unknown Subject'} • {exam.duration} {t('studentDashboard.minutes')}</p>
                             {exam.availableFrom && exam.examStatus.status === 'upcoming' && (
                               <p className="text-xs text-gray-500 mt-1">
                                 Available: {formatEasternTime(exam.availableFrom, { includeDate: true, includeTime: true, format: 'medium' })}
@@ -310,7 +312,7 @@ export default function StudentDashboard() {
                             )}
                             {exam.availableUntil && (
                               <p className="text-xs text-gray-500 mt-1">
-                                Due: {formatEasternTime(exam.availableUntil, { includeDate: true, includeTime: true, format: 'medium' })}
+                                {t('studentDashboard.due')}: {formatEasternTime(exam.availableUntil, { includeDate: true, includeTime: true, format: 'medium' })}
                               </p>
                             )}
                           </div>
@@ -318,7 +320,7 @@ export default function StudentDashboard() {
                             {exam.examStatus.canStart ? (
                               <Button size="sm" onClick={() => handleStartExam(exam)} className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-md hover:shadow-lg transition-all duration-200 transform hover:scale-105">
                                 <Play className="h-4 w-4 mr-1" />
-                                Start
+                                {t('studentDashboard.start')}
                               </Button>
                             ) : (
                               <div className="text-sm text-gray-500">
@@ -338,15 +340,15 @@ export default function StudentDashboard() {
                 <CardHeader>
                   <CardTitle className="flex items-center">
                     <BookOpen className="h-5 w-5 mr-2" />
-                    Recent Homework
+                    {t('studentDashboard.recentHomework')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
                   {recentHomework.length === 0 ? (
                     <div className="text-center py-8">
                       <BookOpen className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                      <p className="text-gray-500">No pending homework</p>
-                      <p className="text-sm text-gray-400">All assignments are up to date</p>
+                      <p className="text-gray-500">{t('studentDashboard.noPendingHomework')}</p>
+                      <p className="text-sm text-gray-400">{t('studentDashboard.allAssignmentsUpToDate')}</p>
                     </div>
                   ) : (
                     <div className="space-y-4">

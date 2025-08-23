@@ -274,6 +274,63 @@ export const fr = {
     cannotStartExam: 'Impossible de Commencer l\'Examen'
   },
 
+  // Student Dashboard
+  studentDashboard: {
+    title: 'Tableau de Bord Étudiant',
+    welcomeBack: 'Bon retour ! Voici votre aperçu académique.',
+    availableExams: 'Examens Disponibles',
+    completed: 'Terminés',
+    upcoming: 'À Venir',
+    averageScore: 'Score Moyen',
+    awaitingGrading: 'En attente de notation',
+    exams: 'Examens',
+    recentHomework: 'Devoirs Récents',
+    available: 'Disponible',
+    start: 'Commencer',
+    due: 'Échéance',
+    noPendingHomework: 'Aucun devoir en attente',
+    allAssignmentsUpToDate: 'Tous les devoirs sont à jour',
+    loading: 'Chargement...',
+    minutes: 'minutes'
+  },
+
+  // Student Grades
+  studentGrades: {
+    title: 'Notes et Commentaires',
+    description: 'Consultez vos résultats d\'examen et les commentaires de l\'instructeur',
+    overallAverage: 'Moyenne Générale',
+    completedExams: 'Examens Terminés',
+    highestScore: 'Score le Plus Élevé',
+    pendingResults: 'Résultats en Attente',
+    awaitingGrading: 'en attente de notation',
+    ofTotal: 'sur {total} au total',
+    gradeHistory: 'Historique des Notes',
+    completed: 'Terminé :',
+    duration: 'Durée :',
+    timeLimit: 'Limite de Temps :',
+    invalidDuration: 'Durée invalide',
+    unknown: 'Inconnu',
+    started: 'Commencé',
+    timeUsed: 'Temps Utilisé',
+    min: 'min',
+    noGradesYet: 'Pas encore de notes',
+    completeExamToSeeGrades: 'Terminez un examen pour voir vos notes ici',
+    inProgress: 'En Cours',
+    lateSubmission: 'Soumission Tardive',
+    pending: 'En Attente',
+    attemptNumber: 'Tentative #{number}'
+  },
+
+  // Student Homework
+  studentHomework: {
+    title: 'Devoirs à Domicile',
+    description: 'Pratiquez avec les devoirs pour renforcer votre compréhension',
+    allSubjects: 'Toutes les Matières',
+    noHomeworkFound: 'Aucun devoir trouvé',
+    checkBackLater: 'Revenez plus tard pour de nouveaux devoirs',
+    adjustSearchCriteria: 'Essayez d\'ajuster vos critères de recherche'
+  },
+
   // Grading Center
   grading: {
     title: 'Révision des Notes',

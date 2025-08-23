@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "@/hooks/useTranslation";
 import { formatSubmissionTime, formatSubmissionDuration, formatDetailedSubmissionTime } from "@/lib/dateUtils";
 import Navbar from "@/components/layout/navbar";
 import Sidebar from "@/components/layout/sidebar";
@@ -22,6 +23,7 @@ import {
 export default function StudentGrades() {
   const { toast } = useToast();
   const { user, isAuthenticated, isLoading } = useAuth();
+  const { t } = useTranslation();
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -53,7 +55,7 @@ export default function StudentGrades() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading...</p>
+          <p className="text-muted-foreground">{t('studentGrades.loading')}</p>
         </div>
       </div>
     );
@@ -115,8 +117,8 @@ export default function StudentGrades() {
         <main className="flex-1 overflow-y-auto">
           <div className="p-6">
             <div className="mb-6">
-              <h2 className="text-2xl font-bold text-gray-900">Grades & Feedback</h2>
-              <p className="text-gray-600 mt-1">View your exam results and instructor feedback</p>
+              <h2 className="text-2xl font-bold text-gray-900">{t('studentGrades.title')}</h2>
+              <p className="text-gray-600 mt-1">{t('studentGrades.description')}</p>
             </div>
 
             {/* Grade Summary */}
@@ -125,7 +127,7 @@ export default function StudentGrades() {
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-gray-600">Overall Average</p>
+                      <p className="text-sm font-medium text-gray-600">{t('studentGrades.overallAverage')}</p>
                       <p className={`text-2xl font-bold ${getScoreColor(overallAverage)}`}>
                         {overallAverage.toFixed(1)}%
                       </p>
@@ -141,12 +143,12 @@ export default function StudentGrades() {
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-gray-600">Completed Exams</p>
+                      <p className="text-sm font-medium text-gray-600">{t('studentGrades.completedExams')}</p>
                       <p className="text-2xl font-bold text-gray-900">
                         {completedGrades.length}
                       </p>
                       <p className="text-sm text-gray-500 mt-1">
-                        of {gradesData.length} total
+                        {t('studentGrades.ofTotal', { total: gradesData.length })}
                       </p>
                     </div>
                     <div className="p-3 bg-green-100 rounded-lg">
@@ -160,7 +162,7 @@ export default function StudentGrades() {
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-gray-600">Highest Score</p>
+                      <p className="text-sm font-medium text-gray-600">{t('studentGrades.highestScore')}</p>
                       <p className="text-2xl font-bold text-green-600">
                         {completedGrades.length > 0 ? 
                           Math.max(...completedGrades.map((g: any) => 
@@ -180,12 +182,12 @@ export default function StudentGrades() {
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-gray-600">Pending Results</p>
+                      <p className="text-sm font-medium text-gray-600">{t('studentGrades.pendingResults')}</p>
                       <p className="text-2xl font-bold text-gray-900">
                         {gradesData.filter((g: any) => g.status === 'submitted').length}
                       </p>
                       <p className="text-sm text-gray-500 mt-1">
-                        awaiting grading
+                        {t('studentGrades.awaitingGrading')}
                       </p>
                     </div>
                     <div className="p-3 bg-purple-100 rounded-lg">
@@ -199,7 +201,7 @@ export default function StudentGrades() {
             {/* Grade History */}
             <Card className="mb-6">
               <CardHeader>
-                <CardTitle>Grade History</CardTitle>
+                <CardTitle>{t('studentGrades.gradeHistory')}</CardTitle>
               </CardHeader>
               <CardContent>
                 {submissionsLoading ? (
@@ -214,8 +216,8 @@ export default function StudentGrades() {
                 ) : gradesData.length === 0 ? (
                   <div className="text-center py-12">
                     <Star className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <p className="text-gray-500 text-lg mb-2">No grades yet</p>
-                    <p className="text-gray-400">Complete an exam to see your grades here</p>
+                    <p className="text-gray-500 text-lg mb-2">{t('studentGrades.noGradesYet')}</p>
+                    <p className="text-gray-400">{t('studentGrades.completeExamToSeeGrades')}</p>
                   </div>
                 ) : (
                   <div className="space-y-4">
@@ -239,7 +241,7 @@ export default function StudentGrades() {
                                     </Badge>
                                     {grade.isHighestScore && (
                                       <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100">
-                                        Highest Score
+                                        {t('studentGrades.highestScore')}
                                       </Badge>
                                     )}
                                     {grade.attemptNumber > 1 && (
@@ -255,23 +257,23 @@ export default function StudentGrades() {
                                 <span className="flex items-center">
                                   <Calendar className="h-3 w-3 mr-1" />
                                   {grade.submittedAt ? 
-                                    `Completed: ${formatSubmissionTime(grade.submittedAt)}` : 
+                                    `${t('studentGrades.completed')} ${formatSubmissionTime(grade.submittedAt)}` : 
                                     grade.startedAt ? 
-                                      `Started: ${formatSubmissionTime(grade.startedAt)}` :
-                                      'In Progress'
+                                      `${t('studentGrades.started')}: ${formatSubmissionTime(grade.startedAt)}` :
+                                      t('studentGrades.inProgress')
                                   }
                                 </span>
                                 {grade.startedAt && grade.submittedAt && (
                                   <span className="flex items-center">
                                     <Clock className="h-3 w-3 mr-1" />
-                                    Duration: {formatSubmissionDuration(grade.startedAt, grade.submittedAt)}
+                                    {t('studentGrades.duration')} {formatSubmissionDuration(grade.startedAt, grade.submittedAt)}
                                   </span>
                                 )}
                                 {grade.exam?.duration && (
-                                  <span>Time Limit: {grade.exam.duration} min</span>
+                                  <span>{t('studentGrades.timeLimit')}: {grade.exam.duration} {t('studentGrades.min')}</span>
                                 )}
                                 {grade.isLate && (
-                                  <span className="text-red-500 font-medium">Late Submission</span>
+                                  <span className="text-red-500 font-medium">{t('studentGrades.lateSubmission')}</span>
                                 )}
                               </div>
                             </div>
@@ -295,9 +297,9 @@ export default function StudentGrades() {
                               ) : (
                                 <div className="text-center">
                                   <Badge variant="secondary">
-                                    {grade.status === 'submitted' ? 'Pending' : 
-                                     grade.status === 'in_progress' ? 'In Progress' : 
-                                     'Unknown'}
+                                    {grade.status === 'submitted' ? t('studentGrades.pending') : 
+                                     grade.status === 'in_progress' ? t('studentGrades.inProgress') : 
+                                     t('studentGrades.unknown')}
                                   </Badge>
                                 </div>
                               )}
@@ -309,7 +311,7 @@ export default function StudentGrades() {
                             <div className="mt-4 pt-4 border-t border-gray-100">
                               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                                 <div>
-                                  <p className="text-gray-600 font-medium mb-1">Started</p>
+                                  <p className="text-gray-600 font-medium mb-1">{t('studentGrades.started')}</p>
                                   <p className="text-gray-900">
                                     {grade.startedAt ? formatDetailedSubmissionTime(grade.startedAt) : 'N/A'}
                                   </p>

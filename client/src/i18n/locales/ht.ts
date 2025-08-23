@@ -274,6 +274,63 @@ export const ht = {
     cannotStartExam: 'Pa ka Kòmanse Egzamen'
   },
 
+  // Student Dashboard
+  studentDashboard: {
+    title: 'Tablo Jesyon Elèv',
+    welcomeBack: 'Byenvini tounen! Men rezime travay lekòl ou a.',
+    availableExams: 'Egzamen ki Disponib yo',
+    completed: 'Ki Fini yo',
+    upcoming: 'Ki ap Vini yo',
+    averageScore: 'Nòt Mwayèn',
+    awaitingGrading: 'Y ap tann yo kòrije',
+    exams: 'Egzamen yo',
+    recentHomework: 'Devwa Lakay ki Fèk Fèt yo',
+    available: 'Disponib',
+    start: 'Kòmanse',
+    due: 'Dat Limit',
+    noPendingHomework: 'Pa gen devwa lakay k ap tann',
+    allAssignmentsUpToDate: 'Tout devwa yo ajou',
+    loading: 'Y ap Chaje...',
+    minutes: 'minit'
+  },
+
+  // Student Grades
+  studentGrades: {
+    title: 'Nòt ak Kòmantè',
+    description: 'Gade rezilta egzamen ou yo ak kòmantè pwofesè a',
+    overallAverage: 'Mwayèn Jeneral',
+    completedExams: 'Egzamen ki Fini yo',
+    highestScore: 'Nòt ki pi Wo a',
+    pendingResults: 'Rezilta k ap Tann yo',
+    awaitingGrading: 'y ap tann yo kòrije',
+    ofTotal: 'sou {total} antotal',
+    gradeHistory: 'Istwa Nòt yo',
+    completed: 'Fini:',
+    duration: 'Dire:',
+    timeLimit: 'Limit Tan:',
+    invalidDuration: 'Dire ki pa valab',
+    unknown: 'Pa Konnen',
+    started: 'Kòmanse',
+    timeUsed: 'Tan ki Itilize',
+    min: 'min',
+    noGradesYet: 'Poko gen nòt',
+    completeExamToSeeGrades: 'Fini yon egzamen pou wè nòt ou yo isit la',
+    inProgress: 'Y ap Fèt',
+    lateSubmission: 'Soumisyon An Reta',
+    pending: 'K ap Tann',
+    attemptNumber: 'Eseye #{number}'
+  },
+
+  // Student Homework
+  studentHomework: {
+    title: 'Devwa Lakay',
+    description: 'Pratike ak devwa lakay yo pou ranfòse konprann ou an',
+    allSubjects: 'Tout Matye yo',
+    noHomeworkFound: 'Pa gen devwa lakay yo jwenn',
+    checkBackLater: 'Tounen pi ta pou nouvo devwa lakay yo',
+    adjustSearchCriteria: 'Eseye ajiste kritè rechèch ou yo'
+  },
+
   // Grading Center
   grading: {
     title: 'Revizyon Nòt yo',

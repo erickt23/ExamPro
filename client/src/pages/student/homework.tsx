@@ -145,10 +145,10 @@ export default function StudentHomework() {
               <div>
                 <h1 className="text-3xl font-bold flex items-center gap-2">
                   <BookOpen className="h-8 w-8" />
-                  Homework Assignments
+                  {t('studentHomework.title')}
                 </h1>
                 <p className="text-gray-600 mt-1">
-                  Practice with homework assignments to strengthen your understanding
+                  {t('studentHomework.description')}
                 </p>
               </div>
             </div>
@@ -172,7 +172,7 @@ export default function StudentHomework() {
                       <SelectValue placeholder="All Subjects" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">All Subjects</SelectItem>
+                      <SelectItem value="all">{t('studentHomework.allSubjects')}</SelectItem>
                       {subjects.map((subject) => (
                         <SelectItem key={subject.id} value={subject.id.toString()}>
                           {subject.name}
@@ -195,11 +195,11 @@ export default function StudentHomework() {
                   <Card>
                     <CardContent className="text-center py-12">
                       <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                      <h3 className="text-lg font-medium text-gray-600 mb-2">No homework assignments found</h3>
+                      <h3 className="text-lg font-medium text-gray-600 mb-2">{t('studentHomework.noHomeworkFound')}</h3>
                       <p className="text-gray-500">
                         {searchTerm || subjectFilter !== "all" 
-                          ? "Try adjusting your search criteria"
-                          : "Check back later for new homework assignments"
+                          ? t('studentHomework.adjustSearchCriteria')
+                          : t('studentHomework.checkBackLater')
                         }
                       </p>
                     </CardContent>
