@@ -380,7 +380,7 @@ export default function StudentExamTaking() {
             placeholder={t('examTaking.enterYourAnswer')}
             value={answer || ''}
             onChange={(e) => handleAnswerChange(question.questionId, e.target.value)}
-            className="w-full text-base"
+            className="w-full text-base h-12 sm:h-10"
           />
         );
 
@@ -390,7 +390,7 @@ export default function StudentExamTaking() {
             placeholder={t('examTaking.writeYourEssay')}
             value={answer || ''}
             onChange={(e) => handleAnswerChange(question.questionId, e.target.value)}
-            className="w-full min-h-[200px] text-base leading-relaxed"
+            className="w-full min-h-[150px] sm:min-h-[200px] text-base leading-relaxed"
           />
         );
 
@@ -420,8 +420,8 @@ export default function StudentExamTaking() {
         const currentAnswers = Array.isArray(answer) ? answer : [];
         
         return (
-          <div className="space-y-4">
-            <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
+          <div className="space-y-3 sm:space-y-4">
+            <div className="bg-blue-50 dark:bg-blue-900/20 p-3 sm:p-4 rounded-lg border border-blue-200 dark:border-blue-800">
               <p className="text-sm text-blue-800 dark:text-blue-200 mb-2">
                 <strong>{t('examTaking.instructions')}</strong> {t('examTaking.fillInBlankInstructions')}
               </p>
@@ -430,8 +430,8 @@ export default function StudentExamTaking() {
               </p>
             </div>
             {correctAnswers.map((_: string, index: number) => (
-              <div key={index} className="flex flex-col sm:flex-row sm:items-center gap-3 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border">
-                <Label className="text-sm font-medium sm:whitespace-nowrap sm:w-24">
+              <div key={index} className="space-y-2 sm:space-y-0 sm:flex sm:items-center sm:gap-3 p-3 sm:p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border">
+                <Label className="text-sm font-medium block sm:whitespace-nowrap sm:w-28">
                   {t('examTaking.blank', { number: index + 1 })}
                 </Label>
                 <Input
@@ -446,7 +446,7 @@ export default function StudentExamTaking() {
                     newAnswer[index] = e.target.value;
                     handleAnswerChange(question.questionId, newAnswer);
                   }}
-                  className="flex-1 text-base"
+                  className="flex-1 text-base h-12 sm:h-10"
                 />
               </div>
             ))}
@@ -943,31 +943,33 @@ export default function StudentExamTaking() {
           <Sidebar />
         </div>
         
-        <main className="flex-1 lg:ml-64 p-4 lg:p-6 w-full min-w-0">
+        <main className="flex-1 lg:ml-64 p-3 sm:p-4 lg:p-6 w-full min-w-0">
           <div className="max-w-4xl mx-auto w-full">
             {/* Exam Header */}
-            <div className="mb-6">
-              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-                <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
+            <div className="mb-4 sm:mb-6">
+              {/* Mobile-First Header Layout */}
+              <div className="space-y-3 sm:space-y-4">
+                {/* Top Row: Back Button + Title */}
+                <div className="flex items-start gap-3">
                   <Link href="/exams">
-                    <Button variant="ghost" size="sm">
-                      <ArrowLeft className="h-4 w-4 mr-2" />
-                      <span className="hidden sm:inline">{t('examTaking.backToExams')}</span>
-                      <span className="sm:hidden">{t('examTaking.back')}</span>
+                    <Button variant="ghost" size="sm" className="flex-shrink-0 h-9 px-3">
+                      <ArrowLeft className="h-4 w-4 mr-1 sm:mr-2" />
+                      <span className="text-sm">{t('examTaking.back')}</span>
                     </Button>
                   </Link>
-                  <div>
-                    <h1 className="text-xl lg:text-2xl font-bold text-foreground dark:text-foreground line-clamp-2">{exam.title}</h1>
-                    <p className="text-muted-foreground text-sm">
+                  <div className="flex-1 min-w-0">
+                    <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-foreground dark:text-foreground leading-tight">{exam.title}</h1>
+                    <p className="text-muted-foreground text-sm mt-1">
                       {t('examTaking.questionOf', { current: currentQuestionIndex + 1, total: questions.length })}
                     </p>
                   </div>
                 </div>
                 
-                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
+                {/* Bottom Row: Timer + Save Button */}
+                <div className="flex items-center justify-between gap-3">
                   {exam && exam.duration && exam.duration > 0 ? (
                     timeRemaining !== null && timeRemaining > 0 ? (
-                      <div className={`flex items-center px-3 py-2 rounded-lg text-sm ${
+                      <div className={`flex items-center px-3 py-2 rounded-lg text-sm flex-1 max-w-fit ${
                         timeRemaining <= 30 
                           ? 'bg-red-600 text-white dark:bg-red-600 dark:text-white animate-pulse border-2 border-red-400' 
                           : timeRemaining < 300 
@@ -975,19 +977,19 @@ export default function StudentExamTaking() {
                             : 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-300'
                       }`}>
                         <Clock className={`h-4 w-4 mr-2 ${timeRemaining <= 30 ? 'animate-bounce' : ''}`} />
-                        <span className="font-mono font-bold">{formatTime(timeRemaining)}</span>
+                        <span className="font-mono font-bold text-base">{formatTime(timeRemaining)}</span>
                         {timeRemaining <= 30 && (
                           <AlertCircle className="h-4 w-4 ml-2 animate-pulse" />
                         )}
                       </div>
                     ) : (
-                      <div className="flex items-center px-3 py-2 rounded-lg text-sm bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-300">
+                      <div className="flex items-center px-3 py-2 rounded-lg text-sm bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-300 flex-1 max-w-fit">
                         <Clock className="h-4 w-4 mr-2" />
                         <span className="font-mono">{t('examTaking.loading')}</span>
                       </div>
                     )
                   ) : (
-                    <div className="flex items-center px-3 py-2 rounded-lg text-sm bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300">
+                    <div className="flex items-center px-3 py-2 rounded-lg text-sm bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-300 flex-1 max-w-fit">
                       <Clock className="h-4 w-4 mr-2" />
                       <span className="text-sm">{t('examTaking.noTimeLimit')}</span>
                     </div>
@@ -998,74 +1000,73 @@ export default function StudentExamTaking() {
                     variant="outline" 
                     size="sm"
                     disabled={saveProgressMutation.isPending}
-                    className="w-full sm:w-auto"
+                    className="flex-shrink-0 h-9 px-4"
                   >
                     <Save className="h-4 w-4 mr-2" />
-                    <span className="hidden sm:inline">{saveProgressMutation.isPending ? t('examTaking.saving') : t('examTaking.saveProgress')}</span>
-                    <span className="sm:hidden">{saveProgressMutation.isPending ? "..." : t('examTaking.save')}</span>
+                    <span className="text-sm">{saveProgressMutation.isPending ? t('examTaking.saving') : t('examTaking.saveProgress')}</span>
                   </Button>
                 </div>
               </div>
               
-              <Progress value={progress} className="mt-4" />
+              <Progress value={progress} className="mt-3 sm:mt-4" />
             </div>
 
             {/* Question Card */}
-            <Card>
-              <CardHeader className="pb-4">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <CardTitle className="flex items-center text-lg">
-                    <FileText className="h-5 w-5 mr-2 flex-shrink-0" />
-                    <span className="line-clamp-1">{t('examTaking.question', { number: currentQuestionIndex + 1 })}</span>
+            <Card className="overflow-hidden">
+              <CardHeader className="pb-3 sm:pb-4">
+                <div className="space-y-2 sm:space-y-0 sm:flex sm:items-center sm:justify-between">
+                  <CardTitle className="flex items-center text-base sm:text-lg">
+                    <FileText className="h-4 w-4 sm:h-5 sm:w-5 mr-2 flex-shrink-0" />
+                    <span className="line-clamp-2">{t('examTaking.question', { number: currentQuestionIndex + 1 })}</span>
                   </CardTitle>
-                  <Badge variant="secondary" className="self-start sm:self-center">
+                  <Badge variant="secondary" className="self-start sm:self-center text-sm">
                     {currentQuestion.points} {currentQuestion.points !== 1 ? t('examTaking.points') : t('examTaking.point')}
                   </Badge>
                 </div>
               </CardHeader>
-              <CardContent className="space-y-6">
+              <CardContent className="space-y-4 sm:space-y-6">
                 <div className="prose max-w-none">
-                  <p className="text-base lg:text-lg leading-relaxed">{currentQuestion.question.questionText}</p>
+                  <p className="text-base sm:text-base lg:text-lg leading-relaxed">{currentQuestion.question.questionText}</p>
                 </div>
 
-                <div className="mt-6">
+                <div className="mt-4 sm:mt-6">
                   {renderQuestion(currentQuestion)}
                 </div>
               </CardContent>
             </Card>
 
             {/* Navigation */}
-            <div className="flex flex-col sm:flex-row sm:justify-between items-center mt-6 gap-4">
+            <div className="mt-6 space-y-3 sm:space-y-0 sm:flex sm:justify-between sm:items-center">
               <Button
                 variant="outline"
                 onClick={() => setCurrentQuestionIndex(Math.max(0, currentQuestionIndex - 1))}
                 disabled={currentQuestionIndex === 0}
-                className="w-full sm:w-auto"
+                className="w-full sm:w-auto h-12 sm:h-10 text-base sm:text-sm"
               >
+                <ArrowLeft className="h-4 w-4 mr-2" />
                 <span className="hidden sm:inline">{t('examTaking.previousQuestion')}</span>
-                <span className="sm:hidden">Previous</span>
+                <span className="sm:hidden">{t('examTaking.previous')}</span>
               </Button>
 
-              <div className="flex flex-col sm:flex-row w-full sm:w-auto gap-3">
-                {currentQuestionIndex === questions.length - 1 ? (
-                  <Button
-                    onClick={handleSubmitExam}
-                    disabled={isSubmitting || submitExamMutation.isPending}
-                    className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 w-full sm:w-auto"
-                  >
-                    <Upload className="h-4 w-4 mr-2" />
-                    {isSubmitting || submitExamMutation.isPending ? t('examTaking.submitting') : t('examTaking.submitExam')}
-                  </Button>
-                ) : (
-                  <Button
-                    onClick={() => setCurrentQuestionIndex(Math.min(questions.length - 1, currentQuestionIndex + 1))}
-                    className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 w-full sm:w-auto"
-                  >
-                    <span className="hidden sm:inline">{t('examTaking.nextQuestion')}</span>
-                    <span className="sm:hidden">Next</span>
-                  </Button>
-                )}
-              </div>
+              {currentQuestionIndex === questions.length - 1 ? (
+                <Button
+                  onClick={handleSubmitExam}
+                  disabled={isSubmitting || submitExamMutation.isPending}
+                  className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 w-full sm:w-auto h-12 sm:h-10 text-base sm:text-sm font-medium"
+                >
+                  <Upload className="h-4 w-4 mr-2" />
+                  {isSubmitting || submitExamMutation.isPending ? t('examTaking.submitting') : t('examTaking.submitExam')}
+                </Button>
+              ) : (
+                <Button
+                  onClick={() => setCurrentQuestionIndex(Math.min(questions.length - 1, currentQuestionIndex + 1))}
+                  className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 w-full sm:w-auto h-12 sm:h-10 text-base sm:text-sm font-medium"
+                >
+                  <span className="hidden sm:inline">{t('examTaking.nextQuestion')}</span>
+                  <span className="sm:hidden">{t('examTaking.next')}</span>
+                  <ArrowLeft className="h-4 w-4 ml-2 rotate-180" />
+                </Button>
+              )}
             </div>
           </div>
         </main>
