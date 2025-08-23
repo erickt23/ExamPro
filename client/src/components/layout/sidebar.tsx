@@ -35,7 +35,8 @@ export default function Sidebar({ className }: SidebarProps) {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [expandedAccordions, setExpandedAccordions] = useState<{ [key: string]: boolean }>({
     examManagement: true,
-    assignmentManagement: true
+    assignmentManagement: true,
+    gradingCenter: true
   });
 
   const isInstructor = user?.role === 'instructor';
@@ -49,7 +50,8 @@ export default function Sidebar({ className }: SidebarProps) {
         // On mobile, always expand accordions when sidebar opens
         setExpandedAccordions({
           examManagement: true,
-          assignmentManagement: true
+          assignmentManagement: true,
+          gradingCenter: true
         });
       } else {
         setIsCollapsed(false);
