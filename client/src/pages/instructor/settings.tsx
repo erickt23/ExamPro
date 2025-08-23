@@ -579,25 +579,25 @@ export default function SettingsPage() {
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <Calculator className="h-5 w-5" />
-                      Global Grade Calculation Settings
+                      {t('settings.globalGradeCalculationSettings')}
                     </CardTitle>
-                    <p className="text-sm text-gray-600">
-                      These are the default coefficients used for all courses unless overridden by course-specific settings.
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      {t('settings.globalGradeDescription')}
                     </p>
                   </CardHeader>
                   <CardContent className="space-y-6">
                     <Alert>
                       <AlertCircle className="h-4 w-4" />
                       <AlertDescription>
-                        Final Grade = (Assignment Coefficient × Assignment Score) + (Exam Coefficient × Exam Score)
+                        {t('settings.finalGradeFormula')}
                         <br />
-                        Coefficients must sum to 1.0 (100%).
+                        {t('settings.coefficientsNote')}
                       </AlertDescription>
                     </Alert>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="space-y-2">
-                        <Label htmlFor="global-assignment">Assignment Coefficient</Label>
+                        <Label htmlFor="global-assignment">{t('settings.assignmentWeight')}</Label>
                         <Input
                           id="global-assignment"
                           type="number"
@@ -609,12 +609,12 @@ export default function SettingsPage() {
                           placeholder="0.40"
                         />
                         <p className="text-sm text-gray-500">
-                          Weight for assignments ({(globalSettings.assignmentCoefficient * 100).toFixed(0)}%)
+                          {t('settings.weightForAssignments', { percent: (globalSettings.assignmentCoefficient * 100).toFixed(0) })}
                         </p>
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor="global-exam">Exam Coefficient</Label>
+                        <Label htmlFor="global-exam">{t('settings.examWeight')}</Label>
                         <Input
                           id="global-exam"
                           type="number"
@@ -626,16 +626,16 @@ export default function SettingsPage() {
                           placeholder="0.60"
                         />
                         <p className="text-sm text-gray-500">
-                          Weight for exams ({(globalSettings.examCoefficient * 100).toFixed(0)}%)
+                          {t('settings.weightForExams', { percent: (globalSettings.examCoefficient * 100).toFixed(0) })}
                         </p>
                       </div>
                     </div>
 
                     <div className="flex items-center justify-between pt-4 border-t">
                       <div className="text-sm text-gray-500">
-                        Sum: {(globalSettings.assignmentCoefficient + globalSettings.examCoefficient).toFixed(2)}
+                        {t('settings.sum', { value: (globalSettings.assignmentCoefficient + globalSettings.examCoefficient).toFixed(2) })}
                         {(globalSettings.assignmentCoefficient + globalSettings.examCoefficient) !== 1 && (
-                          <span className="text-red-500 ml-2">Must equal 1.0</span>
+                          <span className="text-red-500 ml-2">{t('settings.mustEqual')}</span>
                         )}
                       </div>
                       <Button 
@@ -644,7 +644,7 @@ export default function SettingsPage() {
                         className="flex items-center gap-2"
                       >
                         <Save className="h-4 w-4" />
-                        {saveGlobalSettingsMutation.isPending ? "Saving..." : "Save Global Settings"}
+                        {saveGlobalSettingsMutation.isPending ? t('common.loading') : t('settings.saveGlobalSettings')}
                       </Button>
                     </div>
                   </CardContent>
@@ -656,27 +656,27 @@ export default function SettingsPage() {
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <BookOpen className="h-5 w-5" />
-                      Course-Specific Grade Settings
+                      {t('settings.courseSpecificGradeSettings')}
                     </CardTitle>
-                    <p className="text-sm text-gray-600">
-                      Override global settings for specific courses. Courses without custom settings will use global defaults.
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      {t('settings.courseSpecificDescription')}
                     </p>
                   </CardHeader>
                   <CardContent>
                     {!subjects || !Array.isArray(subjects) || subjects.length === 0 ? (
                       <div className="text-center py-8 text-gray-500">
                         <BookOpen className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                        <p>No courses available</p>
-                        <p className="text-sm mt-2">Create some courses to configure course-specific settings</p>
+                        <p>{t('settings.noCoursesAvailable')}</p>
+                        <p className="text-sm mt-2">{t('settings.createCoursesToConfigure')}</p>
                       </div>
                     ) : (
                       <Table>
                         <TableHeader>
                           <TableRow>
-                            <TableHead>Course</TableHead>
-                            <TableHead>Assignment Coefficient</TableHead>
-                            <TableHead>Exam Coefficient</TableHead>
-                            <TableHead>Actions</TableHead>
+                            <TableHead>{t('settings.course')}</TableHead>
+                            <TableHead>{t('settings.assignmentWeight')}</TableHead>
+                            <TableHead>{t('settings.examWeight')}</TableHead>
+                            <TableHead>{t('common.actions')}</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -734,7 +734,7 @@ export default function SettingsPage() {
                                     className="flex items-center gap-1"
                                   >
                                     <Save className="h-3 w-3" />
-                                    Save
+                                    {t('common.save')}
                                   </Button>
                                 </TableCell>
                               </TableRow>
@@ -755,7 +755,7 @@ export default function SettingsPage() {
       <Dialog open={showCreateSubjectModal} onOpenChange={setShowCreateSubjectModal}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Create New Subject</DialogTitle>
+            <DialogTitle>{t('settings.createNewSubject')}</DialogTitle>
           </DialogHeader>
           <Form {...subjectForm}>
             <form onSubmit={subjectForm.handleSubmit(handleCreateSubject)} className="space-y-4">
@@ -764,9 +764,9 @@ export default function SettingsPage() {
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Subject Name</FormLabel>
+                    <FormLabel>{t('settings.subjectName')}</FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter subject name" {...field} />
+                      <Input placeholder={t('settings.subjectNamePlaceholder')} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -777,10 +777,10 @@ export default function SettingsPage() {
                 name="description"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Description (Optional)</FormLabel>
+                    <FormLabel>{t('settings.descriptionOptional')}</FormLabel>
                     <FormControl>
                       <Textarea 
-                        placeholder="Enter subject description"
+                        placeholder={t('settings.subjectDescriptionPlaceholder')}
                         rows={3}
                         {...field}
                       />
@@ -791,13 +791,13 @@ export default function SettingsPage() {
               />
               <DialogFooter>
                 <Button type="button" variant="outline" onClick={() => setShowCreateSubjectModal(false)}>
-                  Cancel
+                  {t('common.cancel')}
                 </Button>
                 <Button
                   type="submit"
                   disabled={createSubjectMutation.isPending}
                 >
-                  {createSubjectMutation.isPending ? "Creating..." : "Create Subject"}
+                  {createSubjectMutation.isPending ? t('settings.creating') : t('settings.createSubject')}
                 </Button>
               </DialogFooter>
             </form>
@@ -809,7 +809,7 @@ export default function SettingsPage() {
       <Dialog open={showEditSubjectModal} onOpenChange={setShowEditSubjectModal}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Edit Subject</DialogTitle>
+            <DialogTitle>{t('settings.editSubject')}</DialogTitle>
           </DialogHeader>
           <Form {...subjectForm}>
             <form onSubmit={subjectForm.handleSubmit(handleUpdateSubject)} className="space-y-4">
@@ -818,9 +818,9 @@ export default function SettingsPage() {
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Subject Name</FormLabel>
+                    <FormLabel>{t('settings.subjectName')}</FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter subject name" {...field} />
+                      <Input placeholder={t('settings.subjectNamePlaceholder')} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -831,10 +831,10 @@ export default function SettingsPage() {
                 name="description"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Description (Optional)</FormLabel>
+                    <FormLabel>{t('settings.descriptionOptional')}</FormLabel>
                     <FormControl>
                       <Textarea 
-                        placeholder="Enter subject description"
+                        placeholder={t('settings.subjectDescriptionPlaceholder')}
                         rows={3}
                         {...field}
                       />
@@ -845,13 +845,13 @@ export default function SettingsPage() {
               />
               <DialogFooter>
                 <Button type="button" variant="outline" onClick={() => setShowEditSubjectModal(false)}>
-                  Cancel
+                  {t('common.cancel')}
                 </Button>
                 <Button
                   type="submit"
                   disabled={updateSubjectMutation.isPending}
                 >
-                  {updateSubjectMutation.isPending ? "Updating..." : "Update Subject"}
+                  {updateSubjectMutation.isPending ? t('settings.updating') : t('settings.updateSubject')}
                 </Button>
               </DialogFooter>
             </form>
