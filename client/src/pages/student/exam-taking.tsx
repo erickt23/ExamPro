@@ -943,30 +943,30 @@ export default function StudentExamTaking() {
           <Sidebar />
         </div>
         
-        <main className="flex-1 lg:ml-64 p-3 sm:p-4 lg:pl-4 lg:pr-6 w-full min-w-0">
-          <div className="max-w-5xl w-full">
+        <main className="flex-1 lg:ml-64 p-2 sm:p-3 lg:pl-2 lg:pr-4 w-full min-w-0">
+          <div className="w-full">
             {/* Exam Header */}
-            <div className="mb-3 sm:mb-4">
+            <div className="mb-2 sm:mb-3">
               {/* Mobile-First Header Layout */}
-              <div className="space-y-2 sm:space-y-3">
+              <div className="space-y-1 sm:space-y-2">
                 {/* Top Row: Back Button + Title */}
-                <div className="flex items-start gap-3">
+                <div className="flex items-start gap-2">
                   <Link href="/exams">
-                    <Button variant="ghost" size="sm" className="flex-shrink-0 h-9 px-3">
-                      <ArrowLeft className="h-4 w-4 mr-1 sm:mr-2" />
+                    <Button variant="ghost" size="sm" className="flex-shrink-0 h-8 px-2">
+                      <ArrowLeft className="h-4 w-4 mr-1" />
                       <span className="text-sm">{t('examTaking.back')}</span>
                     </Button>
                   </Link>
                   <div className="flex-1 min-w-0">
-                    <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-foreground dark:text-foreground leading-tight">{exam.title}</h1>
-                    <p className="text-muted-foreground text-sm mt-1">
+                    <h1 className="text-base sm:text-lg lg:text-xl font-bold text-foreground dark:text-foreground leading-tight">{exam.title}</h1>
+                    <p className="text-muted-foreground text-xs sm:text-sm">
                       {t('examTaking.questionOf', { current: currentQuestionIndex + 1, total: questions.length })}
                     </p>
                   </div>
                 </div>
                 
                 {/* Bottom Row: Timer + Save Button */}
-                <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center justify-between gap-2">
                   {exam && exam.duration && exam.duration > 0 ? (
                     timeRemaining !== null && timeRemaining > 0 ? (
                       <div className={`flex items-center px-3 py-2 rounded-lg text-sm flex-1 max-w-fit ${
@@ -1000,43 +1000,43 @@ export default function StudentExamTaking() {
                     variant="outline" 
                     size="sm"
                     disabled={saveProgressMutation.isPending}
-                    className="flex-shrink-0 h-9 px-4"
+                    className="flex-shrink-0 h-8 px-3"
                   >
-                    <Save className="h-4 w-4 mr-2" />
-                    <span className="text-sm">{saveProgressMutation.isPending ? t('examTaking.saving') : t('examTaking.saveProgress')}</span>
+                    <Save className="h-4 w-4 mr-1" />
+                    <span className="text-xs sm:text-sm">{saveProgressMutation.isPending ? t('examTaking.saving') : t('examTaking.saveProgress')}</span>
                   </Button>
                 </div>
               </div>
               
-              <Progress value={progress} className="mt-2 sm:mt-3" />
+              <Progress value={progress} className="mt-1 sm:mt-2" />
             </div>
 
             {/* Question Card */}
             <Card className="overflow-hidden">
-              <CardHeader className="pb-3 sm:pb-4 px-4 sm:px-6">
-                <div className="space-y-2 sm:space-y-0 sm:flex sm:items-center sm:justify-between">
-                  <CardTitle className="flex items-center text-base sm:text-lg">
-                    <FileText className="h-4 w-4 sm:h-5 sm:w-5 mr-2 flex-shrink-0" />
+              <CardHeader className="pb-2 sm:pb-3 px-3 sm:px-4">
+                <div className="space-y-1 sm:space-y-0 sm:flex sm:items-center sm:justify-between">
+                  <CardTitle className="flex items-center text-sm sm:text-base">
+                    <FileText className="h-4 w-4 mr-1 sm:mr-2 flex-shrink-0" />
                     <span className="line-clamp-2">{t('examTaking.question', { number: currentQuestionIndex + 1 })}</span>
                   </CardTitle>
-                  <Badge variant="secondary" className="self-start sm:self-center text-sm">
+                  <Badge variant="secondary" className="self-start sm:self-center text-xs">
                     {currentQuestion.points} {currentQuestion.points !== 1 ? t('examTaking.points') : t('examTaking.point')}
                   </Badge>
                 </div>
               </CardHeader>
-              <CardContent className="space-y-4 sm:space-y-5 px-4 sm:px-6 pb-4 sm:pb-6">
+              <CardContent className="space-y-3 sm:space-y-4 px-3 sm:px-4 pb-3 sm:pb-4">
                 <div className="prose max-w-none">
-                  <p className="text-base sm:text-base lg:text-lg leading-relaxed">{currentQuestion.question.questionText}</p>
+                  <p className="text-sm sm:text-base leading-relaxed">{currentQuestion.question.questionText}</p>
                 </div>
 
-                <div className="mt-3 sm:mt-4">
+                <div className="mt-2 sm:mt-3">
                   {renderQuestion(currentQuestion)}
                 </div>
               </CardContent>
             </Card>
 
             {/* Navigation */}
-            <div className="mt-4 sm:mt-5 space-y-3 sm:space-y-0 sm:flex sm:justify-between sm:items-center">
+            <div className="mt-3 sm:mt-4 space-y-2 sm:space-y-0 sm:flex sm:justify-between sm:items-center">
               <Button
                 variant="outline"
                 onClick={() => setCurrentQuestionIndex(Math.max(0, currentQuestionIndex - 1))}
