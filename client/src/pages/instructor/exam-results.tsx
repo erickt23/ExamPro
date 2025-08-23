@@ -460,11 +460,31 @@ export default function ExamResults() {
 
               <Tabs defaultValue="submissions" className="space-y-6">
                 <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="overview">Overview</TabsTrigger>
                   <TabsTrigger value="submissions">Submissions</TabsTrigger>
+                  <TabsTrigger value="analytics">Analytics</TabsTrigger>
                 </TabsList>
 
-                <TabsContent value="overview" className="space-y-6">
+                <TabsContent value="submissions" className="space-y-6">
+                  {submissions.length > 0 ? (
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-foreground">
+                        Student Submissions ({submissions.length})
+                      </h3>
+                      {submissions.map((submission: any) => (
+                        <SubmissionCard key={submission.id} submission={submission} />
+                      ))}
+                    </div>
+                  ) : (
+                    <Card>
+                      <CardContent className="p-8 text-center">
+                        <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                        <p className="text-gray-500 dark:text-muted-foreground">No submissions found for this exam.</p>
+                      </CardContent>
+                    </Card>
+                  )}
+                </TabsContent>
+
+                <TabsContent value="analytics" className="space-y-6">
                   {/* Key Metrics */}
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <Card>
@@ -625,26 +645,6 @@ export default function ExamResults() {
                       </div>
                     </CardContent>
                   </Card>
-                </TabsContent>
-
-                <TabsContent value="submissions" className="space-y-6">
-                  {submissions.length > 0 ? (
-                    <div className="space-y-4">
-                      <h3 className="text-lg font-semibold text-gray-900 dark:text-foreground">
-                        Student Submissions ({submissions.length})
-                      </h3>
-                      {submissions.map((submission: any) => (
-                        <SubmissionCard key={submission.id} submission={submission} />
-                      ))}
-                    </div>
-                  ) : (
-                    <Card>
-                      <CardContent className="p-8 text-center">
-                        <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                        <p className="text-gray-500 dark:text-muted-foreground">No submissions found for this exam.</p>
-                      </CardContent>
-                    </Card>
-                  )}
                 </TabsContent>
 
               </Tabs>
