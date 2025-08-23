@@ -943,12 +943,12 @@ export default function StudentExamTaking() {
           <Sidebar />
         </div>
         
-        <main className="flex-1 lg:ml-64 p-3 sm:p-4 lg:p-6 w-full min-w-0">
-          <div className="max-w-4xl mx-auto w-full">
+        <main className="flex-1 lg:ml-64 p-3 sm:p-4 lg:pl-4 lg:pr-6 w-full min-w-0">
+          <div className="max-w-5xl w-full">
             {/* Exam Header */}
-            <div className="mb-4 sm:mb-6">
+            <div className="mb-3 sm:mb-4">
               {/* Mobile-First Header Layout */}
-              <div className="space-y-3 sm:space-y-4">
+              <div className="space-y-2 sm:space-y-3">
                 {/* Top Row: Back Button + Title */}
                 <div className="flex items-start gap-3">
                   <Link href="/exams">
@@ -1008,12 +1008,12 @@ export default function StudentExamTaking() {
                 </div>
               </div>
               
-              <Progress value={progress} className="mt-3 sm:mt-4" />
+              <Progress value={progress} className="mt-2 sm:mt-3" />
             </div>
 
             {/* Question Card */}
             <Card className="overflow-hidden">
-              <CardHeader className="pb-3 sm:pb-4">
+              <CardHeader className="pb-3 sm:pb-4 px-4 sm:px-6">
                 <div className="space-y-2 sm:space-y-0 sm:flex sm:items-center sm:justify-between">
                   <CardTitle className="flex items-center text-base sm:text-lg">
                     <FileText className="h-4 w-4 sm:h-5 sm:w-5 mr-2 flex-shrink-0" />
@@ -1024,19 +1024,19 @@ export default function StudentExamTaking() {
                   </Badge>
                 </div>
               </CardHeader>
-              <CardContent className="space-y-4 sm:space-y-6">
+              <CardContent className="space-y-4 sm:space-y-5 px-4 sm:px-6 pb-4 sm:pb-6">
                 <div className="prose max-w-none">
                   <p className="text-base sm:text-base lg:text-lg leading-relaxed">{currentQuestion.question.questionText}</p>
                 </div>
 
-                <div className="mt-4 sm:mt-6">
+                <div className="mt-3 sm:mt-4">
                   {renderQuestion(currentQuestion)}
                 </div>
               </CardContent>
             </Card>
 
             {/* Navigation */}
-            <div className="mt-6 space-y-3 sm:space-y-0 sm:flex sm:justify-between sm:items-center">
+            <div className="mt-4 sm:mt-5 space-y-3 sm:space-y-0 sm:flex sm:justify-between sm:items-center">
               <Button
                 variant="outline"
                 onClick={() => setCurrentQuestionIndex(Math.max(0, currentQuestionIndex - 1))}
