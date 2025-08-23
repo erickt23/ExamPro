@@ -31,6 +31,7 @@ import {
   BookOpen,
   Upload
 } from "lucide-react";
+import { QuestionsPagination } from "@/components/ui/questions-pagination";
 
 export default function InstructorQuestions() {
   const { toast } = useToast();
@@ -47,6 +48,8 @@ export default function InstructorQuestions() {
     difficulty: "all",
     search: ""
   });
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -69,14 +72,16 @@ export default function InstructorQuestions() {
     retry: false,
   });
 
-  const { data: questions, isLoading: questionsLoading, error } = useQuery({
-    queryKey: ["/api/questions", filters],
+  const { data: questionsData, isLoading: questionsLoading, error } = useQuery({
+    queryKey: ["/api/questions", filters, currentPage, pageSize],
     queryFn: async () => {
       const params = new URLSearchParams();
       if (filters.subjectId && filters.subjectId !== 'all') params.append('subject', filters.subjectId);
       if (filters.questionType && filters.questionType !== 'all') params.append('type', filters.questionType);
       if (filters.difficulty && filters.difficulty !== 'all') params.append('difficulty', filters.difficulty);
       if (filters.search) params.append('search', filters.search);
+      params.append('page', currentPage.toString());
+      params.append('limit', pageSize.toString());
       
       const response = await fetch(`/api/questions?${params}`);
       if (!response.ok) throw new Error(`${response.status}: ${response.statusText}`);
@@ -84,6 +89,15 @@ export default function InstructorQuestions() {
     },
     retry: false,
   });
+
+  const questions = questionsData?.questions || [];
+  const totalQuestions = questionsData?.total || 0;
+  const totalPages = questionsData?.totalPages || 1;
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filters]);
 
   const deleteQuestionMutation = useMutation({
     mutationFn: async (questionId: number) => {
@@ -253,7 +267,7 @@ export default function InstructorQuestions() {
             <Card>
               <CardHeader>
                 <div className="flex justify-between items-center">
-                  <CardTitle>{t('questions.questions')} ({questions?.length || 0})</CardTitle>
+                  <CardTitle>{t('questions.questions')} ({totalQuestions})</CardTitle>
                   <div className="flex items-center space-x-2">
                     <Button variant="outline" size="sm">{t('questions.export')}</Button>
                     <Button variant="outline" size="sm">{t('questions.import')}</Button>
@@ -271,7 +285,7 @@ export default function InstructorQuestions() {
                       </div>
                     ))}
                   </div>
-                ) : questions?.length === 0 ? (
+                ) : questions.length === 0 ? (
                   <div className="text-center py-12">
                     <BookOpen className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                     <p className="text-gray-500 text-lg mb-2">{t('questions.noQuestionsFound')}</p>
@@ -279,7 +293,7 @@ export default function InstructorQuestions() {
                   </div>
                 ) : (
                   <div className="divide-y divide-gray-200">
-                    {questions?.map((question: any) => (
+                    {questions.map((question: any) => (
                       <div key={question.id} className="p-6 hover:bg-gray-50">
                         <div className="flex justify-between items-start">
                           <div className="flex-1">
@@ -348,6 +362,19 @@ export default function InstructorQuestions() {
                       </div>
                     ))}
                   </div>
+                )}
+                {questions.length > 0 && (
+                  <QuestionsPagination 
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    total={totalQuestions}
+                    pageSize={pageSize}
+                    onPageChange={setCurrentPage}
+                    onPageSizeChange={(newPageSize) => {
+                      setPageSize(newPageSize);
+                      setCurrentPage(1);
+                    }}
+                  />
                 )}
               </CardContent>
             </Card>

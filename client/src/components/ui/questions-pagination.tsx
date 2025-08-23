@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
 
-interface PaginationProps {
+interface QuestionsPaginationProps {
   currentPage: number;
   totalPages: number;
   total: number;
@@ -11,7 +11,7 @@ interface PaginationProps {
   onPageSizeChange: (pageSize: number) => void;
 }
 
-export function Pagination({ currentPage, totalPages, total, pageSize, onPageChange, onPageSizeChange }: PaginationProps) {
+export function QuestionsPagination({ currentPage, totalPages, total, pageSize, onPageChange, onPageSizeChange }: QuestionsPaginationProps) {
   const startItem = (currentPage - 1) * pageSize + 1;
   const endItem = Math.min(currentPage * pageSize, total);
 
@@ -41,8 +41,10 @@ export function Pagination({ currentPage, totalPages, total, pageSize, onPageCha
     return rangeWithDots;
   };
 
+  if (totalPages <= 1) return null;
+
   return (
-    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 py-4">
+    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 py-4 border-t">
       <div className="flex items-center gap-4 text-sm text-gray-600">
         <span>
           Showing {startItem} to {endItem} of {total} results
@@ -81,7 +83,7 @@ export function Pagination({ currentPage, totalPages, total, pageSize, onPageCha
           <ChevronLeft className="h-4 w-4" />
         </Button>
 
-        {totalPages > 1 && getVisiblePageNumbers().map((pageNumber, index) => (
+        {getVisiblePageNumbers().map((pageNumber, index) => (
           <Button
             key={index}
             variant={pageNumber === currentPage ? "default" : "outline"}

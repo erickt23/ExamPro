@@ -273,17 +273,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Access denied" });
       }
 
-      const { subject, type, difficulty, bloomsTaxonomy, search, category } = req.query;
-      const questions = await storage.getQuestions(userId, {
+      const { subject, type, difficulty, bloomsTaxonomy, search, category, page, limit } = req.query;
+      const result = await storage.getQuestions(userId, {
         subjectId: subject ? parseInt(subject as string) : undefined,
         questionType: type as string,
         difficulty: difficulty as string,
         bloomsTaxonomy: bloomsTaxonomy as string,
         search: search as string,
         category: (category as 'exam' | 'homework') || 'exam', // Default to exam if not specified
+        page: page ? parseInt(page as string) : 1,
+        limit: limit ? parseInt(limit as string) : 10,
       });
       
-      res.json(questions);
+      res.json(result);
     } catch (error) {
       console.error("Error fetching questions:", error);
       res.status(500).json({ message: "Failed to fetch questions" });
@@ -414,14 +416,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const questionData = await validateAndTransformRow(row, i + 2); // +2 for header row
           
           // Check for duplicate questions before creating
-          const existingQuestions = await storage.getQuestions(userId, {
+          const existingQuestionsResult = await storage.getQuestions(userId, {
             search: questionData.title, // Search by title first
             subjectId: questionData.subjectId,
             category: questionData.category
           });
           
           // Check if any existing question has the same title and question text
-          const isDuplicate = existingQuestions.some(existing => 
+          const isDuplicate = existingQuestionsResult.questions.some((existing: any) => 
             existing.title?.toLowerCase().trim() === questionData.title?.toLowerCase().trim() &&
             existing.questionText?.toLowerCase().trim() === questionData.questionText?.toLowerCase().trim() &&
             existing.questionType === questionData.questionType &&
@@ -1558,7 +1560,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const { subject, type, difficulty, bloomsTaxonomy, search } = req.query;
-      const questions = await storage.getQuestions(userId, {
+      const questionsResult = await storage.getQuestions(userId, {
         subjectId: subject ? parseInt(subject as string) : undefined,
         questionType: type as string,
         difficulty: difficulty as string,
@@ -1567,7 +1569,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         category: 'homework', // Only show homework questions
       });
       
-      res.json(questions);
+      res.json(questionsResult);
     } catch (error) {
       console.error("Error fetching homework questions:", error);
       res.status(500).json({ message: "Failed to fetch homework questions" });

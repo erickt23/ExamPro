@@ -57,7 +57,9 @@ export interface IStorage {
     bloomsTaxonomy?: string;
     search?: string;
     category?: 'exam' | 'homework'; // NEW: Filter by question category
-  }): Promise<Question[]>;
+    page?: number;
+    limit?: number;
+  }): Promise<{ questions: Question[]; total: number; page: number; totalPages: number }>;
   getQuestionById(id: number): Promise<Question | undefined>;
   updateQuestion(id: number, updates: Partial<InsertQuestion>): Promise<Question>;
   deleteQuestion(id: number): Promise<void>;
@@ -239,7 +241,9 @@ export class DatabaseStorage implements IStorage {
     bloomsTaxonomy?: string;
     search?: string;
     category?: 'exam' | 'homework';
-  }): Promise<Question[]> {
+    page?: number;
+    limit?: number;
+  }): Promise<{ questions: Question[]; total: number; page: number; totalPages: number }> {
     try {
       console.log('getQuestions called with filters:', filters);
       
@@ -276,17 +280,38 @@ export class DatabaseStorage implements IStorage {
 
       console.log('Executing query with conditions:', conditions.length);
 
-      // Simple query - return exactly what's in the database
+      // Get pagination parameters
+      const page = filters?.page || 1;
+      const limit = filters?.limit || 10;
+      const offset = (page - 1) * limit;
+
+      // Get total count for pagination
+      const totalCountResult = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(questions)
+        .where(and(...conditions));
+      
+      const total = totalCountResult[0]?.count || 0;
+      const totalPages = Math.ceil(total / limit);
+
+      // Get paginated questions
       const questionsResult = await db
         .select()
         .from(questions)
         .where(and(...conditions))
-        .orderBy(desc(questions.createdAt));
+        .orderBy(desc(questions.createdAt))
+        .limit(limit)
+        .offset(offset);
 
-      console.log('Query executed successfully, got', questionsResult.length, 'questions');
+      console.log('Query executed successfully, got', questionsResult.length, 'questions out of', total, 'total');
 
-      // Return the raw results without modification to avoid any type issues
-      return questionsResult as Question[];
+      // Return paginated results
+      return {
+        questions: questionsResult as Question[],
+        total,
+        page,
+        totalPages
+      };
 
     } catch (error) {
       console.error('Database error in getQuestions:', error);
