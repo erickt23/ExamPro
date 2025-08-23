@@ -35,263 +35,6 @@ import {
 } from "lucide-react";
 import { calculateFinalGrade } from "@shared/gradeConfig";
 
-// Component for exam submission cards with detailed view
-function ExamSubmissionCard({ submission }: { submission: any }) {
-  const [isExpanded, setIsExpanded] = useState(false);
-  const { t } = useTranslation();
-  
-  // Fetch submission details with answers when expanded
-  const { data: submissionDetails, isLoading: detailsLoading, error: detailsError } = useQuery({
-    queryKey: ["/api/submissions", submission.id, "grade"],
-    queryFn: async () => {
-      const response = await fetch(`/api/submissions/${submission.id}/grade`);
-      if (!response.ok) throw new Error(`${response.status}: ${response.statusText}`);
-      return response.json();
-    },
-    enabled: isExpanded,
-    retry: false,
-  });
-
-  const formatTime = (minutes: number) => {
-    if (!minutes) return "N/A";
-    const hours = Math.floor(minutes / 60);
-    const mins = minutes % 60;
-    if (hours > 0) {
-      return `${hours}h ${mins}m`;
-    }
-    return `${mins}m`;
-  };
-
-  const formatAnswer = (question: any, answer: any) => {
-    if (!answer || !answer.answer) {
-      return <span className="text-gray-500 italic">No answer provided</span>;
-    }
-
-    const answerValue = answer.answer;
-
-    switch (question.type) {
-      case 'multiple_choice':
-        return <span>{answerValue}</span>;
-      
-      case 'matching':
-        try {
-          const matchingAnswer = typeof answerValue === 'string' ? JSON.parse(answerValue) : answerValue;
-          if (Array.isArray(matchingAnswer)) {
-            return (
-              <div className="space-y-1">
-                {matchingAnswer.map((pair: any, index: number) => (
-                  <div key={index} className="flex items-center gap-2">
-                    <span>{pair.left}</span>
-                    <span>→</span>
-                    <span className={answer.isCorrect ? "text-green-600" : "text-red-600"}>
-                      {pair.right}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            );
-          }
-          // Handle object format
-          const pairs = Object.entries(matchingAnswer);
-          return (
-            <div className="space-y-1">
-              {pairs.map(([left, right], index) => (
-                <div key={index} className="flex items-center gap-2">
-                  <span>{left}</span>
-                  <span>→</span>
-                  <span className={answer.isCorrect ? "text-green-600" : "text-red-600"}>
-                    {right}
-                  </span>
-                </div>
-              ))}
-            </div>
-          );
-        } catch (e) {
-          return <span>{answerValue}</span>;
-        }
-      
-      case 'drag_drop':
-        try {
-          const dragAnswer = typeof answerValue === 'string' ? JSON.parse(answerValue) : answerValue;
-          const pairs = Object.entries(dragAnswer);
-          return (
-            <div className="space-y-1">
-              {pairs.map(([slot, item], index) => (
-                <div key={index} className="flex items-center gap-2">
-                  <span>{slot}:</span>
-                  <span className={answer.isCorrect ? "text-green-600" : "text-red-600"}>
-                    {item}
-                  </span>
-                </div>
-              ))}
-            </div>
-          );
-        } catch (e) {
-          return <span>{answerValue}</span>;
-        }
-      
-      case 'ranking':
-        try {
-          const rankingAnswer = typeof answerValue === 'string' ? JSON.parse(answerValue) : answerValue;
-          if (Array.isArray(rankingAnswer)) {
-            return (
-              <div className="space-y-1">
-                {rankingAnswer.map((item: string, index: number) => (
-                  <div key={index}>
-                    {index + 1}. {item}
-                  </div>
-                ))}
-              </div>
-            );
-          }
-          return <span>{answerValue}</span>;
-        } catch (e) {
-          return <span>{answerValue}</span>;
-        }
-      
-      case 'fill_blank':
-        if (Array.isArray(answerValue)) {
-          return (
-            <div className="space-y-1">
-              {answerValue.map((blank: string, index: number) => (
-                <div key={index}>
-                  Blank {index + 1}: <span className="font-medium">{blank}</span>
-                </div>
-              ))}
-            </div>
-          );
-        }
-        return <span>{answerValue}</span>;
-      
-      default:
-        return <span>{answerValue}</span>;
-    }
-  };
-
-  return (
-    <Card className="border-l-4 border-l-blue-500 dark:bg-card">
-      <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <User className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-            <div>
-              <h3 className="font-semibold text-gray-900 dark:text-foreground">
-                {submission.student?.firstName} {submission.student?.lastName}
-              </h3>
-              <p className="text-sm text-gray-600 dark:text-muted-foreground">
-                ID: {submission.studentId} | Submitted: {formatDetailedSubmissionTime(submission.submittedAt)}
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <Badge 
-              variant={submission.status === 'graded' ? 'default' : 'secondary'}
-              className={submission.status === 'graded' ? 'bg-green-100 text-green-800' : ''}
-            >
-              {submission.status === 'graded' ? 'graded' : 'pending'}
-            </Badge>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsExpanded(!isExpanded)}
-              className="flex items-center gap-2"
-            >
-              {isExpanded ? 'Hide Answers' : 'Show Answers'}
-              <Eye className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      </CardHeader>
-
-      <CardContent className="pt-0">
-        <div className="grid grid-cols-3 gap-4 mb-4">
-          <div className="text-center">
-            <div className="text-2xl font-bold text-green-600">
-              {submission.totalScore !== null && submission.maxScore !== null
-                ? `${Math.round((submission.totalScore / submission.maxScore) * 100)}%`
-                : 'N/A'
-              }
-            </div>
-            <div className="text-sm text-gray-600 dark:text-muted-foreground">Score</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-blue-600">
-              {submission.timeTaken ? formatTime(submission.timeTaken) : 'N/A'}
-            </div>
-            <div className="text-sm text-gray-600 dark:text-muted-foreground">Time Taken</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-purple-600">
-              {submission.totalScore !== null && submission.maxScore !== null
-                ? `${submission.totalScore}/${submission.maxScore}`
-                : 'N/A'
-              }
-            </div>
-            <div className="text-sm text-gray-600 dark:text-muted-foreground">Points</div>
-          </div>
-        </div>
-
-        {isExpanded && (
-          <div className="border-t pt-4">
-            <h4 className="font-semibold text-gray-900 dark:text-foreground mb-4">
-              Questions and Answers
-            </h4>
-            
-            {detailsLoading ? (
-              <div className="text-center py-4">
-                <div className="text-sm text-gray-500">Loading answers...</div>
-              </div>
-            ) : detailsError ? (
-              <div className="text-center py-4">
-                <div className="text-sm text-red-500">Failed to load answers</div>
-              </div>
-            ) : submissionDetails ? (
-              <div className="space-y-6">
-                {submissionDetails.submission?.answers?.map((answer: any, index: number) => {
-                  const question = submissionDetails.questions?.find((q: any) => q.id === answer.questionId);
-                  if (!question) return null;
-
-                  return (
-                    <div key={answer.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-                      <div className="flex items-center justify-between mb-3">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium">Question {index + 1}</span>
-                          <Badge variant="outline" className="text-xs">
-                            {question.type?.replace('_', ' ')}
-                          </Badge>
-                        </div>
-                        <div className="text-sm font-medium text-green-600">
-                          {answer.score || 0}/{question.points || 0} pts
-                        </div>
-                      </div>
-                      
-                      <div className="mb-3">
-                        <p className="text-gray-900 dark:text-foreground">{question.title}</p>
-                      </div>
-                      
-                      <div className="bg-gray-50 dark:bg-gray-800 p-3 rounded">
-                        <div className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          Student's Answer:
-                        </div>
-                        <div className="text-gray-900 dark:text-foreground">
-                          {formatAnswer(question, answer)}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <div className="text-center py-4">
-                <div className="text-sm text-gray-500">No answer details available</div>
-              </div>
-            )}
-          </div>
-        )}
-      </CardContent>
-    </Card>
-  );
-}
 
 // Component for displaying subject grades with finalization controls
 function SubjectGradesCard({ 
@@ -605,11 +348,51 @@ function GradingList() {
                   <p>{t('grading.noExamSubmissions')}</p>
                 </div>
               ) : (
-                <div className="space-y-4">
-                  {examSubmissions.map((submission: any) => (
-                    <ExamSubmissionCard key={submission.id} submission={submission} />
-                  ))}
-                </div>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>{t('grading.student')}</TableHead>
+                      <TableHead>{t('grading.exam')}</TableHead>
+                      <TableHead>{t('grading.submitted')}</TableHead>
+                      <TableHead>{t('grading.status')}</TableHead>
+                      <TableHead>{t('grading.actions')}</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {examSubmissions.map((submission: any) => (
+                      <TableRow key={submission.id}>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <User className="h-4 w-4" />
+                            {submission.student?.firstName} {submission.student?.lastName}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="font-medium">{submission.exam?.title}</div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <Clock className="h-4 w-4" />
+                            {formatDetailedSubmissionTime(submission.submittedAt)}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="secondary">{t('grading.needsReview')}</Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Button
+                            size="sm"
+                            onClick={() => handleGradeExamSubmission(submission.id)}
+                            className="flex items-center gap-2"
+                          >
+                            <Eye className="h-4 w-4" />
+                            Grade
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
               )}
             </CardContent>
           </Card>
