@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useToast } from "@/hooks/use-toast";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -34,6 +35,7 @@ import { getExamStatus } from "@/lib/dateUtils";
 
 export default function StudentExams() {
   const { toast } = useToast();
+  const { t } = useTranslation();
   const { user, isAuthenticated, isLoading } = useAuth();
   const [location, setLocation] = useLocation();
   const [selectedExam, setSelectedExam] = useState<any>(null);
@@ -280,8 +282,8 @@ export default function StudentExams() {
       setLocation(`/exams/${exam.id}/take`);
     } else {
       toast({
-        title: "Cannot Start Exam",
-        description: exam.examStatus.status === 'upcoming' ? 'This exam is not yet available' : 'This exam cannot be started',
+        title: t('studentExams.cannotStartExam'),
+        description: exam.examStatus.status === 'upcoming' ? t('studentExams.examNotAvailable') : t('studentExams.examCannotStart'),
         variant: "destructive",
       });
     }
@@ -368,7 +370,7 @@ export default function StudentExams() {
             
             <div className="flex justify-between items-center">
               <div className="text-sm text-gray-600">
-                Question {currentQuestionIndex + 1} of {examDetails.questions?.length || 0}
+                {t('studentExams.question')} {currentQuestionIndex + 1} {t('studentExams.of')} {examDetails.questions?.length || 0}
               </div>
               <Progress value={progress} className="w-48 h-2" />
             </div>
@@ -384,7 +386,7 @@ export default function StudentExams() {
                       {currentQuestion.question.questionType.replace('_', ' ')}
                     </Badge>
                     <span className="text-sm text-gray-600">
-                      {currentQuestion.points} points
+                      {currentQuestion.points} {t('studentExams.points')}
                     </span>
                   </div>
                   <h3 className="text-lg font-medium text-gray-900 mb-4">
@@ -396,7 +398,7 @@ export default function StudentExams() {
                     <div className="bg-blue-50 p-3 rounded border mb-4">
                       <div className="flex items-center gap-2">
                         <Paperclip className="h-4 w-4 text-blue-600" />
-                        <span className="text-sm font-medium text-blue-900">Question Attachment:</span>
+                        <span className="text-sm font-medium text-blue-900">{t('studentExams.questionAttachment')}</span>
                       </div>
                       <div className="mt-2">
                         <a 
@@ -408,7 +410,7 @@ export default function StudentExams() {
                           className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 text-sm"
                         >
                           <Download className="h-3 w-3" />
-                          Download File
+                          {t('studentExams.downloadFile')}
                           <ExternalLink className="h-3 w-3" />
                         </a>
                       </div>
@@ -631,14 +633,14 @@ export default function StudentExams() {
                 data-testid="button-save-progress"
               >
                 <Save className="h-4 w-4 mr-2" />
-                {saveProgressMutation.isPending ? 'Saving...' : 'Save Progress'}
+                {saveProgressMutation.isPending ? t('studentExams.saving') : t('studentExams.saveProgress')}
               </Button>
               
               {currentQuestionIndex < (examDetails.questions?.length || 1) - 1 ? (
                 <Button 
                   onClick={() => setCurrentQuestionIndex(currentQuestionIndex + 1)}
                 >
-                  Next
+                  {t('studentExams.next')}
                 </Button>
               ) : (
                 <Button 
@@ -646,7 +648,7 @@ export default function StudentExams() {
                   disabled={submitExamMutation.isPending}
                   className="bg-green-600 hover:bg-green-700"
                 >
-                  {submitExamMutation.isPending ? 'Submitting...' : 'Submit Exam'}
+                  {submitExamMutation.isPending ? t('studentExams.submitting') : t('studentExams.submitExam')}
                 </Button>
               )}
             </div>
@@ -665,8 +667,8 @@ export default function StudentExams() {
         <main className="flex-1 overflow-y-auto">
           <div className="p-6">
             <div className="mb-6">
-              <h2 className="text-2xl font-bold text-gray-900">Exams</h2>
-              <p className="text-gray-600 mt-1">View available exams and your completed assessments</p>
+              <h2 className="text-2xl font-bold text-gray-900">{t('nav.exams')}</h2>
+              <p className="text-gray-600 mt-1">{t('exams.description')}</p>
             </div>
 
             {/* All Exams - Available, Upcoming, Expired */}
@@ -674,15 +676,15 @@ export default function StudentExams() {
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <FileText className="h-5 w-5 mr-2" />
-                  All Exams
+                  {t('exams.allExams')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 {allExamsWithStatus.length === 0 ? (
                   <div className="text-center py-12">
                     <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <p className="text-gray-500 text-lg mb-2">No exams available</p>
-                    <p className="text-gray-400">Check back later for new assignments</p>
+                    <p className="text-gray-500 text-lg mb-2">{t('studentExams.noExamsAvailable')}</p>
+                    <p className="text-gray-400">{t('studentExams.checkBackLater')}</p>
                   </div>
                 ) : (
                   <div className="space-y-6">
@@ -691,7 +693,7 @@ export default function StudentExams() {
                       <div>
                         <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center">
                           <Play className="h-5 w-5 mr-2 text-green-600" />
-                          Available Exams ({availableExams.length})
+                          {t('studentExams.availableExams')} ({availableExams.length})
                         </h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           {availableExams.map((exam: any) => (
@@ -699,7 +701,7 @@ export default function StudentExams() {
                               <div className="flex justify-between items-start mb-4">
                                 <div>
                                   <h4 className="font-semibold text-gray-900 mb-1">{exam.title}</h4>
-                                  <p className="text-sm text-gray-600">{(subjects as any[]).find((s: any) => s.id === exam.subjectId)?.name || 'Unknown Subject'}</p>
+                                  <p className="text-sm text-gray-600">{(subjects as any[]).find((s: any) => s.id === exam.subjectId)?.name || t('studentExams.unknownSubject')}</p>
                                 </div>
                                 <Badge {...getStatusBadgeProps(exam.examStatus.status)}>
                                   {exam.examStatus.label}
@@ -708,27 +710,27 @@ export default function StudentExams() {
                               
                               <div className="space-y-2 mb-4 text-sm">
                                 <div className="flex justify-between">
-                                  <span className="text-gray-600">Duration:</span>
-                                  <span>{exam.duration} minutes</span>
+                                  <span className="text-gray-600">{t('studentExams.duration')}:</span>
+                                  <span>{exam.duration} {t('studentExams.minutes')}</span>
                                 </div>
                                 <div className="flex justify-between">
-                                  <span className="text-gray-600">Total Points:</span>
+                                  <span className="text-gray-600">{t('studentExams.totalPoints')}:</span>
                                   <span>{exam.totalPoints}</span>
                                 </div>
                                 <div className="flex justify-between">
-                                  <span className="text-gray-600">Attempts:</span>
+                                  <span className="text-gray-600">{t('studentExams.attempts')}:</span>
                                   <span>
                                     {exam.examStatus.attemptsUsed}/{exam.attemptsAllowed === -1 ? '∞' : exam.attemptsAllowed}
                                     {exam.examStatus.attemptsRemaining > 0 && exam.attemptsAllowed !== -1 && (
                                       <span className="text-green-600 ml-1">
-                                        ({exam.examStatus.attemptsRemaining} left)
+                                        ({exam.examStatus.attemptsRemaining} {t('studentExams.left')})
                                       </span>
                                     )}
                                   </span>
                                 </div>
                                 {exam.availableUntil && (
                                   <div className="flex justify-between">
-                                    <span className="text-gray-600">Due:</span>
+                                    <span className="text-gray-600">{t('studentExams.due')}:</span>
                                     <span>{new Date(exam.availableUntil).toLocaleDateString()}</span>
                                   </div>
                                 )}
@@ -739,7 +741,7 @@ export default function StudentExams() {
                                 className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
                               >
                                 <Play className="h-4 w-4 mr-2" />
-                                Start Exam
+                                {t('studentExams.startExam')}
                               </Button>
                             </div>
                           ))}
@@ -752,7 +754,7 @@ export default function StudentExams() {
                       <div>
                         <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center">
                           <Clock className="h-5 w-5 mr-2 text-blue-600" />
-                          Upcoming Exams ({upcomingExams.length})
+                          {t('studentExams.upcomingExams')} ({upcomingExams.length})
                         </h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           {upcomingExams.map((exam: any) => (
@@ -760,7 +762,7 @@ export default function StudentExams() {
                               <div className="flex justify-between items-start mb-4">
                                 <div>
                                   <h4 className="font-semibold text-gray-900 mb-1">{exam.title}</h4>
-                                  <p className="text-sm text-gray-600">{(subjects as any[]).find((s: any) => s.id === exam.subjectId)?.name || 'Unknown Subject'}</p>
+                                  <p className="text-sm text-gray-600">{(subjects as any[]).find((s: any) => s.id === exam.subjectId)?.name || t('studentExams.unknownSubject')}</p>
                                 </div>
                                 <Badge {...getStatusBadgeProps(exam.examStatus.status)}>
                                   {exam.examStatus.label}
@@ -769,8 +771,8 @@ export default function StudentExams() {
                               
                               <div className="space-y-2 mb-4 text-sm">
                                 <div className="flex justify-between">
-                                  <span className="text-gray-600">Duration:</span>
-                                  <span>{exam.duration} minutes</span>
+                                  <span className="text-gray-600">{t('studentExams.duration')}:</span>
+                                  <span>{exam.duration} {t('studentExams.minutes')}</span>
                                 </div>
                                 {exam.availableFrom && (
                                   <div className="flex justify-between">
@@ -780,7 +782,7 @@ export default function StudentExams() {
                                 )}
                                 {exam.availableUntil && (
                                   <div className="flex justify-between">
-                                    <span className="text-gray-600">Due:</span>
+                                    <span className="text-gray-600">{t('studentExams.due')}:</span>
                                     <span>{new Date(exam.availableUntil).toLocaleDateString()}</span>
                                   </div>
                                 )}
@@ -800,7 +802,7 @@ export default function StudentExams() {
                       <div>
                         <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center">
                           <AlertCircle className="h-5 w-5 mr-2 text-red-600" />
-                          Expired Exams ({expiredExams.length})
+                          {t('studentExams.expiredExams')} ({expiredExams.length})
                         </h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           {expiredExams.map((exam: any) => (
@@ -808,7 +810,7 @@ export default function StudentExams() {
                               <div className="flex justify-between items-start mb-4">
                                 <div>
                                   <h4 className="font-semibold text-gray-900 mb-1">{exam.title}</h4>
-                                  <p className="text-sm text-gray-600">{(subjects as any[]).find((s: any) => s.id === exam.subjectId)?.name || 'Unknown Subject'}</p>
+                                  <p className="text-sm text-gray-600">{(subjects as any[]).find((s: any) => s.id === exam.subjectId)?.name || t('studentExams.unknownSubject')}</p>
                                 </div>
                                 <Badge {...getStatusBadgeProps(exam.examStatus.status)}>
                                   {exam.examStatus.label}
@@ -817,8 +819,8 @@ export default function StudentExams() {
                               
                               <div className="space-y-2 mb-4 text-sm">
                                 <div className="flex justify-between">
-                                  <span className="text-gray-600">Duration:</span>
-                                  <span>{exam.duration} minutes</span>
+                                  <span className="text-gray-600">{t('studentExams.duration')}:</span>
+                                  <span>{exam.duration} {t('studentExams.minutes')}</span>
                                 </div>
                                 {exam.availableUntil && (
                                   <div className="flex justify-between">
@@ -846,7 +848,7 @@ export default function StudentExams() {
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <CheckCircle className="h-5 w-5 mr-2" />
-                  Completed Exams
+                  {t('studentExams.completedExams')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -864,7 +866,7 @@ export default function StudentExams() {
                         <div key={exam.id} className="flex items-center justify-between p-4 border rounded-lg bg-gray-50">
                           <div className="flex-1">
                             <h4 className="font-medium text-gray-900">{exam.title}</h4>
-                            <p className="text-sm text-gray-600">{(subjects as any[]).find((s: any) => s.id === exam.subjectId)?.name || 'Unknown Subject'}</p>
+                            <p className="text-sm text-gray-600">{(subjects as any[]).find((s: any) => s.id === exam.subjectId)?.name || t('studentExams.unknownSubject')}</p>
                             {submission?.submittedAt && (
                               <p className="text-xs text-gray-500">
                                 Completed: {new Date(submission.submittedAt).toLocaleDateString()}

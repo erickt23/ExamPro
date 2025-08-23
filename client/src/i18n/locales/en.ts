@@ -242,6 +242,40 @@ export const en = {
     time: 'Time'
   },
 
+  // Student Exams
+  studentExams: {
+    noExamsAvailable: 'No exams available',
+    checkBackLater: 'Check back later for new assignments',
+    availableExams: 'Available Exams',
+    upcomingExams: 'Upcoming Exams',
+    completedExams: 'Completed Exams',
+    expiredExams: 'Expired Exams',
+    duration: 'Duration',
+    totalPoints: 'Total Points',
+    attempts: 'Attempts',
+    due: 'Due',
+    startExam: 'Start Exam',
+    resumeExam: 'Resume Exam',
+    viewResults: 'View Results',
+    retakeExam: 'Retake Exam',
+    examNotAvailable: 'This exam is not yet available',
+    examCannotStart: 'This exam cannot be started',
+    unknownSubject: 'Unknown Subject',
+    left: 'left',
+    minutes: 'minutes',
+    points: 'points',
+    question: 'Question',
+    of: 'of',
+    questionAttachment: 'Question Attachment:',
+    downloadFile: 'Download File',
+    saveProgress: 'Save Progress',
+    saving: 'Saving...',
+    next: 'Next',
+    submitExam: 'Submit Exam',
+    submitting: 'Submitting...',
+    cannotStartExam: 'Cannot Start Exam'
+  },
+
   // Grading Center
   grading: {
     title: 'Grade Review',

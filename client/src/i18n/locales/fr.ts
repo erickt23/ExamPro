@@ -240,6 +240,40 @@ export const fr = {
     time: 'Heure'
   },
 
+  // Student Exams
+  studentExams: {
+    noExamsAvailable: 'Aucun examen disponible',
+    checkBackLater: 'Revenez plus tard pour de nouveaux devoirs',
+    availableExams: 'Examens Disponibles',
+    upcomingExams: 'Examens À Venir',
+    completedExams: 'Examens Terminés',
+    expiredExams: 'Examens Expirés',
+    duration: 'Durée',
+    totalPoints: 'Points Totaux',
+    attempts: 'Tentatives',
+    due: 'Échéance',
+    startExam: 'Commencer l\'Examen',
+    resumeExam: 'Reprendre l\'Examen',
+    viewResults: 'Voir les Résultats',
+    retakeExam: 'Reprendre l\'Examen',
+    examNotAvailable: 'Cet examen n\'est pas encore disponible',
+    examCannotStart: 'Cet examen ne peut pas être commencé',
+    unknownSubject: 'Matière Inconnue',
+    left: 'restantes',
+    minutes: 'minutes',
+    points: 'points',
+    question: 'Question',
+    of: 'sur',
+    questionAttachment: 'Pièce jointe de la question :',
+    downloadFile: 'Télécharger le fichier',
+    saveProgress: 'Sauvegarder les progrès',
+    saving: 'Sauvegarde...',
+    next: 'Suivant',
+    submitExam: 'Soumettre l\'Examen',
+    submitting: 'Soumission...',
+    cannotStartExam: 'Impossible de Commencer l\'Examen'
+  },
+
   // Grading Center
   grading: {
     title: 'Révision des Notes',

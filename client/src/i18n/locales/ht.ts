@@ -240,6 +240,40 @@ export const ht = {
     time: 'Lè'
   },
 
+  // Student Exams
+  studentExams: {
+    noExamsAvailable: 'Pa gen egzamen ki disponib',
+    checkBackLater: 'Tounen pi ta pou nouvo devwa yo',
+    availableExams: 'Egzamen ki Disponib yo',
+    upcomingExams: 'Egzamen ki ap Vini yo',
+    completedExams: 'Egzamen ki Fini yo',
+    expiredExams: 'Egzamen ki Ekspire yo',
+    duration: 'Dire',
+    totalPoints: 'Total Pwen',
+    attempts: 'Tantativ',
+    due: 'Dat Limit',
+    startExam: 'Kòmanse Egzamen',
+    resumeExam: 'Kontinye Egzamen',
+    viewResults: 'Gade Rezilta yo',
+    retakeExam: 'Reprann Egzamen',
+    examNotAvailable: 'Egzamen sa a pa disponib koulye a',
+    examCannotStart: 'Egzamen sa a pa ka kòmanse',
+    unknownSubject: 'Matye ki pa Konnen',
+    left: 'ki rete',
+    minutes: 'minit',
+    points: 'pwen',
+    question: 'Kesyon',
+    of: 'sou',
+    questionAttachment: 'Fichye Kesyon an:',
+    downloadFile: 'Telechaje Fichye',
+    saveProgress: 'Konsève Pwogrè',
+    saving: 'Y ap Konsève...',
+    next: 'Pwochen',
+    submitExam: 'Soumèt Egzamen',
+    submitting: 'Y ap Soumèt...',
+    cannotStartExam: 'Pa ka Kòmanse Egzamen'
+  },
+
   // Grading Center
   grading: {
     title: 'Revizyon Nòt yo',
