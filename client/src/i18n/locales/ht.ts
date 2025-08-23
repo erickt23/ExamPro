@@ -11,7 +11,7 @@ export const ht = {
     gradingCenter: 'Sant Nòt',
     settings: 'Konfigirasyon',
     grading: 'Sant Nòt',
-    submissionsReview: 'Revizyon Soumisyon yo',
+    submissionsReview: 'Revizyon Nòt yo',
     examResults: 'Rezilta Egzamen yo',
     analytics: 'Analitik',
     students: 'Elèv yo',
@@ -215,7 +215,7 @@ export const ht = {
 
   // Grading Center
   grading: {
-    title: 'Revizyon Soumisyon yo',
+    title: 'Revizyon Nòt yo',
     description: 'Bay nòt soumisyon elèv yo ak jere nòt final yo',
     studentName: 'Non Elèv',
     studentEmail: 'Imel Elèv',

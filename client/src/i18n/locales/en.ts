@@ -11,7 +11,7 @@ export const en = {
     gradingCenter: 'Grading Center',
     settings: 'Settings',
     grading: 'Grading Center',
-    submissionsReview: 'Submissions Review',
+    submissionsReview: 'Grade Review',
     examResults: 'Exam Results',
     analytics: 'Analytics',
     students: 'Students',
@@ -217,7 +217,7 @@ export const en = {
 
   // Grading Center
   grading: {
-    title: 'Submissions Review',
+    title: 'Grade Review',
     description: 'Grade student submissions and manage final grades',
     studentName: 'Student Name',
     studentEmail: 'Student Email',

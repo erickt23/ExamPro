@@ -13,9 +13,9 @@ Navigation terminology preferences:
 - "Homework Assignment" → "Assignments" (under Assignment Management accordion)
 - "Exams" → "Exams" (under Exam Management accordion)
 - "Grading" (sidebar menu) → "Grading Center" (now an expandable menu)
-  - Submenu 1: "Submissions Review" (links to /grading)
+  - Submenu 1: "Grade Review" (links to /grading)
   - Submenu 2: "Exam Results" (links to /exam-results)
-- "Grading Center" (page title) → "Submissions Review"
+- "Grading Center" (page title) → "Grade Review"
 - Applied vibrant gradient styling system across all primary action buttons
 - Consistent blue-to-indigo gradients with hover effects and scaling animations
 - Updated all page titles to match new menu names for consistency

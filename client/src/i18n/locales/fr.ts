@@ -11,7 +11,7 @@ export const fr = {
     gradingCenter: 'Centre de Notes',
     settings: 'Paramètres',
     grading: 'Centre de Notes',
-    submissionsReview: 'Révision des Soumissions',
+    submissionsReview: 'Révision des Notes',
     examResults: 'Résultats d\'Examens',
     analytics: 'Analytique',
     students: 'Étudiants',
@@ -215,7 +215,7 @@ export const fr = {
 
   // Grading Center
   grading: {
-    title: 'Révision des Soumissions',
+    title: 'Révision des Notes',
     description: 'Noter les soumissions des étudiants et gérer les notes finales',
     studentName: 'Nom de l\'Étudiant',
     studentEmail: 'Email de l\'Étudiant',
