@@ -442,11 +442,19 @@ export default function Sidebar({ className }: SidebarProps) {
                         <div className="flex items-center justify-between w-full">
                           <span className={cn("truncate font-medium text-sm", isAccordionActive ? "text-white" : "text-gray-700 dark:text-foreground group-hover:text-indigo-700 dark:group-hover:text-foreground")}>{item.title}</span>
                           {!isCollapsed && (
-                            <ChevronDown className={cn(
-                              "h-4 w-4 transition-transform duration-200",
-                              isExpanded && "transform rotate-180",
-                              isAccordionActive ? "text-white/80" : "text-gray-400 dark:text-muted-foreground group-hover:text-indigo-500 dark:group-hover:text-foreground"
-                            )} />
+                            <div className="transition-transform duration-200">
+                              {isExpanded ? (
+                                <ChevronDown className={cn(
+                                  "h-4 w-4",
+                                  isAccordionActive ? "text-white/80" : "text-gray-400 dark:text-muted-foreground group-hover:text-indigo-500 dark:group-hover:text-foreground"
+                                )} />
+                              ) : (
+                                <ChevronRight className={cn(
+                                  "h-4 w-4",
+                                  isAccordionActive ? "text-white/80" : "text-gray-400 dark:text-muted-foreground group-hover:text-indigo-500 dark:group-hover:text-foreground"
+                                )} />
+                              )}
+                            </div>
                           )}
                         </div>
                       )}
