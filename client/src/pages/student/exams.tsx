@@ -27,7 +27,10 @@ import {
   Link,
   Paperclip,
   Download,
-  ExternalLink
+  ExternalLink,
+  Search,
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react";
 import { ObjectUploader } from "@/components/ObjectUploader";
 import { Input } from "@/components/ui/input";
@@ -43,6 +46,9 @@ export default function StudentExams() {
   const [answers, setAnswers] = useState<{[key: number]: any}>({});
   const [timeRemaining, setTimeRemaining] = useState<number | null>(null);
   const [examStartTime, setExamStartTime] = useState<Date | null>(null);
+  const [completedExamsSearch, setCompletedExamsSearch] = useState('');
+  const [completedExamsPage, setCompletedExamsPage] = useState(1);
+  const ITEMS_PER_PAGE = 6;
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -233,6 +239,30 @@ export default function StudentExams() {
   const expiredExams = allExamsWithStatus.filter((exam: any) => exam.examStatus.status === 'expired');
   const completedExams = allExamsWithStatus.filter((exam: any) => exam.examStatus.status === 'completed');
   const inProgressExams = allExamsWithStatus.filter((exam: any) => exam.examStatus.status === 'in_progress');
+
+  // Filter completed exams based on search query
+  const filteredCompletedExams = completedExams.filter((exam: any) => {
+    if (!completedExamsSearch.trim()) return true;
+    
+    const searchLower = completedExamsSearch.toLowerCase();
+    const examTitle = exam.title.toLowerCase();
+    const subject = (subjects as any[]).find((s: any) => s.id === exam.subjectId);
+    const subjectName = subject?.name.toLowerCase() || '';
+    
+    return examTitle.includes(searchLower) || subjectName.includes(searchLower);
+  });
+
+  // Pagination for completed exams
+  const totalCompletedPages = Math.ceil(filteredCompletedExams.length / ITEMS_PER_PAGE);
+  const paginatedCompletedExams = filteredCompletedExams.slice(
+    (completedExamsPage - 1) * ITEMS_PER_PAGE,
+    completedExamsPage * ITEMS_PER_PAGE
+  );
+
+  // Reset page when search changes
+  useEffect(() => {
+    setCompletedExamsPage(1);
+  }, [completedExamsSearch]);
 
   // Debug: Log all loaded data
   console.log('Student exam dashboard data:', {
@@ -860,39 +890,101 @@ export default function StudentExams() {
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    {completedExams.map((exam: any) => {
-                      const submission = mySubmissions.find((s: any) => s.examId === exam.id);
-                      return (
-                        <div key={exam.id} className="flex items-center justify-between p-4 border rounded-lg bg-gray-50">
-                          <div className="flex-1">
-                            <h4 className="font-medium text-gray-900">{exam.title}</h4>
-                            <p className="text-sm text-gray-600">{(subjects as any[]).find((s: any) => s.id === exam.subjectId)?.name || t('studentExams.unknownSubject')}</p>
-                            {submission?.submittedAt && (
-                              <p className="text-xs text-gray-500">
-                                Completed: {new Date(submission.submittedAt).toLocaleDateString()}
-                              </p>
-                            )}
-                          </div>
-                          
-                          <div className="text-right">
-                            {submission?.totalScore ? (
-                              <div>
-                                <p className="font-medium text-gray-900">
-                                  {submission.totalScore}/{submission.maxScore}
-                                </p>
-                                <p className="text-sm text-gray-600">
-                                  {((parseFloat(submission.totalScore) / parseFloat(submission.maxScore)) * 100).toFixed(1)}%
-                                </p>
+                    {/* Search Field */}
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                      <Input
+                        placeholder={t('studentGrades.searchCompletedExams')}
+                        value={completedExamsSearch}
+                        onChange={(e) => setCompletedExamsSearch(e.target.value)}
+                        className="pl-10"
+                      />
+                    </div>
+
+                    {/* Search Results Info */}
+                    {filteredCompletedExams.length > 0 && (
+                      <div className="text-sm text-gray-600">
+                        {t('studentGrades.showingResults', {
+                          start: (completedExamsPage - 1) * ITEMS_PER_PAGE + 1,
+                          end: Math.min(completedExamsPage * ITEMS_PER_PAGE, filteredCompletedExams.length),
+                          total: filteredCompletedExams.length
+                        })}
+                      </div>
+                    )}
+
+                    {/* Completed Exams List */}
+                    {filteredCompletedExams.length === 0 ? (
+                      <div className="text-center py-8">
+                        <CheckCircle className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                        <p className="text-gray-500">{t('studentGrades.noCompletedExamsFound')}</p>
+                        <p className="text-gray-400 text-sm">{t('studentGrades.adjustSearchCriteria')}</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        {paginatedCompletedExams.map((exam: any) => {
+                          const submission = mySubmissions.find((s: any) => s.examId === exam.id);
+                          return (
+                            <div key={exam.id} className="flex items-center justify-between p-4 border rounded-lg bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                              <div className="flex-1">
+                                <h4 className="font-medium text-gray-900 dark:text-gray-100">{exam.title}</h4>
+                                <p className="text-sm text-gray-600 dark:text-gray-400">{(subjects as any[]).find((s: any) => s.id === exam.subjectId)?.name || t('studentExams.unknownSubject')}</p>
+                                {submission?.submittedAt && (
+                                  <p className="text-xs text-gray-500 dark:text-gray-500">
+                                    Completed: {new Date(submission.submittedAt).toLocaleDateString()}
+                                  </p>
+                                )}
                               </div>
-                            ) : (
-                              <Badge variant="secondary">
-                                {submission?.status?.replace('_', ' ') || 'Unknown'}
-                              </Badge>
-                            )}
-                          </div>
+                              
+                              <div className="text-right">
+                                {submission?.totalScore ? (
+                                  <div>
+                                    <p className="font-medium text-gray-900 dark:text-gray-100">
+                                      {submission.totalScore}/{submission.maxScore}
+                                    </p>
+                                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                                      {((parseFloat(submission.totalScore) / parseFloat(submission.maxScore)) * 100).toFixed(1)}%
+                                    </p>
+                                  </div>
+                                ) : (
+                                  <Badge variant="secondary">
+                                    {submission?.status?.replace('_', ' ') || 'Unknown'}
+                                  </Badge>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                    {/* Pagination Controls */}
+                    {totalCompletedPages > 1 && (
+                      <div className="flex items-center justify-between pt-4">
+                        <div className="text-sm text-gray-600 dark:text-gray-400">
+                          {t('studentGrades.page', { current: completedExamsPage, total: totalCompletedPages })}
                         </div>
-                      );
-                    })}
+                        <div className="flex items-center space-x-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setCompletedExamsPage(prev => Math.max(1, prev - 1))}
+                            disabled={completedExamsPage === 1}
+                          >
+                            <ChevronLeft className="h-4 w-4 mr-1" />
+                            {t('studentGrades.previous')}
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setCompletedExamsPage(prev => Math.min(totalCompletedPages, prev + 1))}
+                            disabled={completedExamsPage === totalCompletedPages}
+                          >
+                            {t('studentGrades.next')}
+                            <ChevronRight className="h-4 w-4 ml-1" />
+                          </Button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </CardContent>

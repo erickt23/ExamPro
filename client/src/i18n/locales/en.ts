@@ -320,7 +320,14 @@ export const en = {
     inProgress: 'In Progress',
     lateSubmission: 'Late Submission',
     pending: 'Pending',
-    attemptNumber: 'Attempt #{number}'
+    attemptNumber: 'Attempt #{number}',
+    searchCompletedExams: 'Search completed exams...',
+    noCompletedExamsFound: 'No completed exams found',
+    adjustSearchCriteria: 'Try adjusting your search criteria',
+    showingResults: 'Showing {start}-{end} of {total} exams',
+    previous: 'Previous',
+    next: 'Next',
+    page: 'Page {current} of {total}'
   },
 
   // Student Homework

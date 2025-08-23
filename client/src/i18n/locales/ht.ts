@@ -318,7 +318,14 @@ export const ht = {
     inProgress: 'Y ap Fèt',
     lateSubmission: 'Soumisyon An Reta',
     pending: 'K ap Tann',
-    attemptNumber: 'Eseye #{number}'
+    attemptNumber: 'Eseye #{number}',
+    searchCompletedExams: 'Chèche egzamen yo ki fini...',
+    noCompletedExamsFound: 'Pa gen egzamen ki fini yo jwenn',
+    adjustSearchCriteria: 'Eseye ajiste kritè rechèch ou yo',
+    showingResults: 'Y ap montre {start}-{end} sou {total} egzamen',
+    previous: 'Anvan',
+    next: 'Pwochen',
+    page: 'Paj {current} sou {total}'
   },
 
   // Student Homework
