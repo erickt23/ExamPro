@@ -324,20 +324,17 @@ export default function ExamResults() {
                 <div className="space-y-4">
                   <h5 className="font-semibold text-gray-900 dark:text-foreground">Questions and Answers</h5>
                   {submissionDetails.answers?.map((answer: any, index: number) => (
-                    <div key={answer.id} className="bg-gray-50 dark:bg-muted/30 p-4 rounded-lg border dark:border-border">
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            <span className="text-sm font-medium text-gray-700 dark:text-muted-foreground">Question {index + 1}</span>
-                            <Badge className={getQuestionTypeColor(answer.question?.questionType)} variant="outline">
-                              {formatQuestionType(answer.question?.questionType)}
-                            </Badge>
-                          </div>
-                          <p className="text-gray-900 dark:text-foreground font-medium mb-2">{answer.question?.questionText}</p>
+                    <div key={answer.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <span className="font-medium text-gray-900 dark:text-foreground">Question {index + 1}</span>
+                          <Badge className={getQuestionTypeColor(answer.question?.questionType)} variant="outline">
+                            {formatQuestionType(answer.question?.questionType)}
+                          </Badge>
                         </div>
-                        <div className="text-right text-sm">
+                        <div className="text-sm font-medium">
                           {submission.status === 'graded' && (
-                            <span className={`font-medium ${
+                            <span className={`${
                               parseFloat(answer.score) === parseFloat(answer.maxScore) 
                                 ? 'text-green-600 dark:text-green-400' 
                                 : parseFloat(answer.score) > 0 
@@ -350,18 +347,26 @@ export default function ExamResults() {
                         </div>
                       </div>
                       
-                      <div className="space-y-2">
+                      <div className="text-gray-900 dark:text-foreground">
+                        {answer.question?.questionText}
+                      </div>
+                      
+                      <div className="space-y-3">
                         <div>
-                          <span className="text-sm font-medium text-gray-600 dark:text-muted-foreground">Student's Answer:</span>
-                          <div className="mt-1 p-2 bg-white dark:bg-background/50 rounded text-sm">
+                          <div className="text-sm font-medium text-gray-600 dark:text-muted-foreground mb-2">
+                            Student's Answer:
+                          </div>
+                          <div className="space-y-1">
                             {formatAnswer(answer.studentAnswer, answer.question?.questionType)}
                           </div>
                         </div>
                         
                         {answer.question?.correctAnswer && (
                           <div>
-                            <span className="text-sm font-medium text-gray-600 dark:text-muted-foreground">Correct Answer:</span>
-                            <div className="mt-1 p-2 bg-green-50 dark:bg-green-800/10 text-green-800 dark:text-green-300 rounded text-sm">
+                            <div className="text-sm font-medium text-gray-600 dark:text-muted-foreground mb-2">
+                              Correct Answer:
+                            </div>
+                            <div className="space-y-1 text-green-700 dark:text-green-300">
                               {formatAnswer(answer.question.correctAnswer, answer.question?.questionType)}
                             </div>
                           </div>
@@ -369,8 +374,10 @@ export default function ExamResults() {
                         
                         {submission.status === 'graded' && answer.feedback && (
                           <div>
-                            <span className="text-sm font-medium text-gray-600 dark:text-muted-foreground">Feedback:</span>
-                            <div className="mt-1 p-2 bg-blue-50 dark:bg-blue-800/10 text-blue-800 dark:text-blue-300 rounded text-sm">
+                            <div className="text-sm font-medium text-gray-600 dark:text-muted-foreground mb-2">
+                              Feedback:
+                            </div>
+                            <div className="p-2 bg-blue-50 dark:bg-blue-800/10 text-blue-800 dark:text-blue-300 rounded text-sm">
                               {answer.feedback}
                             </div>
                           </div>
