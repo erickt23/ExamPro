@@ -135,15 +135,27 @@ export default function ExamResults() {
   };
 
   const formatAnswer = (answer: any, questionType: string): React.ReactNode => {
-    if (!answer || answer === '') return 'No answer provided';
+    // Check for null, undefined, empty string, empty object, or empty array
+    if (!answer || answer === '' || answer === null || answer === undefined) {
+      return <span className="text-gray-500 italic">No answer provided</span>;
+    }
+    
+    // Handle empty objects and arrays
+    if (typeof answer === 'object' && Object.keys(answer).length === 0) {
+      return <span className="text-gray-500 italic">No answer provided</span>;
+    }
+    
+    if (Array.isArray(answer) && answer.length === 0) {
+      return <span className="text-gray-500 italic">No answer provided</span>;
+    }
     
     try {
       switch (questionType) {
         case 'multiple_choice':
-          return answer;
+          return <span>{String(answer)}</span>;
         case 'short_answer':
         case 'essay':
-          return answer;
+          return <span>{String(answer)}</span>;
         case 'fill_blank':
           if (typeof answer === 'string') {
             return answer.split('|').map((ans: string, i: number) => (
@@ -152,40 +164,76 @@ export default function ExamResults() {
               </span>
             ));
           }
-          return answer;
+          if (Array.isArray(answer)) {
+            return answer.map((ans: string, i: number) => (
+              <span key={i} className="inline-block bg-blue-100 dark:bg-blue-800/20 px-2 py-1 rounded mr-2 mb-1">
+                Blank {i + 1}: {ans}
+              </span>
+            ));
+          }
+          return <span>{String(answer)}</span>;
         case 'matching':
+          // Handle string JSON
           if (typeof answer === 'string') {
             try {
               const parsed = JSON.parse(answer);
               if (typeof parsed === 'object' && parsed !== null) {
-                return Object.entries(parsed).map(([left, right], i) => {
-                  // Handle both string keys and object values
-                  const leftText = typeof left === 'object' ? JSON.stringify(left) : String(left);
-                  const rightText = typeof right === 'object' ? JSON.stringify(right) : String(right);
-                  return (
-                    <div key={i} className="text-sm mb-1">
-                      <span className="font-medium">{leftText}</span> → <span>{rightText}</span>
-                    </div>
-                  );
-                });
+                return Object.entries(parsed).map(([left, right], i) => (
+                  <div key={i} className="flex items-center gap-2 mb-1">
+                    <span className="font-medium">{String(left)}</span>
+                    <span>→</span>
+                    <span>{String(right)}</span>
+                  </div>
+                ));
               }
             } catch (e) {
               // Try as a simple string mapping like "0:1,1:2"
-              if (answer.includes(':') && answer.includes(',')) {
+              if (answer.includes(':')) {
                 const pairs = answer.split(',');
                 return pairs.map((pair, i) => {
                   const [left, right] = pair.split(':');
                   return (
-                    <div key={i} className="text-sm mb-1">
-                      <span className="font-medium">Item {left}</span> → <span>Option {right}</span>
+                    <div key={i} className="flex items-center gap-2 mb-1">
+                      <span className="font-medium">{String(left)}</span>
+                      <span>→</span>
+                      <span>{String(right)}</span>
                     </div>
                   );
                 });
               }
-              return answer;
+              return <span>{String(answer)}</span>;
             }
           }
-          return 'Invalid answer format';
+          // Handle object format
+          if (typeof answer === 'object' && answer !== null) {
+            return Object.entries(answer).map(([left, right], i) => (
+              <div key={i} className="flex items-center gap-2 mb-1">
+                <span className="font-medium">{String(left)}</span>
+                <span>→</span>
+                <span>{String(right)}</span>
+              </div>
+            ));
+          }
+          // Handle array format
+          if (Array.isArray(answer)) {
+            return answer.map((pair: any, i: number) => {
+              if (typeof pair === 'object' && pair.left && pair.right) {
+                return (
+                  <div key={i} className="flex items-center gap-2 mb-1">
+                    <span className="font-medium">{String(pair.left)}</span>
+                    <span>→</span>
+                    <span>{String(pair.right)}</span>
+                  </div>
+                );
+              }
+              return (
+                <div key={i} className="flex items-center gap-2 mb-1">
+                  <span>{String(pair)}</span>
+                </div>
+              );
+            });
+          }
+          return <span>{String(answer)}</span>;
         case 'ranking':
           if (typeof answer === 'string') {
             try {
@@ -193,40 +241,52 @@ export default function ExamResults() {
               if (Array.isArray(parsed)) {
                 return parsed.map((item, i) => (
                   <span key={i} className="inline-block bg-purple-100 dark:bg-purple-800/20 px-2 py-1 rounded mr-2 mb-1">
-                    {i + 1}. {item}
+                    {i + 1}. {String(item)}
                   </span>
                 ));
               }
             } catch (e) {
-              return answer;
+              return <span>{String(answer)}</span>;
             }
           }
-          return answer;
+          if (Array.isArray(answer)) {
+            return answer.map((item, i) => (
+              <span key={i} className="inline-block bg-purple-100 dark:bg-purple-800/20 px-2 py-1 rounded mr-2 mb-1">
+                {i + 1}. {String(item)}
+              </span>
+            ));
+          }
+          return <span>{String(answer)}</span>;
         case 'drag_drop':
           if (typeof answer === 'string') {
             try {
               const parsed = JSON.parse(answer);
               if (typeof parsed === 'object' && parsed !== null) {
-                return Object.entries(parsed).map(([zone, item], i) => {
-                  const zoneText = typeof zone === 'object' ? JSON.stringify(zone) : String(zone);
-                  const itemText = typeof item === 'object' ? JSON.stringify(item) : String(item);
-                  return (
-                    <div key={i} className="text-sm mb-1">
-                      <span className="font-medium">{zoneText}:</span> <span>{itemText}</span>
-                    </div>
-                  );
-                });
+                return Object.entries(parsed).map(([zone, item], i) => (
+                  <div key={i} className="flex items-center gap-2 mb-1">
+                    <span className="font-medium">{String(zone)}:</span>
+                    <span>{String(item)}</span>
+                  </div>
+                ));
               }
             } catch (e) {
-              return answer;
+              return <span>{String(answer)}</span>;
             }
           }
-          return 'Invalid answer format';
+          if (typeof answer === 'object' && answer !== null) {
+            return Object.entries(answer).map(([zone, item], i) => (
+              <div key={i} className="flex items-center gap-2 mb-1">
+                <span className="font-medium">{String(zone)}:</span>
+                <span>{String(item)}</span>
+              </div>
+            ));
+          }
+          return <span>{String(answer)}</span>;
         default:
-          return answer;
+          return <span>{String(answer)}</span>;
       }
     } catch (error) {
-      return 'Error displaying answer';
+      return <span className="text-red-500">Error displaying answer</span>;
     }
   };
 
