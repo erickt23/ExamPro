@@ -31,6 +31,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Plus, Search, X, Minus } from "lucide-react";
+import { useTranslation } from "@/hooks/useTranslation";
 import CreateSubjectModal from "./create-subject-modal";
 
 const editExamSchema = z.object({
@@ -59,6 +60,7 @@ interface EditExamModalProps {
 }
 
 export default function EditExamModal({ open, onOpenChange, examId }: EditExamModalProps) {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const [showCreateSubjectModal, setShowCreateSubjectModal] = useState(false);
   
@@ -353,7 +355,7 @@ export default function EditExamModal({ open, onOpenChange, examId }: EditExamMo
   };
 
   const formatQuestionType = (type: string | undefined) => {
-    if (!type) return 'Unknown';
+    if (!type) return t('studentExams.unknown');
     return type.replace('_', ' ').split(' ').map(word => 
       word.charAt(0).toUpperCase() + word.slice(1)
     ).join(' ');

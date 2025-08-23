@@ -115,7 +115,7 @@ export default function ExamResults() {
   };
 
   const formatQuestionType = (type: string | undefined) => {
-    if (!type) return 'Unknown';
+    if (!type) return t('studentExams.unknown');
     return type.replace('_', ' ').split(' ').map(word => 
       word.charAt(0).toUpperCase() + word.slice(1)
     ).join(' ');

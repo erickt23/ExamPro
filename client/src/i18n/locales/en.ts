@@ -261,6 +261,7 @@ export const en = {
     examNotAvailable: 'This exam is not yet available',
     examCannotStart: 'This exam cannot be started',
     unknownSubject: 'Unknown Subject',
+    unknown: 'Unknown',
     left: 'left',
     minutes: 'minutes',
     points: 'points',

@@ -304,7 +304,7 @@ export default function StudentDashboard() {
                                 {exam.examStatus.label}
                               </Badge>
                             </div>
-                            <p className="text-sm text-gray-600">{(subjects as any[]).find((s: any) => s.id === exam.subjectId)?.name || 'Unknown Subject'} • {exam.duration} {t('studentDashboard.minutes')}</p>
+                            <p className="text-sm text-gray-600">{(subjects as any[]).find((s: any) => s.id === exam.subjectId)?.name || t('unknownSubject')} • {exam.duration} {t('studentDashboard.minutes')}</p>
                             {exam.availableFrom && exam.examStatus.status === 'upcoming' && (
                               <p className="text-xs text-gray-500 mt-1">
                                 Available: {formatEasternTime(exam.availableFrom, { includeDate: true, includeTime: true, format: 'medium' })}
@@ -381,7 +381,7 @@ export default function StudentDashboard() {
                                 </Badge>
                               </div>
                               <p className="text-sm text-gray-600">
-                                {subject?.name || 'Unknown Subject'}
+                                {subject?.name || t('studentExams.unknownSubject')}
                               </p>
                               {hw.dueDate && (
                                 <p className="text-xs text-gray-500 mt-1">

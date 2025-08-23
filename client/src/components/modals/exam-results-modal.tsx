@@ -23,6 +23,7 @@ import {
   ChevronDown,
   ChevronUp
 } from "lucide-react";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface ExamResultsModalProps {
   open: boolean;
@@ -31,6 +32,7 @@ interface ExamResultsModalProps {
 }
 
 export default function ExamResultsModal({ open, onOpenChange, examId }: ExamResultsModalProps) {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const [expandedSubmission, setExpandedSubmission] = useState<number | null>(null);
 
@@ -366,7 +368,7 @@ function SubmissionCard({ submission, isExpanded, onToggleExpand, getStatusBadge
   });
 
   const formatQuestionType = (type: string | undefined) => {
-    if (!type) return 'Unknown';
+    if (!type) return t('studentExams.unknown');
     return type.replace('_', ' ').split(' ').map(word => 
       word.charAt(0).toUpperCase() + word.slice(1)
     ).join(' ');

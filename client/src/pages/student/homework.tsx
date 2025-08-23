@@ -221,7 +221,7 @@ export default function StudentHomework() {
                                   {statusInfo.text}
                                 </Badge>
                                 <Badge variant="outline">
-                                  {subject?.name || 'Unknown Subject'}
+                                  {subject?.name || t('unknownSubject')}
                                 </Badge>
                                 {submissionInfo.isSubmitted && (
                                   <Badge className="bg-green-100 text-green-800">

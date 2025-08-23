@@ -259,6 +259,7 @@ export const fr = {
     examNotAvailable: 'Cet examen n\'est pas encore disponible',
     examCannotStart: 'Cet examen ne peut pas être commencé',
     unknownSubject: 'Matière Inconnue',
+    unknown: 'Inconnu',
     left: 'restantes',
     minutes: 'minutes',
     points: 'points',

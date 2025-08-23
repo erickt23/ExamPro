@@ -953,7 +953,7 @@ export default function InstructorHomeworkPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label className="text-sm font-medium text-gray-500">Subject</Label>
-                    <p className="mt-1">{subjects.find((s: any) => s.id === selectedHomework.subjectId)?.name || 'Unknown Subject'}</p>
+                    <p className="mt-1">{subjects.find((s: any) => s.id === selectedHomework.subjectId)?.name || t('studentExams.unknownSubject')}</p>
                   </div>
                   
                   <div>
@@ -1115,7 +1115,7 @@ export default function InstructorHomeworkPage() {
                               </div>
                             </TableCell>
                             <TableCell>
-                              {subjects.find((s: any) => s.id === hw.subjectId)?.name || 'Unknown Subject'}
+                              {subjects.find((s: any) => s.id === hw.subjectId)?.name || t('studentExams.unknownSubject')}
                             </TableCell>
                             <TableCell>
                               {hw.dueDate ? new Date(hw.dueDate).toLocaleDateString('en-US', {

@@ -391,7 +391,7 @@ export default function InstructorExams() {
                                 <TableCell>
                                   <div className="font-medium">{exam.title}</div>
                                   <div className="text-sm text-gray-600">
-                                    {(subjects as any[]).find((s: any) => s.id === exam.subjectId)?.name || 'Unknown Subject'} • {exam.totalPoints} points
+                                    {(subjects as any[]).find((s: any) => s.id === exam.subjectId)?.name || t('studentExams.unknownSubject')} • {exam.totalPoints} points
                                   </div>
                                 </TableCell>
                                 <TableCell>

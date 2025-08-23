@@ -29,6 +29,7 @@ import {
   Target,
   Lock
 } from "lucide-react";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface ExamPreviewModalProps {
   open: boolean;
@@ -38,6 +39,7 @@ interface ExamPreviewModalProps {
 }
 
 export default function ExamPreviewModal({ open, onOpenChange, examId, onPublish }: ExamPreviewModalProps) {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
 
@@ -130,7 +132,7 @@ export default function ExamPreviewModal({ open, onOpenChange, examId, onPublish
   };
 
   const formatQuestionType = (type: string | undefined) => {
-    if (!type) return 'Unknown';
+    if (!type) return t('studentExams.unknown');
     return type.replace('_', ' ').split(' ').map(word => 
       word.charAt(0).toUpperCase() + word.slice(1)
     ).join(' ');

@@ -288,7 +288,7 @@ export default function InstructorQuestions() {
                                 {formatQuestionType(question.questionType)}
                               </Badge>
                               <Badge variant="outline">
-                                {(subjects as any[]).find((s: any) => s.id === question.subjectId)?.name || 'Unknown Subject'}
+                                {(subjects as any[]).find((s: any) => s.id === question.subjectId)?.name || t('studentExams.unknownSubject')}
                               </Badge>
                               <Badge className={getDifficultyColor(question.difficulty)}>
                                 {question.difficulty}

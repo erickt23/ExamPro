@@ -259,6 +259,7 @@ export const ht = {
     examNotAvailable: 'Egzamen sa a pa disponib koulye a',
     examCannotStart: 'Egzamen sa a pa ka kòmanse',
     unknownSubject: 'Matye ki pa Konnen',
+    unknown: 'Pa Konnen',
     left: 'ki rete',
     minutes: 'minit',
     points: 'pwen',

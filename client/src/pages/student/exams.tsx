@@ -947,7 +947,7 @@ export default function StudentExams() {
                                   </div>
                                 ) : (
                                   <Badge variant="secondary">
-                                    {submission?.status?.replace('_', ' ') || 'Unknown'}
+                                    {submission?.status?.replace('_', ' ') || t('studentExams.unknown')}
                                   </Badge>
                                 )}
                               </div>
