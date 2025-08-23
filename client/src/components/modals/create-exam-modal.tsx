@@ -99,7 +99,7 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
     },
   });
 
-  const { data: questions } = useQuery({
+  const { data: questionsData } = useQuery({
     queryKey: ["/api/questions", { search: questionSearch, subject: filterSubject, type: filterType, difficulty: filterDifficulty, bloomsTaxonomy: filterBloomsTaxonomy }],
     queryFn: async () => {
       const params = new URLSearchParams();
@@ -116,6 +116,8 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
     retry: false,
     enabled: true, // Always fetch questions for both manual and random selection
   });
+
+  const questions = questionsData?.questions || [];
 
   // Auto-select random questions when method changes or count changes
   React.useEffect(() => {

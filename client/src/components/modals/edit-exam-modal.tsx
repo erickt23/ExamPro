@@ -104,7 +104,7 @@ export default function EditExamModal({ open, onOpenChange, examId }: EditExamMo
   });
 
   // Fetch available questions for adding
-  const { data: availableQuestions } = useQuery({
+  const { data: availableQuestionsData } = useQuery({
     queryKey: ["/api/questions", { search: questionSearch }],
     queryFn: async () => {
       const params = new URLSearchParams();
@@ -117,6 +117,8 @@ export default function EditExamModal({ open, onOpenChange, examId }: EditExamMo
     retry: false,
     enabled: open,
   });
+
+  const availableQuestions = availableQuestionsData?.questions || [];
 
   // Auto-select random questions when method changes or count changes
   React.useEffect(() => {
