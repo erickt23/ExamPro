@@ -560,7 +560,9 @@ export const fr = {
     importQuestions: 'Importer Questions',
     importFailed: 'Échec de l\'Importation',
     unauthorized: 'Non Autorisé',
-    loggedOut: 'Vous êtes déconnecté. Reconnexion en cours...'
+    loggedOut: 'Vous êtes déconnecté. Reconnexion en cours...',
+    showFormatInstructions: 'Afficher Instructions Format',
+    hideFormatInstructions: 'Masquer Instructions Format'
   },
 
   // Common/Shared Elements

@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Upload, FileSpreadsheet, CheckCircle, AlertCircle, Download, Info } from "lucide-react";
+import { Upload, FileSpreadsheet, CheckCircle, AlertCircle, Download, Info, ChevronDown } from "lucide-react";
 
 interface ImportQuestionsModalProps {
   open: boolean;
@@ -26,6 +26,7 @@ export default function ImportQuestionsModal({ open, onOpenChange }: ImportQuest
   const { toast } = useToast();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [importResults, setImportResults] = useState<any>(null);
+  const [showFormatInstructions, setShowFormatInstructions] = useState(false);
 
   const importMutation = useMutation({
     mutationFn: async (file: File) => {
@@ -93,6 +94,7 @@ export default function ImportQuestionsModal({ open, onOpenChange }: ImportQuest
   const handleClose = () => {
     setSelectedFile(null);
     setImportResults(null);
+    setShowFormatInstructions(false);
     onOpenChange(false);
   };
 
@@ -107,35 +109,51 @@ export default function ImportQuestionsModal({ open, onOpenChange }: ImportQuest
         </DialogHeader>
 
         <div className="space-y-6 overflow-y-auto flex-1 pr-2">
-          {/* Excel Format Information */}
-          <Alert>
-            <Info className="h-4 w-4" />
-            <AlertDescription>
-              <strong>{t('importQuestions.excelFormatRequired')}</strong> {t('importQuestions.excelFormatDescription')}
-              <ul className="mt-2 text-sm list-disc list-inside space-y-1">
-                <li><strong>title</strong> - {t('importQuestions.columnTitle')}</li>
-                <li><strong>questionText</strong> - {t('importQuestions.columnQuestionText')}</li>
-                <li><strong>questionType</strong> - {t('importQuestions.columnQuestionType')}</li>
-                <li><strong>subject</strong> - {t('importQuestions.columnSubject')}</li>
-                <li><strong>difficulty</strong> - {t('importQuestions.columnDifficulty')}</li>
-                <li><strong>bloomsTaxonomy</strong> - {t('importQuestions.columnBloomsTaxonomy')}</li>
-                <li><strong>points</strong> - {t('importQuestions.columnPoints')}</li>
-                <li><strong>options</strong> - {t('importQuestions.columnOptions')}</li>
-                <li><strong>correctAnswer</strong> - {t('importQuestions.columnCorrectAnswer')}</li>
-                <li><strong>explanation</strong> - {t('importQuestions.columnExplanation')}</li>
-                <li><strong>category</strong> - {t('importQuestions.columnCategory')}</li>
-              </ul>
-              <div className="mt-3 p-3 bg-blue-50 rounded-md">
-                <p className="text-sm font-medium text-blue-800 dark:text-blue-300 mb-2">{t('importQuestions.advancedQuestionTypes')}</p>
-                <ul className="text-xs space-y-1 text-blue-700 dark:text-blue-200">
-                  <li><strong>Matching:</strong> {t('importQuestions.matchingFormat')}</li>
-                  <li><strong>Ranking:</strong> {t('importQuestions.rankingFormat')}</li>
-                  <li><strong>Drag & Drop:</strong> {t('importQuestions.dragDropFormat')}</li>
-                  <li><strong>Fill in Blank:</strong> {t('importQuestions.fillBlankFormat')}</li>
-                </ul>
-              </div>
-            </AlertDescription>
-          </Alert>
+          {/* Format Instructions Toggle */}
+          <div className="space-y-3">
+            <Button
+              variant="ghost"
+              onClick={() => setShowFormatInstructions(!showFormatInstructions)}
+              className="w-full justify-between p-3 h-auto border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800"
+            >
+              <span className="font-medium">
+                {showFormatInstructions ? t('importQuestions.hideFormatInstructions') : t('importQuestions.showFormatInstructions')}
+              </span>
+              <ChevronDown className={`h-4 w-4 transition-transform ${showFormatInstructions ? 'rotate-180' : ''}`} />
+            </Button>
+            
+            {/* Collapsible Excel Format Information */}
+            {showFormatInstructions && (
+              <Alert className="animate-in slide-in-from-top-2 duration-200">
+                <Info className="h-4 w-4" />
+                <AlertDescription>
+                  <strong>{t('importQuestions.excelFormatRequired')}</strong> {t('importQuestions.excelFormatDescription')}
+                  <ul className="mt-2 text-sm list-disc list-inside space-y-1">
+                    <li><strong>title</strong> - {t('importQuestions.columnTitle')}</li>
+                    <li><strong>questionText</strong> - {t('importQuestions.columnQuestionText')}</li>
+                    <li><strong>questionType</strong> - {t('importQuestions.columnQuestionType')}</li>
+                    <li><strong>subject</strong> - {t('importQuestions.columnSubject')}</li>
+                    <li><strong>difficulty</strong> - {t('importQuestions.columnDifficulty')}</li>
+                    <li><strong>bloomsTaxonomy</strong> - {t('importQuestions.columnBloomsTaxonomy')}</li>
+                    <li><strong>points</strong> - {t('importQuestions.columnPoints')}</li>
+                    <li><strong>options</strong> - {t('importQuestions.columnOptions')}</li>
+                    <li><strong>correctAnswer</strong> - {t('importQuestions.columnCorrectAnswer')}</li>
+                    <li><strong>explanation</strong> - {t('importQuestions.columnExplanation')}</li>
+                    <li><strong>category</strong> - {t('importQuestions.columnCategory')}</li>
+                  </ul>
+                  <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-md">
+                    <p className="text-sm font-medium text-blue-800 dark:text-blue-300 mb-2">{t('importQuestions.advancedQuestionTypes')}</p>
+                    <ul className="text-xs space-y-1 text-blue-700 dark:text-blue-200">
+                      <li><strong>Matching:</strong> {t('importQuestions.matchingFormat')}</li>
+                      <li><strong>Ranking:</strong> {t('importQuestions.rankingFormat')}</li>
+                      <li><strong>Drag & Drop:</strong> {t('importQuestions.dragDropFormat')}</li>
+                      <li><strong>Fill in Blank:</strong> {t('importQuestions.fillBlankFormat')}</li>
+                    </ul>
+                  </div>
+                </AlertDescription>
+              </Alert>
+            )}
+          </div>
 
           {/* File Upload */}
           <div className="space-y-4">

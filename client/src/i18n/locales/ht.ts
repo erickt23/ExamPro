@@ -560,7 +560,9 @@ export const ht = {
     importQuestions: 'Enpòte Kesyon yo',
     importFailed: 'Enpòtasyon Echwe',
     unauthorized: 'Pa Otorize',
-    loggedOut: 'Ou dekonekte. Y ap konekte ou ankò...'
+    loggedOut: 'Ou dekonekte. Y ap konekte ou ankò...',
+    showFormatInstructions: 'Montre Enstriksyon Fòma',
+    hideFormatInstructions: 'Kache Enstriksyon Fòma'
   },
 
   // Common/Shared Elements

@@ -562,7 +562,9 @@ export const en = {
     importQuestions: 'Import Questions',
     importFailed: 'Import Failed',
     unauthorized: 'Unauthorized',
-    loggedOut: 'You are logged out. Logging in again...'
+    loggedOut: 'You are logged out. Logging in again...',
+    showFormatInstructions: 'Show Format Instructions',
+    hideFormatInstructions: 'Hide Format Instructions'
   },
 
   // Common/Shared Elements
