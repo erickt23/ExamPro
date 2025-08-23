@@ -114,6 +114,26 @@ export default function ExamResults() {
     }
   };
 
+  const formatQuestionType = (type: string | undefined) => {
+    if (!type) return 'Unknown';
+    return type.replace('_', ' ').split(' ').map(word => 
+      word.charAt(0).toUpperCase() + word.slice(1)
+    ).join(' ');
+  };
+
+  const getQuestionTypeColor = (type: string | undefined) => {
+    switch (type) {
+      case 'multiple_choice': return 'bg-blue-100 text-blue-800 dark:bg-blue-800/20 dark:text-blue-300';
+      case 'short_answer': return 'bg-green-100 text-green-800 dark:bg-green-800/20 dark:text-green-300';
+      case 'essay': return 'bg-orange-100 text-orange-800 dark:bg-orange-800/20 dark:text-orange-300';
+      case 'fill_blank': return 'bg-purple-100 text-purple-800 dark:bg-purple-800/20 dark:text-purple-300';
+      case 'matching': return 'bg-pink-100 text-pink-800 dark:bg-pink-800/20 dark:text-pink-300';
+      case 'ranking': return 'bg-indigo-100 text-indigo-800 dark:bg-indigo-800/20 dark:text-indigo-300';
+      case 'drag_drop': return 'bg-cyan-100 text-cyan-800 dark:bg-cyan-800/20 dark:text-cyan-300';
+      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-800/20 dark:text-gray-300';
+    }
+  };
+
   const formatAnswer = (answer: any, questionType: string): React.ReactNode => {
     if (!answer || answer === '') return 'No answer provided';
     
@@ -193,6 +213,18 @@ export default function ExamResults() {
   const SubmissionCard = ({ submission }: { submission: any }) => {
     const isExpanded = expandedSubmission === submission.id;
     
+    // Fetch submission details with answers when expanded
+    const { data: submissionDetails } = useQuery({
+      queryKey: ["/api/submissions", submission.id, "grade"],
+      queryFn: async () => {
+        const response = await fetch(`/api/submissions/${submission.id}/grade`);
+        if (!response.ok) throw new Error(`${response.status}: ${response.statusText}`);
+        return response.json();
+      },
+      enabled: isExpanded,
+      retry: false,
+    });
+    
     return (
       <Card className="border-l-4 border-l-blue-500 dark:bg-card">
         <CardHeader className="pb-3">
@@ -245,39 +277,79 @@ export default function ExamResults() {
             </div>
           </div>
 
-          {isExpanded && submission.answers && (
+          {isExpanded && (
             <div className="space-y-4 border-t pt-4">
-              <h5 className="font-semibold text-gray-900 dark:text-foreground">Answer Details</h5>
-              {submission.answers.map((answer: any, index: number) => (
-                <div key={index} className="bg-gray-50 dark:bg-muted/30 p-4 rounded-lg">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="font-medium text-gray-700 dark:text-muted-foreground">
-                      Question {index + 1}
-                    </span>
-                    <div className="flex items-center gap-2">
-                      {answer.isCorrect !== undefined && (
-                        <Badge className={answer.isCorrect 
-                          ? "bg-green-100 text-green-800 dark:bg-green-800/20 dark:text-green-400" 
-                          : "bg-red-100 text-red-800 dark:bg-red-800/20 dark:text-red-400"
-                        }>
-                          {answer.isCorrect ? 'Correct' : 'Incorrect'}
-                        </Badge>
-                      )}
-                      {answer.points !== undefined && (
-                        <span className="text-sm font-medium text-gray-600 dark:text-muted-foreground">
-                          {answer.points} pts
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  <div className="text-sm text-gray-600 dark:text-muted-foreground">
-                    <div className="mb-1 font-medium">Answer:</div>
-                    <div className="bg-white dark:bg-background/50 p-2 rounded border">
-                      {formatAnswer(answer.answer, answer.questionType)}
-                    </div>
-                  </div>
+              {!submissionDetails ? (
+                <div className="text-center py-4">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto mb-2"></div>
+                  <p className="text-sm text-gray-600 dark:text-muted-foreground">Loading answers...</p>
                 </div>
-              ))}
+              ) : (
+                <div className="space-y-4">
+                  <h5 className="font-semibold text-gray-900 dark:text-foreground">Questions and Answers</h5>
+                  {submissionDetails.answers?.map((answer: any, index: number) => (
+                    <div key={answer.id} className="bg-gray-50 dark:bg-muted/30 p-4 rounded-lg border dark:border-border">
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="text-sm font-medium text-gray-700 dark:text-muted-foreground">Question {index + 1}</span>
+                            <Badge className={getQuestionTypeColor(answer.question?.questionType)} variant="outline">
+                              {formatQuestionType(answer.question?.questionType)}
+                            </Badge>
+                          </div>
+                          <p className="text-gray-900 dark:text-foreground font-medium mb-2">{answer.question?.questionText}</p>
+                        </div>
+                        <div className="text-right text-sm">
+                          {submission.status === 'graded' && (
+                            <span className={`font-medium ${
+                              parseFloat(answer.score) === parseFloat(answer.maxScore) 
+                                ? 'text-green-600 dark:text-green-400' 
+                                : parseFloat(answer.score) > 0 
+                                ? 'text-orange-600 dark:text-orange-400' 
+                                : 'text-red-600 dark:text-red-400'
+                            }`}>
+                              {answer.score}/{answer.maxScore} pts
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <div>
+                          <span className="text-sm font-medium text-gray-600 dark:text-muted-foreground">Student's Answer:</span>
+                          <div className="mt-1 p-2 bg-white dark:bg-background/50 rounded text-sm">
+                            {formatAnswer(answer.studentAnswer, answer.question?.questionType)}
+                          </div>
+                        </div>
+                        
+                        {answer.question?.correctAnswer && (
+                          <div>
+                            <span className="text-sm font-medium text-gray-600 dark:text-muted-foreground">Correct Answer:</span>
+                            <div className="mt-1 p-2 bg-green-50 dark:bg-green-800/10 text-green-800 dark:text-green-300 rounded text-sm">
+                              {formatAnswer(answer.question.correctAnswer, answer.question?.questionType)}
+                            </div>
+                          </div>
+                        )}
+                        
+                        {submission.status === 'graded' && answer.feedback && (
+                          <div>
+                            <span className="text-sm font-medium text-gray-600 dark:text-muted-foreground">Feedback:</span>
+                            <div className="mt-1 p-2 bg-blue-50 dark:bg-blue-800/10 text-blue-800 dark:text-blue-300 rounded text-sm">
+                              {answer.feedback}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                  
+                  {(!submissionDetails.answers || submissionDetails.answers.length === 0) && (
+                    <p className="text-sm text-gray-600 dark:text-muted-foreground text-center py-4">
+                      No answers found for this submission.
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
           )}
         </CardContent>
