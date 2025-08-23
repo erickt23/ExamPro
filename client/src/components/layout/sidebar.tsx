@@ -283,10 +283,10 @@ export default function Sidebar({ className }: SidebarProps) {
                   title={!showText ? item.title : undefined}
                 >
                   <item.icon className={cn(
-                    "h-5 w-5 flex-shrink-0 transition-all duration-200",
+                    "h-4 w-4 flex-shrink-0 transition-all duration-200",
                     isActive ? "text-white drop-shadow-sm" : "text-gray-600 dark:text-muted-foreground group-hover:text-indigo-600 dark:group-hover:text-foreground"
                   )} />
-                  {showText && <span className={cn("truncate font-medium", isActive ? "text-white" : "text-gray-700 dark:text-foreground group-hover:text-indigo-700 dark:group-hover:text-foreground")}>{item.title}</span>}
+                  {showText && <span className={cn("truncate font-medium text-sm", isActive ? "text-white" : "text-gray-700 dark:text-foreground group-hover:text-indigo-700 dark:group-hover:text-foreground")}>{item.title}</span>}
                 </button>
               );
             })}
@@ -315,12 +315,12 @@ export default function Sidebar({ className }: SidebarProps) {
                       (isCollapsed && !isMobileOpen) ? "justify-center" : "space-x-3"
                     )}>
                       <accordion.icon className={cn(
-                        "h-5 w-5 flex-shrink-0 transition-all duration-200",
+                        "h-4 w-4 flex-shrink-0 transition-all duration-200",
                         hasActiveChild ? "text-indigo-600 dark:text-indigo-400" : "text-gray-600 dark:text-muted-foreground group-hover:text-indigo-600 dark:group-hover:text-foreground"
                       )} />
                       {(!isCollapsed || isMobileOpen) && (
                         <span className={cn(
-                          "truncate font-medium",
+                          "truncate font-medium text-sm",
                           hasActiveChild ? "text-indigo-700 dark:text-indigo-300" : "text-gray-700 dark:text-foreground group-hover:text-indigo-700 dark:group-hover:text-foreground"
                         )}>
                           {accordion.title}
@@ -368,7 +368,7 @@ export default function Sidebar({ className }: SidebarProps) {
                                   "h-4 w-4 flex-shrink-0 transition-all duration-200",
                                   isSubActive ? "text-white" : "text-gray-500 dark:text-muted-foreground group-hover:text-indigo-500 dark:group-hover:text-foreground"
                                 )} />
-                                <span className={cn("text-sm truncate", isSubActive ? "text-white" : "text-gray-600 dark:text-muted-foreground group-hover:text-indigo-600 dark:group-hover:text-foreground")}>{subItem.title}</span>
+                                <span className={cn("text-sm truncate font-medium", isSubActive ? "text-white" : "text-gray-600 dark:text-muted-foreground group-hover:text-indigo-600 dark:group-hover:text-foreground")}>{subItem.title}</span>
                               </button>
                             );
                           })}
@@ -392,7 +392,7 @@ export default function Sidebar({ className }: SidebarProps) {
                               }
                             }}
                             className={cn(
-                              "w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-all duration-200 group text-sm",
+                              "w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-all duration-200 group",
                               isActive
                                 ? "text-white bg-gradient-to-r from-blue-500 to-indigo-600 shadow-lg transform scale-105"
                                 : "text-gray-600 dark:text-muted-foreground hover:bg-gradient-to-r hover:from-blue-400/15 hover:to-indigo-500/15 dark:hover:bg-secondary hover:text-indigo-600 dark:hover:text-foreground hover:shadow-sm hover:transform hover:scale-105"
@@ -402,7 +402,7 @@ export default function Sidebar({ className }: SidebarProps) {
                               "h-4 w-4 flex-shrink-0 transition-all duration-200",
                               isActive ? "text-white drop-shadow-sm" : "text-gray-500 dark:text-muted-foreground group-hover:text-indigo-500 dark:group-hover:text-foreground"
                             )} />
-                            <span className={cn("truncate font-medium", isActive ? "text-white" : "text-gray-600 dark:text-muted-foreground group-hover:text-indigo-600 dark:group-hover:text-foreground")}>{subItem.title}</span>
+                            <span className={cn("truncate font-medium text-sm", isActive ? "text-white" : "text-gray-600 dark:text-muted-foreground group-hover:text-indigo-600 dark:group-hover:text-foreground")}>{subItem.title}</span>
                           </button>
                         );
                       })}
@@ -435,12 +435,12 @@ export default function Sidebar({ className }: SidebarProps) {
                       title={!showText ? item.title : undefined}
                     >
                       <item.icon className={cn(
-                        "h-5 w-5 flex-shrink-0 transition-all duration-200",
+                        "h-4 w-4 flex-shrink-0 transition-all duration-200",
                         isAccordionActive ? "text-white drop-shadow-sm" : "text-gray-600 dark:text-muted-foreground group-hover:text-indigo-600 dark:group-hover:text-foreground"
                       )} />
                       {showText && (
                         <div className="flex items-center justify-between w-full">
-                          <span className={cn("truncate font-medium", isAccordionActive ? "text-white" : "text-gray-700 dark:text-foreground group-hover:text-indigo-700 dark:group-hover:text-foreground")}>{item.title}</span>
+                          <span className={cn("truncate font-medium text-sm", isAccordionActive ? "text-white" : "text-gray-700 dark:text-foreground group-hover:text-indigo-700 dark:group-hover:text-foreground")}>{item.title}</span>
                           {!isCollapsed && (
                             <ChevronDown className={cn(
                               "h-4 w-4 transition-transform duration-200",
@@ -467,7 +467,7 @@ export default function Sidebar({ className }: SidebarProps) {
                                 }
                               }}
                               className={cn(
-                                "w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-all duration-200 group text-sm",
+                                "w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-all duration-200 group",
                                 isActive
                                   ? "text-white bg-gradient-to-r from-blue-500 to-indigo-600 shadow-lg transform scale-105"
                                   : "text-gray-600 dark:text-muted-foreground hover:bg-gradient-to-r hover:from-blue-400/15 hover:to-indigo-500/15 dark:hover:bg-secondary hover:text-indigo-600 dark:hover:text-foreground hover:shadow-sm hover:transform hover:scale-105"
@@ -477,7 +477,7 @@ export default function Sidebar({ className }: SidebarProps) {
                                 "h-4 w-4 flex-shrink-0 transition-all duration-200",
                                 isActive ? "text-white drop-shadow-sm" : "text-gray-500 dark:text-muted-foreground group-hover:text-indigo-500 dark:group-hover:text-foreground"
                               )} />
-                              <span className={cn("truncate font-medium", isActive ? "text-white" : "text-gray-600 dark:text-muted-foreground group-hover:text-indigo-600 dark:group-hover:text-foreground")}>{subItem.title}</span>
+                              <span className={cn("truncate font-medium text-sm", isActive ? "text-white" : "text-gray-600 dark:text-muted-foreground group-hover:text-indigo-600 dark:group-hover:text-foreground")}>{subItem.title}</span>
                             </button>
                           );
                         })}
@@ -511,10 +511,10 @@ export default function Sidebar({ className }: SidebarProps) {
                   title={!showText ? item.title : undefined}
                 >
                   <item.icon className={cn(
-                    "h-5 w-5 flex-shrink-0 transition-all duration-200",
+                    "h-4 w-4 flex-shrink-0 transition-all duration-200",
                     isActive ? "text-white drop-shadow-sm" : "text-gray-600 dark:text-muted-foreground group-hover:text-indigo-600 dark:group-hover:text-foreground"
                   )} />
-                  {showText && <span className={cn("truncate font-medium", isActive ? "text-white" : "text-gray-700 dark:text-foreground group-hover:text-indigo-700 dark:group-hover:text-foreground")}>{item.title}</span>}
+                  {showText && <span className={cn("truncate font-medium text-sm", isActive ? "text-white" : "text-gray-700 dark:text-foreground group-hover:text-indigo-700 dark:group-hover:text-foreground")}>{item.title}</span>}
                 </button>
               );
             })}
