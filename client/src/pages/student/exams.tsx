@@ -225,7 +225,7 @@ export default function StudentExams() {
 
   // Categorize all exams by status
   const allExamsWithStatus = exams.filter((exam: any) => exam.status === 'active').map((exam: any) => {
-    const examStatus = getExamStatus(exam, mySubmissions);
+    const examStatus = getExamStatus(exam, mySubmissions, t);
     return { ...exam, examStatus };
   });
 

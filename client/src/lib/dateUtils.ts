@@ -165,7 +165,8 @@ export function convertFromDateTimeLocalValue(
  */
 export function getExamStatus(
   exam: any,
-  submissions: any[]
+  submissions: any[],
+  t?: (key: string, params?: any) => string
 ): {
   status: 'upcoming' | 'available' | 'expired' | 'completed' | 'in_progress';
   label: string;
@@ -192,7 +193,7 @@ export function getExamStatus(
   if (attemptsUsed > 0 && !hasAttemptsRemaining) {
     return {
       status: 'completed',
-      label: 'Completed',
+      label: t ? t('examStatus.completed') : 'Completed',
       canStart: false,
       attemptsUsed,
       attemptsRemaining
@@ -203,7 +204,7 @@ export function getExamStatus(
   if (availableFrom && now < availableFrom) {
     return {
       status: 'upcoming',
-      label: 'Upcoming',
+      label: t ? t('examStatus.upcoming') : 'Upcoming',
       canStart: false,
       attemptsUsed,
       attemptsRemaining
@@ -222,7 +223,7 @@ export function getExamStatus(
     if (wasWithinSchedule && hasAttemptsRemaining && isNotGraded) {
       return {
         status: 'completed',
-        label: 'Completed',
+        label: t ? t('examStatus.completed') : 'Completed',
         canStart: false,
         attemptsUsed,
         attemptsRemaining
@@ -232,7 +233,7 @@ export function getExamStatus(
     // Otherwise, mark as expired
     return {
       status: 'expired',
-      label: 'Expired',
+      label: t ? t('examStatus.expired') : 'Expired',
       canStart: false,
       attemptsUsed,
       attemptsRemaining
@@ -247,7 +248,7 @@ export function getExamStatus(
     if (!isExpired && !isUpcoming) {
       return {
         status: 'in_progress',
-        label: 'Resume Exam',
+        label: t ? t('examStatus.resumeExam') : 'Resume Exam',
         canStart: true,
         attemptsUsed,
         attemptsRemaining
@@ -259,7 +260,11 @@ export function getExamStatus(
   if (hasAttemptsRemaining) {
     return {
       status: 'available',
-      label: attemptsUsed > 0 ? `Available (${exam.attemptsAllowed === -1 ? 'Unlimited' : exam.attemptsAllowed - attemptsUsed} attempts remaining)` : 'Available',
+      label: attemptsUsed > 0 ? 
+        (t ? t('examStatus.availableWithAttempts', { 
+          remaining: exam.attemptsAllowed === -1 ? t('examStatus.unlimited') : exam.attemptsAllowed - attemptsUsed 
+        }) : `Available (${exam.attemptsAllowed === -1 ? 'Unlimited' : exam.attemptsAllowed - attemptsUsed} attempts remaining)`) 
+        : (t ? t('examStatus.available') : 'Available'),
       canStart: true,
       attemptsUsed,
       attemptsRemaining
@@ -268,7 +273,7 @@ export function getExamStatus(
     // Student has used all attempts but exam is still within availability window
     return {
       status: 'completed',
-      label: 'Completed',
+      label: t ? t('examStatus.completed') : 'Completed',
       canStart: false,
       attemptsUsed,
       attemptsRemaining

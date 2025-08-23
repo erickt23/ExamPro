@@ -327,6 +327,15 @@ export const fr = {
     next: 'Suivant',
     page: 'Page {current} sur {total}'
   },
+  examStatus: {
+    available: 'Disponible',
+    availableWithAttempts: 'Disponible ({remaining} tentatives restantes)',
+    resumeExam: 'Reprendre l\'Examen',
+    completed: 'Terminé',
+    expired: 'Expiré',
+    upcoming: 'À Venir',
+    unlimited: 'Illimité'
+  },
 
   // Student Homework
   studentHomework: {

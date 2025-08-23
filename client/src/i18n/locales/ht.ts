@@ -327,6 +327,15 @@ export const ht = {
     next: 'Pwochen',
     page: 'Paj {current} sou {total}'
   },
+  examStatus: {
+    available: 'Disponib',
+    availableWithAttempts: 'Disponib ({remaining} eseye ki rete)',
+    resumeExam: 'Kontinye Egzamen an',
+    completed: 'Fini',
+    expired: 'Ekspire',
+    upcoming: 'Pou Vini',
+    unlimited: 'San Limit'
+  },
 
   // Student Homework
   studentHomework: {

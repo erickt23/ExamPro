@@ -109,7 +109,7 @@ export default function StudentDashboard() {
   // Categorize exams by status
   const examStatuses = exams.map((exam: any) => ({
     ...exam,
-    examStatus: getExamStatus(exam, mySubmissions)
+    examStatus: getExamStatus(exam, mySubmissions, t)
   }));
 
   const availableExams = examStatuses.filter((exam: any) => exam.examStatus.status === 'available');
