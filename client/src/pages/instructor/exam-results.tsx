@@ -135,9 +135,6 @@ export default function ExamResults() {
   };
 
   const formatAnswer = (answer: any, questionType: string): React.ReactNode => {
-    // Debug log to track answer data retrieval and formatting
-    console.log('formatAnswer called with:', { answer, questionType, answerType: typeof answer });
-    
     // Check for truly empty answers
     if (answer === null || answer === undefined || answer === '') {
       return <span className="text-gray-500 italic">No answer provided</span>;
@@ -441,7 +438,7 @@ export default function ExamResults() {
                             Student's Answer:
                           </div>
                           <div className="space-y-1">
-                            {formatAnswer(answer.answer || answer.studentAnswer || submissionDetails.submission?.answers?.find((a: any) => a.questionId === answer.questionId)?.answer, answer.question?.questionType)}
+                            {formatAnswer(answer.answerText || answer.answer || answer.studentAnswer, answer.question?.questionType)}
                           </div>
                         </div>
                         
