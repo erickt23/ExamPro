@@ -230,7 +230,7 @@ export default function ExamResults() {
     }
   };
 
-  const SubmissionCard = ({ submission }: { submission: any }) => {
+  const SubmissionItem = ({ submission }: { submission: any }) => {
     const isExpanded = expandedSubmission === submission.id;
     
     // Fetch submission details with answers when expanded
@@ -246,67 +246,61 @@ export default function ExamResults() {
     });
     
     return (
-      <Card className="border-l-4 border-l-blue-500 dark:bg-card">
-        <CardHeader className="pb-3">
+      <div className="border-b border-gray-200 dark:border-gray-700 last:border-b-0">
+        <div className="py-4 px-2">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-100 dark:bg-blue-800/20 rounded-lg">
-                <Users className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+            <div className="flex-1">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="flex items-center gap-2">
+                  <Users className="h-4 w-4 text-gray-500" />
+                  <span className="font-medium text-gray-900 dark:text-foreground">
+                    Student ID: {submission.studentId}
+                  </span>
+                </div>
+                <Badge className={getStatusBadgeColor(submission.status)}>
+                  {submission.status}
+                </Badge>
               </div>
-              <div>
-                <h4 className="font-semibold text-gray-900 dark:text-foreground">
-                  {submission.student ? `${submission.student.firstName} ${submission.student.lastName}` : 'Student'}
-                </h4>
-                <p className="text-sm text-gray-500 dark:text-muted-foreground">
-                  ID: {submission.studentId} | Submitted: {submission.submittedAt ? new Date(submission.submittedAt).toLocaleString() : 'Not submitted'}
-                </p>
+              
+              <div className="text-sm text-gray-600 dark:text-muted-foreground space-x-4">
+                <span>
+                  Submitted: {submission.submittedAt ? new Date(submission.submittedAt).toLocaleDateString('en-US', {
+                    month: 'short', day: 'numeric', year: 'numeric'
+                  }) + ', ' + new Date(submission.submittedAt).toLocaleTimeString('en-US', {
+                    hour: 'numeric', minute: '2-digit', hour12: true
+                  }) : 'Not submitted'}
+                </span>
+                <span>Time Taken: {submission.timeTaken ? formatTime(submission.timeTaken) : '0m'}</span>
+                <span>
+                  Started: {submission.startedAt ? new Date(submission.startedAt).toLocaleDateString('en-US', {
+                    month: 'short', day: 'numeric', year: 'numeric'
+                  }) + ', ' + new Date(submission.startedAt).toLocaleTimeString('en-US', {
+                    hour: 'numeric', minute: '2-digit', hour12: true
+                  }) : 'N/A'}
+                </span>
+                <span className="font-medium">
+                  Score: <span className="text-green-600 dark:text-green-400">
+                    {submission.totalScore !== undefined && submission.maxScore
+                      ? `${submission.totalScore}/${submission.maxScore}(${Math.round((submission.totalScore / submission.maxScore) * 100)}%)`
+                      : 'N/A'}
+                  </span>
+                </span>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <Badge className={getStatusBadgeColor(submission.status)}>
-                {submission.status}
-              </Badge>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setExpandedSubmission(isExpanded ? null : submission.id)}
-              >
-                {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-              </Button>
-            </div>
-          </div>
-        </CardHeader>
-        
-        <CardContent className="pt-0">
-          <div className="grid grid-cols-3 gap-4 mb-4">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-                {submission.status === 'graded' && submission.totalScore !== undefined && submission.maxScore 
-                  ? Math.round((submission.totalScore / submission.maxScore) * 100)
-                  : submission.totalScore !== undefined && submission.maxScore 
-                    ? Math.round((submission.totalScore / submission.maxScore) * 100)
-                    : 'N/A'}%
-              </div>
-              <div className="text-xs text-gray-500 dark:text-muted-foreground">Score</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                {submission.timeTaken ? formatTime(submission.timeTaken) : 'N/A'}
-              </div>
-              <div className="text-xs text-gray-500 dark:text-muted-foreground">Time Taken</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
-                {submission.totalScore !== undefined && submission.maxScore
-                  ? `${submission.totalScore}/${submission.maxScore}`
-                  : 'N/A'}
-              </div>
-              <div className="text-xs text-gray-500 dark:text-muted-foreground">Points</div>
-            </div>
+            
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setExpandedSubmission(isExpanded ? null : submission.id)}
+              className="flex items-center gap-2"
+            >
+              {isExpanded ? 'Hide Answers' : 'View Answers'}
+              {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+            </Button>
           </div>
 
           {isExpanded && (
-            <div className="space-y-4 border-t pt-4">
+            <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
               {detailsLoading ? (
                 <div className="text-center py-4">
                   <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto mb-2"></div>
@@ -395,8 +389,8 @@ export default function ExamResults() {
               )}
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     );
   };
 
@@ -477,9 +471,11 @@ export default function ExamResults() {
                       <h3 className="text-lg font-semibold text-gray-900 dark:text-foreground">
                         Student Submissions ({submissions.length})
                       </h3>
-                      {submissions.map((submission: any) => (
-                        <SubmissionCard key={submission.id} submission={submission} />
-                      ))}
+                      <div className="bg-white dark:bg-card rounded-lg border border-gray-200 dark:border-gray-700">
+                        {submissions.map((submission: any) => (
+                          <SubmissionItem key={submission.id} submission={submission} />
+                        ))}
+                      </div>
                     </div>
                   ) : (
                     <Card>
