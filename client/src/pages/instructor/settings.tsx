@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "@/hooks/useTranslation";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import Navbar from "@/components/layout/navbar";
@@ -45,6 +46,7 @@ type SubjectForm = z.infer<typeof subjectSchema>;
 export default function SettingsPage() {
   const { user, isLoading: authLoading } = useAuth();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [globalSettings, setGlobalSettings] = useState({
     assignmentCoefficient: 0.4,
     examCoefficient: 0.6
@@ -384,7 +386,7 @@ export default function SettingsPage() {
   };
 
   const handleDeleteSubject = (id: number) => {
-    if (confirm('Are you sure you want to delete this subject? This action cannot be undone.')) {
+    if (confirm(`${t('settings.deleteConfirm')} ${t('settings.deleteWarning')}`)) {
       deleteSubjectMutation.mutate(id);
     }
   };
@@ -397,7 +399,7 @@ export default function SettingsPage() {
           <Sidebar />
           <main className="flex-1 overflow-y-auto">
             <div className="flex items-center justify-center h-64">
-              <div className="text-lg">Loading settings...</div>
+              <div className="text-lg">{t('settings.loadingSettings')}</div>
             </div>
           </main>
         </div>
@@ -413,23 +415,23 @@ export default function SettingsPage() {
         <main className="flex-1 overflow-y-auto ml-0 transition-all duration-300">
           <div className="p-3 md:p-6">
             <div className="mb-4 md:mb-6">
-              <h1 className="text-xl md:text-2xl font-bold text-gray-900">System Settings</h1>
-              <p className="text-gray-600 text-sm md:text-base">Configure grade calculation coefficients and system preferences</p>
+              <h1 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-gray-100">{t('settings.systemSettings')}</h1>
+              <p className="text-gray-600 dark:text-gray-400 text-sm md:text-base">{t('settings.systemSettingsDescription')}</p>
             </div>
 
             <Tabs defaultValue="subjects" className="w-full">
               <TabsList>
                 <TabsTrigger value="subjects" className="flex items-center gap-2">
                   <BookOpen className="h-4 w-4" />
-                  Subject Management
+                  {t('settings.subjects')}
                 </TabsTrigger>
                 <TabsTrigger value="global" className="flex items-center gap-2">
                   <Globe className="h-4 w-4" />
-                  Global Settings
+                  {t('settings.globalSettings')}
                 </TabsTrigger>
                 <TabsTrigger value="courses" className="flex items-center gap-2">
                   <Calculator className="h-4 w-4" />
-                  Course-Specific Settings
+                  {t('settings.courseSpecificSettings')}
                 </TabsTrigger>
               </TabsList>
 
@@ -440,10 +442,10 @@ export default function SettingsPage() {
                       <div>
                         <CardTitle className="flex items-center gap-2">
                           <BookOpen className="h-5 w-5" />
-                          Subject Management
+                          {t('settings.subjects')}
                         </CardTitle>
-                        <p className="text-sm text-gray-600 mt-1">
-                          Create and manage subjects for your courses, exams, and homework assignments.
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                          {t('settings.subjectsCardDescription')}
                         </p>
                       </div>
                       <Button
@@ -451,7 +453,7 @@ export default function SettingsPage() {
                         className="flex items-center gap-2 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
                       >
                         <Plus className="h-4 w-4" />
-                        Add Subject
+                        {t('settings.addSubject')}
                       </Button>
                     </div>
                   </CardHeader>
@@ -459,14 +461,14 @@ export default function SettingsPage() {
                     {!subjects || !Array.isArray(subjects) || subjects.length === 0 ? (
                       <div className="text-center py-12 text-gray-500">
                         <BookOpen className="h-16 w-16 mx-auto mb-4 text-gray-300" />
-                        <h3 className="text-lg font-medium mb-2">No subjects created yet</h3>
-                        <p className="text-sm mb-4">Create your first subject to start organizing your courses</p>
+                        <h3 className="text-lg font-medium mb-2">{t('settings.noSubjectsYet')}</h3>
+                        <p className="text-sm mb-4">{t('settings.createFirstSubjectDescription')}</p>
                         <Button
                           onClick={() => setShowCreateSubjectModal(true)}
                           className="flex items-center gap-2 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
                         >
                           <Plus className="h-4 w-4" />
-                          Create First Subject
+                          {t('settings.createFirstSubjectButton')}
                         </Button>
                       </div>
                     ) : (() => {
@@ -483,9 +485,9 @@ export default function SettingsPage() {
                           <Table>
                             <TableHeader>
                               <TableRow>
-                                <TableHead>Subject Name</TableHead>
-                                <TableHead>Description</TableHead>
-                                <TableHead className="text-right">Actions</TableHead>
+                                <TableHead>{t('settings.subjectName')}</TableHead>
+                                <TableHead>{t('common.description')}</TableHead>
+                                <TableHead className="text-right">{t('common.actions')}</TableHead>
                               </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -499,7 +501,7 @@ export default function SettingsPage() {
                                   </TableCell>
                                   <TableCell>
                                     <div className="text-sm text-gray-600 max-w-md">
-                                      {subject.description || <span className="italic text-gray-400">No description</span>}
+                                      {subject.description || <span className="italic text-gray-400">{t('settings.noDescription')}</span>}
                                     </div>
                                   </TableCell>
                                   <TableCell className="text-right">
@@ -529,7 +531,7 @@ export default function SettingsPage() {
                           {/* Pagination Controls */}
                           <div className="flex items-center justify-between px-2">
                             <div className="text-sm text-gray-700">
-                              Showing {startIndex + 1} to {Math.min(endIndex, totalItems)} of {totalItems} subjects
+                              {t('settings.showingXtoYofZ', { start: startIndex + 1, end: Math.min(endIndex, totalItems), total: totalItems })}
                             </div>
                             <div className="flex items-center gap-2">
                               <Button
@@ -539,7 +541,7 @@ export default function SettingsPage() {
                                 disabled={currentPage === 1}
                               >
                                 <ChevronLeft className="h-4 w-4" />
-                                Previous
+                                {t('common.previous')}
                               </Button>
                               <div className="flex items-center gap-1">
                                 {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
@@ -560,7 +562,7 @@ export default function SettingsPage() {
                                 onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
                                 disabled={currentPage === totalPages}
                               >
-                                Next
+                                {t('common.next')}
                                 <ChevronRight className="h-4 w-4" />
                               </Button>
                             </div>

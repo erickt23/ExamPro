@@ -465,9 +465,14 @@ export const fr = {
   // Settings
   settings: {
     title: 'Paramètres',
+    systemSettings: 'Paramètres du Système',
+    systemSettingsDescription: 'Configurer les coefficients de calcul des notes et les préférences système',
     description: 'Gérer vos préférences système et configurations',
     subjects: 'Gestion des Matières',
     subjectsDescription: 'Gérer les matières pour organiser les questions et devoirs',
+    subjectsCardDescription: 'Créer et gérer les matières pour vos cours, examens et devoirs.',
+    globalSettings: 'Paramètres Globaux',
+    courseSpecificSettings: 'Paramètres Spécifiques aux Cours',
     addSubject: 'Ajouter une Matière',
     editSubject: 'Modifier la Matière',
     subjectName: 'Nom de la Matière',
@@ -490,8 +495,14 @@ export const fr = {
     deleteConfirm: 'Êtes-vous sûr de vouloir supprimer cette matière ?',
     deleteWarning: 'Cette action ne peut pas être annulée.',
     noSubjects: 'Aucune matière trouvée',
+    noSubjectsYet: 'Aucune matière créée encore',
     createFirstSubject: 'Créez votre première matière pour commencer',
-    profile: 'Profil'
+    createFirstSubjectDescription: 'Créez votre première matière pour commencer à organiser vos cours',
+    createFirstSubjectButton: 'Créer la Première Matière',
+    profile: 'Profil',
+    loadingSettings: 'Chargement des paramètres...',
+    noDescription: 'Aucune description',
+    showingXtoYofZ: 'Affichage de {start} à {end} sur {total} matières'
   },
 
   // Common/Shared Elements

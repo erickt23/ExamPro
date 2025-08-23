@@ -467,9 +467,14 @@ export const en = {
   // Settings
   settings: {
     title: 'Settings',
+    systemSettings: 'System Settings',
+    systemSettingsDescription: 'Configure grade calculation coefficients and system preferences',
     description: 'Manage your system preferences and configurations',
     subjects: 'Subject Management',
     subjectsDescription: 'Manage subjects for organizing questions and assignments',
+    subjectsCardDescription: 'Create and manage subjects for your courses, exams, and homework assignments.',
+    globalSettings: 'Global Settings',
+    courseSpecificSettings: 'Course-Specific Settings',
     addSubject: 'Add Subject',
     editSubject: 'Edit Subject',
     subjectName: 'Subject Name',
@@ -492,8 +497,14 @@ export const en = {
     deleteConfirm: 'Are you sure you want to delete this subject?',
     deleteWarning: 'This action cannot be undone.',
     noSubjects: 'No subjects found',
+    noSubjectsYet: 'No subjects created yet',
     createFirstSubject: 'Create your first subject to get started',
-    profile: 'Profile'
+    createFirstSubjectDescription: 'Create your first subject to start organizing your courses',
+    createFirstSubjectButton: 'Create First Subject',
+    profile: 'Profile',
+    loadingSettings: 'Loading settings...',
+    noDescription: 'No description',
+    showingXtoYofZ: 'Showing {start} to {end} of {total} subjects'
   },
 
   // Common/Shared Elements

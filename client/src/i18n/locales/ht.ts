@@ -465,9 +465,14 @@ export const ht = {
   // Settings
   settings: {
     title: 'Konfigirasyon',
+    systemSettings: 'Konfigirasyon Sistèm',
+    systemSettingsDescription: 'Konfigire koefisyan kalkil nòt ak preferans sistèm yo',
     description: 'Jere preferans sistèm ou ak konfigirasyon yo',
     subjects: 'Jesyon Matye',
     subjectsDescription: 'Jere matye yo pou òganize kesyon ak devwa',
+    subjectsCardDescription: 'Kreye ak jere matye yo pou kou, egzamen ak devwa ou yo.',
+    globalSettings: 'Konfigirasyon Global',
+    courseSpecificSettings: 'Konfigirasyon Espesifik Kou',
     addSubject: 'Ajoute Matye',
     editSubject: 'Modifye Matye',
     subjectName: 'Non Matye',
@@ -490,8 +495,14 @@ export const ht = {
     deleteConfirm: 'Èske ou kwè ou vle efase matye sa a?',
     deleteWarning: 'Aksyon sa a pa ka defèt.',
     noSubjects: 'Pa gen matye',
+    noSubjectsYet: 'Pa gen matye kreye ankò',
     createFirstSubject: 'Kreye premye matye ou pou kòmanse',
-    profile: 'Pwofil'
+    createFirstSubjectDescription: 'Kreye premye matye ou pou kòmanse òganize kou ou yo',
+    createFirstSubjectButton: 'Kreye Premye Matye',
+    profile: 'Pwofil',
+    loadingSettings: 'Y ap chaje konfigirasyon yo...',
+    noDescription: 'Pa gen deskripsyon',
+    showingXtoYofZ: 'Montre {start} a {end} nan {total} matye'
   },
 
   // Common/Shared Elements
