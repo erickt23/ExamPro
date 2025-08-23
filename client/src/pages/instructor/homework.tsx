@@ -36,6 +36,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { BookOpen, Plus, Search, Clock, Users, Eye, Edit, CheckCircle, X, Filter, ChevronDown, ChevronRight, ChevronLeft, MoreVertical, FileText, Archive, Trash2 } from "lucide-react";
+import { QuestionsPagination } from "@/components/ui/questions-pagination";
 
 interface HomeworkAssignment {
   id: number;
@@ -81,7 +82,7 @@ export default function InstructorHomeworkPage() {
   const [showQuestionFilters, setShowQuestionFilters] = useState(false);
   const [expandedHomeworkIds, setExpandedHomeworkIds] = useState<Set<number>>(new Set());
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
+  const [pageSize, setPageSize] = useState(10);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -99,10 +100,30 @@ export default function InstructorHomeworkPage() {
   }, [isAuthenticated, isLoading, toast]);
 
   // Fetch homework assignments
-  const { data: homework = [], isLoading: homeworkLoading } = useQuery<HomeworkAssignment[]>({
-    queryKey: ["/api/homework", statusFilter === "all" ? undefined : statusFilter, searchTerm],
+  const { data: homeworkData, isLoading: homeworkLoading } = useQuery({
+    queryKey: ["/api/homework", statusFilter === "all" ? undefined : statusFilter, searchTerm, currentPage, pageSize],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      if (statusFilter !== "all") params.append('status', statusFilter);
+      if (searchTerm) params.append('search', searchTerm);
+      params.append('page', currentPage.toString());
+      params.append('limit', pageSize.toString());
+      
+      const response = await fetch(`/api/homework?${params}`);
+      if (!response.ok) throw new Error(`${response.status}: ${response.statusText}`);
+      return response.json();
+    },
     enabled: true,
   });
+
+  const homework = homeworkData?.homeworkAssignments || homeworkData || [];
+  const totalHomework = homeworkData?.total || homework?.length || 0;
+  const totalPages = homeworkData?.totalPages || 1;
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [statusFilter, searchTerm]);
 
   // Fetch subjects for dropdown
   const { data: subjects = [] } = useQuery<Subject[]>({
@@ -429,12 +450,7 @@ export default function InstructorHomeworkPage() {
     return subject ? subject.name : `Subject ${subjectId}`;
   };
 
-  const filteredHomework = homework.filter(hw => {
-    const matchesSearch = hw.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         hw.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === "all" || hw.status === statusFilter;
-    return matchesSearch && matchesStatus;
-  });
+  // Filtering is now handled server-side through the API
 
   if (isLoading || !isAuthenticated) {
     return (
@@ -1033,7 +1049,7 @@ export default function InstructorHomeworkPage() {
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         </div>
       ) : (
-        filteredHomework.length === 0 ? (
+        homework.length === 0 ? (
           <div className="text-center py-12">
             <BookOpen className="h-12 w-12 text-gray-400 mx-auto mb-4" />
             <p className="text-gray-500 text-lg mb-2">No homework assignments found</p>
@@ -1051,20 +1067,8 @@ export default function InstructorHomeworkPage() {
             )}
           </div>
         ) : (() => {
-          // Sort and paginate homework
-          const sortedHomework = filteredHomework.sort((a: any, b: any) => {
-            // Sort archived homework to the bottom
-            if (a.status === 'archived' && b.status !== 'archived') return 1;
-            if (b.status === 'archived' && a.status !== 'archived') return -1;
-            // Otherwise sort by creation date (newest first)
-            return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-          });
-          
-          const totalItems = sortedHomework.length;
-          const totalPages = Math.ceil(totalItems / itemsPerPage);
-          const startIndex = (currentPage - 1) * itemsPerPage;
-          const endIndex = startIndex + itemsPerPage;
-          const paginatedHomework = sortedHomework.slice(startIndex, endIndex);
+          // Display homework (sorting and pagination handled server-side)
+          const paginatedHomework = homework;
 
           return (
             <div className="space-y-4">
@@ -1238,44 +1242,19 @@ export default function InstructorHomeworkPage() {
               </div>
 
               {/* Pagination Controls */}
-              <div className="flex items-center justify-between px-2">
-                <div className="text-sm text-gray-700">
-                  {t('showingAssignments', { start: startIndex + 1, end: Math.min(endIndex, totalItems), total: totalItems })}
-                </div>
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                    disabled={currentPage === 1}
-                  >
-                    <ChevronLeft className="h-4 w-4" />
-                    {t('previous')}
-                  </Button>
-                  <div className="flex items-center gap-1">
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                      <Button
-                        key={page}
-                        variant={currentPage === page ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => setCurrentPage(page)}
-                        className="min-w-[2.5rem]"
-                      >
-                        {page}
-                      </Button>
-                    ))}
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                    disabled={currentPage === totalPages}
-                  >
-                    {t('next')}
-                    <ChevronRight className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
+              {homework.length > 0 && (
+                <QuestionsPagination 
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  total={totalHomework}
+                  pageSize={pageSize}
+                  onPageChange={setCurrentPage}
+                  onPageSizeChange={(newPageSize) => {
+                    setPageSize(newPageSize);
+                    setCurrentPage(1);
+                  }}
+                />
+              )}
             </div>
           );
         })()

@@ -1485,8 +1485,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const user = await storage.getUser(userId);
       
       if (user?.role === 'instructor') {
-        const { status, search } = req.query;
-        const homework = await storage.getHomework(userId, status as string, search as string);
+        const { status, search, page, limit } = req.query;
+        const pageNum = page ? parseInt(page as string) : undefined;
+        const limitNum = limit ? parseInt(limit as string) : undefined;
+        
+        const homework = await storage.getHomework(userId, {
+          status: status as string,
+          search: search as string,
+          page: pageNum,
+          limit: limitNum
+        });
         res.json(homework);
       } else {
         // For students, return active homework they can access

@@ -115,7 +115,7 @@ export interface IStorage {
   
   // Homework operations
   createHomework(homework: InsertHomeworkAssignment): Promise<HomeworkAssignment>;
-  getHomework(instructorId: string, status?: string, search?: string): Promise<HomeworkAssignment[]>;
+  getHomework(instructorId: string, options?: { status?: string; search?: string; page?: number; limit?: number }): Promise<{ homeworkAssignments: HomeworkAssignment[]; total: number; page: number; totalPages: number; } | HomeworkAssignment[]>;
   getActiveHomeworkForStudents(): Promise<HomeworkAssignment[]>;
   getHomeworkById(id: number): Promise<HomeworkAssignment | undefined>;
   updateHomework(id: number, updates: Partial<InsertHomeworkAssignment>): Promise<HomeworkAssignment>;
@@ -760,8 +760,9 @@ export class DatabaseStorage implements IStorage {
     return homework;
   }
 
-  async getHomework(instructorId: string, status?: string, search?: string): Promise<HomeworkAssignment[]> {
+  async getHomework(instructorId: string, options?: { status?: string; search?: string; page?: number; limit?: number }): Promise<{ homeworkAssignments: HomeworkAssignment[]; total: number; page: number; totalPages: number; } | HomeworkAssignment[]> {
     try {
+      const { status, search, page, limit } = options || {};
       const conditions = [eq(homeworkAssignments.instructorId, instructorId)];
       
       if (status) {
@@ -777,6 +778,37 @@ export class DatabaseStorage implements IStorage {
         );
       }
       
+      // If pagination is requested
+      if (page !== undefined && limit !== undefined) {
+        const offset = (page - 1) * limit;
+        
+        // Get total count for pagination
+        const [{ count }] = await db
+          .select({ count: sql<number>`count(*)` })
+          .from(homeworkAssignments)
+          .where(and(...conditions));
+        
+        const total = Number(count);
+        const totalPages = Math.ceil(total / limit);
+        
+        // Get paginated results
+        const homeworkResult = await db
+          .select()
+          .from(homeworkAssignments)
+          .where(and(...conditions))
+          .orderBy(desc(homeworkAssignments.createdAt))
+          .limit(limit)
+          .offset(offset);
+        
+        return {
+          homeworkAssignments: homeworkResult,
+          total,
+          page,
+          totalPages
+        };
+      }
+      
+      // Return all results if no pagination
       const homeworkResult = await db
         .select()
         .from(homeworkAssignments)
