@@ -233,27 +233,13 @@ export default function ExamResults() {
   const SubmissionCard = ({ submission }: { submission: any }) => {
     const isExpanded = expandedSubmission === submission.id;
     
-    // Log submission data for debugging
-    console.log('Submission data:', {
-      id: submission.id,
-      studentId: submission.studentId,
-      timeTaken: submission.timeTaken,
-      totalScore: submission.totalScore,
-      maxScore: submission.maxScore,
-      status: submission.status,
-      student: submission.student
-    });
-    
     // Fetch submission details with answers when expanded
     const { data: submissionDetails, isLoading: detailsLoading, error: detailsError } = useQuery({
       queryKey: ["/api/submissions", submission.id, "grade"],
       queryFn: async () => {
-        console.log(`Fetching details for submission ${submission.id}`);
         const response = await fetch(`/api/submissions/${submission.id}/grade`);
         if (!response.ok) throw new Error(`${response.status}: ${response.statusText}`);
-        const data = await response.json();
-        console.log(`Submission ${submission.id} details:`, data);
-        return data;
+        return response.json();
       },
       enabled: isExpanded,
       retry: false,
@@ -472,11 +458,10 @@ export default function ExamResults() {
                 </h2>
               </div>
 
-              <Tabs defaultValue="overview" className="space-y-6">
-                <TabsList className="grid w-full grid-cols-3">
+              <Tabs defaultValue="submissions" className="space-y-6">
+                <TabsList className="grid w-full grid-cols-2">
                   <TabsTrigger value="overview">Overview</TabsTrigger>
                   <TabsTrigger value="submissions">Submissions</TabsTrigger>
-                  <TabsTrigger value="analytics">Analytics</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="overview" className="space-y-6">
@@ -577,6 +562,69 @@ export default function ExamResults() {
                     </div>
                     </CardContent>
                   </Card>
+
+                  {/* Performance Analytics */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <BarChart3 className="h-5 w-5" />
+                        Performance Analytics
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-4">
+                          <h4 className="font-semibold text-gray-900 dark:text-foreground">Score Distribution</h4>
+                          <div className="space-y-2">
+                            {analytics && (
+                              <>
+                                <div className="flex justify-between text-sm">
+                                  <span className="text-gray-600 dark:text-muted-foreground">Highest Score:</span>
+                                  <span className="font-semibold text-gray-900 dark:text-foreground">
+                                    {analytics.highestScore ? `${analytics.highestScore}%` : 'N/A'}
+                                  </span>
+                                </div>
+                                <div className="flex justify-between text-sm">
+                                  <span className="text-gray-600 dark:text-muted-foreground">Lowest Score:</span>
+                                  <span className="font-semibold text-gray-900 dark:text-foreground">
+                                    {analytics.lowestScore ? `${analytics.lowestScore}%` : 'N/A'}
+                                  </span>
+                                </div>
+                                <div className="flex justify-between text-sm">
+                                  <span className="text-gray-600 dark:text-muted-foreground">Average Score:</span>
+                                  <span className="font-semibold text-gray-900 dark:text-foreground">
+                                    {analytics.averageScore ? `${Math.round(analytics.averageScore)}%` : 'N/A'}
+                                  </span>
+                                </div>
+                              </>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="space-y-4">
+                          <h4 className="font-semibold text-gray-900 dark:text-foreground">Time Analysis</h4>
+                          <div className="space-y-2">
+                            {analytics && (
+                              <>
+                                <div className="flex justify-between text-sm">
+                                  <span className="text-gray-600 dark:text-muted-foreground">Average Time:</span>
+                                  <span className="font-semibold text-gray-900 dark:text-foreground">
+                                    {analytics.averageTime ? formatTime(analytics.averageTime) : 'N/A'}
+                                  </span>
+                                </div>
+                                <div className="flex justify-between text-sm">
+                                  <span className="text-gray-600 dark:text-muted-foreground">Completion Rate:</span>
+                                  <span className="font-semibold text-gray-900 dark:text-foreground">
+                                    {analytics.completionRate ? `${Math.round(analytics.completionRate)}%` : 'N/A'}
+                                  </span>
+                                </div>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
                 </TabsContent>
 
                 <TabsContent value="submissions" className="space-y-6">
@@ -599,69 +647,6 @@ export default function ExamResults() {
                   )}
                 </TabsContent>
 
-                <TabsContent value="analytics" className="space-y-6">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <BarChart3 className="h-5 w-5" />
-                        Performance Analytics
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-4">
-                      <h4 className="font-semibold text-gray-900 dark:text-foreground">Score Distribution</h4>
-                      <div className="space-y-2">
-                        {analytics && (
-                          <>
-                            <div className="flex justify-between text-sm">
-                              <span className="text-gray-600 dark:text-muted-foreground">Highest Score:</span>
-                              <span className="font-semibold text-gray-900 dark:text-foreground">
-                                {analytics.highestScore ? `${analytics.highestScore}%` : 'N/A'}
-                              </span>
-                            </div>
-                            <div className="flex justify-between text-sm">
-                              <span className="text-gray-600 dark:text-muted-foreground">Lowest Score:</span>
-                              <span className="font-semibold text-gray-900 dark:text-foreground">
-                                {analytics.lowestScore ? `${analytics.lowestScore}%` : 'N/A'}
-                              </span>
-                            </div>
-                            <div className="flex justify-between text-sm">
-                              <span className="text-gray-600 dark:text-muted-foreground">Average Score:</span>
-                              <span className="font-semibold text-gray-900 dark:text-foreground">
-                                {analytics.averageScore ? `${Math.round(analytics.averageScore)}%` : 'N/A'}
-                              </span>
-                            </div>
-                          </>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="space-y-4">
-                      <h4 className="font-semibold text-gray-900 dark:text-foreground">Time Analysis</h4>
-                      <div className="space-y-2">
-                        {analytics && (
-                          <>
-                            <div className="flex justify-between text-sm">
-                              <span className="text-gray-600 dark:text-muted-foreground">Average Time:</span>
-                              <span className="font-semibold text-gray-900 dark:text-foreground">
-                                {analytics.averageTime ? formatTime(analytics.averageTime) : 'N/A'}
-                              </span>
-                            </div>
-                            <div className="flex justify-between text-sm">
-                              <span className="text-gray-600 dark:text-muted-foreground">Completion Rate:</span>
-                              <span className="font-semibold text-gray-900 dark:text-foreground">
-                                {analytics.completionRate ? `${Math.round(analytics.completionRate)}%` : 'N/A'}
-                              </span>
-                            </div>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                    </div>
-                    </CardContent>
-                  </Card>
-                </TabsContent>
               </Tabs>
             </div>
           )}
