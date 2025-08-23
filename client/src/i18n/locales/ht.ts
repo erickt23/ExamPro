@@ -229,7 +229,15 @@ export const ht = {
     actions: 'Aksyon yo',
     searchExams: 'Chèche egzamen yo...',
     noExams: 'Pa gen egzamen yo jwenn',
-    createFirstExam: 'Kreye premye egzamen ou pou kòmanse'
+    createFirstExam: 'Kreye premye egzamen ou pou kòmanse',
+    allExams: 'Tout Egzamen yo',
+    active: 'Aktif',
+    draft: 'Bouyon',
+    completed: 'Fini',
+    scheduled: 'Pwograme',
+    archived: 'Achive',
+    startDate: 'Dat Kòmansman',
+    time: 'Lè'
   },
 
   // Grading Center

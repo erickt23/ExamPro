@@ -301,12 +301,12 @@ export default function InstructorExams() {
             {/* Exam Status Tabs */}
             <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
               <TabsList>
-                <TabsTrigger value="all">All Exams</TabsTrigger>
-                <TabsTrigger value="active">Active</TabsTrigger>
-                <TabsTrigger value="draft">Draft</TabsTrigger>
-                <TabsTrigger value="completed">Completed</TabsTrigger>
-                <TabsTrigger value="scheduled">Scheduled</TabsTrigger>
-                <TabsTrigger value="archived">Archived</TabsTrigger>
+                <TabsTrigger value="all">{t('exams.allExams')}</TabsTrigger>
+                <TabsTrigger value="active">{t('exams.active')}</TabsTrigger>
+                <TabsTrigger value="draft">{t('exams.draft')}</TabsTrigger>
+                <TabsTrigger value="completed">{t('exams.completed')}</TabsTrigger>
+                <TabsTrigger value="scheduled">{t('exams.scheduled')}</TabsTrigger>
+                <TabsTrigger value="archived">{t('exams.archived')}</TabsTrigger>
               </TabsList>
 
               <TabsContent value={activeTab} className="mt-6">
@@ -351,12 +351,12 @@ export default function InstructorExams() {
                           <TableHeader>
                             <TableRow>
                               <TableHead className="w-[50px]"></TableHead>
-                              <TableHead>Exam Title</TableHead>
-                              <TableHead>Start Date</TableHead>
-                              <TableHead>Time</TableHead>
-                              <TableHead>Duration</TableHead>
-                              <TableHead>Status</TableHead>
-                              <TableHead className="text-right">Actions</TableHead>
+                              <TableHead>{t('exams.examTitle')}</TableHead>
+                              <TableHead>{t('exams.startDate')}</TableHead>
+                              <TableHead>{t('exams.time')}</TableHead>
+                              <TableHead>{t('exams.duration')}</TableHead>
+                              <TableHead>{t('exams.status')}</TableHead>
+                              <TableHead className="text-right">{t('exams.actions')}</TableHead>
                             </TableRow>
                           </TableHeader>
                           <TableBody>

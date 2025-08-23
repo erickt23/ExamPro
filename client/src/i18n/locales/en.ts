@@ -231,7 +231,15 @@ export const en = {
     actions: 'Actions',
     searchExams: 'Search exams...',
     noExams: 'No exams found',
-    createFirstExam: 'Create your first exam to get started'
+    createFirstExam: 'Create your first exam to get started',
+    allExams: 'All Exams',
+    active: 'Active',
+    draft: 'Draft',
+    completed: 'Completed',
+    scheduled: 'Scheduled',
+    archived: 'Archived',
+    startDate: 'Start Date',
+    time: 'Time'
   },
 
   // Grading Center

@@ -1073,11 +1073,11 @@ export default function InstructorHomeworkPage() {
                   <TableHeader>
                     <TableRow>
                       <TableHead className="w-[50px]"></TableHead>
-                      <TableHead>Homework Title</TableHead>
-                      <TableHead>Subject</TableHead>
-                      <TableHead>Due Date</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
+                      <TableHead>{t('homeworkTitle')}</TableHead>
+                      <TableHead>{t('subject')}</TableHead>
+                      <TableHead>{t('dueDate')}</TableHead>
+                      <TableHead>{t('status')}</TableHead>
+                      <TableHead className="text-right">{t('actions')}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -1187,13 +1187,13 @@ export default function InstructorHomeworkPage() {
                                     <div className="space-y-3">
                                       <h4 className="font-medium text-gray-900 flex items-center gap-2">
                                         <BookOpen className="h-4 w-4" />
-                                        Assignment Details
+                                        {t('assignmentDetails')}
                                       </h4>
                                       <div className="space-y-3 text-sm">
                                         <div>
-                                          <span className="text-gray-600 font-medium">Description:</span>
+                                          <span className="text-gray-600 font-medium">{t('descriptionLabel')}</span>
                                           <div className="mt-2 p-3 bg-gray-50 rounded-lg text-gray-800 text-justify leading-relaxed">
-                                            {hw.description || 'No description provided for this assignment.'}
+                                            {hw.description || t('noDescriptionProvided')}
                                           </div>
                                         </div>
                                         <div className="flex justify-between">
@@ -1212,11 +1212,11 @@ export default function InstructorHomeworkPage() {
                                     <div className="space-y-3">
                                       <h4 className="font-medium text-gray-900 flex items-center gap-2">
                                         <Users className="h-4 w-4" />
-                                        Statistics
+                                        {t('statistics')}
                                       </h4>
                                       <div className="space-y-2 text-sm">
                                         <div className="flex justify-between">
-                                          <span className="text-gray-600">Questions:</span>
+                                          <span className="text-gray-600">{t('questions')}</span>
                                           <span className="font-medium">0</span>
                                         </div>
                                         <div className="flex justify-between">
@@ -1240,7 +1240,7 @@ export default function InstructorHomeworkPage() {
               {/* Pagination Controls */}
               <div className="flex items-center justify-between px-2">
                 <div className="text-sm text-gray-700">
-                  Showing {startIndex + 1} to {Math.min(endIndex, totalItems)} of {totalItems} assignments
+                  {t('showingAssignments', { start: startIndex + 1, end: Math.min(endIndex, totalItems), total: totalItems })}
                 </div>
                 <div className="flex items-center gap-2">
                   <Button
@@ -1250,7 +1250,7 @@ export default function InstructorHomeworkPage() {
                     disabled={currentPage === 1}
                   >
                     <ChevronLeft className="h-4 w-4" />
-                    Previous
+                    {t('previous')}
                   </Button>
                   <div className="flex items-center gap-1">
                     {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
@@ -1271,7 +1271,7 @@ export default function InstructorHomeworkPage() {
                     onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
                     disabled={currentPage === totalPages}
                   >
-                    Next
+                    {t('next')}
                     <ChevronRight className="h-4 w-4" />
                   </Button>
                 </div>
@@ -1286,10 +1286,9 @@ export default function InstructorHomeworkPage() {
         <div className="flex items-start gap-3">
           <BookOpen className="h-5 w-5 text-blue-600 mt-0.5" />
           <div>
-            <h4 className="font-medium text-blue-900">Homework Question Bank</h4>
+            <h4 className="font-medium text-blue-900">{t('homeworkQuestionBank')}</h4>
             <p className="text-blue-700 text-sm mt-1">
-              Homework assignments use a dedicated question bank that never overlaps with exam questions. 
-              This ensures homework remains practice-only while keeping exams secure.
+              {t('homeworkQuestionBankDescription')}
             </p>
           </div>
         </div>
