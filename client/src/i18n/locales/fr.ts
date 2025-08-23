@@ -209,7 +209,7 @@ export const fr = {
   // Exam Management
   exams: {
     title: 'Gestion d\'Examens',
-    description: 'Créer, programmer et gérer vos examens',
+    description: 'Voir les examens disponibles et vos évaluations terminées',
     createExam: 'Créer un Examen',
     examTitle: 'Titre de l\'Examen',
     titlePlaceholder: 'Entrez le titre de l\'examen',

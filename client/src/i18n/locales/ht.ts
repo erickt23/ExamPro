@@ -209,7 +209,7 @@ export const ht = {
   // Exam Management
   exams: {
     title: 'Jesyon Egzamen',
-    description: 'Kreye, pwograme ak jere egzamen ou yo',
+    description: 'Gade egzamen yo ki disponib ak evalyasyon ou yo ki fini',
     createExam: 'Kreye Egzamen',
     examTitle: 'Tit Egzamen',
     titlePlaceholder: 'Antre tit egzamen an',

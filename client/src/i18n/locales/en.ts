@@ -211,7 +211,7 @@ export const en = {
   // Exam Management
   exams: {
     title: 'Exam Management',
-    description: 'Create and manage exams using questions from your exam bank',
+    description: 'View available exams and your completed assessments',
     createExam: 'Create Exam',
     examTitle: 'Exam Title',
     titlePlaceholder: 'Enter exam title',
