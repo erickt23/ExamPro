@@ -186,7 +186,24 @@ export const fr = {
     searchHomeworkAssignments: 'Rechercher des devoirs à domicile...',
     filterByStatus: 'Filtrer par Statut',
     allStatuses: 'Tous les Statuts',
-    allStatus: 'Tous les Statuts'
+    allStatus: 'Tous les Statuts',
+    homeworkTitle: 'Titre du Devoir',
+    showingAssignments: 'Affichage de {start} à {end} sur {total} devoirs',
+    assignmentDetails: 'Détails du Devoir',
+    descriptionLabel: 'Description :',
+    noDescriptionProvided: 'Aucune description fournie pour ce devoir.',
+    statistics: 'Statistiques',
+    questions: 'Questions :',
+    homeworkQuestionBank: 'Banque de Questions de Devoirs',
+    homeworkQuestionBankDescription: 'Les devoirs utilisent une banque de questions dédiée qui ne chevauche jamais avec les questions d\'examen. Cela garantit que les devoirs restent uniquement pratiques tout en gardant les examens sécurisés.',
+    previous: 'Précédent',
+    next: 'Suivant',
+    autoGradedQuestions: 'Questions Auto-notées',
+    selectExamToView: 'Sélectionnez un examen ci-dessus pour voir les résultats détaillés et les analyses.',
+    selectExam: 'Sélectionner un Examen',
+    viewExamAnalytics: 'Voir les analyses détaillées de l\'examen et les performances des étudiants',
+    chooseExamToView: 'Choisissez un examen pour voir les résultats',
+    reviewAndGradeDescription: 'Réviser et noter la soumission de l\'étudiant'
   },
 
   // Exam Management

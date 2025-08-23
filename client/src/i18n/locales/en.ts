@@ -188,7 +188,24 @@ export const en = {
     searchHomeworkAssignments: 'Search homework assignments...',
     filterByStatus: 'Filter by Status',
     allStatuses: 'All Statuses',
-    allStatus: 'All Status'
+    allStatus: 'All Status',
+    homeworkTitle: 'Homework Title',
+    showingAssignments: 'Showing {start} to {end} of {total} assignments',
+    assignmentDetails: 'Assignment Details',
+    descriptionLabel: 'Description:',
+    noDescriptionProvided: 'No description provided for this assignment.',
+    statistics: 'Statistics',
+    questions: 'Questions:',
+    homeworkQuestionBank: 'Homework Question Bank',
+    homeworkQuestionBankDescription: 'Homework assignments use a dedicated question bank that never overlaps with exam questions. This ensures homework remains practice-only while keeping exams secure.',
+    previous: 'Previous',
+    next: 'Next',
+    autoGradedQuestions: 'Auto-graded Questions',
+    selectExamToView: 'Select an exam above to view detailed results and analytics.',
+    selectExam: 'Select Exam',
+    viewExamAnalytics: 'View detailed exam analytics and student performance',
+    chooseExamToView: 'Choose an exam to view results',
+    reviewAndGradeDescription: 'Review and grade student submission'
   },
 
   // Exam Management

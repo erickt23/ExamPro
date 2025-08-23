@@ -186,7 +186,24 @@ export const ht = {
     searchHomeworkAssignments: 'Chèche devwa lakay yo...',
     filterByStatus: 'Filtre pa Eta',
     allStatuses: 'Tout Eta yo',
-    allStatus: 'Tout Eta'
+    allStatus: 'Tout Eta',
+    homeworkTitle: 'Tit Devwa Lakay',
+    showingAssignments: 'Montre {start} nan {end} sou {total} devwa',
+    assignmentDetails: 'Detay Devwa',
+    descriptionLabel: 'Deskripsyon:',
+    noDescriptionProvided: 'Pa gen deskripsyon bay pou devwa sa a.',
+    statistics: 'Estatistik',
+    questions: 'Kesyon yo:',
+    homeworkQuestionBank: 'Bank Kesyon Devwa Lakay',
+    homeworkQuestionBankDescription: 'Devwa lakay yo sèvi ak yon bank kesyon espesyal ki pa janm melanje ak kesyon egzamen yo. Sa a asire devwa yo rete sèlman pou pratike pandan egzamen yo rete an sekirite.',
+    previous: 'Anvan',
+    next: 'Pwochen',
+    autoGradedQuestions: 'Kesyon ki gen Nòt Otomatik',
+    selectExamToView: 'Chwazi yon egzamen pi wo a pou gade rezilta ak analiz detaye yo.',
+    selectExam: 'Chwazi Egzamen',
+    viewExamAnalytics: 'Gade analiz egzamen detaye ak pèfòmans elèv yo',
+    chooseExamToView: 'Chwazi yon egzamen pou gade rezilta yo',
+    reviewAndGradeDescription: 'Revize ak bay nòt soumisyon elèv la'
   },
 
   // Exam Management
