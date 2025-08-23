@@ -525,6 +525,44 @@ export const ht = {
     showingXtoYofZ: 'Montre {start} a {end} nan {total} matye'
   },
 
+  // Import Questions Modal
+  importQuestions: {
+    title: 'Enpòte Kesyon yo depi Excel',
+    excelFormatRequired: 'Fòma Excel ki Obligatwa :',
+    excelFormatDescription: 'Fichye Excel ou an dwe gen kolòn sa yo :',
+    columnTitle: 'Tit kesyon an',
+    columnQuestionText: 'Kesyon an tou bon vre',
+    columnQuestionType: 'multiple_choice, short_answer, essay, fill_blank, matching, ranking, oswa drag_drop',
+    columnSubject: 'Non matye (ex., "Matematik", "Fizik", "Istwa")',
+    columnDifficulty: 'easy, medium, oswa hard (opsyonèl, defo medium)',
+    columnBloomsTaxonomy: 'remember, understand, apply, analyze, evaluate, create (opsyonèl)',
+    columnPoints: 'Valè pwen (opsyonèl, defo 1)',
+    columnOptions: 'Pou chwa miltip, separe ak point-virgul (ex., "Pari;Lonn;Bèlen;Madwid")',
+    columnCorrectAnswer: 'Pou chwa miltip (A, B, C, D), matching/ranking (fòma JSON), oswa fill_blank (separe ak bare)',
+    columnExplanation: 'Tèks eksplikasyon opsyonèl',
+    columnCategory: '\'exam\' oswa \'homework\' (opsyonèl, defo \'exam\')',
+    advancedQuestionTypes: 'Tip Kesyon Avanse yo :',
+    matchingFormat: 'options: "Gòch1;Gòch2|Dwat1;Dwat2", correctAnswer: fòma JSON',
+    rankingFormat: 'options: "Atik1;Atik2;Atik3", correctAnswer: fòma Array',
+    dragDropFormat: 'options: "Kategori1;Kategori2|Atik1;Atik2", correctAnswer: fòma Object',
+    fillBlankFormat: 'correctAnswer: "repons1|repons2|repons3" (pou plizyè espas vid)',
+    selectExcelFile: 'Chwazi Fichye Excel',
+    processingFile: 'Y ap trete fichye Excel la...',
+    importSuccessful: 'Enpòtasyon Reyisi',
+    questionsImported: '{count} kesyon enpòte ak siksè',
+    duplicatesSkipped: '{count} kopi yo ignore',
+    errorsOccurred: '{count} erè',
+    duplicateQuestionsSkipped: '{count} kesyon kopi yo ignore :',
+    errorsOccurredDetails: '{count} erè ki rive :',
+    row: 'Ranje',
+    close: 'Fèmen',
+    importing: 'Y ap enpòte...',
+    importQuestions: 'Enpòte Kesyon yo',
+    importFailed: 'Enpòtasyon Echwe',
+    unauthorized: 'Pa Otorize',
+    loggedOut: 'Ou dekonekte. Y ap konekte ou ankò...'
+  },
+
   // Common/Shared Elements
   common: {
     loading: 'Y ap chaje...',

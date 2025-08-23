@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "@/hooks/useTranslation";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { queryClient } from "@/lib/queryClient";
 import {
@@ -21,6 +22,7 @@ interface ImportQuestionsModalProps {
 }
 
 export default function ImportQuestionsModal({ open, onOpenChange }: ImportQuestionsModalProps) {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [importResults, setImportResults] = useState<any>(null);
@@ -48,16 +50,16 @@ export default function ImportQuestionsModal({ open, onOpenChange }: ImportQuest
       
       if (results.imported > 0) {
         toast({
-          title: "Import Successful",
-          description: `${results.imported} questions imported successfully`,
+          title: t('importQuestions.importSuccessful'),
+          description: t('importQuestions.questionsImported', { count: results.imported }),
         });
       }
     },
     onError: (error: Error) => {
       if (isUnauthorizedError(error)) {
         toast({
-          title: "Unauthorized",
-          description: "You are logged out. Logging in again...",
+          title: t('importQuestions.unauthorized'),
+          description: t('importQuestions.loggedOut'),
           variant: "destructive",
         });
         setTimeout(() => {
@@ -67,7 +69,7 @@ export default function ImportQuestionsModal({ open, onOpenChange }: ImportQuest
       }
       
       toast({
-        title: "Import Failed",
+        title: t('importQuestions.importFailed'),
         description: error.message,
         variant: "destructive",
       });
@@ -100,7 +102,7 @@ export default function ImportQuestionsModal({ open, onOpenChange }: ImportQuest
         <DialogHeader className="flex-shrink-0">
           <DialogTitle className="flex items-center gap-2">
             <Upload className="h-5 w-5" />
-            Import Questions from Excel
+            {t('importQuestions.title')}
           </DialogTitle>
         </DialogHeader>
 
@@ -109,27 +111,27 @@ export default function ImportQuestionsModal({ open, onOpenChange }: ImportQuest
           <Alert>
             <Info className="h-4 w-4" />
             <AlertDescription>
-              <strong>Excel Format Required:</strong> Your Excel file should have these columns:
+              <strong>{t('importQuestions.excelFormatRequired')}</strong> {t('importQuestions.excelFormatDescription')}
               <ul className="mt-2 text-sm list-disc list-inside space-y-1">
-                <li><strong>title</strong> - Question title</li>
-                <li><strong>questionText</strong> - The actual question</li>
-                <li><strong>questionType</strong> - multiple_choice, short_answer, essay, fill_blank, matching, ranking, or drag_drop</li>
-                <li><strong>subject</strong> - Subject name (e.g., "Mathematics", "Physics", "History")</li>
-                <li><strong>difficulty</strong> - easy, medium, or hard (optional, defaults to medium)</li>
-                <li><strong>bloomsTaxonomy</strong> - remember, understand, apply, analyze, evaluate, create (optional)</li>
-                <li><strong>points</strong> - Point value (optional, defaults to 1)</li>
-                <li><strong>options</strong> - For multiple choice, separated by semicolons (e.g., "Paris;London;Berlin;Madrid")</li>
-                <li><strong>correctAnswer</strong> - For multiple choice (A, B, C, D), matching/ranking (JSON format), or fill_blank (pipe-separated)</li>
-                <li><strong>explanation</strong> - Optional explanation text</li>
-                <li><strong>category</strong> - 'exam' or 'homework' (optional, defaults to 'exam')</li>
+                <li><strong>title</strong> - {t('importQuestions.columnTitle')}</li>
+                <li><strong>questionText</strong> - {t('importQuestions.columnQuestionText')}</li>
+                <li><strong>questionType</strong> - {t('importQuestions.columnQuestionType')}</li>
+                <li><strong>subject</strong> - {t('importQuestions.columnSubject')}</li>
+                <li><strong>difficulty</strong> - {t('importQuestions.columnDifficulty')}</li>
+                <li><strong>bloomsTaxonomy</strong> - {t('importQuestions.columnBloomsTaxonomy')}</li>
+                <li><strong>points</strong> - {t('importQuestions.columnPoints')}</li>
+                <li><strong>options</strong> - {t('importQuestions.columnOptions')}</li>
+                <li><strong>correctAnswer</strong> - {t('importQuestions.columnCorrectAnswer')}</li>
+                <li><strong>explanation</strong> - {t('importQuestions.columnExplanation')}</li>
+                <li><strong>category</strong> - {t('importQuestions.columnCategory')}</li>
               </ul>
               <div className="mt-3 p-3 bg-blue-50 rounded-md">
-                <p className="text-sm font-medium text-blue-800 mb-2">Advanced Question Types:</p>
-                <ul className="text-xs space-y-1 text-blue-700">
-                  <li><strong>Matching:</strong> options: "Left1;Left2|Right1;Right2", correctAnswer: JSON format</li>
-                  <li><strong>Ranking:</strong> options: "Item1;Item2;Item3", correctAnswer: Array format</li>
-                  <li><strong>Drag & Drop:</strong> options: "Category1;Category2|Item1;Item2", correctAnswer: Object format</li>
-                  <li><strong>Fill in Blank:</strong> correctAnswer: "answer1|answer2|answer3" (for multiple blanks)</li>
+                <p className="text-sm font-medium text-blue-800 dark:text-blue-300 mb-2">{t('importQuestions.advancedQuestionTypes')}</p>
+                <ul className="text-xs space-y-1 text-blue-700 dark:text-blue-200">
+                  <li><strong>Matching:</strong> {t('importQuestions.matchingFormat')}</li>
+                  <li><strong>Ranking:</strong> {t('importQuestions.rankingFormat')}</li>
+                  <li><strong>Drag & Drop:</strong> {t('importQuestions.dragDropFormat')}</li>
+                  <li><strong>Fill in Blank:</strong> {t('importQuestions.fillBlankFormat')}</li>
                 </ul>
               </div>
             </AlertDescription>
@@ -138,7 +140,7 @@ export default function ImportQuestionsModal({ open, onOpenChange }: ImportQuest
           {/* File Upload */}
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium mb-2">Select Excel File</label>
+              <label className="block text-sm font-medium mb-2">{t('importQuestions.selectExcelFile')}</label>
               <Input
                 type="file"
                 accept=".xlsx,.xls"
@@ -148,10 +150,10 @@ export default function ImportQuestionsModal({ open, onOpenChange }: ImportQuest
             </div>
 
             {selectedFile && (
-              <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
+              <div className="flex items-center gap-2 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
                 <FileSpreadsheet className="h-5 w-5 text-green-600" />
                 <span className="font-medium">{selectedFile.name}</span>
-                <span className="text-sm text-gray-500">
+                <span className="text-sm text-gray-500 dark:text-gray-400">
                   ({(selectedFile.size / 1024).toFixed(1)} KB)
                 </span>
               </div>
@@ -163,7 +165,7 @@ export default function ImportQuestionsModal({ open, onOpenChange }: ImportQuest
             <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
-                <span className="text-sm">Processing Excel file...</span>
+                <span className="text-sm">{t('importQuestions.processingFile')}</span>
               </div>
               <Progress value={50} className="w-full" />
             </div>
@@ -175,12 +177,12 @@ export default function ImportQuestionsModal({ open, onOpenChange }: ImportQuest
               <Alert>
                 <CheckCircle className="h-4 w-4" />
                 <AlertDescription>
-                  <strong>{importResults.imported}</strong> questions imported successfully
+                  {t('importQuestions.questionsImported', { count: importResults.imported })}
                   {importResults.warnings && importResults.warnings.length > 0 && (
-                    <span className="text-yellow-700"> • {importResults.warnings.length} duplicates skipped</span>
+                    <span className="text-yellow-700"> • {t('importQuestions.duplicatesSkipped', { count: importResults.warnings.length })}</span>
                   )}
                   {importResults.errors.length > 0 && (
-                    <span className="text-red-700"> • {importResults.errors.length} errors</span>
+                    <span className="text-red-700"> • {t('importQuestions.errorsOccurred', { count: importResults.errors.length })}</span>
                   )}
                 </AlertDescription>
               </Alert>
@@ -189,11 +191,11 @@ export default function ImportQuestionsModal({ open, onOpenChange }: ImportQuest
                 <Alert className="border-yellow-200 bg-yellow-50">
                   <Info className="h-4 w-4 text-yellow-600" />
                   <AlertDescription className="text-yellow-800">
-                    <strong>{importResults.warnings.length}</strong> duplicate questions skipped:
+                    {t('importQuestions.duplicateQuestionsSkipped', { count: importResults.warnings.length })}
                     <div className="mt-2 max-h-40 overflow-y-auto">
                       <ul className="text-sm list-disc list-inside space-y-1">
                         {importResults.warnings.map((warning: any, index: number) => (
-                          <li key={index}>Row {warning.row}: {warning.message}</li>
+                          <li key={index}>{t('importQuestions.row')} {warning.row}: {warning.message}</li>
                         ))}
                       </ul>
                     </div>
@@ -205,11 +207,11 @@ export default function ImportQuestionsModal({ open, onOpenChange }: ImportQuest
                 <Alert variant="destructive">
                   <AlertCircle className="h-4 w-4" />
                   <AlertDescription>
-                    <strong>{importResults.errors.length}</strong> errors occurred:
+                    {t('importQuestions.errorsOccurredDetails', { count: importResults.errors.length })}
                     <div className="mt-2 max-h-40 overflow-y-auto">
                       <ul className="text-sm list-disc list-inside space-y-1">
                         {importResults.errors.map((error: any, index: number) => (
-                          <li key={index}>Row {error.row}: {error.message}</li>
+                          <li key={index}>{t('importQuestions.row')} {error.row}: {error.message}</li>
                         ))}
                       </ul>
                     </div>
@@ -223,13 +225,13 @@ export default function ImportQuestionsModal({ open, onOpenChange }: ImportQuest
         {/* Fixed Footer Actions */}
         <div className="flex justify-end gap-3 pt-4 border-t flex-shrink-0">
           <Button variant="outline" onClick={handleClose}>
-            {importResults ? "Close" : "Cancel"}
+            {importResults ? t('importQuestions.close') : t('common.cancel')}
           </Button>
           <Button 
             onClick={handleImport} 
             disabled={!selectedFile || importMutation.isPending}
           >
-            {importMutation.isPending ? "Importing..." : "Import Questions"}
+            {importMutation.isPending ? t('importQuestions.importing') : t('importQuestions.importQuestions')}
           </Button>
         </div>
       </DialogContent>

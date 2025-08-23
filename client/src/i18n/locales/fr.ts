@@ -525,6 +525,44 @@ export const fr = {
     showingXtoYofZ: 'Affichage de {start} à {end} sur {total} matières'
   },
 
+  // Import Questions Modal
+  importQuestions: {
+    title: 'Importer Questions depuis Excel',
+    excelFormatRequired: 'Format Excel Requis :',
+    excelFormatDescription: 'Votre fichier Excel doit avoir ces colonnes :',
+    columnTitle: 'Titre de la question',
+    columnQuestionText: 'La question proprement dite',
+    columnQuestionType: 'multiple_choice, short_answer, essay, fill_blank, matching, ranking, ou drag_drop',
+    columnSubject: 'Nom de la matière (ex., "Mathématiques", "Physique", "Histoire")',
+    columnDifficulty: 'easy, medium, ou hard (optionnel, par défaut medium)',
+    columnBloomsTaxonomy: 'remember, understand, apply, analyze, evaluate, create (optionnel)',
+    columnPoints: 'Valeur en points (optionnel, par défaut 1)',
+    columnOptions: 'Pour choix multiple, séparés par points-virgules (ex., "Paris;Londres;Berlin;Madrid")',
+    columnCorrectAnswer: 'Pour choix multiple (A, B, C, D), correspondance/classement (format JSON), ou texte à trous (séparé par barres verticales)',
+    columnExplanation: 'Texte d\'explication optionnel',
+    columnCategory: '\'exam\' ou \'homework\' (optionnel, par défaut \'exam\')',
+    advancedQuestionTypes: 'Types de Questions Avancées :',
+    matchingFormat: 'options: "Gauche1;Gauche2|Droite1;Droite2", correctAnswer: format JSON',
+    rankingFormat: 'options: "Article1;Article2;Article3", correctAnswer: format Array',
+    dragDropFormat: 'options: "Catégorie1;Catégorie2|Article1;Article2", correctAnswer: format Object',
+    fillBlankFormat: 'correctAnswer: "réponse1|réponse2|réponse3" (pour plusieurs blancs)',
+    selectExcelFile: 'Sélectionner Fichier Excel',
+    processingFile: 'Traitement du fichier Excel...',
+    importSuccessful: 'Importation Réussie',
+    questionsImported: '{count} questions importées avec succès',
+    duplicatesSkipped: '{count} doublons ignorés',
+    errorsOccurred: '{count} erreurs',
+    duplicateQuestionsSkipped: '{count} questions doublons ignorées :',
+    errorsOccurredDetails: '{count} erreurs survenues :',
+    row: 'Ligne',
+    close: 'Fermer',
+    importing: 'Importation...',
+    importQuestions: 'Importer Questions',
+    importFailed: 'Échec de l\'Importation',
+    unauthorized: 'Non Autorisé',
+    loggedOut: 'Vous êtes déconnecté. Reconnexion en cours...'
+  },
+
   // Common/Shared Elements
   common: {
     loading: 'Chargement...',

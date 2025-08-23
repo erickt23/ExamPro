@@ -527,6 +527,44 @@ export const en = {
     showingXtoYofZ: 'Showing {start} to {end} of {total} subjects'
   },
 
+  // Import Questions Modal
+  importQuestions: {
+    title: 'Import Questions from Excel',
+    excelFormatRequired: 'Excel Format Required:',
+    excelFormatDescription: 'Your Excel file should have these columns:',
+    columnTitle: 'Question title',
+    columnQuestionText: 'The actual question',
+    columnQuestionType: 'multiple_choice, short_answer, essay, fill_blank, matching, ranking, or drag_drop',
+    columnSubject: 'Subject name (e.g., "Mathematics", "Physics", "History")',
+    columnDifficulty: 'easy, medium, or hard (optional, defaults to medium)',
+    columnBloomsTaxonomy: 'remember, understand, apply, analyze, evaluate, create (optional)',
+    columnPoints: 'Point value (optional, defaults to 1)',
+    columnOptions: 'For multiple choice, separated by semicolons (e.g., "Paris;London;Berlin;Madrid")',
+    columnCorrectAnswer: 'For multiple choice (A, B, C, D), matching/ranking (JSON format), or fill_blank (pipe-separated)',
+    columnExplanation: 'Optional explanation text',
+    columnCategory: '\'exam\' or \'homework\' (optional, defaults to \'exam\')',
+    advancedQuestionTypes: 'Advanced Question Types:',
+    matchingFormat: 'options: "Left1;Left2|Right1;Right2", correctAnswer: JSON format',
+    rankingFormat: 'options: "Item1;Item2;Item3", correctAnswer: Array format',
+    dragDropFormat: 'options: "Category1;Category2|Item1;Item2", correctAnswer: Object format',
+    fillBlankFormat: 'correctAnswer: "answer1|answer2|answer3" (for multiple blanks)',
+    selectExcelFile: 'Select Excel File',
+    processingFile: 'Processing Excel file...',
+    importSuccessful: 'Import Successful',
+    questionsImported: '{count} questions imported successfully',
+    duplicatesSkipped: '{count} duplicates skipped',
+    errorsOccurred: '{count} errors',
+    duplicateQuestionsSkipped: '{count} duplicate questions skipped:',
+    errorsOccurredDetails: '{count} errors occurred:',
+    row: 'Row',
+    close: 'Close',
+    importing: 'Importing...',
+    importQuestions: 'Import Questions',
+    importFailed: 'Import Failed',
+    unauthorized: 'Unauthorized',
+    loggedOut: 'You are logged out. Logging in again...'
+  },
+
   // Common/Shared Elements
   common: {
     loading: 'Loading...',
