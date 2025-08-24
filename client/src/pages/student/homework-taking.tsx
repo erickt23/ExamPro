@@ -248,7 +248,7 @@ export default function StudentHomeworkTaking() {
     
     const submissionData = {
       answers: questions.map(q => ({
-        questionId: q.id,
+        questionId: q.question.id,
         answerText: answers[q.id] || "",
       })),
     };
