@@ -837,12 +837,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Auto-grade matching questions
         else if (question.questionType === 'matching') {
           try {
-            const correctAnswer = typeof question.correctAnswer === 'string' 
-              ? JSON.parse(question.correctAnswer) 
-              : question.correctAnswer;
-            const studentAnswer = typeof answer.answerText === 'string'
-              ? JSON.parse(answer.answerText || '{}')
-              : answer.answerText || {};
+            let correctAnswer, studentAnswer;
+            
+            try {
+              correctAnswer = typeof question.correctAnswer === 'string' 
+                ? JSON.parse(question.correctAnswer) 
+                : question.correctAnswer;
+            } catch (parseError) {
+              console.error('Error parsing matching question correctAnswer:', parseError, 'Value:', question.correctAnswer);
+              correctAnswer = {};
+            }
+            
+            try {
+              studentAnswer = typeof answer.answerText === 'string'
+                ? JSON.parse(answer.answerText || '{}')
+                : answer.answerText || {};
+            } catch (parseError) {
+              console.error('Error parsing matching question studentAnswer:', parseError, 'Value:', answer.answerText);
+              studentAnswer = {};
+            }
             
             let correctMatches = 0;
             let totalMatches = 0;
@@ -898,12 +911,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Auto-grade drag-and-drop questions
         else if (question.questionType === 'drag_drop') {
           try {
-            const correctAnswer = typeof question.correctAnswer === 'string' 
-              ? JSON.parse(question.correctAnswer) 
-              : question.correctAnswer;
-            const studentAnswer = typeof answer.answerText === 'string'
-              ? JSON.parse(answer.answerText || '{}')
-              : answer.answerText || {};
+            let correctAnswer, studentAnswer;
+            
+            try {
+              correctAnswer = typeof question.correctAnswer === 'string' 
+                ? JSON.parse(question.correctAnswer) 
+                : question.correctAnswer;
+            } catch (parseError) {
+              console.error('Error parsing drag-drop question correctAnswer:', parseError, 'Value:', question.correctAnswer);
+              correctAnswer = { zones: [] };
+            }
+            
+            try {
+              studentAnswer = typeof answer.answerText === 'string'
+                ? JSON.parse(answer.answerText || '{}')
+                : answer.answerText || {};
+            } catch (parseError) {
+              console.error('Error parsing drag-drop question studentAnswer:', parseError, 'Value:', answer.answerText);
+              studentAnswer = {};
+            }
             
             let correctPlacements = 0;
             let totalItems = 0;
@@ -936,12 +962,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
         // Auto-grade ranking questions
         else if (question.questionType === 'ranking') {
-          const correctOrder = Array.isArray(question.correctAnswer) 
-            ? question.correctAnswer 
-            : JSON.parse(question.correctAnswer || '[]');
-          const studentOrder = Array.isArray(answer.answerText)
-            ? answer.answerText
-            : JSON.parse(answer.answerText || '[]');
+          try {
+            const correctOrder = Array.isArray(question.correctAnswer) 
+              ? question.correctAnswer 
+              : JSON.parse(question.correctAnswer || '[]');
+            const studentOrder = Array.isArray(answer.answerText)
+              ? answer.answerText
+              : JSON.parse(answer.answerText || '[]');
           
           let correctPositions = 0;
           const totalItems = correctOrder.length;
@@ -952,8 +979,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
             }
           }
           
-          // Partial credit for ranking
-          score = totalItems > 0 ? (correctPositions / totalItems) * question.points : 0;
+            // Partial credit for ranking
+            score = totalItems > 0 ? (correctPositions / totalItems) * question.points : 0;
+          } catch (error) {
+            console.error('Error grading ranking question:', error);
+            console.log('Invalid JSON in ranking question:', { correctAnswer: question.correctAnswer, studentAnswer: answer.answerText });
+            score = 0;
+          }
         }
 
         totalScore += score;
@@ -1927,7 +1959,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log(`Auto-graded homework submission ${submission.id} successfully`);
       } catch (error) {
         console.error(`Error auto-grading homework submission ${submission.id}:`, error);
-        console.error("Auto-grading error stack:", error.stack);
+        console.error("Auto-grading error stack:", error instanceof Error ? error.stack : String(error));
         // Continue even if grading fails - submission is still saved
       }
 
