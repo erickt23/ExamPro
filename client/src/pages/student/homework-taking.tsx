@@ -25,6 +25,7 @@ import {
   Send,
   AlertCircle
 } from "lucide-react";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface HomeworkQuestion {
   id: number;
@@ -58,6 +59,7 @@ interface HomeworkAssignment {
 export default function StudentHomeworkTaking() {
   const { toast } = useToast();
   const { user, isAuthenticated, isLoading } = useAuth();
+  const { t } = useTranslation();
   const [, setLocation] = useLocation();
   const [match, params] = useRoute("/homework/:id/take");
   const homeworkId = params?.id ? parseInt(params.id) : null;
