@@ -286,7 +286,9 @@ export const fr = {
     next: 'Suivant',
     submitExam: 'Soumettre l\'Examen',
     submitting: 'Soumission...',
-    cannotStartExam: 'Impossible de Commencer l\'Examen'
+    cannotStartExam: 'Impossible de Commencer l\'Examen',
+    noCompletedExams: 'Aucun examen terminé',
+    completeExamToSeeHere: 'Complétez un examen pour le voir ici'
   },
 
   // Student Dashboard

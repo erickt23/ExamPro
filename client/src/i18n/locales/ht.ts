@@ -286,7 +286,9 @@ export const ht = {
     next: 'Pwochen',
     submitExam: 'Soumèt Egzamen',
     submitting: 'Y ap Soumèt...',
-    cannotStartExam: 'Pa ka Kòmanse Egzamen'
+    cannotStartExam: 'Pa ka Kòmanse Egzamen',
+    noCompletedExams: 'Pa gen egzamen ki fini',
+    completeExamToSeeHere: 'Fè yon egzamen pou w wè li isit la'
   },
 
   // Student Dashboard

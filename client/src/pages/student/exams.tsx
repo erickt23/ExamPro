@@ -885,8 +885,8 @@ export default function StudentExams() {
                 {completedExams.length === 0 ? (
                   <div className="text-center py-12">
                     <CheckCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <p className="text-gray-500 text-lg mb-2">No completed exams</p>
-                    <p className="text-gray-400">Complete an exam to see it here</p>
+                    <p className="text-gray-500 text-lg mb-2">{t('studentExams.noCompletedExams')}</p>
+                    <p className="text-gray-400">{t('studentExams.completeExamToSeeHere')}</p>
                   </div>
                 ) : (
                   <div className="space-y-4">

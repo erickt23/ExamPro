@@ -289,7 +289,9 @@ export const en = {
     next: 'Next',
     submitExam: 'Submit Exam',
     submitting: 'Submitting...',
-    cannotStartExam: 'Cannot Start Exam'
+    cannotStartExam: 'Cannot Start Exam',
+    noCompletedExams: 'No completed exams',
+    completeExamToSeeHere: 'Complete an exam to see it here'
   },
 
   // Student Dashboard

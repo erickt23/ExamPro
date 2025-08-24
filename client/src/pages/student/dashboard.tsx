@@ -290,8 +290,8 @@ export default function StudentDashboard() {
                   {allUpcomingAndAvailable.length === 0 ? (
                     <div className="text-center py-8">
                       <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                      <p className="text-gray-500">No exams available</p>
-                      <p className="text-sm text-gray-400">Check back later for new assignments</p>
+                      <p className="text-gray-500">{t('studentExams.noExamsAvailable')}</p>
+                      <p className="text-sm text-gray-400">{t('studentExams.checkBackLater')}</p>
                     </div>
                   ) : (
                     <div className="space-y-4">
