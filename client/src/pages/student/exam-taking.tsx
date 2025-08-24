@@ -733,9 +733,11 @@ export default function StudentExamTaking() {
             console.error('Error parsing correctAnswer for drag-drop:', e);
           }
         }
-        
+
         // Ensure zones and items are arrays of strings
-        const zones = (dragDropData.zones || []).map((zone: any) => 
+        // Handle both "zones" and "categories" field names
+        const zonesList = dragDropData.zones || dragDropData.categories || [];
+        const zones = zonesList.map((zone: any) => 
           typeof zone === 'string' ? zone : (zone?.name || zone?.zone || String(zone))
         );
         const items = (dragDropData.items || []).map((item: any) => 
@@ -743,9 +745,6 @@ export default function StudentExamTaking() {
         );
         // Change to array-based storage for multiple items per zone
         const currentPlacements = answer || {};
-        
-        // Debug log to see what we have
-        console.log('Drag-drop question data:', { zones, items, dragDropData, question });
         
         return (
           <div className="space-y-4">
@@ -758,10 +757,10 @@ export default function StudentExamTaking() {
               </p>
             </div>
             
-            {items.length === 0 ? (
+            {items.length === 0 || zones.length === 0 ? (
               <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
                 <p className="text-sm text-yellow-800 dark:text-yellow-200">
-                  No draggable items found. Please contact your instructor.
+                  {items.length === 0 ? 'No draggable items found.' : 'No drop zones found.'} Please contact your instructor.
                 </p>
               </div>
             ) : (

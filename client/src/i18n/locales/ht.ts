@@ -407,6 +407,7 @@ export const ht = {
     itemBank: 'Bank Eleman',
     noMatchingItems: 'Pa gen eleman konparezon jwenn. Tanpri kontakte enstriktè ou.',
     noDraggableItems: 'Pa gen eleman ki ka rale jwenn. Tanpri kontakte enstriktè ou.',
+    noDropZones: 'Pa gen zòn depo jwenn. Tanpri kontakte enstriktè ou.',
     previous: 'Anvan',
     next: 'Pwochen',
     previousQuestion: 'Kesyon Anvan an',

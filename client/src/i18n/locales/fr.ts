@@ -407,6 +407,7 @@ export const fr = {
     itemBank: 'Banque d\'éléments',
     noMatchingItems: 'Aucun élément de correspondance trouvé. Veuillez contacter votre instructeur.',
     noDraggableItems: 'Aucun élément déplaçable trouvé. Veuillez contacter votre instructeur.',
+    noDropZones: 'Aucune zone de dépôt trouvée. Veuillez contacter votre instructeur.',
     previous: 'Précédent',
     next: 'Suivant',
     previousQuestion: 'Question Précédente',

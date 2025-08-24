@@ -700,9 +700,11 @@ export default function StudentHomeworkTaking() {
             console.error('Error parsing correctAnswer for drag-drop:', e);
           }
         }
-        
+
         // Ensure zones and items are arrays of strings
-        const zones = (dragDropData.zones || []).map((zone: any) => 
+        // Handle both "zones" and "categories" field names
+        const zonesList = dragDropData.zones || dragDropData.categories || [];
+        const zones = zonesList.map((zone: any) => 
           typeof zone === 'string' ? zone : (zone?.name || zone?.zone || String(zone))
         );
         const items = (dragDropData.items || []).map((item: any) => 
@@ -721,10 +723,10 @@ export default function StudentHomeworkTaking() {
               </p>
             </div>
             
-            {items.length === 0 ? (
+            {items.length === 0 || zones.length === 0 ? (
               <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
                 <p className="text-sm text-yellow-800 dark:text-yellow-200">
-                  {t('examTaking.noDraggableItems')}
+                  {items.length === 0 ? t('examTaking.noDraggableItems') : t('examTaking.noDropZones')}
                 </p>
               </div>
             ) : (

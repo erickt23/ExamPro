@@ -410,6 +410,7 @@ export const en = {
     itemBank: 'Item Bank',
     noMatchingItems: 'No matching items found. Please contact your instructor.',
     noDraggableItems: 'No draggable items found. Please contact your instructor.',
+    noDropZones: 'No drop zones found. Please contact your instructor.',
     previous: 'Previous',
     next: 'Next',
     previousQuestion: 'Previous Question',
