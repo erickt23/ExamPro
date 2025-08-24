@@ -25,7 +25,7 @@ export function getNestedValue(obj: any, path: string): string {
 
 // Template string interpolation
 export function interpolate(template: string, values: Record<string, string | number>): string {
-  return template.replace(/\{\{(\w+)\}\}/g, (match, key) => {
+  return template.replace(/\{(\w+)\}/g, (match, key) => {
     return values[key]?.toString() || match;
   });
 }
