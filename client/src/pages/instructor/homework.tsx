@@ -44,6 +44,7 @@ interface HomeworkAssignment {
   description: string;
   subjectId: number;
   dueDate: string | null;
+  totalPoints: number;
   status: 'draft' | 'active' | 'archived';
   createdAt: string;
 }
@@ -69,6 +70,7 @@ export default function InstructorHomeworkPage() {
     description: "",
     subjectId: "",
     dueDate: "",
+    totalPoints: 0,
   });
   
   // Question selection state
@@ -83,6 +85,12 @@ export default function InstructorHomeworkPage() {
   const [expandedHomeworkIds, setExpandedHomeworkIds] = useState<Set<number>>(new Set());
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+
+  // Calculate total points automatically based on selected questions
+  useEffect(() => {
+    const totalPoints = selectedQuestions.reduce((sum, question) => sum + (question.points || 1), 0);
+    setNewHomework(prev => ({ ...prev, totalPoints }));
+  }, [selectedQuestions]);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -199,7 +207,7 @@ export default function InstructorHomeworkPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/homework"] });
       setShowCreateModal(false);
-      setNewHomework({ title: "", description: "", subjectId: "", dueDate: "" });
+      setNewHomework({ title: "", description: "", subjectId: "", dueDate: "", totalPoints: 0 });
       setSelectedQuestions([]);
       setQuestionSearch("");
       setQuestionFilters({ subjectId: "all", questionType: "all", difficulty: "all" });
@@ -257,7 +265,7 @@ export default function InstructorHomeworkPage() {
       queryClient.invalidateQueries({ queryKey: ["/api/homework", selectedHomework?.id, "questions"] });
       setShowEditModal(false);
       setSelectedHomework(null);
-      setNewHomework({ title: "", description: "", subjectId: "", dueDate: "" });
+      setNewHomework({ title: "", description: "", subjectId: "", dueDate: "", totalPoints: 0 });
       setSelectedQuestions([]);
       setQuestionSearch("");
       setQuestionFilters({ subjectId: "all", questionType: "all", difficulty: "all" });
@@ -336,6 +344,7 @@ export default function InstructorHomeworkPage() {
       description: newHomework.description,
       subjectId: parseInt(newHomework.subjectId),
       dueDate: dueDate,
+      totalPoints: newHomework.totalPoints,
       status: "draft",
     });
   };
@@ -368,6 +377,7 @@ export default function InstructorHomeworkPage() {
         description: newHomework.description,
         subjectId: parseInt(newHomework.subjectId),
         dueDate: dueDate,
+        totalPoints: newHomework.totalPoints,
       },
     });
   };
@@ -384,6 +394,7 @@ export default function InstructorHomeworkPage() {
       description: homework.description,
       subjectId: homework.subjectId.toString(),
       dueDate: convertToDateTimeLocalValue(homework.dueDate),
+      totalPoints: homework.totalPoints || 0,
     });
     // Reset question selection state
     setSelectedQuestions([]);
@@ -532,14 +543,39 @@ export default function InstructorHomeworkPage() {
                 </Select>
               </div>
               
-              <div>
-                <Label htmlFor="dueDate">Due Date</Label>
-                <Input
-                  id="dueDate"
-                  type="datetime-local"
-                  value={newHomework.dueDate}
-                  onChange={(e) => setNewHomework({ ...newHomework, dueDate: e.target.value })}
-                />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="dueDate">Due Date</Label>
+                  <Input
+                    id="dueDate"
+                    type="datetime-local"
+                    value={newHomework.dueDate}
+                    onChange={(e) => setNewHomework({ ...newHomework, dueDate: e.target.value })}
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="totalPoints">Total Points</Label>
+                  <div className="relative">
+                    <Input
+                      id="totalPoints"
+                      type="number"
+                      min="0"
+                      value={newHomework.totalPoints}
+                      readOnly
+                      className="bg-gray-50 dark:bg-gray-800"
+                      placeholder="Auto-calculated from questions"
+                    />
+                    <div className="absolute inset-y-0 right-0 flex items-center pr-3">
+                      <Badge variant="secondary" className="text-xs">
+                        Auto
+                      </Badge>
+                    </div>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Automatically calculated from selected questions
+                  </p>
+                </div>
               </div>
               
               {/* Question Selection Section */}
@@ -618,13 +654,20 @@ export default function InstructorHomeworkPage() {
                   )}
                 </div>
                 
-                {/* Selected Questions */}
+                {/* Selected Questions Summary */}
                 {selectedQuestions.length > 0 && (
                   <div className="mb-4">
-                    <h4 className="font-medium mb-2">Selected Questions ({selectedQuestions.length})</h4>
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="font-medium">Selected Questions ({selectedQuestions.length})</h4>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="text-sm">
+                          Total: {newHomework.totalPoints} points
+                        </Badge>
+                      </div>
+                    </div>
                     <div className="space-y-2 max-h-40 overflow-y-auto">
                       {selectedQuestions.map((question) => (
-                        <div key={question.id} className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg">
+                        <div key={question.id} className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-1">
                               <Badge className={getQuestionTypeColor(question.questionType)}>
@@ -635,7 +678,7 @@ export default function InstructorHomeworkPage() {
                               </Badge>
                               <Badge variant="outline">{question.points} pts</Badge>
                             </div>
-                            <p className="text-sm text-gray-700 truncate">
+                            <p className="text-sm text-gray-700 dark:text-gray-300 truncate">
                               {question.title || question.questionText}
                             </p>
                           </div>
@@ -761,14 +804,39 @@ export default function InstructorHomeworkPage() {
                 </Select>
               </div>
               
-              <div>
-                <Label htmlFor="edit-dueDate">Due Date</Label>
-                <Input
-                  id="edit-dueDate"
-                  type="datetime-local"
-                  value={newHomework.dueDate}
-                  onChange={(e) => setNewHomework({ ...newHomework, dueDate: e.target.value })}
-                />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="edit-dueDate">Due Date</Label>
+                  <Input
+                    id="edit-dueDate"
+                    type="datetime-local"
+                    value={newHomework.dueDate}
+                    onChange={(e) => setNewHomework({ ...newHomework, dueDate: e.target.value })}
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="edit-totalPoints">Total Points</Label>
+                  <div className="relative">
+                    <Input
+                      id="edit-totalPoints"
+                      type="number"
+                      min="0"
+                      value={newHomework.totalPoints}
+                      readOnly
+                      className="bg-gray-50 dark:bg-gray-800"
+                      placeholder="Auto-calculated from questions"
+                    />
+                    <div className="absolute inset-y-0 right-0 flex items-center pr-3">
+                      <Badge variant="secondary" className="text-xs">
+                        Auto
+                      </Badge>
+                    </div>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Automatically calculated from selected questions
+                  </p>
+                </div>
               </div>
               
               {/* Question Selection Section */}
@@ -847,13 +915,20 @@ export default function InstructorHomeworkPage() {
                   )}
                 </div>
                 
-                {/* Selected Questions */}
+                {/* Selected Questions Summary */}
                 {selectedQuestions.length > 0 && (
                   <div className="mb-4">
-                    <h4 className="font-medium mb-2">Selected Questions ({selectedQuestions.length})</h4>
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="font-medium">Selected Questions ({selectedQuestions.length})</h4>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="text-sm">
+                          Total: {newHomework.totalPoints} points
+                        </Badge>
+                      </div>
+                    </div>
                     <div className="space-y-2 max-h-40 overflow-y-auto">
                       {selectedQuestions.map((question) => (
-                        <div key={question.id} className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg">
+                        <div key={question.id} className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-1">
                               <Badge className={getQuestionTypeColor(question.questionType)}>
@@ -864,7 +939,7 @@ export default function InstructorHomeworkPage() {
                               </Badge>
                               <Badge variant="outline">{question.points} pts</Badge>
                             </div>
-                            <p className="text-sm text-gray-700 truncate">
+                            <p className="text-sm text-gray-700 dark:text-gray-300 truncate">
                               {question.title || question.questionText}
                             </p>
                           </div>
