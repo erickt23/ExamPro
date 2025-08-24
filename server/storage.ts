@@ -182,7 +182,11 @@ class MemoryStorage implements IStorage {
 
   async upsertUser(userData: UpsertUser): Promise<User> {
     const user: User = {
-      ...userData,
+      id: userData.id,
+      email: userData.email || null,
+      firstName: userData.firstName || null,
+      lastName: userData.lastName || null,
+      profileImageUrl: userData.profileImageUrl || null,
       role: userData.role || 'student',
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -198,7 +202,7 @@ class MemoryStorage implements IStorage {
   async updateSubject(): Promise<Subject> { throw new Error('Database unavailable'); }
   async deleteSubject(): Promise<void> { throw new Error('Database unavailable'); }
   async createQuestion(): Promise<Question> { throw new Error('Database unavailable'); }
-  async getQuestions(): Promise<{ questions: Question[]; total: number; page: number; totalPages: number }> {
+  async getQuestions(instructorId: string, filters?: any): Promise<{ questions: Question[]; total: number; page: number; totalPages: number }> {
     return { questions: [], total: 0, page: 1, totalPages: 0 };
   }
   async getQuestionById(): Promise<Question | undefined> { return undefined; }
@@ -206,7 +210,7 @@ class MemoryStorage implements IStorage {
   async deleteQuestion(): Promise<void> { throw new Error('Database unavailable'); }
   async incrementQuestionUsage(): Promise<void> { throw new Error('Database unavailable'); }
   async createExam(): Promise<Exam> { throw new Error('Database unavailable'); }
-  async getExams(): Promise<Exam[]> { return []; }
+  async getExams(instructorId: string, status?: string, search?: string): Promise<Exam[]> { return []; }
   async getActiveExamsForStudents(): Promise<Exam[]> { return []; }
   async getExamById(): Promise<Exam | undefined> { return undefined; }
   async updateExam(): Promise<Exam> { throw new Error('Database unavailable'); }
@@ -217,7 +221,7 @@ class MemoryStorage implements IStorage {
   async getExamQuestions(): Promise<(ExamQuestion & { question: Question })[]> { return []; }
   async removeQuestionFromExam(): Promise<void> { throw new Error('Database unavailable'); }
   async createSubmission(): Promise<Submission> { throw new Error('Database unavailable'); }
-  async getSubmissions(): Promise<Submission[]> { return []; }
+  async getSubmissions(examId?: number, studentId?: string): Promise<Submission[]> { return []; }
   async getSubmissionById(): Promise<Submission | undefined> { return undefined; }
   async updateSubmission(): Promise<Submission> { throw new Error('Database unavailable'); }
   async createAnswer(): Promise<Answer> { throw new Error('Database unavailable'); }
@@ -412,8 +416,8 @@ export class DatabaseStorage implements IStorage {
       };
 
     } catch (error) {
-      console.error('Database error in getQuestions:', error);
-      throw error;
+      console.warn('Database getQuestions failed, falling back to memory storage:', error);
+      return memoryStorage.getQuestions(instructorId, filters);
     }
   }
 
@@ -458,37 +462,42 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getExams(instructorId: string, status?: string, search?: string): Promise<Exam[]> {
-    console.log('getExams called with:', { instructorId, status, search });
-    
-    // Special handling for "completed" status
-    if (status === 'completed') {
-      return this.getCompletedExams(instructorId, search);
-    }
-    
-    const conditions = [eq(exams.instructorId, instructorId)];
-    
-    if (status) {
-      conditions.push(eq(exams.status, status as any));
-    }
+    try {
+      console.log('getExams called with:', { instructorId, status, search });
+      
+      // Special handling for "completed" status
+      if (status === 'completed') {
+        return this.getCompletedExams(instructorId, search);
+      }
+      
+      const conditions = [eq(exams.instructorId, instructorId)];
+      
+      if (status) {
+        conditions.push(eq(exams.status, status as any));
+      }
 
-    // Add search condition if provided
-    if (search && search.trim()) {
-      conditions.push(
-        or(
-          ilike(exams.title, `%${search.trim()}%`),
-          ilike(exams.description, `%${search.trim()}%`)
-        )!
-      );
+      // Add search condition if provided
+      if (search && search.trim()) {
+        conditions.push(
+          or(
+            ilike(exams.title, `%${search.trim()}%`),
+            ilike(exams.description, `%${search.trim()}%`)
+          )!
+        );
+      }
+
+      const results = await db
+        .select()
+        .from(exams)
+        .where(and(...conditions))
+        .orderBy(desc(exams.createdAt));
+
+      console.log('Query results:', results.length, 'exams found');
+      return results;
+    } catch (error) {
+      console.warn('Database getExams failed, falling back to memory storage:', error);
+      return memoryStorage.getExams(instructorId, status, search);
     }
-
-    const results = await db
-      .select()
-      .from(exams)
-      .where(and(...conditions))
-      .orderBy(desc(exams.createdAt));
-
-    console.log('Query results:', results.length, 'exams found');
-    return results;
   }
 
   private async getCompletedExams(instructorId: string, search?: string): Promise<Exam[]> {
@@ -553,11 +562,16 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getActiveExamsForStudents(): Promise<Exam[]> {
-    return db
-      .select()
-      .from(exams)
-      .where(eq(exams.status, 'active'))
-      .orderBy(desc(exams.createdAt));
+    try {
+      return db
+        .select()
+        .from(exams)
+        .where(eq(exams.status, 'active'))
+        .orderBy(desc(exams.createdAt));
+    } catch (error) {
+      console.warn('Database getActiveExamsForStudents failed, falling back to memory storage:', error);
+      return memoryStorage.getActiveExamsForStudents();
+    }
   }
 
   async getExamById(id: number): Promise<Exam | undefined> {
@@ -629,15 +643,20 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getSubmissions(examId?: number, studentId?: string): Promise<Submission[]> {
-    const conditions = [];
-    if (examId) conditions.push(eq(submissions.examId, examId));
-    if (studentId) conditions.push(eq(submissions.studentId, studentId));
+    try {
+      const conditions = [];
+      if (examId) conditions.push(eq(submissions.examId, examId));
+      if (studentId) conditions.push(eq(submissions.studentId, studentId));
 
-    return db
-      .select()
-      .from(submissions)
-      .where(conditions.length > 0 ? and(...conditions) : undefined)
-      .orderBy(desc(submissions.startedAt));
+      return db
+        .select()
+        .from(submissions)
+        .where(conditions.length > 0 ? and(...conditions) : undefined)
+        .orderBy(desc(submissions.startedAt));
+    } catch (error) {
+      console.warn('Database getSubmissions failed, falling back to memory storage:', error);
+      return memoryStorage.getSubmissions(examId, studentId);
+    }
   }
 
   async getSubmissionsWithDetails(examId?: number, studentId?: string): Promise<any[]> {
