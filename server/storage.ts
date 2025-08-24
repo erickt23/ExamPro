@@ -201,6 +201,7 @@ class MemoryStorage implements IStorage {
   async getSubjectById(): Promise<Subject | undefined> { return undefined; }
   async updateSubject(): Promise<Subject> { throw new Error('Database unavailable'); }
   async deleteSubject(): Promise<void> { throw new Error('Database unavailable'); }
+  async getSubmissionsWithDetails(examId?: number, studentId?: string): Promise<any[]> { return []; }
   async createQuestion(): Promise<Question> { throw new Error('Database unavailable'); }
   async getQuestions(instructorId: string, filters?: any): Promise<{ questions: Question[]; total: number; page: number; totalPages: number }> {
     return { questions: [], total: 0, page: 1, totalPages: 0 };
@@ -660,41 +661,46 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getSubmissionsWithDetails(examId?: number, studentId?: string): Promise<any[]> {
-    const conditions = [];
-    if (examId) conditions.push(eq(submissions.examId, examId));
-    if (studentId) conditions.push(eq(submissions.studentId, studentId));
+    try {
+      const conditions = [];
+      if (examId) conditions.push(eq(submissions.examId, examId));
+      if (studentId) conditions.push(eq(submissions.studentId, studentId));
 
-    return db
-      .select({
-        id: submissions.id,
-        examId: submissions.examId,
-        studentId: submissions.studentId,
-        attemptNumber: submissions.attemptNumber,
-        startedAt: submissions.startedAt,
-        submittedAt: submissions.submittedAt,
-        timeTaken: submissions.timeTaken,
-        totalScore: submissions.totalScore,
-        maxScore: submissions.maxScore,
-        status: submissions.status,
-        isLate: submissions.isLate,
-        student: {
-          id: users.id,
-          firstName: users.firstName,
-          lastName: users.lastName,
-          email: users.email,
-        },
-        exam: {
-          id: exams.id,
-          title: exams.title,
-          description: exams.description,
-          subjectId: exams.subjectId,
-        }
-      })
-      .from(submissions)
-      .innerJoin(users, eq(submissions.studentId, users.id))
-      .innerJoin(exams, eq(submissions.examId, exams.id))
-      .where(conditions.length > 0 ? and(...conditions) : undefined)
-      .orderBy(desc(submissions.startedAt));
+      return db
+        .select({
+          id: submissions.id,
+          examId: submissions.examId,
+          studentId: submissions.studentId,
+          attemptNumber: submissions.attemptNumber,
+          startedAt: submissions.startedAt,
+          submittedAt: submissions.submittedAt,
+          timeTaken: submissions.timeTaken,
+          totalScore: submissions.totalScore,
+          maxScore: submissions.maxScore,
+          status: submissions.status,
+          isLate: submissions.isLate,
+          student: {
+            id: users.id,
+            firstName: users.firstName,
+            lastName: users.lastName,
+            email: users.email,
+          },
+          exam: {
+            id: exams.id,
+            title: exams.title,
+            description: exams.description,
+            subjectId: exams.subjectId,
+          }
+        })
+        .from(submissions)
+        .innerJoin(users, eq(submissions.studentId, users.id))
+        .innerJoin(exams, eq(submissions.examId, exams.id))
+        .where(conditions.length > 0 ? and(...conditions) : undefined)
+        .orderBy(desc(submissions.startedAt));
+    } catch (error) {
+      console.warn('Database getSubmissionsWithDetails failed, falling back to empty array:', error);
+      return []; // Return empty array since detailed submission data is not available
+    }
   }
 
   async getSubmissionById(id: number): Promise<Submission | undefined> {
