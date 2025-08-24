@@ -182,6 +182,8 @@ export const en = {
     totalPoints: 'Total Points',
     auto: 'Auto',
     automaticallyCalculated: 'Automatically calculated from selected questions',
+    attemptsAllowed: 'Attempts Allowed',
+    defaultOneAttempt: 'Default is 1 attempt',
     selectHomeworkQuestions: 'Select Homework Questions',
     selectedQuestions: 'Selected Questions',
     availableHomeworkQuestions: 'Available Homework Questions',

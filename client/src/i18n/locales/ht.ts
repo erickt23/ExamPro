@@ -179,6 +179,8 @@ export const ht = {
     totalPoints: 'Total Pwen',
     auto: 'Auto',
     automaticallyCalculated: 'Kalkile otomatikman depi kesyon yo ki chwazi',
+    attemptsAllowed: 'Tantativ yo ki Otorize',
+    defaultOneAttempt: 'Default se 1 tantativ',
     selectHomeworkQuestions: 'Chwazi Kesyon Devwa yo',
     selectedQuestions: 'Kesyon yo ki Chwazi',
     availableHomeworkQuestions: 'Kesyon Devwa ki Disponib yo',

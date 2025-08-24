@@ -45,6 +45,7 @@ interface HomeworkAssignment {
   subjectId: number;
   dueDate: string | null;
   totalPoints: number;
+  attemptsAllowed: number;
   status: 'draft' | 'active' | 'archived';
   createdAt: string;
 }
@@ -71,6 +72,7 @@ export default function InstructorHomeworkPage() {
     subjectId: "",
     dueDate: "",
     totalPoints: 0,
+    attemptsAllowed: 1,
   });
   
   // Question selection state
@@ -207,7 +209,7 @@ export default function InstructorHomeworkPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/homework"] });
       setShowCreateModal(false);
-      setNewHomework({ title: "", description: "", subjectId: "", dueDate: "", totalPoints: 0 });
+      setNewHomework({ title: "", description: "", subjectId: "", dueDate: "", totalPoints: 0, attemptsAllowed: 1 });
       setSelectedQuestions([]);
       setQuestionSearch("");
       setQuestionFilters({ subjectId: "all", questionType: "all", difficulty: "all" });
@@ -265,7 +267,7 @@ export default function InstructorHomeworkPage() {
       queryClient.invalidateQueries({ queryKey: ["/api/homework", selectedHomework?.id, "questions"] });
       setShowEditModal(false);
       setSelectedHomework(null);
-      setNewHomework({ title: "", description: "", subjectId: "", dueDate: "", totalPoints: 0 });
+      setNewHomework({ title: "", description: "", subjectId: "", dueDate: "", totalPoints: 0, attemptsAllowed: 1 });
       setSelectedQuestions([]);
       setQuestionSearch("");
       setQuestionFilters({ subjectId: "all", questionType: "all", difficulty: "all" });
@@ -345,6 +347,7 @@ export default function InstructorHomeworkPage() {
       subjectId: parseInt(newHomework.subjectId),
       dueDate: dueDate,
       totalPoints: newHomework.totalPoints,
+      attemptsAllowed: newHomework.attemptsAllowed,
       status: "draft",
     });
   };
@@ -378,6 +381,7 @@ export default function InstructorHomeworkPage() {
         subjectId: parseInt(newHomework.subjectId),
         dueDate: dueDate,
         totalPoints: newHomework.totalPoints,
+        attemptsAllowed: newHomework.attemptsAllowed,
       },
     });
   };
@@ -395,6 +399,7 @@ export default function InstructorHomeworkPage() {
       subjectId: homework.subjectId.toString(),
       dueDate: convertToDateTimeLocalValue(homework.dueDate),
       totalPoints: homework.totalPoints || 0,
+      attemptsAllowed: homework.attemptsAllowed || 1,
     });
     // Reset question selection state
     setSelectedQuestions([]);
@@ -543,7 +548,7 @@ export default function InstructorHomeworkPage() {
                 </Select>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <Label htmlFor="dueDate">{t('assignments.dueDate')}</Label>
                   <Input
@@ -552,6 +557,22 @@ export default function InstructorHomeworkPage() {
                     value={newHomework.dueDate}
                     onChange={(e) => setNewHomework({ ...newHomework, dueDate: e.target.value })}
                   />
+                </div>
+                
+                <div>
+                  <Label htmlFor="attemptsAllowed">{t('assignments.attemptsAllowed')}</Label>
+                  <Input
+                    id="attemptsAllowed"
+                    type="number"
+                    min="1"
+                    max="10"
+                    value={newHomework.attemptsAllowed}
+                    onChange={(e) => setNewHomework({ ...newHomework, attemptsAllowed: parseInt(e.target.value) || 1 })}
+                    placeholder="1"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    {t('assignments.defaultOneAttempt')}
+                  </p>
                 </div>
                 
                 <div>
@@ -804,7 +825,7 @@ export default function InstructorHomeworkPage() {
                 </Select>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <Label htmlFor="edit-dueDate">{t('assignments.dueDate')}</Label>
                   <Input
@@ -813,6 +834,22 @@ export default function InstructorHomeworkPage() {
                     value={newHomework.dueDate}
                     onChange={(e) => setNewHomework({ ...newHomework, dueDate: e.target.value })}
                   />
+                </div>
+                
+                <div>
+                  <Label htmlFor="edit-attemptsAllowed">{t('assignments.attemptsAllowed')}</Label>
+                  <Input
+                    id="edit-attemptsAllowed"
+                    type="number"
+                    min="1"
+                    max="10"
+                    value={newHomework.attemptsAllowed}
+                    onChange={(e) => setNewHomework({ ...newHomework, attemptsAllowed: parseInt(e.target.value) || 1 })}
+                    placeholder="1"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    {t('assignments.defaultOneAttempt')}
+                  </p>
                 </div>
                 
                 <div>
