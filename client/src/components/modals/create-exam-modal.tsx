@@ -6,6 +6,7 @@ import { z } from "zod";
 import { useToast } from "@/hooks/use-toast";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useTranslation } from "@/hooks/useTranslation";
 import {
   Dialog,
   DialogContent,
@@ -59,6 +60,7 @@ interface CreateExamModalProps {
 
 export default function CreateExamModal({ open, onOpenChange }: CreateExamModalProps) {
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [showCreateSubjectModal, setShowCreateSubjectModal] = useState(false);
   
   // Fetch subjects
@@ -248,7 +250,7 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Create New Exam</DialogTitle>
+          <DialogTitle>{t('createExamModal.createNewExam')}</DialogTitle>
         </DialogHeader>
 
         <Form {...form}>
@@ -260,9 +262,9 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
                 name="title"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Exam Title</FormLabel>
+                    <FormLabel>{t('createExamModal.examTitle')}</FormLabel>
                     <FormControl>
-                      <Input placeholder="e.g., Calculus I - Midterm" {...field} />
+                      <Input placeholder={t('createExamModal.examTitlePlaceholder')} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -275,14 +277,14 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
                 render={({ field }) => (
                   <FormItem>
                     <div className="flex items-center justify-between mb-2">
-                      <FormLabel>Subject</FormLabel>
+                      <FormLabel>{t('createExamModal.subject')}</FormLabel>
                       <Button
                         type="button"
                         variant="ghost"
                         size="sm"
                         onClick={() => setShowCreateSubjectModal(true)}
                         className="h-auto p-1 text-primary hover:text-primary/80"
-                        title="Add new subject"
+                        title={t('createExamModal.addNewSubject')}
                       >
                         <Plus className="h-3 w-3" />
                       </Button>
@@ -290,7 +292,7 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
                     <Select onValueChange={(value) => field.onChange(parseInt(value))} defaultValue={field.value?.toString()}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select subject" />
+                          <SelectValue placeholder={t('createExamModal.selectSubject')} />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -310,11 +312,11 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Description</FormLabel>
+                  <FormLabel>{t('createExamModal.description')}</FormLabel>
                   <FormControl>
                     <Textarea 
                       rows={3}
-                      placeholder="Brief description of the exam..." 
+                      placeholder={t('createExamModal.descriptionPlaceholder')} 
                       {...field} 
                     />
                   </FormControl>
@@ -325,7 +327,7 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
 
             {/* Question Selection Method */}
             <div>
-              <Label className="text-sm font-medium">Question Selection Method</Label>
+              <Label className="text-sm font-medium">{t('createExamModal.questionSelectionMethod')}</Label>
               <RadioGroup 
                 value={selectionMethod} 
                 onValueChange={(value: 'manual' | 'random') => setSelectionMethod(value)}
@@ -333,11 +335,11 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
               >
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="manual" id="manual" />
-                  <Label htmlFor="manual">Manual Selection - Choose specific questions</Label>
+                  <Label htmlFor="manual">{t('createExamModal.manualSelection')}</Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="random" id="random" />
-                  <Label htmlFor="random">Random Selection - Auto-generate from criteria</Label>
+                  <Label htmlFor="random">{t('createExamModal.randomSelection')}</Label>
                 </div>
               </RadioGroup>
             </div>
@@ -347,7 +349,7 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
               <div className="space-y-4">
                 <div>
                   <div className="flex items-center justify-between mb-3">
-                    <Label>Search and Select Questions</Label>
+                    <Label>{t('createExamModal.searchAndSelectQuestions')}</Label>
                     <Button
                       type="button"
                       variant="outline"
@@ -355,7 +357,7 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
                       onClick={() => setShowFilters(!showFilters)}
                       className="text-xs"
                     >
-                      {showFilters ? 'Hide Filters' : 'Show Filters'}
+                      {showFilters ? t('createExamModal.hideFilters') : t('createExamModal.showFilters')}
                     </Button>
                   </div>
                   
@@ -363,7 +365,7 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
                   <div className="relative">
                     <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                     <Input
-                      placeholder="Search questions by title or content..."
+                      placeholder={t('createExamModal.searchQuestionsPlaceholder')}
                       value={questionSearch}
                       onChange={(e) => setQuestionSearch(e.target.value)}
                       className="pl-9"
@@ -376,13 +378,13 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {/* Subject Filter */}
                         <div>
-                          <Label className="text-sm font-medium mb-2 block">Subject</Label>
+                          <Label className="text-sm font-medium mb-2 block">{t('createExamModal.subject')}</Label>
                           <Select value={filterSubject} onValueChange={setFilterSubject}>
                             <SelectTrigger className="h-9">
-                              <SelectValue placeholder="All subjects" />
+                              <SelectValue placeholder={t('createExamModal.allSubjects')} />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="all">All subjects</SelectItem>
+                              <SelectItem value="all">{t('createExamModal.allSubjects')}</SelectItem>
                               {subjects.map((subject: any) => (
                                 <SelectItem key={subject.id} value={subject.id.toString()}>
                                   {subject.name}
@@ -394,30 +396,30 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
                         
                         {/* Question Type Filter */}
                         <div>
-                          <Label className="text-sm font-medium mb-2 block">Question Type</Label>
+                          <Label className="text-sm font-medium mb-2 block">{t('createExamModal.questionType')}</Label>
                           <Select value={filterType} onValueChange={setFilterType}>
                             <SelectTrigger className="h-9">
-                              <SelectValue placeholder="All types" />
+                              <SelectValue placeholder={t('createExamModal.allTypes')} />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="all">All types</SelectItem>
-                              <SelectItem value="multiple_choice">Multiple Choice</SelectItem>
-                              <SelectItem value="short_answer">Short Answer</SelectItem>
-                              <SelectItem value="essay">Essay</SelectItem>
-                              <SelectItem value="fill_blank">Fill in Blank</SelectItem>
+                              <SelectItem value="all">{t('createExamModal.allTypes')}</SelectItem>
+                              <SelectItem value="multiple_choice">{t('createExamModal.multipleChoice')}</SelectItem>
+                              <SelectItem value="short_answer">{t('createExamModal.shortAnswer')}</SelectItem>
+                              <SelectItem value="essay">{t('createExamModal.essay')}</SelectItem>
+                              <SelectItem value="fill_blank">{t('createExamModal.fillInBlank')}</SelectItem>
                             </SelectContent>
                           </Select>
                         </div>
                         
                         {/* Difficulty Filter */}
                         <div>
-                          <Label className="text-sm font-medium mb-2 block">Difficulty</Label>
+                          <Label className="text-sm font-medium mb-2 block">{t('createExamModal.difficulty')}</Label>
                           <Select value={filterDifficulty} onValueChange={setFilterDifficulty}>
                             <SelectTrigger className="h-9">
-                              <SelectValue placeholder="All levels" />
+                              <SelectValue placeholder={t('createExamModal.allLevels')} />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="all">All levels</SelectItem>
+                              <SelectItem value="all">{t('createExamModal.allLevels')}</SelectItem>
                               <SelectItem value="easy">Easy</SelectItem>
                               <SelectItem value="medium">Medium</SelectItem>
                               <SelectItem value="hard">Hard</SelectItem>
@@ -427,19 +429,19 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
                         
                         {/* Bloom's Taxonomy Filter */}
                         <div>
-                          <Label className="text-sm font-medium mb-2 block">Bloom's Taxonomy</Label>
+                          <Label className="text-sm font-medium mb-2 block">{t('createExamModal.bloomsTaxonomy')}</Label>
                           <Select value={filterBloomsTaxonomy} onValueChange={setFilterBloomsTaxonomy}>
                             <SelectTrigger className="h-9">
-                              <SelectValue placeholder="All levels" />
+                              <SelectValue placeholder={t('createExamModal.allLevels')} />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="all">All levels</SelectItem>
-                              <SelectItem value="remember">Remember</SelectItem>
-                              <SelectItem value="understand">Understand</SelectItem>
-                              <SelectItem value="apply">Apply</SelectItem>
-                              <SelectItem value="analyze">Analyze</SelectItem>
-                              <SelectItem value="evaluate">Evaluate</SelectItem>
-                              <SelectItem value="create">Create</SelectItem>
+                              <SelectItem value="all">{t('createExamModal.allLevels')}</SelectItem>
+                              <SelectItem value="remember">{t('createExamModal.remember')}</SelectItem>
+                              <SelectItem value="understand">{t('createExamModal.understand')}</SelectItem>
+                              <SelectItem value="apply">{t('createExamModal.apply')}</SelectItem>
+                              <SelectItem value="analyze">{t('createExamModal.analyze')}</SelectItem>
+                              <SelectItem value="evaluate">{t('createExamModal.evaluate')}</SelectItem>
+                              <SelectItem value="create">{t('createExamModal.createLevel')}</SelectItem>
                             </SelectContent>
                           </Select>
                         </div>
@@ -460,7 +462,7 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
                           }}
                           className="text-xs"
                         >
-                          Clear All Filters
+                          {t('createExamModal.clearAllFilters')}
                         </Button>
                       </div>
                     </Card>
@@ -471,7 +473,7 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
                 {selectedQuestions.length > 0 && (
                   <div className="space-y-4 max-w-full">
                     <div>
-                      <Label>Selected Questions ({selectedQuestions.length})</Label>
+                      <Label>{t('createExamModal.selectedQuestions')} ({selectedQuestions.length})</Label>
                       <div className="mt-2 space-y-2 max-h-32 overflow-y-auto overflow-x-hidden max-w-full">
                         {selectedQuestions.map((question, index) => (
                           <div key={question.id} className="flex items-start gap-2 p-2 bg-blue-50 rounded max-w-full">
@@ -510,9 +512,9 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
                       <CardContent className="p-4">
                         <div className="flex items-center justify-between">
                           <div>
-                            <h4 className="font-medium text-gray-900">Exam Summary</h4>
+                            <h4 className="font-medium text-gray-900">{t('createExamModal.examSummary')}</h4>
                             <p className="text-sm text-gray-600">
-                              {selectedQuestions.length} question{selectedQuestions.length !== 1 ? 's' : ''} selected
+                              {selectedQuestions.length} {selectedQuestions.length === 1 ? t('createExamModal.question') : t('createExamModal.questions')} {t('createExamModal.selected')}
                             </p>
                           </div>
                           <div className="text-right">
@@ -529,11 +531,11 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
 
                 {/* Available Questions */}
                 <div className="max-w-full">
-                  <Label>Available Questions ({questions?.length || 0} total)</Label>
+                  <Label>{t('createExamModal.availableQuestions')} ({questions?.length || 0} {t('createExamModal.total')})</Label>
                   <div className="mt-2 max-h-80 overflow-y-auto border rounded-lg overflow-x-hidden max-w-full">
                     {questions?.length === 0 ? (
                       <div className="p-4 text-center text-gray-500">
-                        No questions found. Create some questions first.
+                        {t('createExamModal.noQuestionsFound')}
                       </div>
                     ) : (
                       <div className="divide-y">
@@ -582,7 +584,7 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
             {selectionMethod === 'random' && (
               <div className="space-y-4">
                 <div>
-                  <Label>Number of Questions to Select</Label>
+                  <Label>{t('createExamModal.numberOfQuestionsToSelect')}</Label>
                   <div className="mt-2">
                     <Input
                       type="number"
@@ -590,14 +592,14 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
                       max={questions?.length || 100}
                       value={randomQuestionCount}
                       onChange={(e) => setRandomQuestionCount(parseInt(e.target.value) || 1)}
-                      placeholder="Enter number of questions"
+                      placeholder={t('createExamModal.enterNumberOfQuestions')}
                       className="w-full max-w-48"
                     />
                   </div>
                   <p className="text-sm text-gray-500 mt-1">
                     {questions?.length > 0 
-                      ? `Available questions: ${questions.length}` 
-                      : 'Loading questions...'}
+                      ? `${t('createExamModal.availableQuestionsCount')} ${questions.length}` 
+                      : t('createExamModal.loadingQuestions')}
                   </p>
                 </div>
 
@@ -605,7 +607,7 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
                 {randomQuestions.length > 0 && (
                   <div className="space-y-4">
                     <div>
-                      <Label>Randomly Selected Questions ({randomQuestions.length})</Label>
+                      <Label>{t('createExamModal.randomlySelectedQuestions')} ({randomQuestions.length})</Label>
                       <div className="mt-2 space-y-2 max-h-40 overflow-y-auto border rounded-lg">
                         {randomQuestions.map((question, index) => (
                           <div key={question.id} className="p-3 bg-green-50 border-l-4 border-green-400">
@@ -635,8 +637,7 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
                       </div>
                       <div className="mt-2 p-3 bg-blue-50 rounded-lg">
                         <p className="text-sm text-blue-800">
-                          <strong>Note:</strong> These questions were randomly selected. 
-                          The selection will change if you modify the number of questions or refresh the selection.
+                          <strong>{t('createExamModal.note')}</strong> {t('createExamModal.randomSelectionNote')}
                         </p>
                       </div>
                     </div>
@@ -646,9 +647,9 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
                       <CardContent className="p-4">
                         <div className="flex items-center justify-between">
                           <div>
-                            <h4 className="font-medium text-gray-900">Random Selection Summary</h4>
+                            <h4 className="font-medium text-gray-900">{t('createExamModal.randomSelectionSummary')}</h4>
                             <p className="text-sm text-gray-600">
-                              {randomQuestions.length} question{randomQuestions.length !== 1 ? 's' : ''} randomly selected
+                              {randomQuestions.length} {randomQuestions.length === 1 ? t('createExamModal.question') : t('createExamModal.questions')} {t('createExamModal.randomlySelected')}
                             </p>
                           </div>
                           <div className="text-right">
@@ -665,13 +666,13 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
 
                 {questions?.length === 0 && (
                   <div className="p-4 text-center text-gray-500 border rounded-lg">
-                    No questions available for random selection. Please create some questions first.
+                    {t('createExamModal.noQuestionsAvailableForRandom')}
                   </div>
                 )}
 
                 {questions && questions.length > 0 && randomQuestions.length === 0 && (
                   <div className="p-4 text-center text-gray-500 border rounded-lg">
-                    Setting up random selection...
+                    {t('createExamModal.settingUpRandomSelection')}
                   </div>
                 )}
               </div>
@@ -684,7 +685,7 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
                 name="duration"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Duration (minutes)</FormLabel>
+                    <FormLabel>{t('createExamModal.durationMinutes')}</FormLabel>
                     <FormControl>
                       <Input 
                         type="number" 
@@ -709,10 +710,10 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
                   return (
                     <FormItem>
                       <FormLabel className="flex items-center gap-2">
-                        Total Points
+                        {t('createExamModal.totalPoints')}
                         {isAutoCalculated && (
                           <Badge variant="secondary" className="text-xs bg-green-100 text-green-800">
-                            Auto-calculated
+                            {t('createExamModal.autoCalculated')}
                           </Badge>
                         )}
                       </FormLabel>
@@ -728,7 +729,7 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
                           {isAutoCalculated && (
                             <div className="absolute inset-y-0 right-3 flex items-center">
                               <span className="text-xs text-green-600 font-medium">
-                                = {calculatedPoints} pts
+                                = {calculatedPoints} {t('createExamModal.pointsCalculatedSuffix')}
                               </span>
                             </div>
                           )}
@@ -736,7 +737,7 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
                       </FormControl>
                       {isAutoCalculated && (
                         <FormDescription className="text-green-600 text-xs">
-                          Points automatically calculated from {questionsToCalculate.length} selected question{questionsToCalculate.length !== 1 ? 's' : ''}
+                          {t('createExamModal.pointsAutoCalculatedDescription', { count: questionsToCalculate.length, plural: questionsToCalculate.length === 1 ? t('createExamModal.question') : t('createExamModal.questions') })}
                         </FormDescription>
                       )}
                       <FormMessage />
@@ -754,7 +755,7 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
                 name="attemptsAllowed"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Attempts Allowed</FormLabel>
+                    <FormLabel>{t('createExamModal.attemptsAllowed')}</FormLabel>
                     <Select onValueChange={(value) => field.onChange(parseInt(value))} defaultValue={field.value?.toString()}>
                       <FormControl>
                         <SelectTrigger className="max-w-xs">
@@ -762,10 +763,10 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="1">1 Attempt</SelectItem>
-                        <SelectItem value="2">2 Attempts</SelectItem>
-                        <SelectItem value="3">3 Attempts</SelectItem>
-                        <SelectItem value="-1">Unlimited</SelectItem>
+                        <SelectItem value="1">{t('createExamModal.oneAttempt')}</SelectItem>
+                        <SelectItem value="2">{t('createExamModal.twoAttempts')}</SelectItem>
+                        <SelectItem value="3">{t('createExamModal.threeAttempts')}</SelectItem>
+                        <SelectItem value="-1">{t('createExamModal.unlimited')}</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -781,7 +782,7 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
                 name="availableFrom"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Available From</FormLabel>
+                    <FormLabel>{t('createExamModal.availableFrom')}</FormLabel>
                     <FormControl>
                       <Input type="datetime-local" {...field} />
                     </FormControl>
@@ -795,7 +796,7 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
                 name="availableUntil"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Available Until</FormLabel>
+                    <FormLabel>{t('createExamModal.availableUntil')}</FormLabel>
                     <FormControl>
                       <Input type="datetime-local" {...field} />
                     </FormControl>
@@ -807,7 +808,7 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
 
             {/* Exam Options */}
             <div>
-              <Label className="text-sm font-medium mb-3 block">Exam Options</Label>
+              <Label className="text-sm font-medium mb-3 block">{t('createExamModal.examOptions')}</Label>
               <div className="space-y-3">
                 <FormField
                   control={form.control}
@@ -821,7 +822,7 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
                         />
                       </FormControl>
                       <div className="space-y-1 leading-none">
-                        <FormLabel>Randomize question order</FormLabel>
+                        <FormLabel>{t('createExamModal.randomizeQuestionOrder')}</FormLabel>
                       </div>
                     </FormItem>
                   )}
@@ -839,7 +840,7 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
                         />
                       </FormControl>
                       <div className="space-y-1 leading-none">
-                        <FormLabel>Randomize answer options</FormLabel>
+                        <FormLabel>{t('createExamModal.randomizeAnswerOptions')}</FormLabel>
                       </div>
                     </FormItem>
                   )}
@@ -857,7 +858,7 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
                         />
                       </FormControl>
                       <div className="space-y-1 leading-none">
-                        <FormLabel>Show results immediately</FormLabel>
+                        <FormLabel>{t('createExamModal.showResultsImmediately')}</FormLabel>
                       </div>
                     </FormItem>
                   )}
@@ -875,7 +876,7 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
                         />
                       </FormControl>
                       <div className="space-y-1 leading-none">
-                        <FormLabel>Require password to start</FormLabel>
+                        <FormLabel>{t('createExamModal.requirePasswordToStart')}</FormLabel>
                       </div>
                     </FormItem>
                   )}
@@ -887,11 +888,11 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
                     name="password"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Exam Password</FormLabel>
+                        <FormLabel>{t('createExamModal.examPassword')}</FormLabel>
                         <FormControl>
                           <Input 
                             type="password" 
-                            placeholder="Enter exam password" 
+                            placeholder={t('createExamModal.enterExamPassword')} 
                             {...field} 
                           />
                         </FormControl>
@@ -909,7 +910,7 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
                 variant="outline" 
                 onClick={() => onOpenChange(false)}
               >
-                Cancel
+                {t('common.cancel')}
               </Button>
               <Button 
                 type="button" 
@@ -917,14 +918,14 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
                 disabled={createExamMutation.isPending}
                 className="bg-gradient-to-r from-slate-50 via-blue-50 to-indigo-50 text-indigo-700 hover:bg-gradient-to-r hover:from-blue-400/20 hover:to-indigo-500/20 hover:text-indigo-800 shadow-md hover:shadow-lg transition-all duration-200 transform hover:scale-105"
               >
-                Save as Draft
+                {t('createExamModal.saveAsDraft')}
               </Button>
               <Button 
                 type="submit"
                 disabled={createExamMutation.isPending}
                 className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
               >
-                {createExamMutation.isPending ? "Creating..." : "Create Exam"}
+                {createExamMutation.isPending ? t('common.creating') : t('createExamModal.createExam')}
               </Button>
             </DialogFooter>
           </form>
