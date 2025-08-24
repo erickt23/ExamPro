@@ -143,8 +143,8 @@ export default function StudentHomework() {
           <div className="p-6">
             <div className="flex items-center justify-between mb-6">
               <div>
-                <h1 className="text-3xl font-bold flex items-center gap-2">
-                  <BookOpen className="h-8 w-8" />
+                <h1 className="text-xl font-semibold flex items-center gap-2">
+                  <BookOpen className="h-6 w-6" />
                   {t('studentHomework.title')}
                 </h1>
                 <p className="text-gray-600 mt-1">

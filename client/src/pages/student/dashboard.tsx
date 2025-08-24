@@ -208,7 +208,7 @@ export default function StudentDashboard() {
         <main className="flex-1 overflow-y-auto">
           <div className="p-6">
             <div className="mb-8">
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">{t('studentDashboard.title')}</h1>
+              <h1 className="text-xl font-semibold text-gray-900 mb-2">{t('studentDashboard.title')}</h1>
               <p className="text-gray-600">{t('studentDashboard.welcomeBack')}</p>
             </div>
 

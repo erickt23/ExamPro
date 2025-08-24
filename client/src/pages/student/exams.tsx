@@ -697,7 +697,7 @@ export default function StudentExams() {
         <main className="flex-1 overflow-y-auto">
           <div className="p-6">
             <div className="mb-6">
-              <h2 className="text-2xl font-bold text-gray-900">{t('nav.exams')}</h2>
+              <h1 className="text-xl font-semibold text-gray-900">{t('nav.exams')}</h1>
               <p className="text-gray-600 mt-1">{t('exams.description')}</p>
             </div>
 
@@ -721,8 +721,8 @@ export default function StudentExams() {
                     {/* Available Exams */}
                     {availableExams.length > 0 && (
                       <div>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center">
-                          <Play className="h-5 w-5 mr-2 text-green-600" />
+                        <h3 className="text-base font-medium text-gray-900 mb-3 flex items-center">
+                          <Play className="h-4 w-4 mr-2 text-green-600" />
                           {t('studentExams.availableExams')} ({availableExams.length})
                         </h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -782,8 +782,8 @@ export default function StudentExams() {
                     {/* Upcoming Exams */}
                     {upcomingExams.length > 0 && (
                       <div>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center">
-                          <Clock className="h-5 w-5 mr-2 text-blue-600" />
+                        <h3 className="text-base font-medium text-gray-900 mb-3 flex items-center">
+                          <Clock className="h-4 w-4 mr-2 text-blue-600" />
                           {t('studentExams.upcomingExams')} ({upcomingExams.length})
                         </h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -830,8 +830,8 @@ export default function StudentExams() {
                     {/* Expired Exams */}
                     {expiredExams.length > 0 && (
                       <div>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center">
-                          <AlertCircle className="h-5 w-5 mr-2 text-red-600" />
+                        <h3 className="text-base font-medium text-gray-900 mb-3 flex items-center">
+                          <AlertCircle className="h-4 w-4 mr-2 text-red-600" />
                           {t('studentExams.expiredExams')} ({expiredExams.length})
                         </h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
