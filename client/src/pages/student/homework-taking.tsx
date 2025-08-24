@@ -242,7 +242,21 @@ export default function StudentHomeworkTaking() {
 
   const currentQuestion = questions[currentQuestionIndex];
   const progress = questions.length > 0 ? ((currentQuestionIndex + 1) / questions.length) * 100 : 0;
-  const answeredCount = Object.keys(answers).filter(qId => answers[parseInt(qId)]?.trim()).length;
+  const answeredCount = Object.keys(answers).filter(qId => {
+    const answer = answers[parseInt(qId)];
+    if (!answer) return false;
+    
+    // Handle different answer types
+    if (typeof answer === 'string') {
+      return answer.trim() !== '';
+    } else if (Array.isArray(answer)) {
+      return answer.length > 0 && answer.some(item => item && item.toString().trim() !== '');
+    } else if (typeof answer === 'object') {
+      return Object.keys(answer).length > 0;
+    }
+    
+    return false;
+  }).length;
 
   if (isLoading || !isAuthenticated) {
     return (
