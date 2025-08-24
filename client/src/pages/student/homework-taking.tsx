@@ -217,7 +217,21 @@ export default function StudentHomeworkTaking() {
     if (questions.length === 0) return;
 
     // Check if all required questions are answered
-    const unansweredQuestions = questions.filter(q => !answers[q.id] || answers[q.id].trim() === "");
+    const unansweredQuestions = questions.filter(q => {
+      const answer = answers[q.id];
+      if (!answer) return true;
+      
+      // Handle different answer types
+      if (typeof answer === 'string') {
+        return answer.trim() === '';
+      } else if (Array.isArray(answer)) {
+        return answer.length === 0;
+      } else if (typeof answer === 'object') {
+        return Object.keys(answer).length === 0;
+      }
+      
+      return true;
+    });
     
     if (unansweredQuestions.length > 0) {
       toast({
@@ -250,7 +264,7 @@ export default function StudentHomeworkTaking() {
     if (typeof answer === 'string') {
       return answer.trim() !== '';
     } else if (Array.isArray(answer)) {
-      return answer.length > 0 && answer.some(item => item && item.toString().trim() !== '');
+      return answer.length > 0 && answer.some((item: any) => item && item.toString().trim() !== '');
     } else if (typeof answer === 'object') {
       return Object.keys(answer).length > 0;
     }
@@ -499,17 +513,17 @@ export default function StudentHomeworkTaking() {
           <div className="space-y-4">
             <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg border border-green-200 dark:border-green-800">
               <p className="text-sm text-green-800 dark:text-green-200 mb-2">
-                <strong>Instructions:</strong> Match each item on the left with the correct item on the right.
+                <strong>{t('examTaking.instructions')}</strong> {t('examTaking.matchingInstructions')}
               </p>
               <p className="text-xs text-green-600 dark:text-green-300">
-                Select the corresponding option for each item.
+                {t('examTaking.selectCorrespondingOption')}
               </p>
             </div>
             
             {leftItems.length === 0 && rightItems.length === 0 ? (
               <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
                 <p className="text-sm text-yellow-800 dark:text-yellow-200">
-                  No matching items found. Please contact your instructor.
+                  {t('examTaking.noMatchingItems')}
                 </p>
               </div>
             ) : (
@@ -535,7 +549,7 @@ export default function StudentHomeworkTaking() {
                         }}
                         className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
                       >
-                        <option value="">Select a match...</option>
+                        <option value="">{t('examTaking.selectMatch')}</option>
                         {shuffledRightItems.map((rightItem: string, rightIndex: number) => (
                           <option key={rightIndex} value={rightItem}>
                             {String.fromCharCode(65 + rightIndex)}. {String(rightItem)}
@@ -577,10 +591,10 @@ export default function StudentHomeworkTaking() {
           <div className="space-y-4">
             <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg border border-purple-200 dark:border-purple-800">
               <p className="text-sm text-purple-800 dark:text-purple-200 mb-2">
-                <strong>Instructions:</strong> Drag and drop items to rank them in the correct order.
+                <strong>{t('examTaking.instructions')}</strong> {t('examTaking.rankingInstructions')}
               </p>
               <p className="text-xs text-purple-600 dark:text-purple-300">
-                Arrange from most important/highest to least important/lowest.
+                {t('examTaking.arrangeFromHighToLow')}
               </p>
             </div>
             <div className="space-y-2">
@@ -634,7 +648,7 @@ export default function StudentHomeworkTaking() {
                         }}
                         disabled={currentRanking.includes(item)}
                       >
-                        Add
+                        {t('examTaking.add')}
                       </Button>
                       {currentRanking.includes(item) && (
                         <Button
@@ -645,7 +659,7 @@ export default function StudentHomeworkTaking() {
                             handleAnswerChange(question.id, newRanking);
                           }}
                         >
-                          Remove
+                          {t('examTaking.remove')}
                         </Button>
                       )}
                     </div>
@@ -698,24 +712,24 @@ export default function StudentHomeworkTaking() {
           <div className="space-y-4">
             <div className="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-lg border border-orange-200 dark:border-orange-800">
               <p className="text-sm text-orange-800 dark:text-orange-200 mb-2">
-                <strong>Instructions:</strong> Drag items from the bank and drop them into the correct zones.
+                <strong>{t('examTaking.instructions')}</strong> {t('examTaking.dragDropInstructions')}
               </p>
               <p className="text-xs text-orange-600 dark:text-orange-300">
-                You can place multiple items in each zone. Click the × to remove items.
+                {t('examTaking.multipleItemsPerZone')}
               </p>
             </div>
             
             {items.length === 0 ? (
               <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
                 <p className="text-sm text-yellow-800 dark:text-yellow-200">
-                  No draggable items found. Please contact your instructor.
+                  {t('examTaking.noDraggableItems')}
                 </p>
               </div>
             ) : (
               <>
                 {/* Item Bank */}
                 <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600">
-                  <h4 className="text-sm font-medium mb-3 text-gray-700 dark:text-gray-300">Item Bank</h4>
+                  <h4 className="text-sm font-medium mb-3 text-gray-700 dark:text-gray-300">{t('examTaking.itemBank')}</h4>
                   <div className="flex flex-wrap gap-2">
                     {items.filter((item: string) => {
                       // Check if item is in any zone (supporting multiple items per zone)
