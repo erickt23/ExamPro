@@ -19,6 +19,7 @@ export const en = {
     grades: 'Grades'
   },
 
+
   // Authentication
   auth: {
     unauthorized: 'Unauthorized',
@@ -168,13 +169,27 @@ export const en = {
   assignments: {
     description: 'Create and manage homework assignments from your dedicated assignment bank',
     createAssignment: 'Create Assignment',
-    title: 'Assignment Title',
+    createNewHomeworkAssignment: 'Create New Homework Assignment',
+    title: 'Title',
     titlePlaceholder: 'Enter assignment title',
     assignmentDescription: 'Description',
     descriptionPlaceholder: 'Enter assignment description',
     subject: 'Subject',
     selectSubject: 'Select a subject',
+    homeworkTitlePlaceholder: 'Enter homework title',
+    homeworkDescriptionPlaceholder: 'Enter homework description',
     dueDate: 'Due Date',
+    totalPoints: 'Total Points',
+    auto: 'Auto',
+    automaticallyCalculated: 'Automatically calculated from selected questions',
+    selectHomeworkQuestions: 'Select Homework Questions',
+    selectedQuestions: 'Selected Questions',
+    availableHomeworkQuestions: 'Available Homework Questions',
+    filters: 'Filters',
+    cancel: 'Cancel',
+    createHomework: 'Create Homework',
+    editHomework: 'Edit Homework',
+    editHomeworkAssignment: 'Edit Homework Assignment',
     status: 'Status',
     createdAt: 'Created',
     actions: 'Actions',
@@ -570,6 +585,9 @@ export const en = {
   // Common/Shared Elements
   common: {
     loading: 'Loading...',
+    saving: 'Saving...',
+    creating: 'Creating...',
+    updating: 'Updating...',
     save: 'Save',
     cancel: 'Cancel',
     delete: 'Delete',

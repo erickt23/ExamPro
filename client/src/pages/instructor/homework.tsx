@@ -503,35 +503,35 @@ export default function InstructorHomeworkPage() {
           </DialogTrigger>
           <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Create New Homework Assignment</DialogTitle>
+              <DialogTitle>{t('assignments.createNewHomeworkAssignment')}</DialogTitle>
             </DialogHeader>
             <div className="space-y-6">
               <div>
-                <Label htmlFor="title">Title *</Label>
+                <Label htmlFor="title">{t('assignments.title')} *</Label>
                 <Input
                   id="title"
                   value={newHomework.title}
                   onChange={(e) => setNewHomework({ ...newHomework, title: e.target.value })}
-                  placeholder="Enter homework title"
+                  placeholder={t('assignments.homeworkTitlePlaceholder')}
                 />
               </div>
               
               <div>
-                <Label htmlFor="description">Description</Label>
+                <Label htmlFor="description">{t('assignments.assignmentDescription')}</Label>
                 <Textarea
                   id="description"
                   value={newHomework.description}
                   onChange={(e) => setNewHomework({ ...newHomework, description: e.target.value })}
-                  placeholder="Enter homework description"
+                  placeholder={t('assignments.homeworkDescriptionPlaceholder')}
                   rows={3}
                 />
               </div>
               
               <div>
-                <Label htmlFor="subject">Subject *</Label>
+                <Label htmlFor="subject">{t('assignments.subject')} *</Label>
                 <Select value={newHomework.subjectId} onValueChange={(value) => setNewHomework({ ...newHomework, subjectId: value })}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select a subject" />
+                    <SelectValue placeholder={t('assignments.selectSubject')} />
                   </SelectTrigger>
                   <SelectContent>
                     {subjects.map((subject) => (
@@ -545,7 +545,7 @@ export default function InstructorHomeworkPage() {
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="dueDate">Due Date</Label>
+                  <Label htmlFor="dueDate">{t('assignments.dueDate')}</Label>
                   <Input
                     id="dueDate"
                     type="datetime-local"
@@ -555,7 +555,7 @@ export default function InstructorHomeworkPage() {
                 </div>
                 
                 <div>
-                  <Label htmlFor="totalPoints">Total Points</Label>
+                  <Label htmlFor="totalPoints">{t('assignments.totalPoints')}</Label>
                   <div className="relative">
                     <Input
                       id="totalPoints"
@@ -564,16 +564,16 @@ export default function InstructorHomeworkPage() {
                       value={newHomework.totalPoints}
                       readOnly
                       className="bg-gray-50 dark:bg-gray-800"
-                      placeholder="Auto-calculated from questions"
+                      placeholder={t('assignments.automaticallyCalculated')}
                     />
                     <div className="absolute inset-y-0 right-0 flex items-center pr-3">
                       <Badge variant="secondary" className="text-xs">
-                        Auto
+                        {t('assignments.auto')}
                       </Badge>
                     </div>
                   </div>
                   <p className="text-xs text-gray-500 mt-1">
-                    Automatically calculated from selected questions
+                    {t('assignments.automaticallyCalculated')}
                   </p>
                 </div>
               </div>
@@ -581,7 +581,7 @@ export default function InstructorHomeworkPage() {
               {/* Question Selection Section */}
               <div className="border-t pt-6">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold">Select Homework Questions</h3>
+                  <h3 className="text-lg font-semibold">{t('assignments.selectHomeworkQuestions')}</h3>
                   <Button
                     type="button"
                     variant="outline"
@@ -589,7 +589,7 @@ export default function InstructorHomeworkPage() {
                     onClick={() => setShowQuestionFilters(!showQuestionFilters)}
                   >
                     <Filter className="h-4 w-4 mr-2" />
-                    Filters
+                    {t('assignments.filters')}
                   </Button>
                 </div>
                 
@@ -598,7 +598,7 @@ export default function InstructorHomeworkPage() {
                   <div className="relative">
                     <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                     <Input
-                      placeholder="Search homework questions..."
+                      placeholder={t('assignments.searchHomeworkAssignments')}
                       value={questionSearch}
                       onChange={(e) => setQuestionSearch(e.target.value)}
                       className="pl-9"
@@ -658,7 +658,7 @@ export default function InstructorHomeworkPage() {
                 {selectedQuestions.length > 0 && (
                   <div className="mb-4">
                     <div className="flex items-center justify-between mb-3">
-                      <h4 className="font-medium">Selected Questions ({selectedQuestions.length})</h4>
+                      <h4 className="font-medium">{t('assignments.selectedQuestions')} ({selectedQuestions.length})</h4>
                       <div className="flex items-center gap-2">
                         <Badge variant="outline" className="text-sm">
                           Total: {newHomework.totalPoints} points
@@ -698,7 +698,7 @@ export default function InstructorHomeworkPage() {
                 
                 {/* Available Questions */}
                 <div>
-                  <h4 className="font-medium mb-2">Available Homework Questions</h4>
+                  <h4 className="font-medium mb-2">{t('assignments.availableHomeworkQuestions')}</h4>
                   <div className="border rounded-lg max-h-60 overflow-y-auto">
                     {homeworkQuestions.length === 0 ? (
                       <div className="p-4 text-center text-gray-500">
@@ -747,13 +747,13 @@ export default function InstructorHomeworkPage() {
               
               <div className="flex justify-end gap-2">
                 <Button variant="outline" onClick={() => setShowCreateModal(false)}>
-                  Cancel
+                  {t('assignments.cancel')}
                 </Button>
                 <Button 
                   onClick={handleCreateHomework}
                   disabled={createHomeworkMutation.isPending}
                 >
-                  {createHomeworkMutation.isPending ? "Creating..." : "Create Homework"}
+                  {createHomeworkMutation.isPending ? t('common.creating') : t('assignments.createHomework')}
                 </Button>
               </div>
             </div>
@@ -764,35 +764,35 @@ export default function InstructorHomeworkPage() {
         <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
           <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>Edit Homework Assignment</DialogTitle>
+              <DialogTitle>{t('assignments.editHomeworkAssignment')}</DialogTitle>
             </DialogHeader>
             <div className="space-y-6">
               <div>
-                <Label htmlFor="edit-title">Title *</Label>
+                <Label htmlFor="edit-title">{t('assignments.title')} *</Label>
                 <Input
                   id="edit-title"
                   value={newHomework.title}
                   onChange={(e) => setNewHomework({ ...newHomework, title: e.target.value })}
-                  placeholder="Enter homework title"
+                  placeholder={t('assignments.homeworkTitlePlaceholder')}
                 />
               </div>
               
               <div>
-                <Label htmlFor="edit-description">Description</Label>
+                <Label htmlFor="edit-description">{t('assignments.assignmentDescription')}</Label>
                 <Textarea
                   id="edit-description"
                   value={newHomework.description}
                   onChange={(e) => setNewHomework({ ...newHomework, description: e.target.value })}
-                  placeholder="Enter homework description"
+                  placeholder={t('assignments.homeworkDescriptionPlaceholder')}
                   rows={3}
                 />
               </div>
               
               <div>
-                <Label htmlFor="edit-subject">Subject *</Label>
+                <Label htmlFor="edit-subject">{t('assignments.subject')} *</Label>
                 <Select value={newHomework.subjectId} onValueChange={(value) => setNewHomework({ ...newHomework, subjectId: value })}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select a subject" />
+                    <SelectValue placeholder={t('assignments.selectSubject')} />
                   </SelectTrigger>
                   <SelectContent>
                     {subjects.map((subject) => (
@@ -806,7 +806,7 @@ export default function InstructorHomeworkPage() {
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="edit-dueDate">Due Date</Label>
+                  <Label htmlFor="edit-dueDate">{t('assignments.dueDate')}</Label>
                   <Input
                     id="edit-dueDate"
                     type="datetime-local"
@@ -816,7 +816,7 @@ export default function InstructorHomeworkPage() {
                 </div>
                 
                 <div>
-                  <Label htmlFor="edit-totalPoints">Total Points</Label>
+                  <Label htmlFor="edit-totalPoints">{t('assignments.totalPoints')}</Label>
                   <div className="relative">
                     <Input
                       id="edit-totalPoints"
@@ -825,16 +825,16 @@ export default function InstructorHomeworkPage() {
                       value={newHomework.totalPoints}
                       readOnly
                       className="bg-gray-50 dark:bg-gray-800"
-                      placeholder="Auto-calculated from questions"
+                      placeholder={t('assignments.automaticallyCalculated')}
                     />
                     <div className="absolute inset-y-0 right-0 flex items-center pr-3">
                       <Badge variant="secondary" className="text-xs">
-                        Auto
+                        {t('assignments.auto')}
                       </Badge>
                     </div>
                   </div>
                   <p className="text-xs text-gray-500 mt-1">
-                    Automatically calculated from selected questions
+                    {t('assignments.automaticallyCalculated')}
                   </p>
                 </div>
               </div>
@@ -842,7 +842,7 @@ export default function InstructorHomeworkPage() {
               {/* Question Selection Section */}
               <div className="border-t pt-6">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold">Select Homework Questions</h3>
+                  <h3 className="text-lg font-semibold">{t('assignments.selectHomeworkQuestions')}</h3>
                   <Button
                     type="button"
                     variant="outline"
@@ -850,7 +850,7 @@ export default function InstructorHomeworkPage() {
                     onClick={() => setShowQuestionFilters(!showQuestionFilters)}
                   >
                     <Filter className="h-4 w-4 mr-2" />
-                    Filters
+                    {t('assignments.filters')}
                   </Button>
                 </div>
                 
@@ -859,7 +859,7 @@ export default function InstructorHomeworkPage() {
                   <div className="relative">
                     <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                     <Input
-                      placeholder="Search homework questions..."
+                      placeholder={t('assignments.searchHomeworkAssignments')}
                       value={questionSearch}
                       onChange={(e) => setQuestionSearch(e.target.value)}
                       className="pl-9"
@@ -919,7 +919,7 @@ export default function InstructorHomeworkPage() {
                 {selectedQuestions.length > 0 && (
                   <div className="mb-4">
                     <div className="flex items-center justify-between mb-3">
-                      <h4 className="font-medium">Selected Questions ({selectedQuestions.length})</h4>
+                      <h4 className="font-medium">{t('assignments.selectedQuestions')} ({selectedQuestions.length})</h4>
                       <div className="flex items-center gap-2">
                         <Badge variant="outline" className="text-sm">
                           Total: {newHomework.totalPoints} points
@@ -959,7 +959,7 @@ export default function InstructorHomeworkPage() {
                 
                 {/* Available Questions */}
                 <div>
-                  <h4 className="font-medium mb-2">Available Homework Questions</h4>
+                  <h4 className="font-medium mb-2">{t('assignments.availableHomeworkQuestions')}</h4>
                   <div className="border rounded-lg max-h-60 overflow-y-auto">
                     {homeworkQuestions.length === 0 ? (
                       <div className="p-4 text-center text-gray-500">
@@ -1012,7 +1012,7 @@ export default function InstructorHomeworkPage() {
                   variant="outline"
                   onClick={() => setShowEditModal(false)}
                 >
-                  Cancel
+                  {t('assignments.cancel')}
                 </Button>
                 <Button
                   onClick={handleEditHomework}
