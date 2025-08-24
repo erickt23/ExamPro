@@ -13,7 +13,7 @@ import {
   ObjectStorageService,
   ObjectNotFoundError,
 } from "./objectStorage";
-import { regradeAllZeroScoreSubmissions, regradeSubmission } from "./regradeExams";
+import { regradeAllZeroScoreSubmissions, regradeSubmission, gradeHomeworkSubmission } from "./regradeExams";
 import { ObjectPermission } from "./objectAcl";
 
 // Configure multer for Excel file uploads
@@ -1918,6 +1918,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
           questionId: answer.questionId,
           answerText: answer.answerText,
         });
+      }
+
+      // Auto-grade the homework submission
+      try {
+        await gradeHomeworkSubmission(submission.id);
+        console.log(`Auto-graded homework submission ${submission.id} successfully`);
+      } catch (error) {
+        console.error(`Error auto-grading homework submission ${submission.id}:`, error);
+        // Continue even if grading fails - submission is still saved
       }
 
       res.status(201).json(submission);

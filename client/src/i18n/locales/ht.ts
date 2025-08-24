@@ -490,7 +490,9 @@ export const ht = {
     questionsRequiringManualGrading: 'Kesyon ki Bezwen Bay Nòt Manyèl',
     readyToFinalize: 'Pare pou finalise?',
     finalizeGradesMessage: 'Lè yo finalise, nòt yo pral pibliye ba elèv la epi yo pa ka chanje.',
-    pendingReview: 'Revizyon k ap Tann'
+    pendingReview: 'Revizyon k ap Tann',
+    selected: 'Chwazi :',
+    correct: 'Kòrèk :'
   },
 
   // Settings

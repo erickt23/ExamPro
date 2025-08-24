@@ -493,7 +493,9 @@ export const en = {
     questionsRequiringManualGrading: 'Questions Requiring Manual Grading',
     readyToFinalize: 'Ready to finalize?',
     finalizeGradesMessage: 'Once finalized, grades will be published to the student and cannot be changed.',
-    pendingReview: 'Pending Review'
+    pendingReview: 'Pending Review',
+    selected: 'Selected:',
+    correct: 'Correct:'
   },
 
   // Settings

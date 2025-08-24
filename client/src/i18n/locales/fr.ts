@@ -490,7 +490,9 @@ export const fr = {
     questionsRequiringManualGrading: 'Questions Nécessitant une Notation Manuelle',
     readyToFinalize: 'Prêt à finaliser?',
     finalizeGradesMessage: 'Une fois finalisées, les notes seront publiées à l\'étudiant et ne pourront pas être modifiées.',
-    pendingReview: 'Révision En Attente'
+    pendingReview: 'Révision En Attente',
+    selected: 'Sélectionné :',
+    correct: 'Correct :'
   },
 
   // Settings
