@@ -987,6 +987,56 @@ function SubmissionGrading({ submissionId, isHomeworkGrading }: { submissionId: 
                             }
                           })()}
                         </div>
+                      ) : answer.question.questionType === 'drag_drop' ? (
+                        <div className="space-y-1">
+                          {(() => {
+                            try {
+                              if (!answer.answerText) {
+                                return <span className="text-gray-500">No answer provided</span>;
+                              }
+                              
+                              const studentAnswer = typeof answer.answerText === 'string' 
+                                ? JSON.parse(answer.answerText) 
+                                : answer.answerText;
+                              
+                              // Handle different drag-drop answer formats
+                              if (studentAnswer.zones && Array.isArray(studentAnswer.zones)) {
+                                return studentAnswer.zones.map((zone: any, index: number) => (
+                                  <div key={index} className="text-sm">
+                                    <span className="font-medium">{zone.zone}:</span> {zone.items?.join(', ') || 'No items'}
+                                  </div>
+                                ));
+                              } else if (typeof studentAnswer === 'object') {
+                                // Get zone names from correct answer
+                                let zoneNames: string[] = [];
+                                try {
+                                  const correctAnswer = typeof answer.question?.correctAnswer === 'string' 
+                                    ? JSON.parse(answer.question.correctAnswer) 
+                                    : answer.question?.correctAnswer;
+                                  if (correctAnswer?.zones) {
+                                    zoneNames = correctAnswer.zones.map((zone: any) => zone.zone || zone.name || `Zone ${zone.index || ''}`);
+                                  }
+                                } catch (error) {
+                                  console.error('Error parsing correct answer for zone names:', error);
+                                }
+                                
+                                return Object.entries(studentAnswer).map(([zoneIndex, item]: [string, any], index: number) => {
+                                  const zoneName = zoneNames[parseInt(zoneIndex)] || `Zone ${zoneIndex}`;
+                                  return (
+                                    <div key={index} className="text-sm">
+                                      <span className="font-medium">{zoneName}:</span> {item}
+                                    </div>
+                                  );
+                                });
+                              } else {
+                                return <span>{JSON.stringify(studentAnswer)}</span>;
+                              }
+                            } catch (error) {
+                              console.error('Error parsing drag-drop answer:', error);
+                              return <span className="text-red-600">Error displaying answer</span>;
+                            }
+                          })()}
+                        </div>
                       ) : (
                         <p className="whitespace-pre-wrap">
                           {answer.answerText}

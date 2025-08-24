@@ -608,11 +608,27 @@ function SubmissionCard({ submission, isExpanded, onToggleExpand, getStatusBadge
                                     </div>
                                   ));
                                 } else if (typeof studentAnswer === 'object') {
-                                  return Object.entries(studentAnswer).map(([item, zone]: [string, any], index: number) => (
-                                    <div key={index} className="text-xs">
-                                      <span className="font-medium">{item}</span> → {zone}
-                                    </div>
-                                  ));
+                                  // Get zone names from correct answer
+                                  let zoneNames: string[] = [];
+                                  try {
+                                    const correctAnswer = typeof answer.question?.correctAnswer === 'string' 
+                                      ? JSON.parse(answer.question.correctAnswer) 
+                                      : answer.question?.correctAnswer;
+                                    if (correctAnswer?.zones) {
+                                      zoneNames = correctAnswer.zones.map((zone: any) => zone.zone || zone.name || `Zone ${zone.index || ''}`);
+                                    }
+                                  } catch (error) {
+                                    console.error('Error parsing correct answer for zone names:', error);
+                                  }
+                                  
+                                  return Object.entries(studentAnswer).map(([zoneIndex, item]: [string, any], index: number) => {
+                                    const zoneName = zoneNames[parseInt(zoneIndex)] || `Zone ${zoneIndex}`;
+                                    return (
+                                      <div key={index} className="text-xs">
+                                        <span className="font-medium">{zoneName}:</span> {item}
+                                      </div>
+                                    );
+                                  });
                                 } else {
                                   return <span>{JSON.stringify(studentAnswer)}</span>;
                                 }
