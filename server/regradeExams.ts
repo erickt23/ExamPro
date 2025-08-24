@@ -39,9 +39,10 @@ async function regradeSubmission(submissionId: number): Promise<{ totalScore: nu
           const correctAnswer = typeof question.correctAnswer === 'string' 
             ? JSON.parse(question.correctAnswer) 
             : question.correctAnswer;
-          const studentAnswer = typeof answer.answerText === 'string'
-            ? JSON.parse(answer.answerText || '{}')
-            : answer.answerText || {};
+          const rawStudentAnswer = answer.selectedOption || answer.answerText;
+          const studentAnswer = typeof rawStudentAnswer === 'string'
+            ? JSON.parse(rawStudentAnswer || '{}')
+            : rawStudentAnswer || {};
           
           let correctMatches = 0;
           let totalMatches = 0;
@@ -91,9 +92,10 @@ async function regradeSubmission(submissionId: number): Promise<{ totalScore: nu
           const correctAnswer = typeof question.correctAnswer === 'string' 
             ? JSON.parse(question.correctAnswer) 
             : question.correctAnswer;
-          const studentAnswer = typeof answer.answerText === 'string'
-            ? JSON.parse(answer.answerText || '{}')
-            : answer.answerText || {};
+          const rawStudentAnswer = answer.selectedOption || answer.answerText;
+          const studentAnswer = typeof rawStudentAnswer === 'string'
+            ? JSON.parse(rawStudentAnswer || '{}')
+            : rawStudentAnswer || {};
           
           let correctPlacements = 0;
           let totalItems = 0;
@@ -157,9 +159,10 @@ async function regradeSubmission(submissionId: number): Promise<{ totalScore: nu
           const correctOrder = Array.isArray(question.correctAnswer) 
             ? question.correctAnswer 
             : JSON.parse(question.correctAnswer || '[]');
-          const studentOrder = Array.isArray(answer.answerText)
-            ? answer.answerText
-            : JSON.parse(answer.answerText || '[]');
+          const rawStudentAnswer = answer.selectedOption || answer.answerText;
+          const studentOrder = Array.isArray(rawStudentAnswer)
+            ? rawStudentAnswer
+            : JSON.parse(rawStudentAnswer || '[]');
           
           let correctPositions = 0;
           const totalItems = correctOrder.length;
@@ -281,14 +284,15 @@ export async function gradeHomeworkSubmission(submissionId: number): Promise<{ t
       console.log(`Subjective question ${question.id} (${question.questionType}): keeping score ${score}/${question.points} for manual grading`);
     } else {
       // Auto-grade objective questions
-      if (question.questionType === 'multiple_choice' && 
-          answer.selectedOption === question.correctAnswer) {
-        score = question.points;
-        console.log(`Multiple choice question ${question.id}: correct answer, score: ${score}/${question.points}`);
-      }
-      else if (question.questionType === 'multiple_choice') {
-        score = 0;
-        console.log(`Multiple choice question ${question.id}: incorrect answer, score: ${score}/${question.points}`);
+      if (question.questionType === 'multiple_choice') {
+        const studentAnswer = answer.selectedOption || answer.answerText; // Handle both formats
+        if (studentAnswer === question.correctAnswer) {
+          score = question.points;
+          console.log(`Multiple choice question ${question.id}: correct answer (${studentAnswer}), score: ${score}/${question.points}`);
+        } else {
+          score = 0;
+          console.log(`Multiple choice question ${question.id}: incorrect answer (${studentAnswer} vs ${question.correctAnswer}), score: ${score}/${question.points}`);
+        }
       }
 
       // Auto-grade matching questions with enhanced answer key support
@@ -297,9 +301,10 @@ export async function gradeHomeworkSubmission(submissionId: number): Promise<{ t
           const correctAnswer = typeof question.correctAnswer === 'string' 
             ? JSON.parse(question.correctAnswer) 
             : question.correctAnswer;
-          const studentAnswer = typeof answer.answerText === 'string'
-            ? JSON.parse(answer.answerText || '{}')
-            : answer.answerText || {};
+          const rawStudentAnswer = answer.selectedOption || answer.answerText;
+          const studentAnswer = typeof rawStudentAnswer === 'string'
+            ? JSON.parse(rawStudentAnswer || '{}')
+            : rawStudentAnswer || {};
           
           let correctMatches = 0;
           let totalMatches = 0;
@@ -349,9 +354,10 @@ export async function gradeHomeworkSubmission(submissionId: number): Promise<{ t
           const correctAnswer = typeof question.correctAnswer === 'string' 
             ? JSON.parse(question.correctAnswer) 
             : question.correctAnswer;
-          const studentAnswer = typeof answer.answerText === 'string'
-            ? JSON.parse(answer.answerText || '{}')
-            : answer.answerText || {};
+          const rawStudentAnswer = answer.selectedOption || answer.answerText;
+          const studentAnswer = typeof rawStudentAnswer === 'string'
+            ? JSON.parse(rawStudentAnswer || '{}')
+            : rawStudentAnswer || {};
           
           let correctPlacements = 0;
           let totalItems = 0;
@@ -415,9 +421,10 @@ export async function gradeHomeworkSubmission(submissionId: number): Promise<{ t
           const correctOrder = Array.isArray(question.correctAnswer) 
             ? question.correctAnswer 
             : JSON.parse(question.correctAnswer || '[]');
-          const studentOrder = Array.isArray(answer.answerText)
-            ? answer.answerText
-            : JSON.parse(answer.answerText || '[]');
+          const rawStudentAnswer = answer.selectedOption || answer.answerText;
+          const studentOrder = Array.isArray(rawStudentAnswer)
+            ? rawStudentAnswer
+            : JSON.parse(rawStudentAnswer || '[]');
           
           let correctPositions = 0;
           const totalItems = correctOrder.length;

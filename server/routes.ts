@@ -1922,10 +1922,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Auto-grade the homework submission
       try {
+        console.log(`Starting auto-grading for homework submission ${submission.id}...`);
         await gradeHomeworkSubmission(submission.id);
         console.log(`Auto-graded homework submission ${submission.id} successfully`);
       } catch (error) {
         console.error(`Error auto-grading homework submission ${submission.id}:`, error);
+        console.error("Auto-grading error stack:", error.stack);
         // Continue even if grading fails - submission is still saved
       }
 
