@@ -338,6 +338,186 @@ export default function ExamPreviewModal({ open, onOpenChange, examId, onPublish
             </div>
           )}
 
+          {/* Ranking Questions */}
+          {question.question?.questionType === 'ranking' && (
+            <div className="space-y-4">
+              <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg border border-purple-200 dark:border-purple-800">
+                <p className="text-sm text-purple-800 dark:text-purple-200 mb-2">
+                  <strong>Instructions:</strong> Drag and drop items to rank them in the correct order.
+                </p>
+                <p className="text-xs text-purple-600 dark:text-purple-300">
+                  Students will arrange from most important/highest to least important/lowest.
+                </p>
+              </div>
+              
+              {(() => {
+                // Parse ranking items from options
+                let rankingItems: string[] = [];
+                
+                try {
+                  if (question.question.options) {
+                    if (Array.isArray(question.question.options)) {
+                      rankingItems = question.question.options.map((item: any) => 
+                        typeof item === 'string' ? item : (item?.name || item?.text || String(item))
+                      );
+                    } else if (typeof question.question.options === 'string') {
+                      const parsed = JSON.parse(question.question.options);
+                      rankingItems = (Array.isArray(parsed) ? parsed : []).map((item: any) => 
+                        typeof item === 'string' ? item : (item?.name || item?.text || String(item))
+                      );
+                    }
+                  }
+                } catch (e) {
+                  console.error('Error parsing ranking options:', e);
+                  rankingItems = [];
+                }
+                
+                if (rankingItems.length === 0) {
+                  return (
+                    <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+                      <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                        No ranking items found. Please contact your instructor.
+                      </p>
+                    </div>
+                  );
+                }
+                
+                return (
+                  <div className="space-y-2">
+                    <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                      Items to rank (students will drag to reorder):
+                    </h4>
+                    {rankingItems.map((item: string, index: number) => (
+                      <div 
+                        key={index}
+                        className="flex items-center gap-3 p-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg"
+                      >
+                        <div className="flex items-center justify-center w-8 h-8 bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300 rounded-full text-sm font-medium">
+                          {index + 1}
+                        </div>
+                        <span className="text-gray-900 dark:text-gray-100">{item}</span>
+                        <div className="ml-auto text-xs text-gray-500 dark:text-gray-400">
+                          ⋮⋮ Draggable
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
+            </div>
+          )}
+
+          {/* Drag and Drop Questions */}
+          {question.question?.questionType === 'drag_drop' && (
+            <div className="space-y-4">
+              <div className="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-lg border border-orange-200 dark:border-orange-800">
+                <p className="text-sm text-orange-800 dark:text-orange-200 mb-2">
+                  <strong>Instructions:</strong> Drag items from the bank and drop them into the correct zones.
+                </p>
+                <p className="text-xs text-orange-600 dark:text-orange-300">
+                  Students can place multiple items in each zone. Click the × to remove items.
+                </p>
+              </div>
+              
+              {(() => {
+                // Handle drag-drop data parsing
+                let dragDropData = { zones: [], items: [] };
+                
+                if (question.question.options) {
+                  if (typeof question.question.options === 'string') {
+                    try {
+                      dragDropData = JSON.parse(question.question.options);
+                    } catch (e) {
+                      console.error('Error parsing drag-drop options:', e);
+                    }
+                  } else if (typeof question.question.options === 'object') {
+                    dragDropData = question.question.options;
+                  }
+                }
+                
+                // Fallback to correctAnswer if options are empty
+                if ((!dragDropData.zones || dragDropData.zones.length === 0) && question.question.correctAnswer) {
+                  try {
+                    const fallbackData = typeof question.question.correctAnswer === 'string' 
+                      ? JSON.parse(question.question.correctAnswer) 
+                      : question.question.correctAnswer;
+                    if (fallbackData && (fallbackData.zones || fallbackData.items)) {
+                      dragDropData = fallbackData;
+                    }
+                  } catch (e) {
+                    console.error('Error parsing correctAnswer for drag-drop:', e);
+                  }
+                }
+                
+                // Ensure zones and items are arrays of strings
+                const zones = (dragDropData.zones || []).map((zone: any) => 
+                  typeof zone === 'string' ? zone : (zone?.name || zone?.zone || String(zone))
+                );
+                const items = (dragDropData.items || []).map((item: any) => 
+                  typeof item === 'string' ? item : (item?.name || item?.item || String(item))
+                );
+                
+                if (zones.length === 0 && items.length === 0) {
+                  return (
+                    <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+                      <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                        No drop zones or items found. Please contact your instructor.
+                      </p>
+                    </div>
+                  );
+                }
+                
+                return (
+                  <div className="space-y-4">
+                    {/* Drop Zones */}
+                    {zones.length > 0 && (
+                      <div>
+                        <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                          Drop Zones (students will drag items here):
+                        </h4>
+                        <div className="grid gap-4 md:grid-cols-2">
+                          {zones.map((zone: string, index: number) => (
+                            <div 
+                              key={index}
+                              className="min-h-[100px] p-4 border-2 border-dashed border-orange-300 dark:border-orange-600 rounded-lg bg-orange-50 dark:bg-orange-900/20"
+                            >
+                              <h5 className="font-medium text-orange-800 dark:text-orange-200 mb-2">
+                                {zone}
+                              </h5>
+                              <p className="text-xs text-orange-600 dark:text-orange-400">
+                                Drop zone - students will place items here
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Draggable Items */}
+                    {items.length > 0 && (
+                      <div>
+                        <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                          Draggable Items (students will drag these):
+                        </h4>
+                        <div className="flex flex-wrap gap-2">
+                          {items.map((item: string, index: number) => (
+                            <div 
+                              key={index}
+                              className="px-3 py-2 bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200 rounded-lg border border-blue-300 dark:border-blue-600 text-sm"
+                            >
+                              {item}
+                              <span className="ml-2 text-xs opacity-70">⋮⋮</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
+            </div>
+          )}
+
           {/* Question Navigation */}
           <div className="flex justify-between items-center mt-6 pt-4 border-t">
             <Button
