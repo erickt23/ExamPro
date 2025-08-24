@@ -28,12 +28,21 @@ import {
 
 interface HomeworkQuestion {
   id: number;
-  questionText: string;
-  questionType: 'multiple_choice' | 'short_answer' | 'essay' | 'fill_blank';
-  options?: string[];
-  correctAnswer?: string;
-  points: number;
+  homeworkId: number;
+  questionId: number;
   order: number;
+  points: number;
+  question: {
+    id: number;
+    questionText: string;
+    questionType: 'multiple_choice' | 'short_answer' | 'essay' | 'fill_blank' | 'matching' | 'ranking' | 'drag_drop';
+    options?: string[] | any;
+    correctAnswer?: string;
+    timeLimit?: number;
+    difficulty?: string;
+    category?: string;
+    bloomsTaxonomy?: string;
+  };
 }
 
 interface HomeworkAssignment {
@@ -297,7 +306,7 @@ export default function StudentHomeworkTaking() {
   const renderAnswerInput = (question: HomeworkQuestion) => {
     const value = answers[question.id] || "";
 
-    switch (question.questionType) {
+    switch (question.question.questionType) {
       case 'multiple_choice':
         return (
           <RadioGroup 
@@ -305,7 +314,7 @@ export default function StudentHomeworkTaking() {
             onValueChange={(val) => handleAnswerChange(question.id, val)}
             className="space-y-3"
           >
-            {question.options?.map((option, index) => (
+            {(question.question.options as string[])?.map((option: string, index: number) => (
               <div key={index} className="flex items-center space-x-2">
                 <RadioGroupItem value={option} id={`option-${index}`} />
                 <Label htmlFor={`option-${index}`} className="cursor-pointer">
@@ -412,7 +421,7 @@ export default function StudentHomeworkTaking() {
                     <CardTitle className="flex items-center gap-2">
                       Question {currentQuestionIndex + 1}
                       <Badge variant="outline" className="ml-2">
-                        {formatQuestionType(currentQuestion.questionType)}
+                        {formatQuestionType(currentQuestion.question.questionType)}
                       </Badge>
                       <Badge variant="outline">
                         {currentQuestion.points} point{currentQuestion.points !== 1 ? 's' : ''}
@@ -425,7 +434,7 @@ export default function StudentHomeworkTaking() {
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div className="prose max-w-none">
-                    <p className="text-lg leading-relaxed">{currentQuestion.questionText}</p>
+                    <p className="text-lg leading-relaxed">{currentQuestion.question.questionText}</p>
                   </div>
                   
                   <div>
