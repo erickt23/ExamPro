@@ -172,26 +172,124 @@ export interface IStorage {
   unfinalizeGradesForSubject(subjectId: number): Promise<void>;
 }
 
-export class DatabaseStorage implements IStorage {
-  // User operations
+// In-memory fallback storage for when database is unavailable
+class MemoryStorage implements IStorage {
+  private users: Map<string, User> = new Map();
+  
   async getUser(id: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.id, id));
-    return user;
+    return this.users.get(id);
   }
 
   async upsertUser(userData: UpsertUser): Promise<User> {
-    const [user] = await db
-      .insert(users)
-      .values(userData)
-      .onConflictDoUpdate({
-        target: users.id,
-        set: {
-          ...userData,
-          updatedAt: new Date(),
-        },
-      })
-      .returning();
+    const user: User = {
+      ...userData,
+      role: userData.role || 'student',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.users.set(userData.id, user);
     return user;
+  }
+
+  // Stub implementations for other required methods
+  async createSubject(): Promise<Subject> { throw new Error('Database unavailable'); }
+  async getSubjects(): Promise<Subject[]> { return []; }
+  async getSubjectById(): Promise<Subject | undefined> { return undefined; }
+  async updateSubject(): Promise<Subject> { throw new Error('Database unavailable'); }
+  async deleteSubject(): Promise<void> { throw new Error('Database unavailable'); }
+  async createQuestion(): Promise<Question> { throw new Error('Database unavailable'); }
+  async getQuestions(): Promise<{ questions: Question[]; total: number; page: number; totalPages: number }> {
+    return { questions: [], total: 0, page: 1, totalPages: 0 };
+  }
+  async getQuestionById(): Promise<Question | undefined> { return undefined; }
+  async updateQuestion(): Promise<Question> { throw new Error('Database unavailable'); }
+  async deleteQuestion(): Promise<void> { throw new Error('Database unavailable'); }
+  async incrementQuestionUsage(): Promise<void> { throw new Error('Database unavailable'); }
+  async createExam(): Promise<Exam> { throw new Error('Database unavailable'); }
+  async getExams(): Promise<Exam[]> { return []; }
+  async getActiveExamsForStudents(): Promise<Exam[]> { return []; }
+  async getExamById(): Promise<Exam | undefined> { return undefined; }
+  async updateExam(): Promise<Exam> { throw new Error('Database unavailable'); }
+  async deleteExam(): Promise<void> { throw new Error('Database unavailable'); }
+  async updateUserRole(): Promise<User> { throw new Error('Database unavailable'); }
+  async getAllUsers(): Promise<User[]> { return Array.from(this.users.values()); }
+  async addQuestionToExam(): Promise<void> { throw new Error('Database unavailable'); }
+  async getExamQuestions(): Promise<(ExamQuestion & { question: Question })[]> { return []; }
+  async removeQuestionFromExam(): Promise<void> { throw new Error('Database unavailable'); }
+  async createSubmission(): Promise<Submission> { throw new Error('Database unavailable'); }
+  async getSubmissions(): Promise<Submission[]> { return []; }
+  async getSubmissionById(): Promise<Submission | undefined> { return undefined; }
+  async updateSubmission(): Promise<Submission> { throw new Error('Database unavailable'); }
+  async createAnswer(): Promise<Answer> { throw new Error('Database unavailable'); }
+  async getAnswers(): Promise<Answer[]> { return []; }
+  async updateAnswer(): Promise<Answer> { throw new Error('Database unavailable'); }
+  async updateAnswerAttachment(): Promise<Answer> { throw new Error('Database unavailable'); }
+  async getExamAnalytics(): Promise<any> { throw new Error('Database unavailable'); }
+  async getQuestionAnalytics(): Promise<any> { throw new Error('Database unavailable'); }
+  async getInstructorStats(): Promise<any> { throw new Error('Database unavailable'); }
+  async createHomework(): Promise<HomeworkAssignment> { throw new Error('Database unavailable'); }
+  async getHomework(): Promise<any> { return []; }
+  async getActiveHomeworkForStudents(): Promise<HomeworkAssignment[]> { return []; }
+  async getHomeworkById(): Promise<HomeworkAssignment | undefined> { return undefined; }
+  async updateHomework(): Promise<HomeworkAssignment> { throw new Error('Database unavailable'); }
+  async deleteHomework(): Promise<void> { throw new Error('Database unavailable'); }
+  async addQuestionToHomework(): Promise<void> { throw new Error('Database unavailable'); }
+  async getHomeworkQuestions(): Promise<(HomeworkQuestion & { question: Question })[]> { return []; }
+  async removeQuestionFromHomework(): Promise<void> { throw new Error('Database unavailable'); }
+  async createHomeworkSubmission(): Promise<HomeworkSubmission> { throw new Error('Database unavailable'); }
+  async getHomeworkSubmissions(): Promise<HomeworkSubmission[]> { return []; }
+  async getHomeworkSubmissionById(): Promise<HomeworkSubmission | undefined> { return undefined; }
+  async updateHomeworkSubmission(): Promise<HomeworkSubmission> { throw new Error('Database unavailable'); }
+  async getHomeworkAssignmentById(): Promise<HomeworkAssignment | undefined> { return undefined; }
+  async getAllHomeworkSubmissions(): Promise<HomeworkSubmission[]> { return []; }
+  async createHomeworkAnswer(): Promise<HomeworkAnswer> { throw new Error('Database unavailable'); }
+  async getHomeworkAnswers(): Promise<HomeworkAnswer[]> { return []; }
+  async updateHomeworkAnswer(): Promise<HomeworkAnswer> { throw new Error('Database unavailable'); }
+  async getStudentGradesBySubject(): Promise<any[]> { return []; }
+  async getInstructorStudentGrades(): Promise<any[]> { return []; }
+  async getGradeSettings(): Promise<any> { return { global: { assignmentCoefficient: "0.4", examCoefficient: "0.6" }, courses: {} }; }
+  async setGlobalGradeSettings(): Promise<GradeSettings> { throw new Error('Database unavailable'); }
+  async setCourseGradeSettings(): Promise<GradeSettings> { throw new Error('Database unavailable'); }
+  async getGradeSettingsForCourse(): Promise<GradeSettings | undefined> { return undefined; }
+  async finalizeGradesForSubject(): Promise<FinalizedGrade[]> { throw new Error('Database unavailable'); }
+  async isSubjectGradesFinalized(): Promise<boolean> { return false; }
+  async getFinalizedGradesForSubject(): Promise<FinalizedGrade[]> { return []; }
+  async unfinalizeGradesForSubject(): Promise<void> { throw new Error('Database unavailable'); }
+}
+
+// Create a memory storage instance for fallback
+const memoryStorage = new MemoryStorage();
+
+export class DatabaseStorage implements IStorage {
+  // User operations
+  async getUser(id: string): Promise<User | undefined> {
+    try {
+      const [user] = await db.select().from(users).where(eq(users.id, id));
+      return user;
+    } catch (error) {
+      console.warn('Database getUser failed, falling back to memory storage:', error);
+      return memoryStorage.getUser(id);
+    }
+  }
+
+  async upsertUser(userData: UpsertUser): Promise<User> {
+    try {
+      const [user] = await db
+        .insert(users)
+        .values(userData)
+        .onConflictDoUpdate({
+          target: users.id,
+          set: {
+            ...userData,
+            updatedAt: new Date(),
+          },
+        })
+        .returning();
+      return user;
+    } catch (error) {
+      console.warn('Database upsertUser failed, falling back to memory storage:', error);
+      return memoryStorage.upsertUser(userData);
+    }
   }
 
   // Subject operations
