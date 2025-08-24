@@ -105,15 +105,15 @@ async function regradeSubmission(submissionId: number): Promise<{ totalScore: nu
             studentAnswer: JSON.stringify(studentAnswer)
           });
           
-          // Build mapping from item to correct zone
-          const itemToZoneMapping: { [item: string]: string } = {};
+          // Build mapping from item to correct zone index
+          const itemToZoneMapping: { [item: string]: number } = {};
           
           if (correctAnswer && correctAnswer.zones) {
-            correctAnswer.zones.forEach((zone: any) => {
-              if (zone.zone && Array.isArray(zone.items)) {
+            correctAnswer.zones.forEach((zone: any, zoneIndex: number) => {
+              if (Array.isArray(zone.items)) {
                 zone.items.forEach((item: string) => {
                   if (item && item.trim()) {
-                    itemToZoneMapping[item] = zone.zone;
+                    itemToZoneMapping[item] = zoneIndex;
                     totalItems++;
                   }
                 });
@@ -126,19 +126,20 @@ async function regradeSubmission(submissionId: number): Promise<{ totalScore: nu
             // Handle different student answer formats
             if (studentAnswer.zones && Array.isArray(studentAnswer.zones)) {
               // Format: { zones: [{ zone: "Land", items: ["Lion"] }] }
-              studentAnswer.zones.forEach((studentZone: any) => {
-                if (studentZone.zone && Array.isArray(studentZone.items)) {
+              studentAnswer.zones.forEach((studentZone: any, studentZoneIndex: number) => {
+                if (Array.isArray(studentZone.items)) {
                   studentZone.items.forEach((item: string) => {
-                    if (itemToZoneMapping[item] === studentZone.zone) {
+                    if (itemToZoneMapping[item] === studentZoneIndex) {
                       correctPlacements++;
                     }
                   });
                 }
               });
             } else {
-              // Handle object mapping format: { "Lion": "Land", "Shark": "Water" }
-              Object.entries(studentAnswer).forEach(([item, zone]) => {
-                if (itemToZoneMapping[item] === zone) {
+              // Handle indexed object mapping format: { "0": "Cap-Haitien", "1": "Les Cayes" }
+              Object.entries(studentAnswer).forEach(([zoneIndex, item]) => {
+                const zoneNum = parseInt(zoneIndex);
+                if (typeof item === 'string' && item.trim() && itemToZoneMapping[item] === zoneNum) {
                   correctPlacements++;
                 }
               });
@@ -367,15 +368,15 @@ export async function gradeHomeworkSubmission(submissionId: number): Promise<{ t
             studentAnswer: JSON.stringify(studentAnswer)
           });
           
-          // Build mapping from item to correct zone
-          const itemToZoneMapping: { [item: string]: string } = {};
+          // Build mapping from item to correct zone index
+          const itemToZoneMapping: { [item: string]: number } = {};
           
           if (correctAnswer && correctAnswer.zones) {
-            correctAnswer.zones.forEach((zone: any) => {
-              if (zone.zone && Array.isArray(zone.items)) {
+            correctAnswer.zones.forEach((zone: any, zoneIndex: number) => {
+              if (Array.isArray(zone.items)) {
                 zone.items.forEach((item: string) => {
                   if (item && item.trim()) {
-                    itemToZoneMapping[item] = zone.zone;
+                    itemToZoneMapping[item] = zoneIndex;
                     totalItems++;
                   }
                 });
@@ -388,19 +389,20 @@ export async function gradeHomeworkSubmission(submissionId: number): Promise<{ t
             // Handle different student answer formats
             if (studentAnswer.zones && Array.isArray(studentAnswer.zones)) {
               // Format: { zones: [{ zone: "Land", items: ["Lion"] }] }
-              studentAnswer.zones.forEach((studentZone: any) => {
-                if (studentZone.zone && Array.isArray(studentZone.items)) {
+              studentAnswer.zones.forEach((studentZone: any, studentZoneIndex: number) => {
+                if (Array.isArray(studentZone.items)) {
                   studentZone.items.forEach((item: string) => {
-                    if (itemToZoneMapping[item] === studentZone.zone) {
+                    if (itemToZoneMapping[item] === studentZoneIndex) {
                       correctPlacements++;
                     }
                   });
                 }
               });
             } else {
-              // Handle object mapping format: { "Lion": "Land", "Shark": "Water" }
-              Object.entries(studentAnswer).forEach(([item, zone]) => {
-                if (itemToZoneMapping[item] === zone) {
+              // Handle indexed object mapping format: { "0": "Cap-Haitien", "1": "Les Cayes" }
+              Object.entries(studentAnswer).forEach(([zoneIndex, item]) => {
+                const zoneNum = parseInt(zoneIndex);
+                if (typeof item === 'string' && item.trim() && itemToZoneMapping[item] === zoneNum) {
                   correctPlacements++;
                 }
               });

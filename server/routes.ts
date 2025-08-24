@@ -934,20 +934,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
             let correctPlacements = 0;
             let totalItems = 0;
             
-            // Count correct placements based on zone assignments
+            // Build mapping from item to correct zone
+            const itemToZoneMapping: { [item: string]: number } = {};
+            
             if (correctAnswer && correctAnswer.zones) {
               correctAnswer.zones.forEach((zone: any, zoneIndex: number) => {
                 const correctItems = Array.isArray(zone.items) ? zone.items : [];
-                const studentItems = Array.isArray(studentAnswer[zoneIndex]) 
-                  ? studentAnswer[zoneIndex] 
-                  : (studentAnswer[zoneIndex] ? [studentAnswer[zoneIndex]] : []);
-                
                 correctItems.forEach((item: string) => {
-                  totalItems++;
-                  if (studentItems.includes(item)) {
-                    correctPlacements++;
+                  if (item && item.trim()) {
+                    itemToZoneMapping[item] = zoneIndex;
+                    totalItems++;
                   }
                 });
+              });
+            }
+            
+            // Check student's placements against correct mapping
+            if (studentAnswer && typeof studentAnswer === 'object') {
+              Object.entries(studentAnswer).forEach(([zoneIndex, item]) => {
+                const zoneNum = parseInt(zoneIndex);
+                if (typeof item === 'string' && item.trim() && itemToZoneMapping[item] === zoneNum) {
+                  correctPlacements++;
+                }
               });
             }
             
