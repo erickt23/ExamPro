@@ -39,7 +39,7 @@ export default function Sidebar({ className }: SidebarProps) {
     gradingCenter: true
   });
 
-  const isInstructor = user?.role === 'instructor';
+  const isInstructor = user?.role === 'instructor' || user?.role === 'admin';
 
   // Auto-collapse on smaller screens and ensure accordions are open on mobile
   useEffect(() => {

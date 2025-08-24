@@ -16,6 +16,11 @@ import {
 import { regradeAllZeroScoreSubmissions, regradeSubmission, gradeHomeworkSubmission } from "./regradeExams";
 import { ObjectPermission } from "./objectAcl";
 
+// Helper function to check if user has instructor privileges (instructor or admin)
+function hasInstructorPrivileges(user: any): boolean {
+  return user?.role === 'instructor' || user?.role === 'admin';
+}
+
 // Configure multer for Excel file uploads
 const upload = multer({ 
   storage: multer.memoryStorage(),
@@ -215,7 +220,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
       
-      if (user?.role !== 'instructor') {
+      if (!hasInstructorPrivileges(user)) {
         return res.status(403).json({ message: "Access denied" });
       }
 
@@ -234,7 +239,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const user = await storage.getUser(userId);
       const subjectId = parseInt(req.params.id);
       
-      if (user?.role !== 'instructor') {
+      if (!hasInstructorPrivileges(user)) {
         return res.status(403).json({ message: "Access denied" });
       }
 
@@ -253,7 +258,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const user = await storage.getUser(userId);
       const subjectId = parseInt(req.params.id);
       
-      if (user?.role !== 'instructor') {
+      if (!hasInstructorPrivileges(user)) {
         return res.status(403).json({ message: "Access denied" });
       }
 
@@ -271,7 +276,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
       
-      if (user?.role !== 'instructor') {
+      if (!hasInstructorPrivileges(user)) {
         return res.status(403).json({ message: "Access denied" });
       }
 
@@ -299,7 +304,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
       
-      if (user?.role !== 'instructor') {
+      if (!hasInstructorPrivileges(user)) {
         return res.status(403).json({ message: "Access denied" });
       }
 
@@ -341,7 +346,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const user = await storage.getUser(userId);
       const questionId = parseInt(req.params.id);
       
-      if (user?.role !== 'instructor') {
+      if (!hasInstructorPrivileges(user)) {
         return res.status(403).json({ message: "Access denied" });
       }
 
@@ -366,7 +371,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const user = await storage.getUser(userId);
       const questionId = parseInt(req.params.id);
       
-      if (user?.role !== 'instructor') {
+      if (!hasInstructorPrivileges(user)) {
         return res.status(403).json({ message: "Access denied" });
       }
 
@@ -389,7 +394,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
       
-      if (user?.role !== 'instructor') {
+      if (!hasInstructorPrivileges(user)) {
         return res.status(403).json({ message: "Access denied" });
       }
 
@@ -470,7 +475,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
       
-      if (user?.role === 'instructor') {
+      if (hasInstructorPrivileges(user)) {
         const { status, search } = req.query;
         console.log('Search params received:', { status, search, userId });
         const exams = await storage.getExams(userId, status as string, search as string);
@@ -492,7 +497,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
       
-      if (user?.role !== 'instructor') {
+      if (!hasInstructorPrivileges(user)) {
         return res.status(403).json({ message: "Access denied" });
       }
 
@@ -537,7 +542,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const user = await storage.getUser(userId);
       const examId = parseInt(req.params.id);
       
-      if (user?.role !== 'instructor') {
+      if (!hasInstructorPrivileges(user)) {
         return res.status(403).json({ message: "Access denied" });
       }
 
@@ -608,7 +613,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const user = await storage.getUser(userId);
       const examId = parseInt(req.params.id);
       
-      if (user?.role !== 'instructor') {
+      if (!hasInstructorPrivileges(user)) {
         return res.status(403).json({ message: "Access denied" });
       }
 
@@ -632,7 +637,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const user = await storage.getUser(userId);
       const examId = parseInt(req.params.id);
       
-      if (user?.role !== 'instructor') {
+      if (!hasInstructorPrivileges(user)) {
         return res.status(403).json({ message: "Access denied" });
       }
 
@@ -673,7 +678,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const user = await storage.getUser(userId);
       const examId = parseInt(req.params.id);
       
-      if (user?.role !== 'instructor') {
+      if (!hasInstructorPrivileges(user)) {
         return res.status(403).json({ message: "Access denied" });
       }
 
@@ -699,7 +704,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const examId = parseInt(req.params.examId);
       const questionId = parseInt(req.params.questionId);
       
-      if (user?.role !== 'instructor') {
+      if (!hasInstructorPrivileges(user)) {
         return res.status(403).json({ message: "Access denied" });
       }
 
@@ -1070,7 +1075,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const user = await storage.getUser(userId);
       const { examId, studentId, status } = req.query;
       
-      if (user?.role === 'instructor') {
+      if (hasInstructorPrivileges(user)) {
         let submissions = await storage.getSubmissionsWithDetails(
           examId ? parseInt(examId as string) : undefined,
           studentId as string
@@ -1117,7 +1122,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const user = await storage.getUser(userId);
       const submissionId = parseInt(req.params.id);
       
-      if (user?.role !== 'instructor') {
+      if (!hasInstructorPrivileges(user)) {
         return res.status(403).json({ message: "Access denied" });
       }
 
@@ -1157,7 +1162,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const answerId = parseInt(req.params.id);
       const { score, feedback } = req.body;
       
-      if (user?.role !== 'instructor') {
+      if (!hasInstructorPrivileges(user)) {
         return res.status(403).json({ message: "Access denied" });
       }
 
@@ -1187,7 +1192,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const user = await storage.getUser(userId);
       const submissionId = parseInt(req.params.id);
       
-      if (user?.role !== 'instructor') {
+      if (!hasInstructorPrivileges(user)) {
         return res.status(403).json({ message: "Access denied" });
       }
 
@@ -1228,7 +1233,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const answerId = parseInt(req.params.id);
       const { score, feedback } = req.body;
       
-      if (user?.role !== 'instructor') {
+      if (!hasInstructorPrivileges(user)) {
         return res.status(403).json({ message: "Access denied" });
       }
 
@@ -1258,7 +1263,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const user = await storage.getUser(userId);
       const submissionId = parseInt(req.params.id);
       
-      if (user?.role !== 'instructor') {
+      if (!hasInstructorPrivileges(user)) {
         return res.status(403).json({ message: "Access denied" });
       }
 
@@ -1292,7 +1297,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const user = await storage.getUser(userId);
       const submissionId = parseInt(req.params.id);
       
-      if (user?.role !== 'instructor') {
+      if (!hasInstructorPrivileges(user)) {
         return res.status(403).json({ message: "Access denied" });
       }
 
@@ -1328,7 +1333,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
       
-      if (user?.role !== 'instructor') {
+      if (!hasInstructorPrivileges(user)) {
         return res.status(403).json({ message: "Access denied" });
       }
 
@@ -1346,7 +1351,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const user = await storage.getUser(userId);
       const examId = parseInt(req.params.id);
       
-      if (user?.role !== 'instructor') {
+      if (!hasInstructorPrivileges(user)) {
         return res.status(403).json({ message: "Access denied" });
       }
 
@@ -1489,7 +1494,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const user = await storage.getUser(userId);
     const questionId = parseInt(req.params.id);
 
-    if (user?.role !== 'instructor') {
+    if (!hasInstructorPrivileges(user)) {
       return res.status(403).json({ error: "Access denied" });
     }
 
@@ -1526,7 +1531,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
       
-      if (user?.role === 'instructor') {
+      if (hasInstructorPrivileges(user)) {
         const { status, search, page, limit } = req.query;
         const pageNum = page ? parseInt(page as string) : undefined;
         const limitNum = limit ? parseInt(limit as string) : undefined;
@@ -1554,7 +1559,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
       
-      if (user?.role !== 'instructor') {
+      if (!hasInstructorPrivileges(user)) {
         return res.status(403).json({ message: "Access denied" });
       }
 
@@ -1579,7 +1584,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
       
-      if (user?.role !== 'instructor') {
+      if (!hasInstructorPrivileges(user)) {
         return res.status(403).json({ message: "Access denied" });
       }
 
@@ -1605,7 +1610,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
       
-      if (user?.role !== 'instructor') {
+      if (!hasInstructorPrivileges(user)) {
         return res.status(403).json({ message: "Access denied" });
       }
 
@@ -1632,7 +1637,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
       
-      if (user?.role !== 'instructor') {
+      if (!hasInstructorPrivileges(user)) {
         return res.status(403).json({ message: "Access denied" });
       }
 
@@ -1672,7 +1677,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Students can only access active homework
-      if (user?.role !== 'instructor' && homework.status !== 'active') {
+      if (!hasInstructorPrivileges(user) && homework.status !== 'active') {
         return res.status(403).json({ message: "Access denied" });
       }
 
@@ -1701,7 +1706,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Students can only access active homework
-      if (user?.role !== 'instructor' && homework.status !== 'active') {
+      if (!hasInstructorPrivileges(user) && homework.status !== 'active') {
         return res.status(403).json({ message: "Access denied" });
       }
 
@@ -1988,7 +1993,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Only the student themselves or instructors can access grades
       if (user?.role === 'student' && userId !== studentId) {
         return res.status(403).json({ message: "Access denied" });
-      } else if (user?.role !== 'student' && user?.role !== 'instructor') {
+      } else if (user?.role !== 'student' && !hasInstructorPrivileges(user)) {
         return res.status(403).json({ message: "Access denied" });
       }
 
@@ -2005,7 +2010,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
 
-      if (user?.role !== 'instructor') {
+      if (!hasInstructorPrivileges(user)) {
         return res.status(403).json({ message: "Access denied" });
       }
 
@@ -2023,7 +2028,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
 
-      if (user?.role !== 'instructor') {
+      if (!hasInstructorPrivileges(user)) {
         return res.status(403).json({ message: "Access denied" });
       }
 
@@ -2040,7 +2045,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
 
-      if (user?.role !== 'instructor') {
+      if (!hasInstructorPrivileges(user)) {
         return res.status(403).json({ message: "Access denied" });
       }
 
@@ -2077,7 +2082,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const user = await storage.getUser(userId);
       const courseId = parseInt(req.params.courseId);
 
-      if (user?.role !== 'instructor') {
+      if (!hasInstructorPrivileges(user)) {
         return res.status(403).json({ message: "Access denied" });
       }
 
@@ -2124,7 +2129,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
       
-      if (user?.role !== 'instructor') {
+      if (!hasInstructorPrivileges(user)) {
         return res.status(403).json({ message: "Access denied" });
       }
 
@@ -2152,7 +2157,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
       
-      if (user?.role !== 'instructor') {
+      if (!hasInstructorPrivileges(user)) {
         return res.status(403).json({ message: "Access denied" });
       }
 
@@ -2174,7 +2179,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
       
-      if (user?.role !== 'instructor') {
+      if (!hasInstructorPrivileges(user)) {
         return res.status(403).json({ message: "Access denied" });
       }
 
@@ -2197,7 +2202,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
       
-      if (user?.role !== 'instructor') {
+      if (!hasInstructorPrivileges(user)) {
         return res.status(403).json({ message: "Access denied" });
       }
       
@@ -2214,7 +2219,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
       
-      if (user?.role !== 'instructor') {
+      if (!hasInstructorPrivileges(user)) {
         return res.status(403).json({ message: "Access denied" });
       }
       
@@ -2241,7 +2246,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
       
-      if (user?.role !== 'instructor') {
+      if (!hasInstructorPrivileges(user)) {
         return res.status(403).json({ message: "Access denied" });
       }
 
@@ -2381,7 +2386,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
       
-      if (user?.role !== 'instructor') {
+      if (!hasInstructorPrivileges(user)) {
         return res.status(403).json({ message: "Access denied" });
       }
 
