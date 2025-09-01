@@ -162,6 +162,19 @@ export const fr = {
     create: 'Créer'
   },
 
+  // Additional Common Terms for Question Creation
+  questionCreation: {
+    minutes: 'minutes',
+    explanation: 'Explication',
+    provideExplanation: 'Fournissez une explication pour la bonne réponse...',
+    questionAttachment: 'Pièce Jointe de la Question',
+    uploadFileDescription: 'Téléchargez un fichier que les étudiants peuvent télécharger en répondant à cette question',
+    uploadAttachment: 'Télécharger une Pièce Jointe',
+    saveAsDraft: 'Enregistrer en Brouillon',
+    creating: 'Création...',
+    loggedOutLoggingIn: 'Vous êtes déconnecté. Reconnexion en cours...'
+  },
+
   // Assignments
   assignments: {
     description: 'Créer et gérer des devoirs à partir de votre banque de questions de devoirs dédiée',
@@ -238,7 +251,51 @@ export const fr = {
     noItemsPlaced: 'Aucun élément placé',
     zone: 'Zone',
     errorLoadingSubmissionDetails: 'Erreur lors du chargement des détails de soumission',
-    noSubmissionDetailsAvailable: 'Aucun détail de soumission disponible.'
+    noSubmissionDetailsAvailable: 'Aucun détail de soumission disponible.',
+    // Create Question Modal
+    createNewExamQuestion: 'Créer une Nouvelle Question d\'Examen',
+    createNewHomeworkQuestion: 'Créer une Nouvelle Question de Devoir',
+    questionType: 'Type de Question',
+    questionTitle: 'Titre de la Question',
+    questionText: 'Texte de la Question',
+    enterQuestionTitle: 'Entrez le titre de la question...',
+    enterYourQuestionHere: 'Entrez votre question ici...',
+    answerOptions: 'Options de Réponse',
+    enterOption: 'Entrez l\'option',
+    addAnotherOption: 'Ajouter une autre option',
+    matchingPairs: 'Paires d\'Appariement',
+    leftItem: 'Élément de Gauche',
+    rightItem: 'Élément de Droite',
+    item: 'Élément',
+    match: 'Correspondance',
+    removePair: 'Supprimer la Paire',
+    addAnotherPair: 'Ajouter une autre paire',
+    itemsToRank: 'Éléments à Classer (dans l\'ordre correct)',
+    rankingItem: 'Élément de classement',
+    addAnotherItem: 'Ajouter un autre élément',
+    instructions: 'Instructions',
+    useUnderscores: 'Utilisez ___ (trois traits de soulignement) dans votre texte de question pour marquer où les étudiants doivent remplir les réponses. Définissez les bonnes réponses pour chaque blanc ci-dessous.',
+    answerFields: 'Champs de Réponse',
+    defineCorrectAnswers: 'Définissez les bonnes réponses pour chaque blanc dans l\'ordre d\'apparition',
+    correctAnswerFor: 'Bonne réponse pour',
+    addAnotherBlank: 'Ajouter un autre blanc',
+    previewAnswers: 'Aperçu des Réponses',
+    correctAnswersInOrder: 'Bonnes réponses (dans l\'ordre) :',
+    dropZones: 'Zones de Dépôt',
+    dropZone: 'Zone de dépôt',
+    addDropZone: 'Ajouter une zone de dépôt',
+    draggableItems: 'Éléments Déplaçables',
+    draggableItem: 'Élément déplaçable',
+    addDraggableItem: 'Ajouter un élément déplaçable',
+    correctAnswerConfiguration: 'Configuration de la Bonne Réponse',
+    assignEachItem: 'Assignez chaque élément à sa zone correcte pour la notation automatique',
+    fillInAtLeastOneZone: 'Veuillez remplir au moins un nom de zone et un nom d\'élément pour configurer les bonnes réponses.',
+    chooseASubject: 'Choisissez un sujet',
+    chooseDifficultyLevel: 'Choisissez le niveau de difficulté',
+    selectTaxonomy: 'Sélectionnez la taxonomie',
+    optional: 'Optionnel',
+    leaveEmptyForNoTimeLimit: 'Laissez vide pour aucune limite de temps',
+    remove: 'Supprimer'
   },
 
   // Exam Management

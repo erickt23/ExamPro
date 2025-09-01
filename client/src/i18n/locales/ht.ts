@@ -162,6 +162,19 @@ export const ht = {
     create: 'Kreye'
   },
 
+  // Additional Common Terms for Question Creation
+  questionCreation: {
+    minutes: 'minit',
+    explanation: 'Eksplikasyon',
+    provideExplanation: 'Bay yon eksplikasyon pou bon repons lan...',
+    questionAttachment: 'Dokiman Kesyon',
+    uploadFileDescription: 'Telechaje yon fichye elèv yo ka telechaje lè yo ap reponn kesyon an',
+    uploadAttachment: 'Telechaje Dokiman',
+    saveAsDraft: 'Anrejistre kòm Bouyon',
+    creating: 'K ap kreye...',
+    loggedOutLoggingIn: 'Ou dekonekte. K ap rekonekte...'
+  },
+
   // Assignments
   assignments: {
     description: 'Kreye ak jere devwa yo soti nan depo kesyon devwa dedye ou an',
@@ -238,7 +251,51 @@ export const ht = {
     noItemsPlaced: 'Pa gen bagay ki mete',
     zone: 'Zòn',
     errorLoadingSubmissionDetails: 'Erè nan chaje detay soumisyon yo',
-    noSubmissionDetailsAvailable: 'Pa gen detay soumisyon ki disponib.'
+    noSubmissionDetailsAvailable: 'Pa gen detay soumisyon ki disponib.',
+    // Create Question Modal
+    createNewExamQuestion: 'Kreye yon Nouvo Kesyon Egzamen',
+    createNewHomeworkQuestion: 'Kreye yon Nouvo Kesyon Devwa',
+    questionType: 'Tip Kesyon',
+    questionTitle: 'Tit Kesyon',
+    questionText: 'Tèks Kesyon',
+    enterQuestionTitle: 'Antre tit kesyon an...',
+    enterYourQuestionHere: 'Antre kesyon ou a isit la...',
+    answerOptions: 'Opsyon Repons yo',
+    enterOption: 'Antre opsyon',
+    addAnotherOption: 'Ajoute yon lòt opsyon',
+    matchingPairs: 'Koup ki Matche yo',
+    leftItem: 'Bagay Gòch',
+    rightItem: 'Bagay Dwat',
+    item: 'Bagay',
+    match: 'Matche',
+    removePair: 'Retire Koup la',
+    addAnotherPair: 'Ajoute yon lòt koup',
+    itemsToRank: 'Bagay yo pou Klase (nan bon òd la)',
+    rankingItem: 'Bagay klasman',
+    addAnotherItem: 'Ajoute yon lòt bagay',
+    instructions: 'Enstriksyon yo',
+    useUnderscores: 'Sèvi ak ___ (twa tiret) nan tèks kesyon ou pou make kote elèv yo dwe ranpli repons yo. Defini bon repons yo pou chak vid ki anba a.',
+    answerFields: 'Jaden Repons yo',
+    defineCorrectAnswers: 'Defini bon repons yo pou chak vid nan òd yo parèt',
+    correctAnswerFor: 'Bon repons pou',
+    addAnotherBlank: 'Ajoute yon lòt vid',
+    previewAnswers: 'Gade Repons yo',
+    correctAnswersInOrder: 'Bon repons yo (nan òd):',
+    dropZones: 'Zòn yo pou Lage',
+    dropZone: 'Zòn pou lage',
+    addDropZone: 'Ajoute zòn pou lage',
+    draggableItems: 'Bagay yo ki ka Trennen',
+    draggableItem: 'Bagay ki ka trennen',
+    addDraggableItem: 'Ajoute bagay ki ka trennen',
+    correctAnswerConfiguration: 'Konfigirasyon Bon Repons',
+    assignEachItem: 'Asiye chak bagay nan zòn ki kòrèk li pou otomatik bay nòt',
+    fillInAtLeastOneZone: 'Tanpri ranpli omwen yon non zòn ak yon non bagay pou konfigure bon repons yo.',
+    chooseASubject: 'Chwazi yon sijè',
+    chooseDifficultyLevel: 'Chwazi nivo difikilte',
+    selectTaxonomy: 'Chwazi taksonomi',
+    optional: 'Opsyonèl',
+    leaveEmptyForNoTimeLimit: 'Kite vid pou pa gen limit tan',
+    remove: 'Retire'
   },
 
   // Exam Management

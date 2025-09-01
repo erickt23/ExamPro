@@ -31,6 +31,7 @@ import { Label } from "@/components/ui/label";
 import { Plus, List, PenTool, FileText, Pen, Upload, Paperclip, ArrowUpDown, Link, Move3D } from "lucide-react";
 
 import { ObjectUploader } from "@/components/ObjectUploader";
+import { useTranslation } from "@/hooks/useTranslation";
 
 const createQuestionSchema = z.object({
   title: z.string().min(1, "Title is required").max(200),
@@ -58,6 +59,7 @@ interface CreateQuestionModalProps {
 
 export default function CreateQuestionModal({ open, onOpenChange, questionCategory }: CreateQuestionModalProps) {
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   
   // Fetch subjects
@@ -143,8 +145,8 @@ export default function CreateQuestionModal({ open, onOpenChange, questionCatego
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/questions"] });
       toast({
-        title: "Success",
-        description: "Question created successfully",
+        title: t('common.success'),
+        description: t('assignments.questionCreatedSuccessfully'),
       });
       form.reset();
       setMcqOptions(['', '', '', '']);
@@ -161,8 +163,8 @@ export default function CreateQuestionModal({ open, onOpenChange, questionCatego
     onError: (error: Error) => {
       if (isUnauthorizedError(error)) {
         toast({
-          title: "Unauthorized",
-          description: "You are logged out. Logging in again...",
+          title: t('common.unauthorized'),
+          description: t('questionCreation.loggedOutLoggingIn'),
           variant: "destructive",
         });
         setTimeout(() => {
@@ -171,21 +173,21 @@ export default function CreateQuestionModal({ open, onOpenChange, questionCatego
         return;
       }
       toast({
-        title: "Error",
-        description: "Failed to create question",
+        title: t('common.error'),
+        description: t('assignments.failedToCreateQuestion'),
         variant: "destructive",
       });
     },
   });
 
   const questionTypes = [
-    { value: 'multiple_choice', label: 'Multiple Choice', icon: List },
-    { value: 'short_answer', label: 'Short Answer', icon: PenTool },
-    { value: 'essay', label: 'Essay', icon: FileText },
-    { value: 'fill_blank', label: 'Fill in Blank', icon: Pen },
-    { value: 'matching', label: 'Matching', icon: Link },
-    { value: 'ranking', label: 'Ranking', icon: ArrowUpDown },
-    { value: 'drag_drop', label: 'Drag & Drop', icon: Move3D },
+    { value: 'multiple_choice', label: t('questionTypes.multipleChoice'), icon: List },
+    { value: 'short_answer', label: t('questionTypes.shortAnswer'), icon: PenTool },
+    { value: 'essay', label: t('questionTypes.essay'), icon: FileText },
+    { value: 'fill_blank', label: t('questionTypes.fillInBlank'), icon: Pen },
+    { value: 'matching', label: t('questionTypes.matching'), icon: Link },
+    { value: 'ranking', label: t('questionTypes.ranking'), icon: ArrowUpDown },
+    { value: 'drag_drop', label: t('questionTypes.dragAndDrop'), icon: Move3D },
   ];
 
   const onSubmit = (data: CreateQuestionForm) => {
@@ -328,14 +330,14 @@ export default function CreateQuestionModal({ open, onOpenChange, questionCatego
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Create New {questionCategory === 'homework' ? 'Homework' : 'Exam'} Question</DialogTitle>
+          <DialogTitle>{questionCategory === 'homework' ? t('assignments.createNewHomeworkQuestion') : t('assignments.createNewExamQuestion')}</DialogTitle>
         </DialogHeader>
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             {/* Question Type */}
             <div>
-              <Label className="text-sm font-medium">Question Type</Label>
+              <Label className="text-sm font-medium">{t('assignments.questionType')}</Label>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-2">
                 {questionTypes.map((type) => {
                   const IconComponent = type.icon;
@@ -367,9 +369,9 @@ export default function CreateQuestionModal({ open, onOpenChange, questionCatego
               name="title"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Question Title</FormLabel>
+                  <FormLabel>{t('assignments.questionTitle')}</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter question title..." {...field} />
+                    <Input placeholder={t('assignments.enterQuestionTitle')} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -381,11 +383,11 @@ export default function CreateQuestionModal({ open, onOpenChange, questionCatego
               name="questionText"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Question Text</FormLabel>
+                  <FormLabel>{t('assignments.questionText')}</FormLabel>
                   <FormControl>
                     <Textarea 
                       rows={4}
-                      placeholder="Enter your question here..." 
+                      placeholder={t('assignments.enterYourQuestionHere')} 
                       {...field} 
                     />
                   </FormControl>
@@ -397,7 +399,7 @@ export default function CreateQuestionModal({ open, onOpenChange, questionCatego
             {/* Multiple Choice Options */}
             {selectedType === 'multiple_choice' && (
               <div>
-                <Label className="text-sm font-medium">Answer Options</Label>
+                <Label className="text-sm font-medium">{t('assignments.answerOptions')}</Label>
                 <div className="space-y-3 mt-2">
                   {mcqOptions.map((option, index) => {
                     const letter = String.fromCharCode(65 + index); // A, B, C, D
@@ -416,7 +418,7 @@ export default function CreateQuestionModal({ open, onOpenChange, questionCatego
                         <Input
                           value={option}
                           onChange={(e) => updateMcqOption(index, e.target.value)}
-                          placeholder={`Enter option ${letter}`}
+                          placeholder={`${t('assignments.enterOption')} ${letter}`}
                           className="flex-1"
                         />
                       </div>
@@ -431,7 +433,7 @@ export default function CreateQuestionModal({ open, onOpenChange, questionCatego
                   onClick={() => setMcqOptions([...mcqOptions, ''])}
                 >
                   <Plus className="h-4 w-4 mr-2" />
-                  Add another option
+                  {t('assignments.addAnotherOption')}
                 </Button>
               </div>
             )}
@@ -439,24 +441,24 @@ export default function CreateQuestionModal({ open, onOpenChange, questionCatego
             {/* Matching Question Options */}
             {selectedType === 'matching' && (
               <div>
-                <Label className="text-sm font-medium">Matching Pairs</Label>
+                <Label className="text-sm font-medium">{t('assignments.matchingPairs')}</Label>
                 <div className="space-y-3 mt-2">
                   {matchingPairs.map((pair, index) => (
                     <div key={index} className="grid grid-cols-2 gap-4 p-3 border rounded-lg">
                       <div>
-                        <Label className="text-xs text-gray-500">Left Item</Label>
+                        <Label className="text-xs text-gray-500">{t('assignments.leftItem')}</Label>
                         <Input
                           value={pair.left}
                           onChange={(e) => updateMatchingPair(index, 'left', e.target.value)}
-                          placeholder={`Item ${index + 1}`}
+                          placeholder={`${t('assignments.item')} ${index + 1}`}
                         />
                       </div>
                       <div>
-                        <Label className="text-xs text-gray-500">Right Item</Label>
+                        <Label className="text-xs text-gray-500">{t('assignments.rightItem')}</Label>
                         <Input
                           value={pair.right}
                           onChange={(e) => updateMatchingPair(index, 'right', e.target.value)}
-                          placeholder={`Match ${index + 1}`}
+                          placeholder={`${t('assignments.match')} ${index + 1}`}
                         />
                       </div>
                       {matchingPairs.length > 2 && (
@@ -467,7 +469,7 @@ export default function CreateQuestionModal({ open, onOpenChange, questionCatego
                           onClick={() => removeMatchingPair(index)}
                           className="col-span-2 mt-2"
                         >
-                          Remove Pair
+                          {t('assignments.removePair')}
                         </Button>
                       )}
                     </div>
@@ -481,7 +483,7 @@ export default function CreateQuestionModal({ open, onOpenChange, questionCatego
                   onClick={addMatchingPair}
                 >
                   <Plus className="h-4 w-4 mr-2" />
-                  Add another pair
+                  {t('assignments.addAnotherPair')}
                 </Button>
               </div>
             )}
@@ -489,7 +491,7 @@ export default function CreateQuestionModal({ open, onOpenChange, questionCatego
             {/* Ranking Question Options */}
             {selectedType === 'ranking' && (
               <div>
-                <Label className="text-sm font-medium">Items to Rank (in correct order)</Label>
+                <Label className="text-sm font-medium">{t('assignments.itemsToRank')}</Label>
                 <div className="space-y-3 mt-2">
                   {rankingItems.map((item, index) => (
                     <div key={index} className="flex items-center space-x-3">
@@ -497,7 +499,7 @@ export default function CreateQuestionModal({ open, onOpenChange, questionCatego
                       <Input
                         value={item}
                         onChange={(e) => updateRankingItem(index, e.target.value)}
-                        placeholder={`Ranking item ${index + 1}`}
+                        placeholder={`${t('assignments.rankingItem')} ${index + 1}`}
                         className="flex-1"
                       />
                       {rankingItems.length > 2 && (
@@ -507,7 +509,7 @@ export default function CreateQuestionModal({ open, onOpenChange, questionCatego
                           size="sm"
                           onClick={() => removeRankingItem(index)}
                         >
-                          Remove
+                          {t('assignments.remove')}
                         </Button>
                       )}
                     </div>
@@ -521,7 +523,7 @@ export default function CreateQuestionModal({ open, onOpenChange, questionCatego
                   onClick={addRankingItem}
                 >
                   <Plus className="h-4 w-4 mr-2" />
-                  Add another item
+                  {t('assignments.addAnotherItem')}
                 </Button>
               </div>
             )}
@@ -531,18 +533,17 @@ export default function CreateQuestionModal({ open, onOpenChange, questionCatego
               <div className="space-y-4">
                 <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
                   <Label className="text-sm font-medium text-blue-700 dark:text-blue-300 mb-2 block">
-                    Instructions
+                    {t('assignments.instructions')}
                   </Label>
                   <p className="text-xs text-blue-600 dark:text-blue-400">
-                    Use <code className="bg-blue-200 dark:bg-blue-700 px-1 rounded text-xs">___</code> (three underscores) in your question text to mark where students should fill in answers. 
-                    Define the correct answers for each blank below.
+                    {t('assignments.useUnderscores')}
                   </p>
                 </div>
                 
                 <div>
-                  <Label className="text-sm font-medium">Answer Fields</Label>
+                  <Label className="text-sm font-medium">{t('assignments.answerFields')}</Label>
                   <p className="text-xs text-gray-600 dark:text-gray-400 mb-3">
-                    Define the correct answers for each blank in order of appearance
+                    {t('assignments.defineCorrectAnswers')}
                   </p>
                   <div className="space-y-3">
                     {fillBlankFields.map((field, index) => (
@@ -553,7 +554,7 @@ export default function CreateQuestionModal({ open, onOpenChange, questionCatego
                         <Input
                           value={field.answer}
                           onChange={(e) => updateFillBlankField(index, 'answer', e.target.value)}
-                          placeholder={`Correct answer for ${field.label.toLowerCase()}`}
+                          placeholder={`${t('assignments.correctAnswerFor')} ${field.label.toLowerCase()}`}
                           className="flex-1"
                         />
                         {fillBlankFields.length > 1 && (
@@ -564,7 +565,7 @@ export default function CreateQuestionModal({ open, onOpenChange, questionCatego
                             onClick={() => removeFillBlankField(index)}
                             className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
                           >
-                            Remove
+                            {t('assignments.remove')}
                           </Button>
                         )}
                       </div>
@@ -578,16 +579,16 @@ export default function CreateQuestionModal({ open, onOpenChange, questionCatego
                     onClick={addFillBlankField}
                   >
                     <Plus className="h-4 w-4 mr-2" />
-                    Add another blank
+                    {t('assignments.addAnotherBlank')}
                   </Button>
                 </div>
                 
                 {fillBlankFields.some(field => field.answer.trim()) && (
                   <div className="border-t pt-4">
-                    <Label className="text-sm font-medium text-green-700 dark:text-green-300">Preview Answers</Label>
+                    <Label className="text-sm font-medium text-green-700 dark:text-green-300">{t('assignments.previewAnswers')}</Label>
                     <div className="mt-2 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
                       <p className="text-xs text-green-600 dark:text-green-400 mb-2">
-                        Correct answers (in order):
+                        {t('assignments.correctAnswersInOrder')}
                       </p>
                       <div className="flex flex-wrap gap-2">
                         {fillBlankFields.filter(field => field.answer.trim()).map((field, index) => (
@@ -606,15 +607,15 @@ export default function CreateQuestionModal({ open, onOpenChange, questionCatego
             {selectedType === 'drag_drop' && (
               <div className="space-y-4">
                 <div>
-                  <Label className="text-sm font-medium">Drop Zones</Label>
+                  <Label className="text-sm font-medium">{t('assignments.dropZones')}</Label>
                   <div className="space-y-3 mt-2">
                     {dragDropZones.map((zone, index) => (
                       <div key={index} className="flex items-center space-x-3">
-                        <span className="text-sm font-medium text-gray-700 min-w-[70px]">Zone {index + 1}:</span>
+                        <span className="text-sm font-medium text-gray-700 min-w-[70px]">{t('assignments.zone')} {index + 1}:</span>
                         <Input
                           value={zone.zone}
                           onChange={(e) => updateDragDropZone(index, e.target.value)}
-                          placeholder={`Drop zone ${index + 1}`}
+                          placeholder={`${t('assignments.dropZone')} ${index + 1}`}
                           className="flex-1"
                         />
                         {dragDropZones.length > 1 && (
@@ -639,20 +640,20 @@ export default function CreateQuestionModal({ open, onOpenChange, questionCatego
                     onClick={addDragDropZone}
                   >
                     <Plus className="h-4 w-4 mr-2" />
-                    Add drop zone
+                    {t('assignments.addDropZone')}
                   </Button>
                 </div>
 
                 <div>
-                  <Label className="text-sm font-medium">Draggable Items</Label>
+                  <Label className="text-sm font-medium">{t('assignments.draggableItems')}</Label>
                   <div className="space-y-3 mt-2">
                     {dragDropItems.map((item, index) => (
                       <div key={index} className="flex items-center space-x-3">
-                        <span className="text-sm font-medium text-gray-700 min-w-[70px]">Item {index + 1}:</span>
+                        <span className="text-sm font-medium text-gray-700 min-w-[70px]">{t('assignments.item')} {index + 1}:</span>
                         <Input
                           value={item}
                           onChange={(e) => updateDragDropItem(index, e.target.value)}
-                          placeholder={`Draggable item ${index + 1}`}
+                          placeholder={`${t('assignments.draggableItem')} ${index + 1}`}
                           className="flex-1"
                         />
                         {dragDropItems.length > 1 && (
@@ -677,15 +678,15 @@ export default function CreateQuestionModal({ open, onOpenChange, questionCatego
                     onClick={addDragDropItem}
                   >
                     <Plus className="h-4 w-4 mr-2" />
-                    Add draggable item
+                    {t('assignments.addDraggableItem')}
                   </Button>
                 </div>
 
                 {/* Correct Answer Configuration for Drag-Drop */}
                 {dragDropZones.length > 0 && dragDropItems.length > 0 && (
                   <div className="border-t pt-4">
-                    <Label className="text-sm font-medium text-blue-700">Correct Answer Configuration</Label>
-                    <p className="text-xs text-gray-600 mb-3">Assign each item to its correct zone for automatic grading</p>
+                    <Label className="text-sm font-medium text-blue-700">{t('assignments.correctAnswerConfiguration')}</Label>
+                    <p className="text-xs text-gray-600 mb-3">{t('assignments.assignEachItem')}</p>
                     {dragDropZones.some(zone => zone.zone.trim()) && dragDropItems.some(item => item.trim()) ? (
                       <div className="space-y-3">
                         {dragDropZones.map((zone, zoneIndex) => (
@@ -718,7 +719,7 @@ export default function CreateQuestionModal({ open, onOpenChange, questionCatego
                     ) : (
                       <div className="p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
                         <p className="text-sm text-amber-700 dark:text-amber-300">
-                          Please fill in at least one zone name and one item name to configure correct answers.
+                          {t('assignments.fillInAtLeastOneZone')}
                         </p>
                       </div>
                     )}
@@ -734,11 +735,11 @@ export default function CreateQuestionModal({ open, onOpenChange, questionCatego
                 name="subjectId"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Subject</FormLabel>
+                    <FormLabel>{t('common.subject')}</FormLabel>
                     <Select onValueChange={(value) => field.onChange(parseInt(value))} value={field.value?.toString()}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Choose a subject" />
+                          <SelectValue placeholder={t('assignments.chooseASubject')} />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -757,17 +758,17 @@ export default function CreateQuestionModal({ open, onOpenChange, questionCatego
                 name="difficulty"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Difficulty Level</FormLabel>
+                    <FormLabel>{t('common.difficulty')}</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Choose difficulty level" />
+                          <SelectValue placeholder={t('assignments.chooseDifficultyLevel')} />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="easy">Easy</SelectItem>
-                        <SelectItem value="medium">Medium</SelectItem>
-                        <SelectItem value="hard">Hard</SelectItem>
+                        <SelectItem value="easy">{t('common.easy')}</SelectItem>
+                        <SelectItem value="medium">{t('common.medium')}</SelectItem>
+                        <SelectItem value="hard">{t('common.hard')}</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -780,20 +781,20 @@ export default function CreateQuestionModal({ open, onOpenChange, questionCatego
                 name="bloomsTaxonomy"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Bloom's Taxonomy</FormLabel>
+                    <FormLabel>{t('common.bloomsTaxonomy')}</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select taxonomy" />
+                          <SelectValue placeholder={t('assignments.selectTaxonomy')} />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="remember">Remember</SelectItem>
-                        <SelectItem value="understand">Understand</SelectItem>
-                        <SelectItem value="apply">Apply</SelectItem>
-                        <SelectItem value="analyze">Analyze</SelectItem>
-                        <SelectItem value="evaluate">Evaluate</SelectItem>
-                        <SelectItem value="create">Create</SelectItem>
+                        <SelectItem value="remember">{t('blooms.remember')}</SelectItem>
+                        <SelectItem value="understand">{t('blooms.understand')}</SelectItem>
+                        <SelectItem value="apply">{t('blooms.apply')}</SelectItem>
+                        <SelectItem value="analyze">{t('blooms.analyze')}</SelectItem>
+                        <SelectItem value="evaluate">{t('blooms.evaluate')}</SelectItem>
+                        <SelectItem value="create">{t('blooms.create')}</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -809,7 +810,7 @@ export default function CreateQuestionModal({ open, onOpenChange, questionCatego
                 name="points"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Points</FormLabel>
+                    <FormLabel>{t('common.points')}</FormLabel>
                     <FormControl>
                       <Input 
                         type="number" 
@@ -828,17 +829,17 @@ export default function CreateQuestionModal({ open, onOpenChange, questionCatego
                 name="timeLimit"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Time Limit (minutes)</FormLabel>
+                    <FormLabel>{t('common.timeLimit')} ({t('questionCreation.minutes')})</FormLabel>
                     <FormControl>
                       <Input 
                         type="number" 
                         min="1" 
-                        placeholder="Optional"
+                        placeholder={t('assignments.optional')}
                         {...field}
                         onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)}
                       />
                     </FormControl>
-                    <FormDescription>Leave empty for no time limit</FormDescription>
+                    <FormDescription>{t('assignments.leaveEmptyForNoTimeLimit')}</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -850,11 +851,11 @@ export default function CreateQuestionModal({ open, onOpenChange, questionCatego
               name="explanation"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Explanation (Optional)</FormLabel>
+                  <FormLabel>{t('questionCreation.explanation')} ({t('assignments.optional')})</FormLabel>
                   <FormControl>
                     <Textarea 
                       rows={3}
-                      placeholder="Provide an explanation for the correct answer..." 
+                      placeholder={t('questionCreation.provideExplanation')} 
                       {...field} 
                     />
                   </FormControl>
@@ -865,8 +866,8 @@ export default function CreateQuestionModal({ open, onOpenChange, questionCatego
 
             {/* File Attachment Section */}
             <div>
-              <Label className="text-sm font-medium">Question Attachment (Optional)</Label>
-              <p className="text-xs text-gray-600 mb-3">Upload a file that students can download when answering this question</p>
+              <Label className="text-sm font-medium">{t('questionCreation.questionAttachment')} ({t('assignments.optional')})</Label>
+              <p className="text-xs text-gray-600 mb-3">{t('questionCreation.uploadFileDescription')}</p>
               
               {attachmentFile ? (
                 <div className="flex items-center gap-2 p-3 border rounded-lg bg-gray-50">
@@ -882,7 +883,7 @@ export default function CreateQuestionModal({ open, onOpenChange, questionCatego
                       setAttachmentUrl('');
                     }}
                   >
-                    Remove
+                    {t('assignments.remove')}
                   </Button>
                 </div>
               ) : (
@@ -924,7 +925,7 @@ export default function CreateQuestionModal({ open, onOpenChange, questionCatego
                   buttonClassName="w-full"
                 >
                   <Upload className="h-4 w-4 mr-2" />
-                  Upload Attachment
+                  {t('questionCreation.uploadAttachment')}
                 </ObjectUploader>
               )}
             </div>
@@ -935,7 +936,7 @@ export default function CreateQuestionModal({ open, onOpenChange, questionCatego
                 variant="outline" 
                 onClick={() => onOpenChange(false)}
               >
-                Cancel
+                {t('common.cancel')}
               </Button>
               <Button 
                 type="button" 
@@ -943,14 +944,14 @@ export default function CreateQuestionModal({ open, onOpenChange, questionCatego
                 disabled={createQuestionMutation.isPending}
                 className="bg-gradient-to-r from-slate-50 via-blue-50 to-indigo-50 text-indigo-700 hover:bg-gradient-to-r hover:from-blue-400/20 hover:to-indigo-500/20 hover:text-indigo-800 shadow-md hover:shadow-lg transition-all duration-200 transform hover:scale-105"
               >
-                Save as Draft
+                {t('questionCreation.saveAsDraft')}
               </Button>
               <Button 
                 type="submit"
                 disabled={createQuestionMutation.isPending}
                 className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
               >
-                {createQuestionMutation.isPending ? "Creating..." : "Create Question"}
+                {createQuestionMutation.isPending ? t('questionCreation.creating') : t('assignments.createQuestion')}
               </Button>
             </DialogFooter>
           </form>
