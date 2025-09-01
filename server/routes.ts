@@ -916,57 +916,102 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Auto-grade drag-and-drop questions
         else if (question.questionType === 'drag_drop') {
           try {
-            let correctAnswer, studentAnswer;
-            
-            try {
-              correctAnswer = typeof question.correctAnswer === 'string' 
-                ? JSON.parse(question.correctAnswer) 
-                : question.correctAnswer;
-            } catch (parseError) {
-              console.error('Error parsing drag-drop question correctAnswer:', parseError, 'Value:', question.correctAnswer);
-              correctAnswer = { zones: [] };
-            }
-            
-            try {
-              studentAnswer = typeof answer.answerText === 'string'
-                ? JSON.parse(answer.answerText || '{}')
-                : answer.answerText || {};
-            } catch (parseError) {
-              console.error('Error parsing drag-drop question studentAnswer:', parseError, 'Value:', answer.answerText);
-              studentAnswer = {};
-            }
+            const correctAnswer = typeof question.correctAnswer === 'string' 
+              ? JSON.parse(question.correctAnswer) 
+              : question.correctAnswer;
+            const rawStudentAnswer = answer.selectedOption || answer.answerText;
+            const studentAnswer = typeof rawStudentAnswer === 'string'
+              ? JSON.parse(rawStudentAnswer || '{}')
+              : rawStudentAnswer || {};
             
             let correctPlacements = 0;
             let totalItems = 0;
             
-            // Build mapping from item to correct zone
+            console.log(`Grading drag-drop question ${question.id}:`, {
+              correctAnswer: JSON.stringify(correctAnswer),
+              studentAnswer: JSON.stringify(studentAnswer)
+            });
+            
+            // Build mapping from item to correct zone index AND zone name mapping
             const itemToZoneMapping: { [item: string]: number } = {};
+            const zoneIndexToName: { [index: number]: string } = {};
             
-            if (correctAnswer && correctAnswer.zones) {
+            if (correctAnswer && correctAnswer.zones && Array.isArray(correctAnswer.zones)) {
+              // Handle zones array format: { zones: [{ zone: "Nord", items: ["Cap-Haitien"] }] }
               correctAnswer.zones.forEach((zone: any, zoneIndex: number) => {
-                const correctItems = Array.isArray(zone.items) ? zone.items : [];
-                correctItems.forEach((item: string) => {
-                  if (item && item.trim()) {
-                    itemToZoneMapping[item] = zoneIndex;
-                    totalItems++;
-                  }
-                });
+                // Store zone name mapping
+                const zoneName = zone.zone || zone.name || `Zone ${zoneIndex}`;
+                zoneIndexToName[zoneIndex] = zoneName;
+                
+                if (zone && Array.isArray(zone.items)) {
+                  zone.items.forEach((item: string) => {
+                    if (item && String(item).trim()) {
+                      itemToZoneMapping[String(item)] = zoneIndex;
+                      totalItems++;
+                    }
+                  });
+                }
               });
-            }
-            
-            // Check student's placements against correct mapping
-            if (studentAnswer && typeof studentAnswer === 'object') {
-              Object.entries(studentAnswer).forEach(([zoneIndex, item]) => {
-                const zoneNum = parseInt(zoneIndex);
-                if (typeof item === 'string' && item.trim() && itemToZoneMapping[item] === zoneNum) {
-                  correctPlacements++;
+            } else if (correctAnswer && typeof correctAnswer === 'object' && !Array.isArray(correctAnswer)) {
+              // Handle key-value format: { "Nord": "Cap-Haïtien", "Sud": "Les Cayes", ... }
+              const entries = Object.entries(correctAnswer);
+              entries.forEach(([zoneName, item], index) => {
+                if (typeof item === 'string' && item.trim()) {
+                  itemToZoneMapping[String(item)] = index;
+                  zoneIndexToName[index] = zoneName;
+                  totalItems++;
                 }
               });
             }
             
+            console.log(`Built item-to-zone mapping:`, itemToZoneMapping);
+            console.log(`Zone index to name mapping:`, zoneIndexToName);
+            console.log(`Total items to match: ${totalItems}`);
+            
+            // Check student's placements against correct mapping
+            if (studentAnswer && typeof studentAnswer === 'object') {
+              // Handle multiple student answer formats
+              if (Array.isArray(studentAnswer)) {
+                // Handle array format
+                studentAnswer.forEach((placement: any, zoneIndex: number) => {
+                  if (placement && Array.isArray(placement.items)) {
+                    placement.items.forEach((item: string) => {
+                      if (item && itemToZoneMapping[String(item)] === zoneIndex) {
+                        correctPlacements++;
+                        console.log(`Correct placement: "${item}" in zone ${zoneIndex} (${zoneIndexToName[zoneIndex] || 'Unknown'})`);
+                      } else {
+                        console.log(`Incorrect placement: "${item}" in zone ${zoneIndex}, should be in zone ${itemToZoneMapping[String(item)]} (${zoneIndexToName[itemToZoneMapping[String(item)]] || 'Unknown'})`);
+                      }
+                    });
+                  }
+                });
+              } else {
+                // Handle indexed object format: {"0":["item1"], "1":["item2"], ...}
+                Object.entries(studentAnswer).forEach(([zoneIndex, items]) => {
+                  const zoneNum = parseInt(zoneIndex);
+                  if (Array.isArray(items)) {
+                    items.forEach((item: string) => {
+                      if (item && String(item).trim() && itemToZoneMapping[String(item)] === zoneNum) {
+                        correctPlacements++;
+                        console.log(`Correct placement: "${item}" in zone ${zoneNum} (${zoneIndexToName[zoneNum] || 'Unknown'})`);
+                      } else {
+                        console.log(`Incorrect placement: "${item}" in zone ${zoneNum}, should be in zone ${itemToZoneMapping[String(item)]} (${zoneIndexToName[itemToZoneMapping[String(item)]] || 'Unknown'})`);
+                      }
+                    });
+                  } else if (typeof items === 'string' && items.trim() && itemToZoneMapping[String(items)] === zoneNum) {
+                    correctPlacements++;
+                    console.log(`Correct placement: "${items}" in zone ${zoneNum} (${zoneIndexToName[zoneNum] || 'Unknown'})`);
+                  }
+                });
+              }
+            }
+            
+            console.log(`=== FINAL DRAG-DROP RESULT ===`);
+            console.log(`Question ${question.id}: ${correctPlacements}/${totalItems} correct, score: ${(correctPlacements / totalItems) * question.points}/${question.points}`);
+            console.log(`=== END DRAG-DROP RESULT ===`);
+            
             // Partial credit for drag-and-drop
             score = totalItems > 0 ? (correctPlacements / totalItems) * question.points : 0;
-            console.log(`Drag-drop grading: ${correctPlacements}/${totalItems} correct, score: ${score}/${question.points}`);
           } catch (error) {
             console.error('Error grading drag-drop question:', error);
             // Default to 0 if grading fails
@@ -976,24 +1021,68 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Auto-grade ranking questions
         else if (question.questionType === 'ranking') {
           try {
-            const correctOrder = Array.isArray(question.correctAnswer) 
-              ? question.correctAnswer 
-              : JSON.parse(question.correctAnswer || '[]');
-            const studentOrder = Array.isArray(answer.answerText)
+            let correctOrder, studentOrder;
+            
+            // Handle multiple formats for correct answer
+            if (Array.isArray(question.correctAnswer)) {
+              correctOrder = question.correctAnswer;
+            } else if (typeof question.correctAnswer === 'string') {
+              const rawCorrectAnswer = question.correctAnswer;
+              
+              // Check for malformed JSON format like {"item1","item2",...}
+              if (rawCorrectAnswer.startsWith('{') && rawCorrectAnswer.includes('",') && !rawCorrectAnswer.includes(':')) {
+                console.log('Detected malformed ranking JSON, converting to array format');
+                // Convert {"item1","item2","item3"} to ["item1","item2","item3"]
+                const cleanedAnswer = rawCorrectAnswer
+                  .replace(/^\{/, '[')  // Replace opening brace with bracket
+                  .replace(/\}$/, ']')  // Replace closing brace with bracket
+                  .replace(/(?<!")([^",\[\]]+)(?!")/g, '"$1"'); // Quote unquoted strings
+                
+                try {
+                  correctOrder = JSON.parse(cleanedAnswer);
+                  console.log('Successfully converted malformed JSON:', {
+                    original: rawCorrectAnswer,
+                    converted: cleanedAnswer,
+                    parsed: correctOrder
+                  });
+                } catch (conversionError) {
+                  console.error('Failed to convert malformed ranking JSON:', conversionError);
+                  correctOrder = [];
+                }
+              } else {
+                // Regular JSON parsing
+                correctOrder = JSON.parse(rawCorrectAnswer || '[]');
+              }
+            } else {
+              correctOrder = [];
+            }
+            
+            // Parse student answer
+            studentOrder = Array.isArray(answer.answerText)
               ? answer.answerText
               : JSON.parse(answer.answerText || '[]');
-          
-          let correctPositions = 0;
-          const totalItems = correctOrder.length;
-          
-          for (let i = 0; i < totalItems; i++) {
-            if (studentOrder[i] === correctOrder[i]) {
-              correctPositions++;
+            
+            console.log(`Grading ranking question ${question.id}:`, {
+              correctOrder,
+              studentOrder,
+              rawCorrectAnswer: `${question.correctAnswer}`
+            });
+            
+            let correctPositions = 0;
+            const totalItems = correctOrder.length;
+            
+            for (let i = 0; i < totalItems; i++) {
+              if (studentOrder[i] === correctOrder[i]) {
+                correctPositions++;
+                console.log(`Position ${i}: "${studentOrder[i]}" is correct`);
+              } else {
+                console.log(`Position ${i}: "${studentOrder[i]}" should be "${correctOrder[i]}"`);
+              }
             }
-          }
-          
+            
             // Partial credit for ranking
             score = totalItems > 0 ? (correctPositions / totalItems) * question.points : 0;
+            console.log(`Ranking question ${question.id}: ${correctPositions}/${totalItems} correct, score: ${score}/${question.points}`);
           } catch (error) {
             console.error('Error grading ranking question:', error);
             console.log('Invalid JSON in ranking question:', { correctAnswer: question.correctAnswer, studentAnswer: answer.answerText });
