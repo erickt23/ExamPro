@@ -808,7 +808,9 @@ export const en = {
     instructor: 'Instructor',
     subject: 'Subject',
     type: 'Type',
-    difficulty: 'Difficulty'
+    difficulty: 'Difficulty',
+    timeLimit: 'Time Limit',
+    bloomsTaxonomy: 'Bloom\'s Taxonomy'
   },
 
   // Theme

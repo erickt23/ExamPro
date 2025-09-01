@@ -802,7 +802,9 @@ export const ht = {
     instructor: 'Pwofesè',
     subject: 'Matye',
     type: 'Tip',
-    difficulty: 'Difikilte'
+    difficulty: 'Difikilte',
+    timeLimit: 'Limit Tan',
+    bloomsTaxonomy: 'Taksonomi Bloom'
   },
 
   // Theme

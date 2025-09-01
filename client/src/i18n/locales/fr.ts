@@ -802,7 +802,9 @@ export const fr = {
     instructor: 'Instructeur',
     subject: 'Matière',
     type: 'Type',
-    difficulty: 'Difficulté'
+    difficulty: 'Difficulté',
+    timeLimit: 'Limite de Temps',
+    bloomsTaxonomy: 'Taxonomie de Bloom'
   },
 
   // Theme
