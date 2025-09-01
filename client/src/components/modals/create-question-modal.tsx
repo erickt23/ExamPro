@@ -270,6 +270,29 @@ export default function CreateQuestionModal({ open, onOpenChange, questionCatego
     setDragDropItems([...dragDropItems, '']);
   };
 
+  // Remove functions for drag-drop zones and items
+  const removeDragDropZone = (index: number) => {
+    if (dragDropZones.length > 1) {
+      const newZones = dragDropZones.filter((_, i) => i !== index);
+      setDragDropZones(newZones);
+    }
+  };
+
+  const removeDragDropItem = (index: number) => {
+    if (dragDropItems.length > 1) {
+      const itemToRemove = dragDropItems[index];
+      const newItems = dragDropItems.filter((_, i) => i !== index);
+      setDragDropItems(newItems);
+      
+      // Remove the item from all zones
+      const updatedZones = dragDropZones.map(zone => ({
+        ...zone,
+        items: zone.items?.filter(item => item !== itemToRemove) || []
+      }));
+      setDragDropZones(updatedZones);
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
@@ -487,6 +510,17 @@ export default function CreateQuestionModal({ open, onOpenChange, questionCatego
                           placeholder={`Drop zone ${index + 1}`}
                           className="flex-1"
                         />
+                        {dragDropZones.length > 1 && (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => removeDragDropZone(index)}
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                          >
+                            Remove
+                          </Button>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -514,6 +548,17 @@ export default function CreateQuestionModal({ open, onOpenChange, questionCatego
                           placeholder={`Draggable item ${index + 1}`}
                           className="flex-1"
                         />
+                        {dragDropItems.length > 1 && (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => removeDragDropItem(index)}
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                          >
+                            Remove
+                          </Button>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -534,34 +579,42 @@ export default function CreateQuestionModal({ open, onOpenChange, questionCatego
                   <div className="border-t pt-4">
                     <Label className="text-sm font-medium text-blue-700">Correct Answer Configuration</Label>
                     <p className="text-xs text-gray-600 mb-3">Assign each item to its correct zone for automatic grading</p>
-                    <div className="space-y-3">
-                      {dragDropZones.map((zone, zoneIndex) => (
-                        <div key={zoneIndex} className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-                          <Label className="text-sm font-medium text-blue-800 dark:text-blue-200 mb-2 block">
-                            {zone.zone || `Zone ${zoneIndex + 1}`}
-                          </Label>
-                          <div className="flex flex-wrap gap-2">
-                            {dragDropItems.map((item, itemIndex) => {
-                              const isSelected = zone.items?.includes(item) || false;
-                              return (
-                                <button
-                                  key={itemIndex}
-                                  type="button"
-                                  onClick={() => toggleItemInZone(zoneIndex, item)}
-                                  className={`px-3 py-1 text-xs rounded-md border transition-colors ${
-                                    isSelected
-                                      ? 'bg-blue-500 text-white border-blue-500'
-                                      : 'bg-white text-gray-700 border-gray-300 hover:bg-blue-100'
-                                  }`}
-                                >
-                                  {item || `Item ${itemIndex + 1}`}
-                                </button>
-                              );
-                            })}
+                    {dragDropZones.some(zone => zone.zone.trim()) && dragDropItems.some(item => item.trim()) ? (
+                      <div className="space-y-3">
+                        {dragDropZones.map((zone, zoneIndex) => (
+                          <div key={zoneIndex} className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                            <Label className="text-sm font-medium text-blue-800 dark:text-blue-200 mb-2 block">
+                              {zone.zone || `Zone ${zoneIndex + 1}`}
+                            </Label>
+                            <div className="flex flex-wrap gap-2">
+                              {dragDropItems.filter(item => item.trim()).map((item, itemIndex) => {
+                                const isSelected = zone.items?.includes(item) || false;
+                                return (
+                                  <button
+                                    key={itemIndex}
+                                    type="button"
+                                    onClick={() => toggleItemInZone(zoneIndex, item)}
+                                    className={`px-3 py-1 text-xs rounded-md border transition-colors ${
+                                      isSelected
+                                        ? 'bg-blue-500 text-white border-blue-500'
+                                        : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-blue-100 dark:hover:bg-blue-900/30'
+                                    }`}
+                                  >
+                                    {item}
+                                  </button>
+                                );
+                              })}
+                            </div>
                           </div>
-                        </div>
-                      ))}
-                    </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+                        <p className="text-sm text-amber-700 dark:text-amber-300">
+                          Please fill in at least one zone name and one item name to configure correct answers.
+                        </p>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
