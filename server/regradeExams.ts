@@ -110,6 +110,7 @@ async function regradeSubmission(submissionId: number): Promise<{ totalScore: nu
           const zoneIndexToName: { [index: number]: string } = {};
           
           if (correctAnswer && correctAnswer.zones && Array.isArray(correctAnswer.zones)) {
+            // Handle zones array format: { zones: [{ zone: "Nord", items: ["Cap-Haitien"] }] }
             correctAnswer.zones.forEach((zone: any, zoneIndex: number) => {
               // Store zone name mapping
               const zoneName = zone.zone || zone.name || `Zone ${zoneIndex}`;
@@ -122,6 +123,16 @@ async function regradeSubmission(submissionId: number): Promise<{ totalScore: nu
                     totalItems++;
                   }
                 });
+              }
+            });
+          } else if (correctAnswer && typeof correctAnswer === 'object' && !Array.isArray(correctAnswer)) {
+            // Handle key-value format: { "Nord": "Cap-Haïtien", "Sud": "Les Cayes", ... }
+            const entries = Object.entries(correctAnswer);
+            entries.forEach(([zoneName, item], index) => {
+              if (typeof item === 'string' && item.trim()) {
+                itemToZoneMapping[String(item)] = index;
+                zoneIndexToName[index] = zoneName;
+                totalItems++;
               }
             });
           }
@@ -188,20 +199,58 @@ async function regradeSubmission(submissionId: number): Promise<{ totalScore: nu
       // Auto-grade ranking questions
       else if (question.questionType === 'ranking') {
         try {
-          const correctOrder = Array.isArray(question.correctAnswer) 
-            ? question.correctAnswer 
-            : JSON.parse(question.correctAnswer || '[]');
+          let correctOrder: string[] = [];
+          
+          // Handle different correct answer formats
+          if (Array.isArray(question.correctAnswer)) {
+            correctOrder = question.correctAnswer;
+          } else if (typeof question.correctAnswer === 'string') {
+            const correctAnswerStr = question.correctAnswer.trim();
+            
+            // Handle malformed JSON format: {"item1","item2","item3","item4"}
+            if (correctAnswerStr.startsWith('{') && correctAnswerStr.endsWith('}')) {
+              const cleanedStr = correctAnswerStr.slice(1, -1); // Remove { }
+              // Split by comma and clean up quotes, handling escaped quotes
+              correctOrder = cleanedStr
+                .split('","')
+                .map((item, index, arr) => {
+                  // First item starts with quote, last item ends with quote
+                  if (index === 0) item = item.replace(/^"/, '');
+                  if (index === arr.length - 1) item = item.replace(/"$/, '');
+                  return item.replace(/\\"/g, '"').trim(); // Handle escaped quotes
+                })
+                .filter(item => item.length > 0);
+            } else {
+              try {
+                // Try parsing as normal JSON array
+                correctOrder = JSON.parse(correctAnswerStr || '[]');
+              } catch (parseError) {
+                console.error('Failed to parse ranking correct answer:', correctAnswerStr, parseError);
+                correctOrder = [];
+              }
+            }
+          }
+
           const rawStudentAnswer = answer.selectedOption || answer.answerText;
           const studentOrder = Array.isArray(rawStudentAnswer)
             ? rawStudentAnswer
             : JSON.parse(rawStudentAnswer || '[]');
           
+          console.log(`Grading ranking question ${question.id}:`, {
+            correctOrder,
+            studentOrder,
+            rawCorrectAnswer: question.correctAnswer
+          });
+          
           let correctPositions = 0;
           const totalItems = correctOrder.length;
           
-          for (let i = 0; i < totalItems; i++) {
+          for (let i = 0; i < totalItems && i < studentOrder.length; i++) {
             if (studentOrder[i] === correctOrder[i]) {
               correctPositions++;
+              console.log(`Position ${i}: "${studentOrder[i]}" is correct`);
+            } else {
+              console.log(`Position ${i}: "${studentOrder[i]}" should be "${correctOrder[i]}"`);
             }
           }
           
@@ -404,6 +453,7 @@ export async function gradeHomeworkSubmission(submissionId: number): Promise<{ t
           const zoneIndexToName: { [index: number]: string } = {};
           
           if (correctAnswer && correctAnswer.zones && Array.isArray(correctAnswer.zones)) {
+            // Handle zones array format: { zones: [{ zone: "Nord", items: ["Cap-Haitien"] }] }
             correctAnswer.zones.forEach((zone: any, zoneIndex: number) => {
               // Store zone name mapping
               const zoneName = zone.zone || zone.name || `Zone ${zoneIndex}`;
@@ -416,6 +466,16 @@ export async function gradeHomeworkSubmission(submissionId: number): Promise<{ t
                     totalItems++;
                   }
                 });
+              }
+            });
+          } else if (correctAnswer && typeof correctAnswer === 'object' && !Array.isArray(correctAnswer)) {
+            // Handle key-value format: { "Nord": "Cap-Haïtien", "Sud": "Les Cayes", ... }
+            const entries = Object.entries(correctAnswer);
+            entries.forEach(([zoneName, item], index) => {
+              if (typeof item === 'string' && item.trim()) {
+                itemToZoneMapping[String(item)] = index;
+                zoneIndexToName[index] = zoneName;
+                totalItems++;
               }
             });
           }
@@ -482,20 +542,58 @@ export async function gradeHomeworkSubmission(submissionId: number): Promise<{ t
       // Auto-grade ranking questions
       else if (question.questionType === 'ranking') {
         try {
-          const correctOrder = Array.isArray(question.correctAnswer) 
-            ? question.correctAnswer 
-            : JSON.parse(question.correctAnswer || '[]');
+          let correctOrder: string[] = [];
+          
+          // Handle different correct answer formats
+          if (Array.isArray(question.correctAnswer)) {
+            correctOrder = question.correctAnswer;
+          } else if (typeof question.correctAnswer === 'string') {
+            const correctAnswerStr = question.correctAnswer.trim();
+            
+            // Handle malformed JSON format: {"item1","item2","item3","item4"}
+            if (correctAnswerStr.startsWith('{') && correctAnswerStr.endsWith('}')) {
+              const cleanedStr = correctAnswerStr.slice(1, -1); // Remove { }
+              // Split by comma and clean up quotes, handling escaped quotes
+              correctOrder = cleanedStr
+                .split('","')
+                .map((item, index, arr) => {
+                  // First item starts with quote, last item ends with quote
+                  if (index === 0) item = item.replace(/^"/, '');
+                  if (index === arr.length - 1) item = item.replace(/"$/, '');
+                  return item.replace(/\\"/g, '"').trim(); // Handle escaped quotes
+                })
+                .filter(item => item.length > 0);
+            } else {
+              try {
+                // Try parsing as normal JSON array
+                correctOrder = JSON.parse(correctAnswerStr || '[]');
+              } catch (parseError) {
+                console.error('Failed to parse ranking correct answer:', correctAnswerStr, parseError);
+                correctOrder = [];
+              }
+            }
+          }
+
           const rawStudentAnswer = answer.selectedOption || answer.answerText;
           const studentOrder = Array.isArray(rawStudentAnswer)
             ? rawStudentAnswer
             : JSON.parse(rawStudentAnswer || '[]');
           
+          console.log(`Grading ranking question ${question.id}:`, {
+            correctOrder,
+            studentOrder,
+            rawCorrectAnswer: question.correctAnswer
+          });
+          
           let correctPositions = 0;
           const totalItems = correctOrder.length;
           
-          for (let i = 0; i < totalItems; i++) {
+          for (let i = 0; i < totalItems && i < studentOrder.length; i++) {
             if (studentOrder[i] === correctOrder[i]) {
               correctPositions++;
+              console.log(`Position ${i}: "${studentOrder[i]}" is correct`);
+            } else {
+              console.log(`Position ${i}: "${studentOrder[i]}" should be "${correctOrder[i]}"`);
             }
           }
           
