@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -85,9 +85,17 @@ export default function CreateQuestionModal({ open, onOpenChange, questionCatego
       questionText: '',
       questionType: 'multiple_choice',
       category: questionCategory,
+      subjectId: subjects.length > 0 ? subjects[0].id : undefined,
       points: 1,
     },
   });
+
+  // Update form default subject when subjects are loaded
+  useEffect(() => {
+    if (subjects.length > 0 && !form.getValues('subjectId')) {
+      form.setValue('subjectId', subjects[0].id);
+    }
+  }, [subjects, form]);
 
   const createQuestionMutation = useMutation({
     mutationFn: async (data: CreateQuestionForm) => {

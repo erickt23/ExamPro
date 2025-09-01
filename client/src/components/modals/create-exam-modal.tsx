@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -87,7 +87,7 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
     defaultValues: {
       title: '',
       description: '',
-      subjectId: 1,
+      subjectId: subjects.length > 0 ? subjects[0].id : 1,
       duration: 90,
       totalPoints: 100,
       attemptsAllowed: 1,
@@ -100,6 +100,13 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
       availableUntil: '',
     },
   });
+
+  // Update form default subject when subjects are loaded
+  React.useEffect(() => {
+    if (subjects.length > 0 && !form.getValues('subjectId')) {
+      form.setValue('subjectId', subjects[0].id);
+    }
+  }, [subjects, form]);
 
   const { data: questionsData } = useQuery({
     queryKey: ["/api/questions", { search: questionSearch, subject: filterSubject, type: filterType, difficulty: filterDifficulty, bloomsTaxonomy: filterBloomsTaxonomy }],
