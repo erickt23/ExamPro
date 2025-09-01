@@ -2240,6 +2240,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Alternative endpoint for submission re-grading (for frontend compatibility)
+  app.post('/api/submissions/:id/regrade', async (req: any, res) => {
+    try {
+      const submissionId = parseInt(req.params.id);
+      if (isNaN(submissionId)) {
+        return res.status(400).json({ message: "Invalid submission ID" });
+      }
+      
+      console.log(`Re-grading submission ${submissionId} via public endpoint`);
+      const result = await regradeSubmission(submissionId);
+      res.json({ 
+        message: "Re-grading completed successfully",
+        totalScore: result.totalScore,
+        maxScore: result.maxScore
+      });
+    } catch (error) {
+      console.error("Error re-grading submission:", error);
+      res.status(500).json({ message: "Re-grading failed" });
+    }
+  });
+
   // Test endpoint for enhanced drag-drop and matching grading
   app.post("/api/admin/test-grading", isAuthenticated, async (req: any, res) => {
     try {

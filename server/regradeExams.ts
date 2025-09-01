@@ -175,7 +175,11 @@ async function regradeSubmission(submissionId: number): Promise<{ totalScore: nu
           
           // Partial credit for drag-and-drop - each correctly placed item gets proportional credit
           score = totalItems > 0 ? (correctPlacements / totalItems) * question.points : 0;
-          console.log(`Drag-drop question ${question.id}: ${correctPlacements}/${totalItems} items correctly placed, score: ${score}/${question.points}`);
+          
+          console.log(`=== FINAL DRAG-DROP RESULT ===`);
+          console.log(`Question ${question.id}: ${correctPlacements}/${totalItems} correct, score: ${score}/${question.points}`);
+          console.log(`Expected all 5 correct: Port-au-Prince→0, Cap-Haitien→1, Cayes→2, Jacmel→3, Hinche→4`);
+          console.log(`=== END DRAG-DROP RESULT ===`);
         } catch (error) {
           console.error(`Error grading drag-drop question ${question.id}:`, error);
           score = 0;
@@ -465,7 +469,11 @@ export async function gradeHomeworkSubmission(submissionId: number): Promise<{ t
           
           // Partial credit for drag-and-drop - each correctly placed item gets proportional credit
           score = totalItems > 0 ? (correctPlacements / totalItems) * question.points : 0;
-          console.log(`Drag-drop question ${question.id}: ${correctPlacements}/${totalItems} items correctly placed, score: ${score}/${question.points}`);
+          
+          console.log(`=== FINAL DRAG-DROP RESULT ===`);
+          console.log(`Question ${question.id}: ${correctPlacements}/${totalItems} correct, score: ${score}/${question.points}`);
+          console.log(`Expected all 5 correct: Port-au-Prince→0, Cap-Haitien→1, Cayes→2, Jacmel→3, Hinche→4`);
+          console.log(`=== END DRAG-DROP RESULT ===`);
         } catch (error) {
           console.error(`Error grading drag-drop question ${question.id}:`, error);
           score = 0;
