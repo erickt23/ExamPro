@@ -285,30 +285,102 @@ export default function ExamResults() {
           }
           return <span>{String(answer)}</span>;
         case 'drag_drop':
+          // Helper function to safely extract text from any value
+          const safeExtract = (val: any): string => {
+            if (val === null || val === undefined) return '';
+            if (typeof val === 'string') return val;
+            if (typeof val === 'object') {
+              // Try common text properties first
+              if (val.text) return String(val.text);
+              if (val.name) return String(val.name);
+              if (val.zone) return String(val.zone);
+              if (val.item) return String(val.item);
+              if (val.value) return String(val.value);
+              // Fallback to JSON.stringify for objects
+              try {
+                return JSON.stringify(val);
+              } catch {
+                return '[Complex Object]';
+              }
+            }
+            return String(val);
+          };
+          
           if (typeof answer === 'string') {
             try {
               const parsed = JSON.parse(answer);
-              if (typeof parsed === 'object' && parsed !== null) {
+              
+              // Handle zones format: { zones: [{ zone: "Land", items: ["Lion"] }] }
+              if (parsed.zones && Array.isArray(parsed.zones)) {
+                return parsed.zones.map((zone: any, i: number) => (
+                  <div key={i} className="mb-2">
+                    <div className="font-medium text-blue-700 dark:text-blue-300">
+                      Zone {i}: {safeExtract(zone.zone || zone.name || `Zone ${i}`)}
+                    </div>
+                    {zone.items && Array.isArray(zone.items) ? (
+                      <div className="ml-4 flex flex-wrap gap-1">
+                        {zone.items.map((item: any, j: number) => (
+                          <span key={j} className="inline-block bg-blue-100 dark:bg-blue-800/20 px-2 py-1 rounded text-sm">
+                            {safeExtract(item)}
+                          </span>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="ml-4 text-gray-500 text-sm">No items</div>
+                    )}
+                  </div>
+                ));
+              }
+              
+              // Handle simple object mapping format: { "0": "Port-au-Prince", "1": "Cap-Haitien" }
+              if (typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)) {
                 return Object.entries(parsed).map(([zone, item], i) => (
                   <div key={i} className="flex items-center gap-2 mb-1">
-                    <span className="font-medium">{String(zone)}:</span>
-                    <span>{String(item)}</span>
+                    <span className="font-medium text-blue-700 dark:text-blue-300">Zone {zone}:</span>
+                    <span className="bg-blue-100 dark:bg-blue-800/20 px-2 py-1 rounded text-sm">{safeExtract(item)}</span>
                   </div>
                 ));
               }
             } catch (e) {
-              return <span>{String(answer)}</span>;
+              console.error('Error parsing drag-drop answer:', e);
+              return <span className="text-red-600">Error parsing answer: {String(answer)}</span>;
             }
           }
+          
+          // Handle object format directly
           if (typeof answer === 'object' && answer !== null) {
+            // Handle zones format
+            if (answer.zones && Array.isArray(answer.zones)) {
+              return answer.zones.map((zone: any, i: number) => (
+                <div key={i} className="mb-2">
+                  <div className="font-medium text-blue-700 dark:text-blue-300">
+                    Zone {i}: {safeExtract(zone.zone || zone.name || `Zone ${i}`)}
+                  </div>
+                  {zone.items && Array.isArray(zone.items) ? (
+                    <div className="ml-4 flex flex-wrap gap-1">
+                      {zone.items.map((item: any, j: number) => (
+                        <span key={j} className="inline-block bg-blue-100 dark:bg-blue-800/20 px-2 py-1 rounded text-sm">
+                          {safeExtract(item)}
+                        </span>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="ml-4 text-gray-500 text-sm">No items</div>
+                  )}
+                </div>
+              ));
+            }
+            
+            // Handle simple object mapping
             return Object.entries(answer).map(([zone, item], i) => (
               <div key={i} className="flex items-center gap-2 mb-1">
-                <span className="font-medium">{String(zone)}:</span>
-                <span>{String(item)}</span>
+                <span className="font-medium text-blue-700 dark:text-blue-300">Zone {zone}:</span>
+                <span className="bg-blue-100 dark:bg-blue-800/20 px-2 py-1 rounded text-sm">{safeExtract(item)}</span>
               </div>
             ));
           }
-          return <span>{String(answer)}</span>;
+          
+          return <span className="text-gray-500">No answer provided</span>;
         default:
           return <span>{String(answer)}</span>;
       }

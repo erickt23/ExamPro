@@ -108,12 +108,12 @@ async function regradeSubmission(submissionId: number): Promise<{ totalScore: nu
           // Build mapping from item to correct zone index
           const itemToZoneMapping: { [item: string]: number } = {};
           
-          if (correctAnswer && correctAnswer.zones) {
+          if (correctAnswer && correctAnswer.zones && Array.isArray(correctAnswer.zones)) {
             correctAnswer.zones.forEach((zone: any, zoneIndex: number) => {
-              if (Array.isArray(zone.items)) {
+              if (zone && Array.isArray(zone.items)) {
                 zone.items.forEach((item: string) => {
-                  if (item && item.trim()) {
-                    itemToZoneMapping[item] = zoneIndex;
+                  if (item && String(item).trim()) {
+                    itemToZoneMapping[String(item)] = zoneIndex;
                     totalItems++;
                   }
                 });
@@ -121,16 +121,23 @@ async function regradeSubmission(submissionId: number): Promise<{ totalScore: nu
             });
           }
           
+          console.log(`Built item-to-zone mapping:`, itemToZoneMapping);
+          console.log(`Total items to match: ${totalItems}`);
+          
           // Check student's placements against correct mapping
           if (studentAnswer && typeof studentAnswer === 'object') {
             // Handle different student answer formats
             if (studentAnswer.zones && Array.isArray(studentAnswer.zones)) {
               // Format: { zones: [{ zone: "Land", items: ["Lion"] }] }
               studentAnswer.zones.forEach((studentZone: any, studentZoneIndex: number) => {
-                if (Array.isArray(studentZone.items)) {
+                if (studentZone && Array.isArray(studentZone.items)) {
                   studentZone.items.forEach((item: string) => {
-                    if (itemToZoneMapping[item] === studentZoneIndex) {
+                    const itemStr = String(item).trim();
+                    if (itemStr && itemToZoneMapping[itemStr] === studentZoneIndex) {
                       correctPlacements++;
+                      console.log(`Correct placement: "${itemStr}" in zone ${studentZoneIndex}`);
+                    } else {
+                      console.log(`Incorrect placement: "${itemStr}" in zone ${studentZoneIndex}, should be in zone ${itemToZoneMapping[itemStr]}`);
                     }
                   });
                 }
@@ -139,8 +146,12 @@ async function regradeSubmission(submissionId: number): Promise<{ totalScore: nu
               // Handle indexed object mapping format: { "0": "Cap-Haitien", "1": "Les Cayes" }
               Object.entries(studentAnswer).forEach(([zoneIndex, item]) => {
                 const zoneNum = parseInt(zoneIndex);
-                if (typeof item === 'string' && item.trim() && itemToZoneMapping[item] === zoneNum) {
+                const itemStr = String(item).trim();
+                if (itemStr && itemToZoneMapping[itemStr] === zoneNum) {
                   correctPlacements++;
+                  console.log(`Correct placement: "${itemStr}" in zone ${zoneNum}`);
+                } else {
+                  console.log(`Incorrect placement: "${itemStr}" in zone ${zoneNum}, should be in zone ${itemToZoneMapping[itemStr]}`);
                 }
               });
             }
@@ -371,12 +382,12 @@ export async function gradeHomeworkSubmission(submissionId: number): Promise<{ t
           // Build mapping from item to correct zone index
           const itemToZoneMapping: { [item: string]: number } = {};
           
-          if (correctAnswer && correctAnswer.zones) {
+          if (correctAnswer && correctAnswer.zones && Array.isArray(correctAnswer.zones)) {
             correctAnswer.zones.forEach((zone: any, zoneIndex: number) => {
-              if (Array.isArray(zone.items)) {
+              if (zone && Array.isArray(zone.items)) {
                 zone.items.forEach((item: string) => {
-                  if (item && item.trim()) {
-                    itemToZoneMapping[item] = zoneIndex;
+                  if (item && String(item).trim()) {
+                    itemToZoneMapping[String(item)] = zoneIndex;
                     totalItems++;
                   }
                 });
@@ -384,16 +395,23 @@ export async function gradeHomeworkSubmission(submissionId: number): Promise<{ t
             });
           }
           
+          console.log(`Built item-to-zone mapping:`, itemToZoneMapping);
+          console.log(`Total items to match: ${totalItems}`);
+          
           // Check student's placements against correct mapping
           if (studentAnswer && typeof studentAnswer === 'object') {
             // Handle different student answer formats
             if (studentAnswer.zones && Array.isArray(studentAnswer.zones)) {
               // Format: { zones: [{ zone: "Land", items: ["Lion"] }] }
               studentAnswer.zones.forEach((studentZone: any, studentZoneIndex: number) => {
-                if (Array.isArray(studentZone.items)) {
+                if (studentZone && Array.isArray(studentZone.items)) {
                   studentZone.items.forEach((item: string) => {
-                    if (itemToZoneMapping[item] === studentZoneIndex) {
+                    const itemStr = String(item).trim();
+                    if (itemStr && itemToZoneMapping[itemStr] === studentZoneIndex) {
                       correctPlacements++;
+                      console.log(`Correct placement: "${itemStr}" in zone ${studentZoneIndex}`);
+                    } else {
+                      console.log(`Incorrect placement: "${itemStr}" in zone ${studentZoneIndex}, should be in zone ${itemToZoneMapping[itemStr]}`);
                     }
                   });
                 }
@@ -402,8 +420,12 @@ export async function gradeHomeworkSubmission(submissionId: number): Promise<{ t
               // Handle indexed object mapping format: { "0": "Cap-Haitien", "1": "Les Cayes" }
               Object.entries(studentAnswer).forEach(([zoneIndex, item]) => {
                 const zoneNum = parseInt(zoneIndex);
-                if (typeof item === 'string' && item.trim() && itemToZoneMapping[item] === zoneNum) {
+                const itemStr = String(item).trim();
+                if (itemStr && itemToZoneMapping[itemStr] === zoneNum) {
                   correctPlacements++;
+                  console.log(`Correct placement: "${itemStr}" in zone ${zoneNum}`);
+                } else {
+                  console.log(`Incorrect placement: "${itemStr}" in zone ${zoneNum}, should be in zone ${itemToZoneMapping[itemStr]}`);
                 }
               });
             }
