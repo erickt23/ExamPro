@@ -312,34 +312,45 @@ export default function ExamResults() {
               
               // Handle zones format: { zones: [{ zone: "Land", items: ["Lion"] }] }
               if (parsed.zones && Array.isArray(parsed.zones)) {
-                return parsed.zones.map((zone: any, i: number) => (
-                  <div key={i} className="mb-2">
-                    <div className="font-medium text-blue-700 dark:text-blue-300">
-                      Zone {i}: {safeExtract(zone.zone || zone.name || `Zone ${i}`)}
-                    </div>
-                    {zone.items && Array.isArray(zone.items) ? (
-                      <div className="ml-4 flex flex-wrap gap-1">
-                        {zone.items.map((item: any, j: number) => (
-                          <span key={j} className="inline-block bg-blue-100 dark:bg-blue-800/20 px-2 py-1 rounded text-sm">
-                            {safeExtract(item)}
-                          </span>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="ml-4 text-gray-500 text-sm">No items</div>
-                    )}
+                return (
+                  <div className="space-y-3">
+                    {parsed.zones.map((zone: any, i: number) => {
+                      const zoneName = safeExtract(zone.zone || zone.name || `Zone ${i}`);
+                      return (
+                        <div key={i} className="border border-gray-200 dark:border-gray-700 rounded-lg p-3">
+                          <div className="font-semibold text-lg text-blue-700 dark:text-blue-300 mb-2">
+                            {zoneName}
+                          </div>
+                          {zone.items && Array.isArray(zone.items) ? (
+                            <div className="flex flex-wrap gap-2">
+                              {zone.items.map((item: any, j: number) => (
+                                <span key={j} className="inline-block bg-blue-100 dark:bg-blue-800/30 text-blue-800 dark:text-blue-200 px-3 py-1 rounded-full text-sm font-medium">
+                                  {safeExtract(item)}
+                                </span>
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="text-gray-500 text-sm italic">No items placed</div>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
-                ));
+                );
               }
               
               // Handle simple object mapping format: { "0": "Port-au-Prince", "1": "Cap-Haitien" }
               if (typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)) {
-                return Object.entries(parsed).map(([zone, item], i) => (
-                  <div key={i} className="flex items-center gap-2 mb-1">
-                    <span className="font-medium text-blue-700 dark:text-blue-300">Zone {zone}:</span>
-                    <span className="bg-blue-100 dark:bg-blue-800/20 px-2 py-1 rounded text-sm">{safeExtract(item)}</span>
+                return (
+                  <div className="space-y-2">
+                    {Object.entries(parsed).map(([zoneIndex, item], i) => (
+                      <div key={i} className="flex items-center gap-3 p-2 border border-gray-200 dark:border-gray-700 rounded-lg">
+                        <span className="font-semibold text-blue-700 dark:text-blue-300 min-w-[60px]">Zone {parseInt(zoneIndex)}:</span>
+                        <span className="bg-blue-100 dark:bg-blue-800/30 text-blue-800 dark:text-blue-200 px-3 py-1 rounded-full text-sm font-medium">{safeExtract(item)}</span>
+                      </div>
+                    ))}
                   </div>
-                ));
+                );
               }
             } catch (e) {
               console.error('Error parsing drag-drop answer:', e);
@@ -351,24 +362,31 @@ export default function ExamResults() {
           if (typeof answer === 'object' && answer !== null) {
             // Handle zones format
             if (answer.zones && Array.isArray(answer.zones)) {
-              return answer.zones.map((zone: any, i: number) => (
-                <div key={i} className="mb-2">
-                  <div className="font-medium text-blue-700 dark:text-blue-300">
-                    Zone {i}: {safeExtract(zone.zone || zone.name || `Zone ${i}`)}
-                  </div>
-                  {zone.items && Array.isArray(zone.items) ? (
-                    <div className="ml-4 flex flex-wrap gap-1">
-                      {zone.items.map((item: any, j: number) => (
-                        <span key={j} className="inline-block bg-blue-100 dark:bg-blue-800/20 px-2 py-1 rounded text-sm">
-                          {safeExtract(item)}
-                        </span>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="ml-4 text-gray-500 text-sm">No items</div>
-                  )}
+              return (
+                <div className="space-y-3">
+                  {answer.zones.map((zone: any, i: number) => {
+                    const zoneName = safeExtract(zone.zone || zone.name || `Zone ${i}`);
+                    return (
+                      <div key={i} className="border border-gray-200 dark:border-gray-700 rounded-lg p-3 bg-gray-50 dark:bg-gray-800/50">
+                        <div className="font-semibold text-lg text-green-700 dark:text-green-300 mb-2">
+                          {zoneName}
+                        </div>
+                        {zone.items && Array.isArray(zone.items) ? (
+                          <div className="flex flex-wrap gap-2">
+                            {zone.items.map((item: any, j: number) => (
+                              <span key={j} className="inline-block bg-green-100 dark:bg-green-800/30 text-green-800 dark:text-green-200 px-3 py-1 rounded-full text-sm font-medium">
+                                {safeExtract(item)}
+                              </span>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="text-gray-500 text-sm italic">No items placed</div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
-              ));
+              );
             }
             
             // Handle simple object mapping

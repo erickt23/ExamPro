@@ -105,11 +105,16 @@ async function regradeSubmission(submissionId: number): Promise<{ totalScore: nu
             studentAnswer: JSON.stringify(studentAnswer)
           });
           
-          // Build mapping from item to correct zone index
+          // Build mapping from item to correct zone index AND zone name mapping
           const itemToZoneMapping: { [item: string]: number } = {};
+          const zoneIndexToName: { [index: number]: string } = {};
           
           if (correctAnswer && correctAnswer.zones && Array.isArray(correctAnswer.zones)) {
             correctAnswer.zones.forEach((zone: any, zoneIndex: number) => {
+              // Store zone name mapping
+              const zoneName = zone.zone || zone.name || `Zone ${zoneIndex}`;
+              zoneIndexToName[zoneIndex] = zoneName;
+              
               if (zone && Array.isArray(zone.items)) {
                 zone.items.forEach((item: string) => {
                   if (item && String(item).trim()) {
@@ -122,6 +127,7 @@ async function regradeSubmission(submissionId: number): Promise<{ totalScore: nu
           }
           
           console.log(`Built item-to-zone mapping:`, itemToZoneMapping);
+          console.log(`Zone index to name mapping:`, zoneIndexToName);
           console.log(`Total items to match: ${totalItems}`);
           
           // Check student's placements against correct mapping
@@ -135,24 +141,34 @@ async function regradeSubmission(submissionId: number): Promise<{ totalScore: nu
                     const itemStr = String(item).trim();
                     if (itemStr && itemToZoneMapping[itemStr] === studentZoneIndex) {
                       correctPlacements++;
-                      console.log(`Correct placement: "${itemStr}" in zone ${studentZoneIndex}`);
+                      console.log(`Correct placement: "${itemStr}" in zone ${studentZoneIndex} (${zoneIndexToName[studentZoneIndex]})`);
                     } else {
-                      console.log(`Incorrect placement: "${itemStr}" in zone ${studentZoneIndex}, should be in zone ${itemToZoneMapping[itemStr]}`);
+                      const correctZoneIndex = itemToZoneMapping[itemStr];
+                      const correctZoneName = zoneIndexToName[correctZoneIndex];
+                      const studentZoneName = zoneIndexToName[studentZoneIndex];
+                      console.log(`Incorrect placement: "${itemStr}" in zone ${studentZoneIndex} (${studentZoneName}), should be in zone ${correctZoneIndex} (${correctZoneName})`);
                     }
                   });
                 }
               });
             } else {
               // Handle indexed object mapping format: { "0": "Cap-Haitien", "1": "Les Cayes" }
-              Object.entries(studentAnswer).forEach(([zoneIndex, item]) => {
+              Object.entries(studentAnswer).forEach(([zoneIndex, items]) => {
                 const zoneNum = parseInt(zoneIndex);
-                const itemStr = String(item).trim();
-                if (itemStr && itemToZoneMapping[itemStr] === zoneNum) {
-                  correctPlacements++;
-                  console.log(`Correct placement: "${itemStr}" in zone ${zoneNum}`);
-                } else {
-                  console.log(`Incorrect placement: "${itemStr}" in zone ${zoneNum}, should be in zone ${itemToZoneMapping[itemStr]}`);
-                }
+                const itemsArray = Array.isArray(items) ? items : [items];
+                
+                itemsArray.forEach((item: any) => {
+                  const itemStr = String(item).trim();
+                  if (itemStr && itemToZoneMapping[itemStr] === zoneNum) {
+                    correctPlacements++;
+                    console.log(`Correct placement: "${itemStr}" in zone ${zoneNum} (${zoneIndexToName[zoneNum]})`);
+                  } else {
+                    const correctZoneIndex = itemToZoneMapping[itemStr];
+                    const correctZoneName = zoneIndexToName[correctZoneIndex];
+                    const studentZoneName = zoneIndexToName[zoneNum];
+                    console.log(`Incorrect placement: "${itemStr}" in zone ${zoneNum} (${studentZoneName}), should be in zone ${correctZoneIndex} (${correctZoneName})`);
+                  }
+                });
               });
             }
           }
@@ -379,11 +395,16 @@ export async function gradeHomeworkSubmission(submissionId: number): Promise<{ t
             studentAnswer: JSON.stringify(studentAnswer)
           });
           
-          // Build mapping from item to correct zone index
+          // Build mapping from item to correct zone index AND zone name mapping
           const itemToZoneMapping: { [item: string]: number } = {};
+          const zoneIndexToName: { [index: number]: string } = {};
           
           if (correctAnswer && correctAnswer.zones && Array.isArray(correctAnswer.zones)) {
             correctAnswer.zones.forEach((zone: any, zoneIndex: number) => {
+              // Store zone name mapping
+              const zoneName = zone.zone || zone.name || `Zone ${zoneIndex}`;
+              zoneIndexToName[zoneIndex] = zoneName;
+              
               if (zone && Array.isArray(zone.items)) {
                 zone.items.forEach((item: string) => {
                   if (item && String(item).trim()) {
@@ -396,6 +417,7 @@ export async function gradeHomeworkSubmission(submissionId: number): Promise<{ t
           }
           
           console.log(`Built item-to-zone mapping:`, itemToZoneMapping);
+          console.log(`Zone index to name mapping:`, zoneIndexToName);
           console.log(`Total items to match: ${totalItems}`);
           
           // Check student's placements against correct mapping
@@ -409,24 +431,34 @@ export async function gradeHomeworkSubmission(submissionId: number): Promise<{ t
                     const itemStr = String(item).trim();
                     if (itemStr && itemToZoneMapping[itemStr] === studentZoneIndex) {
                       correctPlacements++;
-                      console.log(`Correct placement: "${itemStr}" in zone ${studentZoneIndex}`);
+                      console.log(`Correct placement: "${itemStr}" in zone ${studentZoneIndex} (${zoneIndexToName[studentZoneIndex]})`);
                     } else {
-                      console.log(`Incorrect placement: "${itemStr}" in zone ${studentZoneIndex}, should be in zone ${itemToZoneMapping[itemStr]}`);
+                      const correctZoneIndex = itemToZoneMapping[itemStr];
+                      const correctZoneName = zoneIndexToName[correctZoneIndex];
+                      const studentZoneName = zoneIndexToName[studentZoneIndex];
+                      console.log(`Incorrect placement: "${itemStr}" in zone ${studentZoneIndex} (${studentZoneName}), should be in zone ${correctZoneIndex} (${correctZoneName})`);
                     }
                   });
                 }
               });
             } else {
               // Handle indexed object mapping format: { "0": "Cap-Haitien", "1": "Les Cayes" }
-              Object.entries(studentAnswer).forEach(([zoneIndex, item]) => {
+              Object.entries(studentAnswer).forEach(([zoneIndex, items]) => {
                 const zoneNum = parseInt(zoneIndex);
-                const itemStr = String(item).trim();
-                if (itemStr && itemToZoneMapping[itemStr] === zoneNum) {
-                  correctPlacements++;
-                  console.log(`Correct placement: "${itemStr}" in zone ${zoneNum}`);
-                } else {
-                  console.log(`Incorrect placement: "${itemStr}" in zone ${zoneNum}, should be in zone ${itemToZoneMapping[itemStr]}`);
-                }
+                const itemsArray = Array.isArray(items) ? items : [items];
+                
+                itemsArray.forEach((item: any) => {
+                  const itemStr = String(item).trim();
+                  if (itemStr && itemToZoneMapping[itemStr] === zoneNum) {
+                    correctPlacements++;
+                    console.log(`Correct placement: "${itemStr}" in zone ${zoneNum} (${zoneIndexToName[zoneNum]})`);
+                  } else {
+                    const correctZoneIndex = itemToZoneMapping[itemStr];
+                    const correctZoneName = zoneIndexToName[correctZoneIndex];
+                    const studentZoneName = zoneIndexToName[zoneNum];
+                    console.log(`Incorrect placement: "${itemStr}" in zone ${zoneNum} (${studentZoneName}), should be in zone ${correctZoneIndex} (${correctZoneName})`);
+                  }
+                });
               });
             }
           }
