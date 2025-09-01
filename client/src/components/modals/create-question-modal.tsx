@@ -76,6 +76,7 @@ export default function CreateQuestionModal({ open, onOpenChange, questionCatego
   const [rankingItems, setRankingItems] = useState(['', '']);
   const [dragDropZones, setDragDropZones] = useState([{ zone: '', items: [] as string[] }]);
   const [dragDropItems, setDragDropItems] = useState(['']);
+  const [fillBlankFields, setFillBlankFields] = useState([{ label: 'Blank 1', answer: '' }, { label: 'Blank 2', answer: '' }]);
 
   const form = useForm<CreateQuestionForm>({
     resolver: zodResolver(createQuestionSchema),
@@ -103,6 +104,9 @@ export default function CreateQuestionModal({ open, onOpenChange, questionCatego
         const validItems = rankingItems.filter(item => item.trim());
         payload.options = JSON.stringify(validItems);
         payload.correctAnswer = JSON.stringify(validItems);
+      } else if (data.questionType === 'fill_blank') {
+        const validFields = fillBlankFields.filter(field => field.answer.trim());
+        payload.correctAnswer = validFields.map(field => field.answer).join('|');
       } else if (data.questionType === 'drag_drop') {
         const validZones = dragDropZones.filter(zone => zone.zone?.trim()).map(zone => zone.zone);
         const validItems = dragDropItems.filter(item => item.trim());
@@ -141,6 +145,7 @@ export default function CreateQuestionModal({ open, onOpenChange, questionCatego
       setRankingItems(['', '']);
       setDragDropZones([{ zone: '', items: [''] }]);
       setDragDropItems(['']);
+      setFillBlankFields([{ label: 'Blank 1', answer: '' }, { label: 'Blank 2', answer: '' }]);
       setAttachmentFile(null);
       setAttachmentUrl('');
       onOpenChange(false);
@@ -290,6 +295,24 @@ export default function CreateQuestionModal({ open, onOpenChange, questionCatego
         items: zone.items?.filter(item => item !== itemToRemove) || []
       }));
       setDragDropZones(updatedZones);
+    }
+  };
+
+  // Fill-in-the-blank helper functions
+  const updateFillBlankField = (index: number, field: 'label' | 'answer', value: string) => {
+    const newFields = [...fillBlankFields];
+    newFields[index][field] = value;
+    setFillBlankFields(newFields);
+  };
+
+  const addFillBlankField = () => {
+    const newIndex = fillBlankFields.length + 1;
+    setFillBlankFields([...fillBlankFields, { label: `Blank ${newIndex}`, answer: '' }]);
+  };
+
+  const removeFillBlankField = (index: number) => {
+    if (fillBlankFields.length > 1) {
+      setFillBlankFields(fillBlankFields.filter((_, i) => i !== index));
     }
   };
 
@@ -492,6 +515,82 @@ export default function CreateQuestionModal({ open, onOpenChange, questionCatego
                   <Plus className="h-4 w-4 mr-2" />
                   Add another item
                 </Button>
+              </div>
+            )}
+
+            {/* Fill in the Blank Question Options */}
+            {selectedType === 'fill_blank' && (
+              <div className="space-y-4">
+                <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
+                  <Label className="text-sm font-medium text-blue-700 dark:text-blue-300 mb-2 block">
+                    Instructions
+                  </Label>
+                  <p className="text-xs text-blue-600 dark:text-blue-400">
+                    Use <code className="bg-blue-200 dark:bg-blue-700 px-1 rounded text-xs">___</code> (three underscores) in your question text to mark where students should fill in answers. 
+                    Define the correct answers for each blank below.
+                  </p>
+                </div>
+                
+                <div>
+                  <Label className="text-sm font-medium">Answer Fields</Label>
+                  <p className="text-xs text-gray-600 dark:text-gray-400 mb-3">
+                    Define the correct answers for each blank in order of appearance
+                  </p>
+                  <div className="space-y-3">
+                    {fillBlankFields.map((field, index) => (
+                      <div key={index} className="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg border">
+                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300 min-w-[80px]">
+                          {field.label}:
+                        </span>
+                        <Input
+                          value={field.answer}
+                          onChange={(e) => updateFillBlankField(index, 'answer', e.target.value)}
+                          placeholder={`Correct answer for ${field.label.toLowerCase()}`}
+                          className="flex-1"
+                        />
+                        {fillBlankFields.length > 1 && (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => removeFillBlankField(index)}
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
+                          >
+                            Remove
+                          </Button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                  <Button 
+                    type="button" 
+                    variant="ghost" 
+                    size="sm" 
+                    className="mt-3"
+                    onClick={addFillBlankField}
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add another blank
+                  </Button>
+                </div>
+                
+                {fillBlankFields.some(field => field.answer.trim()) && (
+                  <div className="border-t pt-4">
+                    <Label className="text-sm font-medium text-green-700 dark:text-green-300">Preview Answers</Label>
+                    <div className="mt-2 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                      <p className="text-xs text-green-600 dark:text-green-400 mb-2">
+                        Correct answers (in order):
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {fillBlankFields.filter(field => field.answer.trim()).map((field, index) => (
+                          <span key={index} className="px-2 py-1 text-xs bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-200 rounded border">
+                            {index + 1}. {field.answer}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 

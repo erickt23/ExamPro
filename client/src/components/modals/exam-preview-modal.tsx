@@ -225,12 +225,60 @@ export default function ExamPreviewModal({ open, onOpenChange, examId, onPublish
 
           {/* Fill in the Blank */}
           {question.question?.questionType === 'fill_blank' && (
-            <div>
-              <Input 
-                placeholder="Student will fill in the blank here..."
-                disabled
-                className="bg-gray-50"
-              />
+            <div className="space-y-4">
+              <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg border border-purple-200 dark:border-purple-800">
+                <p className="text-sm text-purple-800 dark:text-purple-200 mb-2">
+                  <strong>Instructions:</strong> Fill in the blanks with the correct answers.
+                </p>
+                <p className="text-xs text-purple-600 dark:text-purple-300">
+                  Students will see input fields where "___" appears in the question text.
+                </p>
+              </div>
+              
+              {(() => {
+                // Parse correct answers to determine number of blanks
+                let blankCount = 1;
+                let correctAnswers: string[] = [];
+                
+                if (question.question?.correctAnswer) {
+                  if (typeof question.question.correctAnswer === 'string') {
+                    correctAnswers = question.question.correctAnswer.split('|').filter((a: string) => a.trim());
+                  } else if (Array.isArray(question.question.correctAnswer)) {
+                    correctAnswers = question.question.correctAnswer;
+                  }
+                }
+                
+                // Also check question text for underscore blanks
+                const textBlankCount = (question.question?.questionText?.match(/___/g) || []).length;
+                blankCount = Math.max(correctAnswers.length, textBlankCount, 1);
+                
+                return (
+                  <div className="space-y-3">
+                    <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Fill-in-the-blank fields ({blankCount} blank{blankCount !== 1 ? 's' : ''}):
+                    </h4>
+                    {Array.from({ length: blankCount }, (_, index) => (
+                      <div key={index} className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <Label className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                            Blank {index + 1}
+                          </Label>
+                          {correctAnswers[index] && (
+                            <span className="text-xs text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 px-2 py-1 rounded border">
+                              Correct: {correctAnswers[index]}
+                            </span>
+                          )}
+                        </div>
+                        <Input 
+                          placeholder={`Student will fill in blank ${index + 1} here...`}
+                          disabled
+                          className="bg-gray-50 dark:bg-gray-800"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
             </div>
           )}
 
