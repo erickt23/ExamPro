@@ -219,7 +219,26 @@ export const fr = {
     selectExam: 'Sélectionner un Examen',
     viewExamAnalytics: 'Voir les analyses détaillées de l\'examen et les performances des étudiants',
     chooseExamToView: 'Choisissez un examen pour voir les résultats',
-    reviewAndGradeDescription: 'Réviser et noter la soumission de l\'étudiant'
+    reviewAndGradeDescription: 'Réviser et noter la soumission de l\'étudiant',
+    results: 'Résultats',
+    studentSubmissions: 'Soumissions d\'Étudiants',
+    studentId: 'ID Étudiant',
+    timeTaken: 'Temps Pris',
+    started: 'Commencé',
+    viewAnswers: 'Voir les Réponses',
+    hideAnswers: 'Masquer les Réponses',
+    success: 'Succès',
+    submissionGradedSuccessfully: 'Soumission notée avec succès !',
+    loadingAnswers: 'Chargement des réponses...',
+    questionsAndAnswers: 'Questions et Réponses',
+    question: 'Question',
+    noAnswerProvided: 'Aucune réponse fournie',
+    blank: 'Blanc',
+    errorDisplayingAnswer: 'Erreur lors de l\'affichage de la réponse',
+    noItemsPlaced: 'Aucun élément placé',
+    zone: 'Zone',
+    errorLoadingSubmissionDetails: 'Erreur lors du chargement des détails de soumission',
+    noSubmissionDetailsAvailable: 'Aucun détail de soumission disponible.'
   },
 
   // Exam Management

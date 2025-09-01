@@ -137,16 +137,16 @@ export default function ExamResults() {
   const formatAnswer = (answer: any, questionType: string): React.ReactNode => {
     // Check for truly empty answers
     if (answer === null || answer === undefined || answer === '') {
-      return <span className="text-gray-500 italic">No answer provided</span>;
+      return <span className="text-gray-500 italic">{t('assignments.noAnswerProvided')}</span>;
     }
     
     // Handle empty objects and arrays
     if (typeof answer === 'object' && Object.keys(answer).length === 0) {
-      return <span className="text-gray-500 italic">No answer provided</span>;
+      return <span className="text-gray-500 italic">{t('assignments.noAnswerProvided')}</span>;
     }
     
     if (Array.isArray(answer) && answer.length === 0) {
-      return <span className="text-gray-500 italic">No answer provided</span>;
+      return <span className="text-gray-500 italic">{t('assignments.noAnswerProvided')}</span>;
     }
     
     // Handle false, 0, and other falsy values that might be valid answers
@@ -165,14 +165,14 @@ export default function ExamResults() {
           if (typeof answer === 'string') {
             return answer.split('|').map((ans: string, i: number) => (
               <span key={i} className="inline-block bg-blue-100 dark:bg-blue-800/20 px-2 py-1 rounded mr-2 mb-1">
-                Blank {i + 1}: {ans.trim()}
+                {t('assignments.blank')} {i + 1}: {ans.trim()}
               </span>
             ));
           }
           if (Array.isArray(answer)) {
             return answer.map((ans: string, i: number) => (
               <span key={i} className="inline-block bg-blue-100 dark:bg-blue-800/20 px-2 py-1 rounded mr-2 mb-1">
-                Blank {i + 1}: {ans}
+                {t('assignments.blank')} {i + 1}: {ans}
               </span>
             ));
           }
@@ -330,7 +330,7 @@ export default function ExamResults() {
                               ))}
                             </div>
                           ) : (
-                            <div className="text-gray-500 text-sm italic">No items placed</div>
+                            <div className="text-gray-500 text-sm italic">{t('assignments.noItemsPlaced')}</div>
                           )}
                         </div>
                       );
@@ -380,7 +380,7 @@ export default function ExamResults() {
                             ))}
                           </div>
                         ) : (
-                          <div className="text-gray-500 text-sm italic">No items placed</div>
+                          <div className="text-gray-500 text-sm italic">{t('assignments.noItemsPlaced')}</div>
                         )}
                       </div>
                     );
@@ -398,12 +398,12 @@ export default function ExamResults() {
             ));
           }
           
-          return <span className="text-gray-500">No answer provided</span>;
+          return <span className="text-gray-500">{t('assignments.noAnswerProvided')}</span>;
         default:
           return <span>{String(answer)}</span>;
       }
     } catch (error) {
-      return <span className="text-red-500">Error displaying answer</span>;
+      return <span className="text-red-500">{t('assignments.errorDisplayingAnswer')}</span>;
     }
   };
 
@@ -431,7 +431,7 @@ export default function ExamResults() {
                 <div className="flex items-center gap-2">
                   <Users className="h-4 w-4 text-gray-500" />
                   <span className="font-medium text-gray-900 dark:text-foreground">
-                    Student ID: {submission.studentId}
+                    {t('assignments.studentId')}: {submission.studentId}
                   </span>
                 </div>
                 <Badge className={getStatusBadgeColor(submission.status)}>
@@ -441,22 +441,22 @@ export default function ExamResults() {
               
               <div className="text-sm text-gray-600 dark:text-muted-foreground space-x-4">
                 <span>
-                  Submitted: {submission.submittedAt ? new Date(submission.submittedAt).toLocaleDateString('en-US', {
+                  {t('dashboard.submitted')}: {submission.submittedAt ? new Date(submission.submittedAt).toLocaleDateString('en-US', {
                     month: 'short', day: 'numeric', year: 'numeric'
                   }) + ', ' + new Date(submission.submittedAt).toLocaleTimeString('en-US', {
                     hour: 'numeric', minute: '2-digit', hour12: true
                   }) : 'Not submitted'}
                 </span>
-                <span>Time Taken: {submission.timeTaken ? formatTime(submission.timeTaken) : '0m'}</span>
+                <span>{t('assignments.timeTaken')}: {submission.timeTaken ? formatTime(submission.timeTaken) : '0m'}</span>
                 <span>
-                  Started: {submission.startedAt ? new Date(submission.startedAt).toLocaleDateString('en-US', {
+                  {t('assignments.started')}: {submission.startedAt ? new Date(submission.startedAt).toLocaleDateString('en-US', {
                     month: 'short', day: 'numeric', year: 'numeric'
                   }) + ', ' + new Date(submission.startedAt).toLocaleTimeString('en-US', {
                     hour: 'numeric', minute: '2-digit', hour12: true
                   }) : 'N/A'}
                 </span>
                 <span className="font-medium">
-                  Score: <span className="text-green-600 dark:text-green-400">
+                  {t('common.score')}: <span className="text-green-600 dark:text-green-400">
                     {submission.totalScore !== undefined && submission.maxScore
                       ? `${submission.totalScore}/${submission.maxScore}(${Math.round((submission.totalScore / submission.maxScore) * 100)}%)`
                       : 'N/A'}
@@ -471,7 +471,7 @@ export default function ExamResults() {
               onClick={() => setExpandedSubmission(isExpanded ? null : submission.id)}
               className="flex items-center gap-2"
             >
-              {isExpanded ? 'Hide Answers' : 'View Answers'}
+              {isExpanded ? t('assignments.hideAnswers') : t('assignments.viewAnswers')}
               {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
             </Button>
           </div>
@@ -481,24 +481,24 @@ export default function ExamResults() {
               {detailsLoading ? (
                 <div className="text-center py-4">
                   <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto mb-2"></div>
-                  <p className="text-sm text-gray-600 dark:text-muted-foreground">Loading answers...</p>
+                  <p className="text-sm text-gray-600 dark:text-muted-foreground">{t('assignments.loadingAnswers')}</p>
                 </div>
               ) : detailsError ? (
                 <div className="text-center py-4">
-                  <p className="text-sm text-red-600 dark:text-red-400">Error loading submission details: {detailsError.message}</p>
+                  <p className="text-sm text-red-600 dark:text-red-400">{t('assignments.errorLoadingSubmissionDetails')}: {detailsError.message}</p>
                 </div>
               ) : !submissionDetails ? (
                 <div className="text-center py-4">
-                  <p className="text-sm text-gray-600 dark:text-muted-foreground">No submission details available.</p>
+                  <p className="text-sm text-gray-600 dark:text-muted-foreground">{t('assignments.noSubmissionDetailsAvailable')}</p>
                 </div>
               ) : (
                 <div className="space-y-4">
-                  <h5 className="font-semibold text-gray-900 dark:text-foreground">Questions and Answers</h5>
+                  <h5 className="font-semibold text-gray-900 dark:text-foreground">{t('assignments.questionsAndAnswers')}</h5>
                   {submissionDetails.answers?.map((answer: any, index: number) => (
                     <div key={answer.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 space-y-3">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                          <span className="font-medium text-gray-900 dark:text-foreground">Question {index + 1}</span>
+                          <span className="font-medium text-gray-900 dark:text-foreground">{t('assignments.question')} {index + 1}</span>
                           <Badge className={getQuestionTypeColor(answer.question?.questionType)} variant="outline">
                             {formatQuestionType(answer.question?.questionType)}
                           </Badge>
@@ -608,13 +608,13 @@ export default function ExamResults() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Search className="h-5 w-5" />
-                Select Exam
+                {t('assignments.selectExam')}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <Select value={selectedExamId?.toString()} onValueChange={(value) => setSelectedExamId(Number(value))}>
                 <SelectTrigger className="max-w-md">
-                  <SelectValue placeholder="Choose an exam to view results..." />
+                  <SelectValue placeholder={t('assignments.chooseExamToView')} />
                 </SelectTrigger>
                 <SelectContent>
                   {exams.map((exam: any) => (
@@ -632,21 +632,21 @@ export default function ExamResults() {
               <div className="flex items-center gap-2">
                 <BarChart3 className="h-6 w-6 text-blue-600" />
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-foreground">
-                  Results: {examData.title}
+                  {t('assignments.results')}: {examData.title}
                 </h2>
               </div>
 
               <Tabs defaultValue="submissions" className="space-y-6">
                 <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="submissions">Submissions</TabsTrigger>
-                  <TabsTrigger value="analytics">Analytics</TabsTrigger>
+                  <TabsTrigger value="submissions">{t('exams.submissions')}</TabsTrigger>
+                  <TabsTrigger value="analytics">{t('nav.analytics')}</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="submissions" className="space-y-6">
                   {submissions.length > 0 ? (
                     <div className="space-y-4">
                       <h3 className="text-lg font-semibold text-gray-900 dark:text-foreground">
-                        Student Submissions ({submissions.length})
+                        {t('assignments.studentSubmissions')} ({submissions.length})
                       </h3>
                       <div className="bg-white dark:bg-card rounded-lg border border-gray-200 dark:border-gray-700">
                         {submissions.map((submission: any) => (
@@ -671,7 +671,7 @@ export default function ExamResults() {
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm font-medium text-gray-600 dark:text-muted-foreground">Total Submissions</p>
+                        <p className="text-sm font-medium text-gray-600 dark:text-muted-foreground">{t('common.total')} {t('exams.submissions')}</p>
                         <p className="text-2xl font-bold text-gray-900 dark:text-foreground">
                           {analytics?.totalSubmissions || 0}
                         </p>
@@ -768,7 +768,7 @@ export default function ExamResults() {
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
                         <BarChart3 className="h-5 w-5" />
-                        Performance Analytics
+                        {t('nav.analytics')}
                       </CardTitle>
                     </CardHeader>
                     <CardContent>

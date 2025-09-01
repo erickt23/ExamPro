@@ -222,7 +222,26 @@ export const en = {
     selectExam: 'Select Exam',
     viewExamAnalytics: 'View detailed exam analytics and student performance',
     chooseExamToView: 'Choose an exam to view results',
-    reviewAndGradeDescription: 'Review and grade student submission'
+    reviewAndGradeDescription: 'Review and grade student submission',
+    results: 'Results',
+    studentSubmissions: 'Student Submissions',
+    studentId: 'Student ID',
+    timeTaken: 'Time Taken',
+    started: 'Started',
+    viewAnswers: 'View Answers',
+    hideAnswers: 'Hide Answers',
+    success: 'Success',
+    submissionGradedSuccessfully: 'Submission graded successfully!',
+    loadingAnswers: 'Loading answers...',
+    questionsAndAnswers: 'Questions and Answers',
+    question: 'Question',
+    noAnswerProvided: 'No answer provided',
+    blank: 'Blank',
+    errorDisplayingAnswer: 'Error displaying answer',
+    noItemsPlaced: 'No items placed',
+    zone: 'Zone',
+    errorLoadingSubmissionDetails: 'Error loading submission details',
+    noSubmissionDetailsAvailable: 'No submission details available.'
   },
 
   // Exam Management

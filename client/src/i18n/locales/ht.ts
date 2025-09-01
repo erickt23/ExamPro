@@ -219,7 +219,26 @@ export const ht = {
     selectExam: 'Chwazi Egzamen',
     viewExamAnalytics: 'Gade analiz egzamen detaye ak pèfòmans elèv yo',
     chooseExamToView: 'Chwazi yon egzamen pou gade rezilta yo',
-    reviewAndGradeDescription: 'Revize ak bay nòt soumisyon elèv la'
+    reviewAndGradeDescription: 'Revize ak bay nòt soumisyon elèv la',
+    results: 'Rezilta yo',
+    studentSubmissions: 'Soumisyon Elèv yo',
+    studentId: 'ID Elèv',
+    timeTaken: 'Tan ki Pase',
+    started: 'Kòmanse',
+    viewAnswers: 'Gade Repons yo',
+    hideAnswers: 'Kache Repons yo',
+    success: 'Siksè',
+    submissionGradedSuccessfully: 'Soumisyon an te bay nòt ak siksè!',
+    loadingAnswers: 'Ap chaje repons yo...',
+    questionsAndAnswers: 'Kesyon ak Repons yo',
+    question: 'Kesyon',
+    noAnswerProvided: 'Pa gen repons ki bay',
+    blank: 'Vid',
+    errorDisplayingAnswer: 'Erè nan montre repons lan',
+    noItemsPlaced: 'Pa gen bagay ki mete',
+    zone: 'Zòn',
+    errorLoadingSubmissionDetails: 'Erè nan chaje detay soumisyon yo',
+    noSubmissionDetailsAvailable: 'Pa gen detay soumisyon ki disponib.'
   },
 
   // Exam Management
