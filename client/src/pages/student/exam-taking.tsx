@@ -274,15 +274,30 @@ export default function StudentExamTaking() {
     
     // Convert answers to the format expected by the server
     const formattedAnswers = Object.entries(answers).map(([questionId, answer]) => {
+      // Find the question to determine its type
+      const question = questions?.find(q => q.questionId === parseInt(questionId));
+      
       if (Array.isArray(answer)) {
-        // For fill_blank questions, answer is an array
-        return {
-          questionId: parseInt(questionId),
-          answerText: JSON.stringify(answer),
-          selectedOption: null,
-          attachmentUrl: null,
-          linkUrl: null,
-        };
+        // Check if this is a multiple choice question with multiple selections
+        if (question?.question.questionType === 'multiple_choice') {
+          return {
+            questionId: parseInt(questionId),
+            answerText: JSON.stringify(answer), // Keep for backward compatibility
+            selectedOption: null,
+            selectedOptions: answer, // Store the array of selected options
+            attachmentUrl: null,
+            linkUrl: null,
+          };
+        } else {
+          // For fill_blank questions, answer is an array
+          return {
+            questionId: parseInt(questionId),
+            answerText: JSON.stringify(answer),
+            selectedOption: null,
+            attachmentUrl: null,
+            linkUrl: null,
+          };
+        }
       } else if (typeof answer === 'object' && answer !== null) {
         // Check if this is a matching question answer (object with numeric keys)
         const hasNumericKeys = Object.keys(answer).some(key => !isNaN(Number(key)));

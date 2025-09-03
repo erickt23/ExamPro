@@ -248,10 +248,29 @@ export default function StudentHomeworkTaking() {
     setIsSubmitting(true);
     
     const submissionData = {
-      answers: questions.map(q => ({
-        questionId: q.question.id,
-        answerText: answers[q.id] || "",
-      })),
+      answers: questions.map(q => {
+        const answer = answers[q.id];
+        
+        // Handle multiple choice questions with multiple selections
+        if (q.question.questionType === 'multiple_choice' && Array.isArray(answer)) {
+          return {
+            questionId: q.question.id,
+            answerText: JSON.stringify(answer), // Keep for backward compatibility
+            selectedOption: null,
+            selectedOptions: answer, // Store the array of selected options
+            attachmentUrl: null,
+            linkUrl: null,
+          };
+        } else {
+          return {
+            questionId: q.question.id,
+            answerText: answer || "",
+            selectedOption: typeof answer === 'string' ? answer : null,
+            attachmentUrl: null,
+            linkUrl: null,
+          };
+        }
+      }),
     };
 
     submitHomeworkMutation.mutate(submissionData);

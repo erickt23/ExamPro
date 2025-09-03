@@ -853,8 +853,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           if (correctAnswers.length > 1) {
             // Multiple correct answers - calculate partial credit
+            console.log(`DEBUG - Multiple choice grading for question ${question.id}:`);
+            console.log(`  Correct answers:`, correctAnswers);
+            console.log(`  Student answers:`, studentAnswers);
+            console.log(`  Raw answer data:`, { selectedOptions: answer.selectedOptions, selectedOption: answer.selectedOption, answerText: answer.answerText });
+            
             const correctCount = studentAnswers.filter(ans => correctAnswers.includes(ans)).length;
             const incorrectCount = studentAnswers.filter(ans => !correctAnswers.includes(ans)).length;
+            
+            console.log(`  Correct count: ${correctCount}, Incorrect count: ${incorrectCount}`);
             
             // Award partial credit: (correct selections - incorrect selections) / total correct answers
             // Minimum score is 0
