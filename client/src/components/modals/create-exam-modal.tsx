@@ -87,7 +87,7 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
     defaultValues: {
       title: '',
       description: '',
-      subjectId: subjects.length > 0 ? subjects[0].id : 1,
+      subjectId: subjects.length > 0 ? subjects[0].id : 22,
       duration: 90,
       totalPoints: 100,
       attemptsAllowed: 1,
