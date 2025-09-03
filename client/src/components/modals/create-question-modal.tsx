@@ -27,6 +27,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Plus, List, PenTool, FileText, Pen, Upload, Paperclip, ArrowUpDown, Link, Move3D } from "lucide-react";
 
@@ -70,6 +71,7 @@ export default function CreateQuestionModal({ open, onOpenChange, questionCatego
   const [selectedType, setSelectedType] = useState<string>('multiple_choice');
   const [mcqOptions, setMcqOptions] = useState(['', '', '', '']);
   const [correctOption, setCorrectOption] = useState('A');
+  const [correctOptions, setCorrectOptions] = useState<string[]>(['A']); // For multiple correct answers
   const [attachmentFile, setAttachmentFile] = useState<any>(null);
   const [attachmentUrl, setAttachmentUrl] = useState<string>('');
   
@@ -101,11 +103,17 @@ export default function CreateQuestionModal({ open, onOpenChange, questionCatego
 
   const createQuestionMutation = useMutation({
     mutationFn: async (data: CreateQuestionForm) => {
-      let payload = { ...data };
+      let payload = { ...data } as any; // Allow dynamic properties
       
       if (data.questionType === 'multiple_choice') {
         payload.options = mcqOptions.filter(option => option.trim());
-        payload.correctAnswer = correctOption;
+        // Support both single and multiple correct answers for backward compatibility
+        if (correctOptions.length === 1) {
+          payload.correctAnswer = correctOptions[0];
+        } else {
+          payload.correctAnswer = correctOptions.join(','); // Fallback for single field
+          payload.correctAnswers = correctOptions; // New field for multiple answers
+        }
       } else if (data.questionType === 'matching') {
         const validPairs = matchingPairs.filter(pair => pair.left.trim() && pair.right.trim());
         payload.options = JSON.stringify(validPairs);
@@ -151,6 +159,7 @@ export default function CreateQuestionModal({ open, onOpenChange, questionCatego
       form.reset();
       setMcqOptions(['', '', '', '']);
       setCorrectOption('A');
+      setCorrectOptions(['A']);
       setMatchingPairs([{ left: '', right: '' }, { left: '', right: '' }]);
       setRankingItems(['', '']);
       setDragDropZones([{ zone: '', items: [''] }]);
@@ -198,6 +207,19 @@ export default function CreateQuestionModal({ open, onOpenChange, questionCatego
     const newOptions = [...mcqOptions];
     newOptions[index] = value;
     setMcqOptions(newOptions);
+  };
+
+  // Helper functions for multiple correct answers
+  const toggleCorrectOption = (option: string) => {
+    setCorrectOptions(prev => {
+      if (prev.includes(option)) {
+        // Don't allow removing all correct answers
+        if (prev.length === 1) return prev;
+        return prev.filter(opt => opt !== option);
+      } else {
+        return [...prev, option].sort(); // Keep sorted for consistency
+      }
+    });
   };
 
   // Helper functions for new question types
@@ -400,21 +422,23 @@ export default function CreateQuestionModal({ open, onOpenChange, questionCatego
             {selectedType === 'multiple_choice' && (
               <div>
                 <Label className="text-sm font-medium">{t('assignments.answerOptions')}</Label>
+                <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg mb-3">
+                  <p className="text-sm text-blue-800 dark:text-blue-200">
+                    {t('questionCreation.multipleCorrectHint')}
+                  </p>
+                </div>
                 <div className="space-y-3 mt-2">
                   {mcqOptions.map((option, index) => {
                     const letter = String.fromCharCode(65 + index); // A, B, C, D
                     return (
                       <div key={index} className="flex items-center space-x-3">
-                        <RadioGroup 
-                          value={correctOption} 
-                          onValueChange={setCorrectOption}
-                          className="flex"
-                        >
-                          <div className="flex items-center space-x-2">
-                            <RadioGroupItem value={letter} id={`option-${letter}`} />
-                          </div>
-                        </RadioGroup>
-                        <span className="text-sm font-medium text-gray-700 min-w-[20px]">{letter}.</span>
+                        <Checkbox
+                          checked={correctOptions.includes(letter)}
+                          onCheckedChange={() => toggleCorrectOption(letter)}
+                          id={`correct-${letter}`}
+                          className="mt-0.5"
+                        />
+                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300 min-w-[20px]">{letter}.</span>
                         <Input
                           value={option}
                           onChange={(e) => updateMcqOption(index, e.target.value)}

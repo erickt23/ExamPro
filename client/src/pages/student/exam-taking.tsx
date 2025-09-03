@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -348,31 +349,80 @@ export default function StudentExamTaking() {
     switch (question.question.questionType) {
       case 'multiple_choice':
         const options = question.question.options || [];
-        return (
-          <div className="space-y-3">
-            <RadioGroup
-              value={answer || ''}
-              onValueChange={(value) => handleAnswerChange(question.questionId, value)}
-            >
-              {options.map((option: string, index: number) => (
-                <div key={index} className="flex items-start space-x-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800/50 transition-colors">
-                  <RadioGroupItem 
-                    value={String.fromCharCode(65 + index)} 
-                    id={`option-${index}`}
-                    className="mt-0.5 flex-shrink-0"
-                  />
-                  <Label 
-                    htmlFor={`option-${index}`} 
-                    className="flex-1 cursor-pointer text-sm leading-relaxed"
-                  >
-                    <span className="font-medium mr-2">{String.fromCharCode(65 + index)}.</span>
-                    <span>{option}</span>
-                  </Label>
-                </div>
-              ))}
-            </RadioGroup>
-          </div>
-        );
+        
+        // Determine if this question supports multiple correct answers
+        const hasMultipleCorrectAnswers = question.question.correctAnswers && 
+          Array.isArray(question.question.correctAnswers) && 
+          question.question.correctAnswers.length > 1;
+        
+        // Handle multiple selections vs single selection
+        const selectedAnswers = Array.isArray(answer) ? answer : (answer ? [answer] : []);
+        
+        if (hasMultipleCorrectAnswers) {
+          // Render checkboxes for multiple selection
+          return (
+            <div className="space-y-3">
+              <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg mb-3">
+                <p className="text-sm text-blue-800 dark:text-blue-200">
+                  {t('examTaking.multipleAnswersAllowed')}
+                </p>
+              </div>
+              {options.map((option: string, index: number) => {
+                const letter = String.fromCharCode(65 + index);
+                return (
+                  <div key={index} className="flex items-start space-x-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800/50 transition-colors">
+                    <Checkbox
+                      checked={selectedAnswers.includes(letter)}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          handleAnswerChange(question.questionId, [...selectedAnswers, letter].sort());
+                        } else {
+                          handleAnswerChange(question.questionId, selectedAnswers.filter(a => a !== letter));
+                        }
+                      }}
+                      id={`option-${index}`}
+                      className="mt-0.5 flex-shrink-0"
+                    />
+                    <Label 
+                      htmlFor={`option-${index}`} 
+                      className="flex-1 cursor-pointer text-sm leading-relaxed"
+                    >
+                      <span className="font-medium mr-2">{letter}.</span>
+                      <span>{option}</span>
+                    </Label>
+                  </div>
+                );
+              })}
+            </div>
+          );
+        } else {
+          // Render radio buttons for single selection (existing behavior)
+          return (
+            <div className="space-y-3">
+              <RadioGroup
+                value={answer || ''}
+                onValueChange={(value) => handleAnswerChange(question.questionId, value)}
+              >
+                {options.map((option: string, index: number) => (
+                  <div key={index} className="flex items-start space-x-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800/50 transition-colors">
+                    <RadioGroupItem 
+                      value={String.fromCharCode(65 + index)} 
+                      id={`option-${index}`}
+                      className="mt-0.5 flex-shrink-0"
+                    />
+                    <Label 
+                      htmlFor={`option-${index}`} 
+                      className="flex-1 cursor-pointer text-sm leading-relaxed"
+                    >
+                      <span className="font-medium mr-2">{String.fromCharCode(65 + index)}.</span>
+                      <span>{option}</span>
+                    </Label>
+                  </div>
+                ))}
+              </RadioGroup>
+            </div>
+          );
+        }
 
       case 'short_answer':
         return (

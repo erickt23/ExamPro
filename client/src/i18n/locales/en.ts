@@ -175,7 +175,8 @@ export const en = {
     uploadAttachment: 'Upload Attachment',
     saveAsDraft: 'Save as Draft',
     creating: 'Creating...',
-    loggedOutLoggingIn: 'You are logged out. Logging in again...'
+    loggedOutLoggingIn: 'You are logged out. Logging in again...',
+    multipleCorrectHint: 'Check all correct answers. You can select multiple options by clicking the checkboxes.'
   },
 
   // Assignments
@@ -507,7 +508,8 @@ export const en = {
     error: 'Error',
     failedToSubmitExam: 'Failed to submit exam',
     unauthorized: 'Unauthorized',
-    loggedOutMessage: 'You are logged out. Logging in again...'
+    loggedOutMessage: 'You are logged out. Logging in again...',
+    multipleAnswersAllowed: 'Multiple answers allowed. Select all correct options.'
   },
 
   // Grading Center

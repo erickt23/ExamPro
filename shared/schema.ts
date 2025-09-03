@@ -93,6 +93,7 @@ export const questions = pgTable("questions", {
   category: questionCategoryEnum("category").notNull().default('exam'), // NEW: Separate homework from exam questions
   options: jsonb("options"), // For MCQ options
   correctAnswer: text("correct_answer"),
+  correctAnswers: jsonb("correct_answers"), // For multiple correct answers in MCQ
   explanation: text("explanation"),
   attachmentUrl: text("attachment_url"), // For instructor file attachments
   subjectId: integer("subject_id").notNull().references(() => subjects.id),
@@ -165,6 +166,7 @@ export const answers = pgTable("answers", {
   questionId: integer("question_id").notNull().references(() => questions.id),
   answerText: text("answer_text"),
   selectedOption: varchar("selected_option"),
+  selectedOptions: jsonb("selected_options"), // For multiple selected options in MCQ
   attachmentUrl: text("attachment_url"), // For file uploads
   linkUrl: text("link_url"), // For link submissions
   score: decimal("score", { precision: 5, scale: 2 }),
@@ -222,6 +224,7 @@ export const homeworkAnswers = pgTable("homework_answers", {
   questionId: integer("question_id").notNull().references(() => questions.id),
   answerText: text("answer_text"),
   selectedOption: varchar("selected_option"),
+  selectedOptions: jsonb("selected_options"), // For multiple selected options in MCQ
   attachmentUrl: text("attachment_url"), // For file uploads
   linkUrl: text("link_url"), // For link submissions
   score: decimal("score", { precision: 5, scale: 2 }),

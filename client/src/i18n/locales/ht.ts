@@ -167,12 +167,14 @@ export const ht = {
     minutes: 'minit',
     explanation: 'Eksplikasyon',
     provideExplanation: 'Bay yon eksplikasyon pou bon repons lan...',
+    multipleCorrectHint: 'Tcheke tout bon repons yo. Ou ka chwazi plizyè opsyon lè ou klike sou bwat tcheke yo.',
     questionAttachment: 'Dokiman Kesyon',
     uploadFileDescription: 'Telechaje yon fichye elèv yo ka telechaje lè yo ap reponn kesyon an',
     uploadAttachment: 'Telechaje Dokiman',
     saveAsDraft: 'Anrejistre kòm Bouyon',
     creating: 'K ap kreye...',
-    loggedOutLoggingIn: 'Ou dekonekte. K ap rekonekte...'
+    loggedOutLoggingIn: 'Ou dekonekte. K ap rekonekte...',
+    multipleCorrectHint: 'Koche tout bon repons yo. Ou ka chwazi plizyè opsyon yo lè w klike sou ti kare yo.'
   },
 
   // Assignments
@@ -501,7 +503,8 @@ export const ht = {
     error: 'Erè',
     failedToSubmitExam: 'Echwe pou soumèt egzamen',
     unauthorized: 'Pa Gen Otorizasyon',
-    loggedOutMessage: 'Ou dekonekte. Y ap konekte ankò...'
+    loggedOutMessage: 'Ou dekonekte. Y ap konekte ankò...',
+    selectMultipleAnswers: 'Chwazi tout repons ki kòrèk yo :'
   },
 
   // Grading Center

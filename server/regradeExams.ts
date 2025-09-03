@@ -28,9 +28,43 @@ async function regradeSubmission(submissionId: number): Promise<{ totalScore: nu
       console.log(`Subjective/manual question ${question.id} (${question.questionType}): keeping existing score ${score}/${question.points}`);
     } else {
       // Auto-grade objective questions
-      if (question.questionType === 'multiple_choice' && 
-          answer.selectedOption === question.correctAnswer) {
-        score = question.points;
+      if (question.questionType === 'multiple_choice') {
+        // Handle multiple correct answers
+        const correctAnswers = question.correctAnswers && Array.isArray(question.correctAnswers) 
+          ? question.correctAnswers 
+          : (question.correctAnswer ? [question.correctAnswer] : []);
+        
+        // Handle multiple student selections
+        let studentAnswers: string[] = [];
+        if (answer.selectedOptions && Array.isArray(answer.selectedOptions)) {
+          studentAnswers = answer.selectedOptions;
+        } else if (answer.selectedOption) {
+          studentAnswers = [answer.selectedOption];
+        } else if (answer.answerText) {
+          // Handle comma-separated answers as fallback
+          studentAnswers = answer.answerText.split(',').map(a => a.trim()).filter(a => a);
+        }
+        
+        if (correctAnswers.length > 1) {
+          // Multiple correct answers - calculate partial credit
+          const correctCount = studentAnswers.filter(ans => correctAnswers.includes(ans)).length;
+          const incorrectCount = studentAnswers.filter(ans => !correctAnswers.includes(ans)).length;
+          
+          // Award partial credit: (correct selections - incorrect selections) / total correct answers
+          // Minimum score is 0
+          const partialScore = Math.max(0, (correctCount - incorrectCount) / correctAnswers.length);
+          score = Math.round(partialScore * question.points * 100) / 100;
+          
+          console.log(`Multiple choice question ${question.id}: ${correctCount} correct, ${incorrectCount} incorrect out of ${correctAnswers.length} total correct answers. Score: ${score}/${question.points}`);
+        } else {
+          // Single correct answer - traditional grading
+          if (studentAnswers.length === 1 && correctAnswers.includes(studentAnswers[0])) {
+            score = question.points;
+          } else {
+            score = 0;
+          }
+          console.log(`Single choice question ${question.id}: ${studentAnswers.includes(correctAnswers[0]) ? 'correct' : 'incorrect'} answer (${studentAnswers[0]} vs ${correctAnswers[0]}), score: ${score}/${question.points}`);
+        }
       }
 
       // Auto-grade matching questions with enhanced answer key support
@@ -366,13 +400,42 @@ export async function gradeHomeworkSubmission(submissionId: number): Promise<{ t
     } else {
       // Auto-grade objective questions
       if (question.questionType === 'multiple_choice') {
-        const studentAnswer = answer.selectedOption || answer.answerText; // Handle both formats
-        if (studentAnswer === question.correctAnswer) {
-          score = question.points;
-          console.log(`Multiple choice question ${question.id}: correct answer (${studentAnswer}), score: ${score}/${question.points}`);
+        // Handle multiple correct answers
+        const correctAnswers = question.correctAnswers && Array.isArray(question.correctAnswers) 
+          ? question.correctAnswers 
+          : (question.correctAnswer ? [question.correctAnswer] : []);
+        
+        // Handle multiple student selections
+        let studentAnswers: string[] = [];
+        if (answer.selectedOptions && Array.isArray(answer.selectedOptions)) {
+          studentAnswers = answer.selectedOptions;
+        } else if (answer.selectedOption) {
+          studentAnswers = [answer.selectedOption];
+        } else if (answer.answerText) {
+          // Handle comma-separated answers as fallback
+          studentAnswers = answer.answerText.split(',').map(a => a.trim()).filter(a => a);
+        }
+        
+        if (correctAnswers.length > 1) {
+          // Multiple correct answers - calculate partial credit
+          const correctCount = studentAnswers.filter(ans => correctAnswers.includes(ans)).length;
+          const incorrectCount = studentAnswers.filter(ans => !correctAnswers.includes(ans)).length;
+          
+          // Award partial credit: (correct selections - incorrect selections) / total correct answers
+          // Minimum score is 0
+          const partialScore = Math.max(0, (correctCount - incorrectCount) / correctAnswers.length);
+          score = Math.round(partialScore * question.points * 100) / 100;
+          
+          console.log(`Homework multiple choice question ${question.id}: ${correctCount} correct, ${incorrectCount} incorrect out of ${correctAnswers.length} total correct answers. Score: ${score}/${question.points}`);
         } else {
-          score = 0;
-          console.log(`Multiple choice question ${question.id}: incorrect answer (${studentAnswer} vs ${question.correctAnswer}), score: ${score}/${question.points}`);
+          // Single correct answer - traditional grading
+          if (studentAnswers.length === 1 && correctAnswers.includes(studentAnswers[0])) {
+            score = question.points;
+            console.log(`Homework multiple choice question ${question.id}: correct answer (${studentAnswers[0]}), score: ${score}/${question.points}`);
+          } else {
+            score = 0;
+            console.log(`Homework multiple choice question ${question.id}: incorrect answer (${studentAnswers.join(',')} vs ${correctAnswers.join(',')}), score: ${score}/${question.points}`);
+          }
         }
       }
 

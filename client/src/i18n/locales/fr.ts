@@ -167,12 +167,14 @@ export const fr = {
     minutes: 'minutes',
     explanation: 'Explication',
     provideExplanation: 'Fournissez une explication pour la bonne réponse...',
+    multipleCorrectHint: 'Cochez toutes les bonnes réponses. Vous pouvez sélectionner plusieurs options en cliquant sur les cases à cocher.',
     questionAttachment: 'Pièce Jointe de la Question',
     uploadFileDescription: 'Téléchargez un fichier que les étudiants peuvent télécharger en répondant à cette question',
     uploadAttachment: 'Télécharger une Pièce Jointe',
     saveAsDraft: 'Enregistrer en Brouillon',
     creating: 'Création...',
-    loggedOutLoggingIn: 'Vous êtes déconnecté. Reconnexion en cours...'
+    loggedOutLoggingIn: 'Vous êtes déconnecté. Reconnexion en cours...',
+    multipleCorrectHint: 'Cochez toutes les bonnes réponses. Vous pouvez sélectionner plusieurs options en cliquant sur les cases à cocher.'
   },
 
   // Assignments
@@ -501,7 +503,8 @@ export const fr = {
     error: 'Erreur',
     failedToSubmitExam: 'Échec de la soumission de l\'examen',
     unauthorized: 'Non Autorisé',
-    loggedOutMessage: 'Vous êtes déconnecté. Reconnexion...'
+    loggedOutMessage: 'Vous êtes déconnecté. Reconnexion...',
+    selectMultipleAnswers: 'Sélectionnez toutes les réponses correctes :'
   },
 
   // Grading Center
