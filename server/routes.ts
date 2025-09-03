@@ -833,10 +833,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
           hasSubjectiveQuestions = true;
         }
 
-        // Auto-grade multiple question types
-        if (question.questionType === 'multiple_choice' && 
-            answer.selectedOption === question.correctAnswer) {
-          score = question.points;
+        // Auto-grade multiple choice questions with multiple correct answer support
+        if (question.questionType === 'multiple_choice') {
+          // Handle multiple correct answers
+          const correctAnswers = question.correctAnswers && Array.isArray(question.correctAnswers) 
+            ? question.correctAnswers 
+            : (question.correctAnswer ? [question.correctAnswer] : []);
+          
+          // Handle multiple student selections
+          let studentAnswers: string[] = [];
+          if (answer.selectedOptions && Array.isArray(answer.selectedOptions)) {
+            studentAnswers = answer.selectedOptions;
+          } else if (answer.selectedOption) {
+            studentAnswers = [answer.selectedOption];
+          } else if (answer.answerText) {
+            // Handle comma-separated answers as fallback
+            studentAnswers = answer.answerText.split(',').map((a: string) => a.trim()).filter((a: string) => a);
+          }
+          
+          if (correctAnswers.length > 1) {
+            // Multiple correct answers - calculate partial credit
+            const correctCount = studentAnswers.filter(ans => correctAnswers.includes(ans)).length;
+            const incorrectCount = studentAnswers.filter(ans => !correctAnswers.includes(ans)).length;
+            
+            // Award partial credit: (correct selections - incorrect selections) / total correct answers
+            // Minimum score is 0
+            const partialScore = Math.max(0, (correctCount - incorrectCount) / correctAnswers.length);
+            score = Math.round(partialScore * question.points * 100) / 100;
+            
+            console.log(`Exam submission grading - Multiple choice question ${question.id}: ${correctCount} correct, ${incorrectCount} incorrect out of ${correctAnswers.length} total correct answers. Score: ${score}/${question.points}`);
+          } else {
+            // Single correct answer - traditional grading
+            if (studentAnswers.length === 1 && correctAnswers.includes(studentAnswers[0])) {
+              score = question.points;
+            } else {
+              score = 0;
+            }
+            console.log(`Exam submission grading - Single choice question ${question.id}: ${studentAnswers.includes(correctAnswers[0]) ? 'correct' : 'incorrect'} answer (${studentAnswers.join(',')} vs ${correctAnswers.join(',')}), score: ${score}/${question.points}`);
+          }
         }
 
         // Auto-grade matching questions
@@ -1097,6 +1131,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           questionId: answer.questionId,
           answerText: answer.answerText,
           selectedOption: answer.selectedOption,
+          selectedOptions: answer.selectedOptions || null, // Store multiple selected options for MCQ
           attachmentUrl: answer.attachmentUrl || null,
           linkUrl: answer.linkUrl || null,
           score: score.toString(),
@@ -2051,6 +2086,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
           submissionId: submission.id,
           questionId: answer.questionId,
           answerText: answer.answerText,
+          selectedOption: answer.selectedOption,
+          selectedOptions: answer.selectedOptions || null, // Store multiple selected options for MCQ
+          attachmentUrl: answer.attachmentUrl || null,
+          linkUrl: answer.linkUrl || null,
         });
       }
 
