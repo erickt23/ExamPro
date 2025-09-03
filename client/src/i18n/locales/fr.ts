@@ -173,8 +173,7 @@ export const fr = {
     uploadAttachment: 'Télécharger une Pièce Jointe',
     saveAsDraft: 'Enregistrer en Brouillon',
     creating: 'Création...',
-    loggedOutLoggingIn: 'Vous êtes déconnecté. Reconnexion en cours...',
-    multipleCorrectHint: 'Cochez toutes les bonnes réponses. Vous pouvez sélectionner plusieurs options en cliquant sur les cases à cocher.'
+    loggedOutLoggingIn: 'Vous êtes déconnecté. Reconnexion en cours...'
   },
 
   // Assignments

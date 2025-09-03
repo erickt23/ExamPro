@@ -173,8 +173,7 @@ export const ht = {
     uploadAttachment: 'Telechaje Dokiman',
     saveAsDraft: 'Anrejistre kòm Bouyon',
     creating: 'K ap kreye...',
-    loggedOutLoggingIn: 'Ou dekonekte. K ap rekonekte...',
-    multipleCorrectHint: 'Koche tout bon repons yo. Ou ka chwazi plizyè opsyon yo lè w klike sou ti kare yo.'
+    loggedOutLoggingIn: 'Ou dekonekte. K ap rekonekte...'
   },
 
   // Assignments

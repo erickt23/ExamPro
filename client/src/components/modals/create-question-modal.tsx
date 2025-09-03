@@ -790,9 +790,9 @@ export default function CreateQuestionModal({ open, onOpenChange, questionCatego
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="easy">{t('common.easy')}</SelectItem>
-                        <SelectItem value="medium">{t('common.medium')}</SelectItem>
-                        <SelectItem value="hard">{t('common.hard')}</SelectItem>
+                        <SelectItem value="easy">{t('difficulty.easy')}</SelectItem>
+                        <SelectItem value="medium">{t('difficulty.medium')}</SelectItem>
+                        <SelectItem value="hard">{t('difficulty.hard')}</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
