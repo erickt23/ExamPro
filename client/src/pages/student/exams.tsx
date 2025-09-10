@@ -48,7 +48,9 @@ export default function StudentExams() {
   const [examStartTime, setExamStartTime] = useState<Date | null>(null);
   const [completedExamsSearch, setCompletedExamsSearch] = useState('');
   const [completedExamsPage, setCompletedExamsPage] = useState(1);
+  const [allExamsPage, setAllExamsPage] = useState(1);
   const ITEMS_PER_PAGE = 6;
+  const ALL_EXAMS_PER_PAGE = 9; // 3 columns x 3 rows
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -263,6 +265,28 @@ export default function StudentExams() {
   useEffect(() => {
     setCompletedExamsPage(1);
   }, [completedExamsSearch]);
+
+  // Get last 6 exams (expired, completed, or ongoing) sorted by most recent
+  const recentExams = allExamsWithStatus
+    .filter((exam: any) => 
+      exam.examStatus.status === 'expired' || 
+      exam.examStatus.status === 'completed' || 
+      exam.examStatus.status === 'available' ||
+      exam.examStatus.status === 'in_progress'
+    )
+    .sort((a: any, b: any) => {
+      const aDate = new Date(a.availableUntil || a.availableFrom || a.createdAt || 0);
+      const bDate = new Date(b.availableUntil || b.availableFrom || b.createdAt || 0);
+      return bDate.getTime() - aDate.getTime();
+    })
+    .slice(0, 6);
+
+  // Pagination for all exams
+  const totalAllExamsPages = Math.ceil(allExamsWithStatus.length / ALL_EXAMS_PER_PAGE);
+  const paginatedAllExams = allExamsWithStatus.slice(
+    (allExamsPage - 1) * ALL_EXAMS_PER_PAGE,
+    allExamsPage * ALL_EXAMS_PER_PAGE
+  );
 
   // Debug: Log all loaded data
   console.log('Student exam dashboard data:', {
@@ -701,6 +725,75 @@ export default function StudentExams() {
               <p className="text-gray-600 mt-1">{t('exams.description')}</p>
             </div>
 
+            {/* Recent Exams - Last 6 in 3 columns */}
+            {recentExams.length > 0 && (
+              <Card className="mb-6">
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <Clock className="h-5 w-5 mr-2" />
+                    Recent Exams
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {recentExams.map((exam: any) => (
+                      <div key={exam.id} className={`border rounded-lg p-4 transition-shadow hover:shadow-md ${
+                        exam.examStatus.status === 'available' ? 'bg-green-50 border-green-200' :
+                        exam.examStatus.status === 'in_progress' ? 'bg-orange-50 border-orange-200' :
+                        exam.examStatus.status === 'expired' ? 'bg-red-50 border-red-200' :
+                        'bg-gray-50 border-gray-200'
+                      }`}>
+                        <div className="flex justify-between items-start mb-3">
+                          <div className="flex-1 min-w-0">
+                            <h4 className="font-medium text-gray-900 mb-1 truncate">{exam.title}</h4>
+                            <p className="text-sm text-gray-600 truncate">
+                              {(subjects as any[]).find((s: any) => s.id === exam.subjectId)?.name || t('studentExams.unknownSubject')}
+                            </p>
+                          </div>
+                          <Badge {...getStatusBadgeProps(exam.examStatus.status)} className="ml-2">
+                            {exam.examStatus.label}
+                          </Badge>
+                        </div>
+                        
+                        <div className="space-y-1 mb-3 text-sm">
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">{t('studentExams.duration')}:</span>
+                            <span>{exam.duration} {t('studentExams.minutes')}</span>
+                          </div>
+                          {exam.availableUntil && (
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">
+                                {exam.examStatus.status === 'expired' ? 'Expired:' : t('studentExams.due')}:
+                              </span>
+                              <span className="text-xs">{new Date(exam.availableUntil).toLocaleDateString()}</span>
+                            </div>
+                          )}
+                        </div>
+
+                        {exam.examStatus.canStart ? (
+                          <Button 
+                            onClick={() => handleStartExam(exam)}
+                            size="sm"
+                            className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white"
+                            data-testid={`button-start-exam-${exam.id}`}
+                          >
+                            <Play className="h-3 w-3 mr-1" />
+                            {t('studentExams.startExam')}
+                          </Button>
+                        ) : (
+                          <div className="text-center text-xs text-gray-500 py-2">
+                            {exam.examStatus.status === 'expired' ? 'Exam has expired' :
+                             exam.examStatus.status === 'completed' ? 'Exam completed' :
+                             'Not available'}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             {/* All Exams - Available, Upcoming, Expired */}
             <Card className="mb-6">
               <CardHeader>
@@ -718,15 +811,62 @@ export default function StudentExams() {
                   </div>
                 ) : (
                   <div className="space-y-6">
-                    {/* Available Exams */}
-                    {availableExams.length > 0 && (
-                      <div>
-                        <h3 className="text-base font-medium text-gray-900 mb-3 flex items-center">
-                          <Play className="h-4 w-4 mr-2 text-green-600" />
-                          {t('studentExams.availableExams')} ({availableExams.length})
-                        </h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          {availableExams.map((exam: any) => (
+                    {/* Pagination Info for All Exams */}
+                    <div className="flex justify-between items-center">
+                      <div className="text-sm text-gray-600">
+                        Showing {((allExamsPage - 1) * ALL_EXAMS_PER_PAGE) + 1}-{Math.min(allExamsPage * ALL_EXAMS_PER_PAGE, allExamsWithStatus.length)} of {allExamsWithStatus.length} exams
+                      </div>
+                      {totalAllExamsPages > 1 && (
+                        <div className="flex items-center space-x-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setAllExamsPage(prev => Math.max(1, prev - 1))}
+                            disabled={allExamsPage === 1}
+                            data-testid="button-prev-all-exams"
+                          >
+                            <ChevronLeft className="h-4 w-4 mr-1" />
+                            {t('studentGrades.previous')}
+                          </Button>
+                          <span className="text-sm text-gray-600">
+                            {t('studentGrades.page', { current: allExamsPage, total: totalAllExamsPages })}
+                          </span>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setAllExamsPage(prev => Math.min(totalAllExamsPages, prev + 1))}
+                            disabled={allExamsPage === totalAllExamsPages}
+                            data-testid="button-next-all-exams"
+                          >
+                            {t('studentGrades.next')}
+                            <ChevronRight className="h-4 w-4 ml-1" />
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                    {/* Filter paginated exams by category */}
+                    {(() => {
+                      const paginatedAvailableExams = paginatedAllExams.filter((exam: any) => 
+                        exam.examStatus.status === 'available' || exam.examStatus.status === 'in_progress'
+                      );
+                      const paginatedUpcomingExams = paginatedAllExams.filter((exam: any) => 
+                        exam.examStatus.status === 'upcoming'
+                      );
+                      const paginatedExpiredExams = paginatedAllExams.filter((exam: any) => 
+                        exam.examStatus.status === 'expired'
+                      );
+
+                      return (
+                        <>
+                          {/* Available Exams */}
+                          {paginatedAvailableExams.length > 0 && (
+                            <div>
+                              <h3 className="text-base font-medium text-gray-900 mb-3 flex items-center">
+                                <Play className="h-4 w-4 mr-2 text-green-600" />
+                                {t('studentExams.availableExams')} ({paginatedAvailableExams.length})
+                              </h3>
+                              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {paginatedAvailableExams.map((exam: any) => (
                             <div key={exam.id} className="border rounded-lg p-6 hover:shadow-md transition-shadow bg-green-50 border-green-200">
                               <div className="flex justify-between items-start mb-4">
                                 <div>
@@ -774,20 +914,20 @@ export default function StudentExams() {
                                 {t('studentExams.startExam')}
                               </Button>
                             </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
+                                ))}
+                              </div>
+                            </div>
+                          )}
 
-                    {/* Upcoming Exams */}
-                    {upcomingExams.length > 0 && (
-                      <div>
-                        <h3 className="text-base font-medium text-gray-900 mb-3 flex items-center">
-                          <Clock className="h-4 w-4 mr-2 text-blue-600" />
-                          {t('studentExams.upcomingExams')} ({upcomingExams.length})
-                        </h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          {upcomingExams.map((exam: any) => (
+                          {/* Upcoming Exams */}
+                          {paginatedUpcomingExams.length > 0 && (
+                            <div>
+                              <h3 className="text-base font-medium text-gray-900 mb-3 flex items-center">
+                                <Clock className="h-4 w-4 mr-2 text-blue-600" />
+                                {t('studentExams.upcomingExams')} ({paginatedUpcomingExams.length})
+                              </h3>
+                              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {paginatedUpcomingExams.map((exam: any) => (
                             <div key={exam.id} className="border rounded-lg p-6 bg-blue-50 border-blue-200">
                               <div className="flex justify-between items-start mb-4">
                                 <div>
@@ -822,20 +962,20 @@ export default function StudentExams() {
                                 Not yet available
                               </div>
                             </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
+                                ))}
+                              </div>
+                            </div>
+                          )}
 
-                    {/* Expired Exams */}
-                    {expiredExams.length > 0 && (
-                      <div>
-                        <h3 className="text-base font-medium text-gray-900 mb-3 flex items-center">
-                          <AlertCircle className="h-4 w-4 mr-2 text-red-600" />
-                          {t('studentExams.expiredExams')} ({expiredExams.length})
-                        </h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          {expiredExams.map((exam: any) => (
+                          {/* Expired Exams */}
+                          {paginatedExpiredExams.length > 0 && (
+                            <div>
+                              <h3 className="text-base font-medium text-gray-900 mb-3 flex items-center">
+                                <AlertCircle className="h-4 w-4 mr-2 text-red-600" />
+                                {t('studentExams.expiredExams')} ({paginatedExpiredExams.length})
+                              </h3>
+                              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {paginatedExpiredExams.map((exam: any) => (
                             <div key={exam.id} className="border rounded-lg p-6 bg-red-50 border-red-200">
                               <div className="flex justify-between items-start mb-4">
                                 <div>
@@ -864,10 +1004,13 @@ export default function StudentExams() {
                                 Exam has expired
                               </div>
                             </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </>
+                      );
+                    })()}
                   </div>
                 )}
               </CardContent>
