@@ -266,20 +266,6 @@ export default function StudentExams() {
     setCompletedExamsPage(1);
   }, [completedExamsSearch]);
 
-  // Get last 6 exams (expired, completed, or ongoing) sorted by most recent
-  const recentExams = allExamsWithStatus
-    .filter((exam: any) => 
-      exam.examStatus.status === 'expired' || 
-      exam.examStatus.status === 'completed' || 
-      exam.examStatus.status === 'available' ||
-      exam.examStatus.status === 'in_progress'
-    )
-    .sort((a: any, b: any) => {
-      const aDate = new Date(a.availableUntil || a.availableFrom || a.createdAt || 0);
-      const bDate = new Date(b.availableUntil || b.availableFrom || b.createdAt || 0);
-      return bDate.getTime() - aDate.getTime();
-    })
-    .slice(0, 6);
 
   // Pagination for all exams
   const totalAllExamsPages = Math.ceil(allExamsWithStatus.length / ALL_EXAMS_PER_PAGE);
@@ -725,74 +711,6 @@ export default function StudentExams() {
               <p className="text-gray-600 mt-1">{t('exams.description')}</p>
             </div>
 
-            {/* Recent Exams - Last 6 in 3 columns */}
-            {recentExams.length > 0 && (
-              <Card className="mb-6">
-                <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <Clock className="h-5 w-5 mr-2" />
-                    Recent Exams
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {recentExams.map((exam: any) => (
-                      <div key={exam.id} className={`border rounded-lg p-4 transition-shadow hover:shadow-md ${
-                        exam.examStatus.status === 'available' ? 'bg-green-50 border-green-200' :
-                        exam.examStatus.status === 'in_progress' ? 'bg-orange-50 border-orange-200' :
-                        exam.examStatus.status === 'expired' ? 'bg-red-50 border-red-200' :
-                        'bg-gray-50 border-gray-200'
-                      }`}>
-                        <div className="flex justify-between items-start mb-3">
-                          <div className="flex-1 min-w-0">
-                            <h4 className="font-medium text-gray-900 mb-1 truncate">{exam.title}</h4>
-                            <p className="text-sm text-gray-600 truncate">
-                              {(subjects as any[]).find((s: any) => s.id === exam.subjectId)?.name || t('studentExams.unknownSubject')}
-                            </p>
-                          </div>
-                          <Badge {...getStatusBadgeProps(exam.examStatus.status)} className="ml-2">
-                            {exam.examStatus.label}
-                          </Badge>
-                        </div>
-                        
-                        <div className="space-y-1 mb-3 text-sm">
-                          <div className="flex justify-between">
-                            <span className="text-gray-600">{t('studentExams.duration')}:</span>
-                            <span>{exam.duration} {t('studentExams.minutes')}</span>
-                          </div>
-                          {exam.availableUntil && (
-                            <div className="flex justify-between">
-                              <span className="text-gray-600">
-                                {exam.examStatus.status === 'expired' ? 'Expired:' : t('studentExams.due')}:
-                              </span>
-                              <span className="text-xs">{new Date(exam.availableUntil).toLocaleDateString()}</span>
-                            </div>
-                          )}
-                        </div>
-
-                        {exam.examStatus.canStart ? (
-                          <Button 
-                            onClick={() => handleStartExam(exam)}
-                            size="sm"
-                            className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white"
-                            data-testid={`button-start-exam-${exam.id}`}
-                          >
-                            <Play className="h-3 w-3 mr-1" />
-                            {t('studentExams.startExam')}
-                          </Button>
-                        ) : (
-                          <div className="text-center text-xs text-gray-500 py-2">
-                            {exam.examStatus.status === 'expired' ? 'Exam has expired' :
-                             exam.examStatus.status === 'completed' ? 'Exam completed' :
-                             'Not available'}
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
 
             {/* All Exams - Available, Upcoming, Expired */}
             <Card className="mb-6">
