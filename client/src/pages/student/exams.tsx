@@ -777,345 +777,290 @@ export default function StudentExams() {
               </div>
             ) : (
               <Accordion type="multiple" value={openSections} onValueChange={setOpenSections} className="space-y-4">
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <FileText className="h-5 w-5 mr-2" />
-                  {t('exams.allExams')}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {allExamsWithStatus.length === 0 ? (
-                  <div className="text-center py-12">
-                    <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <p className="text-gray-500 text-lg mb-2">{t('studentExams.noExamsAvailable')}</p>
-                    <p className="text-gray-400">{t('studentExams.checkBackLater')}</p>
-                  </div>
-                ) : (
-                  <div className="space-y-6">
-                    {/* Pagination Info for All Exams */}
-                    <div className="flex justify-between items-center">
-                      <div className="text-sm text-gray-600">
-                        Showing {((allExamsPage - 1) * ALL_EXAMS_PER_PAGE) + 1}-{Math.min(allExamsPage * ALL_EXAMS_PER_PAGE, allExamsWithStatus.length)} of {allExamsWithStatus.length} exams
-                      </div>
-                      {totalAllExamsPages > 1 && (
-                        <div className="flex items-center space-x-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setAllExamsPage(prev => Math.max(1, prev - 1))}
-                            disabled={allExamsPage === 1}
-                            data-testid="button-prev-all-exams"
-                          >
-                            <ChevronLeft className="h-4 w-4 mr-1" />
-                            {t('studentGrades.previous')}
-                          </Button>
-                          <span className="text-sm text-gray-600">
-                            {t('studentGrades.page', { current: allExamsPage, total: totalAllExamsPages })}
-                          </span>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setAllExamsPage(prev => Math.min(totalAllExamsPages, prev + 1))}
-                            disabled={allExamsPage === totalAllExamsPages}
-                            data-testid="button-next-all-exams"
-                          >
-                            {t('studentGrades.next')}
-                            <ChevronRight className="h-4 w-4 ml-1" />
-                          </Button>
-                        </div>
-                      )}
+                {/* Available Exams Section */}
+                <AccordionItem value="available" className="border rounded-lg">
+                  <AccordionTrigger className="px-6 py-4 hover:no-underline">
+                    <div className="flex items-center space-x-3">
+                      <Play className="h-5 w-5 text-green-600" />
+                      <span className="font-medium">Available Exams ({availableExamsFiltered.length})</span>
                     </div>
-                    {/* Filter paginated exams by category */}
-                    {(() => {
-                      const paginatedAvailableExams = paginatedAllExams.filter((exam: any) => 
-                        exam.examStatus.status === 'available' || exam.examStatus.status === 'in_progress'
-                      );
-                      const paginatedUpcomingExams = paginatedAllExams.filter((exam: any) => 
-                        exam.examStatus.status === 'upcoming'
-                      );
-                      const paginatedExpiredExams = paginatedAllExams.filter((exam: any) => 
-                        exam.examStatus.status === 'expired'
-                      );
-
-                      return (
-                        <>
-                          {/* Available Exams */}
-                          {paginatedAvailableExams.length > 0 && (
-                            <div>
-                              <h3 className="text-base font-medium text-gray-900 mb-3 flex items-center">
-                                <Play className="h-4 w-4 mr-2 text-green-600" />
-                                {t('studentExams.availableExams')} ({paginatedAvailableExams.length})
-                              </h3>
-                              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                {paginatedAvailableExams.map((exam: any) => (
-                            <div key={exam.id} className="border rounded-lg p-6 hover:shadow-md transition-shadow bg-green-50 border-green-200">
-                              <div className="flex justify-between items-start mb-4">
-                                <div>
-                                  <h4 className="font-semibold text-gray-900 mb-1">{exam.title}</h4>
-                                  <p className="text-sm text-gray-600">{(subjects as any[]).find((s: any) => s.id === exam.subjectId)?.name || t('studentExams.unknownSubject')}</p>
-                                </div>
-                                <Badge {...getStatusBadgeProps(exam.examStatus.status)}>
-                                  {exam.examStatus.label}
-                                </Badge>
-                              </div>
-                              
-                              <div className="space-y-2 mb-4 text-sm">
-                                <div className="flex justify-between">
-                                  <span className="text-gray-600">{t('studentExams.duration')}:</span>
-                                  <span>{exam.duration} {t('studentExams.minutes')}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                  <span className="text-gray-600">{t('studentExams.totalPoints')}:</span>
-                                  <span>{exam.totalPoints}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                  <span className="text-gray-600">{t('studentExams.attempts')}:</span>
-                                  <span>
-                                    {exam.examStatus.attemptsUsed}/{exam.attemptsAllowed === -1 ? '∞' : exam.attemptsAllowed}
-                                    {exam.examStatus.attemptsRemaining > 0 && exam.attemptsAllowed !== -1 && (
-                                      <span className="text-green-600 ml-1">
-                                        ({exam.examStatus.attemptsRemaining} {t('studentExams.left')})
-                                      </span>
-                                    )}
-                                  </span>
-                                </div>
-                                {exam.availableUntil && (
-                                  <div className="flex justify-between">
-                                    <span className="text-gray-600">{t('studentExams.due')}:</span>
-                                    <span>{new Date(exam.availableUntil).toLocaleDateString()}</span>
-                                  </div>
-                                )}
-                              </div>
-
-                              <Button 
-                                onClick={() => handleStartExam(exam)}
-                                className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
-                              >
-                                <Play className="h-4 w-4 mr-2" />
-                                {t('studentExams.startExam')}
-                              </Button>
-                            </div>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-
-                          {/* Upcoming Exams */}
-                          {paginatedUpcomingExams.length > 0 && (
-                            <div>
-                              <h3 className="text-base font-medium text-gray-900 mb-3 flex items-center">
-                                <Clock className="h-4 w-4 mr-2 text-blue-600" />
-                                {t('studentExams.upcomingExams')} ({paginatedUpcomingExams.length})
-                              </h3>
-                              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                {paginatedUpcomingExams.map((exam: any) => (
-                            <div key={exam.id} className="border rounded-lg p-6 bg-blue-50 border-blue-200">
-                              <div className="flex justify-between items-start mb-4">
-                                <div>
-                                  <h4 className="font-semibold text-gray-900 mb-1">{exam.title}</h4>
-                                  <p className="text-sm text-gray-600">{(subjects as any[]).find((s: any) => s.id === exam.subjectId)?.name || t('studentExams.unknownSubject')}</p>
-                                </div>
-                                <Badge {...getStatusBadgeProps(exam.examStatus.status)}>
-                                  {exam.examStatus.label}
-                                </Badge>
-                              </div>
-                              
-                              <div className="space-y-2 mb-4 text-sm">
-                                <div className="flex justify-between">
-                                  <span className="text-gray-600">{t('studentExams.duration')}:</span>
-                                  <span>{exam.duration} {t('studentExams.minutes')}</span>
-                                </div>
-                                {exam.availableFrom && (
-                                  <div className="flex justify-between">
-                                    <span className="text-gray-600">Available from:</span>
-                                    <span>{new Date(exam.availableFrom).toLocaleDateString()}</span>
-                                  </div>
-                                )}
-                                {exam.availableUntil && (
-                                  <div className="flex justify-between">
-                                    <span className="text-gray-600">{t('studentExams.due')}:</span>
-                                    <span>{new Date(exam.availableUntil).toLocaleDateString()}</span>
-                                  </div>
-                                )}
-                              </div>
-
-                              <div className="text-center text-gray-500 text-sm">
-                                Not yet available
-                              </div>
-                            </div>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-
-                          {/* Expired Exams */}
-                          {paginatedExpiredExams.length > 0 && (
-                            <div>
-                              <h3 className="text-base font-medium text-gray-900 mb-3 flex items-center">
-                                <AlertCircle className="h-4 w-4 mr-2 text-red-600" />
-                                {t('studentExams.expiredExams')} ({paginatedExpiredExams.length})
-                              </h3>
-                              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                {paginatedExpiredExams.map((exam: any) => (
-                            <div key={exam.id} className="border rounded-lg p-6 bg-red-50 border-red-200">
-                              <div className="flex justify-between items-start mb-4">
-                                <div>
-                                  <h4 className="font-semibold text-gray-900 mb-1">{exam.title}</h4>
-                                  <p className="text-sm text-gray-600">{(subjects as any[]).find((s: any) => s.id === exam.subjectId)?.name || t('studentExams.unknownSubject')}</p>
-                                </div>
-                                <Badge {...getStatusBadgeProps(exam.examStatus.status)}>
-                                  {exam.examStatus.label}
-                                </Badge>
-                              </div>
-                              
-                              <div className="space-y-2 mb-4 text-sm">
-                                <div className="flex justify-between">
-                                  <span className="text-gray-600">{t('studentExams.duration')}:</span>
-                                  <span>{exam.duration} {t('studentExams.minutes')}</span>
-                                </div>
-                                {exam.availableUntil && (
-                                  <div className="flex justify-between">
-                                    <span className="text-gray-600">Expired on:</span>
-                                    <span>{new Date(exam.availableUntil).toLocaleDateString()}</span>
-                                  </div>
-                                )}
-                              </div>
-
-                              <div className="text-center text-red-600 text-sm font-medium">
-                                Exam has expired
-                              </div>
-                            </div>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                        </>
-                      );
-                    })()}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Completed Exams */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <CheckCircle className="h-5 w-5 mr-2" />
-                  {t('studentExams.completedExams')}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {completedExams.length === 0 ? (
-                  <div className="text-center py-12">
-                    <CheckCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <p className="text-gray-500 text-lg mb-2">{t('studentExams.noCompletedExams')}</p>
-                    <p className="text-gray-400">{t('studentExams.completeExamToSeeHere')}</p>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {/* Search Field */}
-                    <div className="relative">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                      <Input
-                        placeholder={t('studentGrades.searchCompletedExams')}
-                        value={completedExamsSearch}
-                        onChange={(e) => setCompletedExamsSearch(e.target.value)}
-                        className="pl-10"
-                      />
-                    </div>
-
-                    {/* Search Results Info */}
-                    {filteredCompletedExams.length > 0 && (
-                      <div className="text-sm text-gray-600">
-                        {t('studentGrades.showingResults', {
-                          start: (completedExamsPage - 1) * ITEMS_PER_PAGE + 1,
-                          end: Math.min(completedExamsPage * ITEMS_PER_PAGE, filteredCompletedExams.length),
-                          total: filteredCompletedExams.length
-                        })}
-                      </div>
-                    )}
-
-                    {/* Completed Exams List */}
-                    {filteredCompletedExams.length === 0 ? (
+                  </AccordionTrigger>
+                  <AccordionContent className="px-6 pb-4">
+                    {availableExamsFiltered.length === 0 ? (
                       <div className="text-center py-8">
-                        <CheckCircle className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-                        <p className="text-gray-500">{t('studentGrades.noCompletedExamsFound')}</p>
-                        <p className="text-gray-400 text-sm">{t('studentGrades.adjustSearchCriteria')}</p>
+                        <Play className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                        <p className="text-gray-500">No available exams found</p>
                       </div>
                     ) : (
                       <div className="space-y-4">
-                        {paginatedCompletedExams.map((exam: any) => {
-                          const submission = mySubmissions.find((s: any) => s.examId === exam.id);
-                          return (
-                            <div key={exam.id} className="flex items-center justify-between p-4 border rounded-lg bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-                              <div className="flex-1">
-                                <h4 className="font-medium text-gray-900 dark:text-gray-100">{exam.title}</h4>
-                                <p className="text-sm text-gray-600 dark:text-gray-400">{(subjects as any[]).find((s: any) => s.id === exam.subjectId)?.name || t('studentExams.unknownSubject')}</p>
-                                {submission?.submittedAt && (
-                                  <p className="text-xs text-gray-500 dark:text-gray-500">
-                                    Completed: {new Date(submission.submittedAt).toLocaleDateString()}
+                        {/* Pagination Info */}
+                        {availableExamsFiltered.length > ITEMS_PER_PAGE && (
+                          <div className="flex justify-between items-center text-sm text-gray-600">
+                            <span>
+                              Showing {((availableExamsPage - 1) * ITEMS_PER_PAGE) + 1}-{Math.min(availableExamsPage * ITEMS_PER_PAGE, availableExamsFiltered.length)} of {availableExamsFiltered.length} exams
+                            </span>
+                            <div className="flex items-center space-x-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setAvailableExamsPage(prev => Math.max(1, prev - 1))}
+                                disabled={availableExamsPage === 1}
+                                data-testid="button-prev-available-exams"
+                              >
+                                <ChevronLeft className="h-4 w-4 mr-1" />
+                                Previous
+                              </Button>
+                              <span>Page {availableExamsPage} of {totalAvailablePages}</span>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setAvailableExamsPage(prev => Math.min(totalAvailablePages, prev + 1))}
+                                disabled={availableExamsPage === totalAvailablePages}
+                                data-testid="button-next-available-exams"
+                              >
+                                Next
+                                <ChevronRight className="h-4 w-4 ml-1" />
+                              </Button>
+                            </div>
+                          </div>
+                        )}
+                        
+                        {/* Exams Grid */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                          {paginatedAvailableExams.map((exam: any) => (
+                            <div key={exam.id} className={`border rounded-lg p-4 transition-shadow hover:shadow-md ${
+                              exam.examStatus?.status === 'available' ? 'bg-green-50 border-green-200' :
+                              exam.examStatus?.status === 'in_progress' ? 'bg-orange-50 border-orange-200' :
+                              'bg-blue-50 border-blue-200'
+                            }`}>
+                              <div className="flex justify-between items-start mb-3">
+                                <div className="flex-1 min-w-0">
+                                  <h4 className="font-medium text-gray-900 mb-1 truncate">{exam.title}</h4>
+                                  <p className="text-sm text-gray-600 truncate">
+                                    {(subjects as any[]).find((s: any) => s.id === exam.subjectId)?.name || t('studentExams.unknownSubject')}
                                   </p>
-                                )}
+                                </div>
+                                <Badge {...getStatusBadgeProps(exam.examStatus?.status || 'available')} className="ml-2">
+                                  {exam.examStatus?.label || 'Available'}
+                                </Badge>
                               </div>
                               
-                              <div className="text-right">
-                                {submission?.totalScore ? (
-                                  <div>
-                                    <p className="font-medium text-gray-900 dark:text-gray-100">
-                                      {submission.totalScore}/{submission.maxScore}
-                                    </p>
-                                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                                      {((parseFloat(submission.totalScore) / parseFloat(submission.maxScore)) * 100).toFixed(1)}%
-                                    </p>
+                              <div className="space-y-1 mb-3 text-sm">
+                                <div className="flex justify-between">
+                                  <span className="text-gray-600">{t('studentExams.duration')}:</span>
+                                  <span>{exam.duration} {t('studentExams.minutes')}</span>
+                                </div>
+                                {exam.availableUntil && (
+                                  <div className="flex justify-between">
+                                    <span className="text-gray-600">{t('studentExams.due')}:</span>
+                                    <span className="text-xs">{new Date(exam.availableUntil).toLocaleDateString()}</span>
                                   </div>
-                                ) : (
-                                  <Badge variant="secondary">
-                                    {submission?.status?.replace('_', ' ') || t('studentExams.unknown')}
-                                  </Badge>
                                 )}
                               </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
 
-                    {/* Pagination Controls */}
-                    {totalCompletedPages > 1 && (
-                      <div className="flex items-center justify-between pt-4">
-                        <div className="text-sm text-gray-600 dark:text-gray-400">
-                          {t('studentGrades.page', { current: completedExamsPage, total: totalCompletedPages })}
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setCompletedExamsPage(prev => Math.max(1, prev - 1))}
-                            disabled={completedExamsPage === 1}
-                          >
-                            <ChevronLeft className="h-4 w-4 mr-1" />
-                            {t('studentGrades.previous')}
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setCompletedExamsPage(prev => Math.min(totalCompletedPages, prev + 1))}
-                            disabled={completedExamsPage === totalCompletedPages}
-                          >
-                            {t('studentGrades.next')}
-                            <ChevronRight className="h-4 w-4 ml-1" />
-                          </Button>
+                              {exam.examStatus?.canStart !== false ? (
+                                <Button 
+                                  onClick={() => handleStartExam(exam)}
+                                  size="sm"
+                                  className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white"
+                                  data-testid={`button-start-exam-${exam.id}`}
+                                >
+                                  <Play className="h-3 w-3 mr-1" />
+                                  {t('studentExams.startExam')}
+                                </Button>
+                              ) : (
+                                <div className="text-center text-xs text-gray-500 py-2">
+                                  {exam.examStatus?.status === 'upcoming' ? 'Not yet available' : 'Cannot start'}
+                                </div>
+                              )}
+                            </div>
+                          ))}
                         </div>
                       </div>
                     )}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+                  </AccordionContent>
+                </AccordionItem>
+
+                {/* Expired Exams Section */}
+                <AccordionItem value="expired" className="border rounded-lg">
+                  <AccordionTrigger className="px-6 py-4 hover:no-underline">
+                    <div className="flex items-center space-x-3">
+                      <AlertCircle className="h-5 w-5 text-red-600" />
+                      <span className="font-medium">Expired Exams ({expiredExamsFiltered.length})</span>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="px-6 pb-4">
+                    {expiredExamsFiltered.length === 0 ? (
+                      <div className="text-center py-8">
+                        <AlertCircle className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                        <p className="text-gray-500">No expired exams found</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        {/* Pagination Info */}
+                        {expiredExamsFiltered.length > ITEMS_PER_PAGE && (
+                          <div className="flex justify-between items-center text-sm text-gray-600">
+                            <span>
+                              Showing {((expiredExamsPage - 1) * ITEMS_PER_PAGE) + 1}-{Math.min(expiredExamsPage * ITEMS_PER_PAGE, expiredExamsFiltered.length)} of {expiredExamsFiltered.length} exams
+                            </span>
+                            <div className="flex items-center space-x-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setExpiredExamsPage(prev => Math.max(1, prev - 1))}
+                                disabled={expiredExamsPage === 1}
+                                data-testid="button-prev-expired-exams"
+                              >
+                                <ChevronLeft className="h-4 w-4 mr-1" />
+                                Previous
+                              </Button>
+                              <span>Page {expiredExamsPage} of {totalExpiredPages}</span>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setExpiredExamsPage(prev => Math.min(totalExpiredPages, prev + 1))}
+                                disabled={expiredExamsPage === totalExpiredPages}
+                                data-testid="button-next-expired-exams"
+                              >
+                                Next
+                                <ChevronRight className="h-4 w-4 ml-1" />
+                              </Button>
+                            </div>
+                          </div>
+                        )}
+                        
+                        {/* Exams Grid */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                          {paginatedExpiredExams.map((exam: any) => (
+                            <div key={exam.id} className="border rounded-lg p-4 bg-red-50 border-red-200">
+                              <div className="flex justify-between items-start mb-3">
+                                <div className="flex-1 min-w-0">
+                                  <h4 className="font-medium text-gray-900 mb-1 truncate">{exam.title}</h4>
+                                  <p className="text-sm text-gray-600 truncate">
+                                    {(subjects as any[]).find((s: any) => s.id === exam.subjectId)?.name || t('studentExams.unknownSubject')}
+                                  </p>
+                                </div>
+                                <Badge {...getStatusBadgeProps(exam.examStatus?.status || 'expired')} className="ml-2">
+                                  {exam.examStatus?.label || 'Expired'}
+                                </Badge>
+                              </div>
+                              
+                              <div className="space-y-1 mb-3 text-sm">
+                                <div className="flex justify-between">
+                                  <span className="text-gray-600">{t('studentExams.duration')}:</span>
+                                  <span>{exam.duration} {t('studentExams.minutes')}</span>
+                                </div>
+                                {exam.availableUntil && (
+                                  <div className="flex justify-between">
+                                    <span className="text-gray-600">Expired:</span>
+                                    <span className="text-xs">{new Date(exam.availableUntil).toLocaleDateString()}</span>
+                                  </div>
+                                )}
+                              </div>
+
+                              <div className="text-center text-xs text-red-600 font-medium py-2">
+                                Exam has expired
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </AccordionContent>
+                </AccordionItem>
+
+                {/* Completed Exams Section */}
+                <AccordionItem value="completed" className="border rounded-lg">
+                  <AccordionTrigger className="px-6 py-4 hover:no-underline">
+                    <div className="flex items-center space-x-3">
+                      <CheckCircle className="h-5 w-5 text-green-600" />
+                      <span className="font-medium">Completed Exams ({completedExamsFiltered.length})</span>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="px-6 pb-4">
+                    {completedExamsFiltered.length === 0 ? (
+                      <div className="text-center py-8">
+                        <CheckCircle className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                        <p className="text-gray-500">No completed exams found</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        {/* Pagination Info */}
+                        {completedExamsFiltered.length > ITEMS_PER_PAGE && (
+                          <div className="flex justify-between items-center text-sm text-gray-600">
+                            <span>
+                              Showing {((completedExamsPage - 1) * ITEMS_PER_PAGE) + 1}-{Math.min(completedExamsPage * ITEMS_PER_PAGE, completedExamsFiltered.length)} of {completedExamsFiltered.length} exams
+                            </span>
+                            <div className="flex items-center space-x-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setCompletedExamsPage(prev => Math.max(1, prev - 1))}
+                                disabled={completedExamsPage === 1}
+                                data-testid="button-prev-completed-exams"
+                              >
+                                <ChevronLeft className="h-4 w-4 mr-1" />
+                                Previous
+                              </Button>
+                              <span>Page {completedExamsPage} of {totalCompletedPages}</span>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setCompletedExamsPage(prev => Math.min(totalCompletedPages, prev + 1))}
+                                disabled={completedExamsPage === totalCompletedPages}
+                                data-testid="button-next-completed-exams"
+                              >
+                                Next
+                                <ChevronRight className="h-4 w-4 ml-1" />
+                              </Button>
+                            </div>
+                          </div>
+                        )}
+                        
+                        {/* Exams List */}
+                        <div className="space-y-3">
+                          {paginatedCompletedExams.map((exam: any) => {
+                            const submission = mySubmissions.find((s: any) => s.examId === exam.id);
+                            return (
+                              <div key={exam.id} className="flex items-center justify-between p-4 border rounded-lg bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                                <div className="flex-1">
+                                  <h4 className="font-medium text-gray-900 dark:text-gray-100">{exam.title}</h4>
+                                  <p className="text-sm text-gray-600 dark:text-gray-400">{(subjects as any[]).find((s: any) => s.id === exam.subjectId)?.name || t('studentExams.unknownSubject')}</p>
+                                  {submission?.submittedAt && (
+                                    <p className="text-xs text-gray-500 dark:text-gray-500">
+                                      Completed: {new Date(submission.submittedAt).toLocaleDateString()}
+                                    </p>
+                                  )}
+                                </div>
+                                
+                                <div className="text-right">
+                                  {submission?.totalScore ? (
+                                    <div>
+                                      <p className="font-medium text-gray-900 dark:text-gray-100">
+                                        {submission.totalScore}/{submission.maxScore}
+                                      </p>
+                                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                                        {((parseFloat(submission.totalScore) / parseFloat(submission.maxScore)) * 100).toFixed(1)}%
+                                      </p>
+                                    </div>
+                                  ) : (
+                                    <Badge variant="secondary">
+                                      {submission?.status?.replace('_', ' ') || t('studentExams.unknown')}
+                                    </Badge>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
+            )}
           </div>
         </main>
-      </div>
     </div>
   );
 }
