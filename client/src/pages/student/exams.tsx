@@ -793,38 +793,6 @@ export default function StudentExams() {
                       </div>
                     ) : (
                       <div className="space-y-4">
-                        {/* Pagination Info */}
-                        {availableExamsFiltered.length > ITEMS_PER_PAGE && (
-                          <div className="flex justify-between items-center text-sm text-gray-600">
-                            <span>
-                              Showing {((availableExamsPage - 1) * ITEMS_PER_PAGE) + 1}-{Math.min(availableExamsPage * ITEMS_PER_PAGE, availableExamsFiltered.length)} of {availableExamsFiltered.length} exams
-                            </span>
-                            <div className="flex items-center space-x-2">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => setAvailableExamsPage(prev => Math.max(1, prev - 1))}
-                                disabled={availableExamsPage === 1}
-                                data-testid="button-prev-available-exams"
-                              >
-                                <ChevronLeft className="h-4 w-4 mr-1" />
-                                Previous
-                              </Button>
-                              <span>Page {availableExamsPage} of {totalAvailablePages}</span>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => setAvailableExamsPage(prev => Math.min(totalAvailablePages, prev + 1))}
-                                disabled={availableExamsPage === totalAvailablePages}
-                                data-testid="button-next-available-exams"
-                              >
-                                Next
-                                <ChevronRight className="h-4 w-4 ml-1" />
-                              </Button>
-                            </div>
-                          </div>
-                        )}
-                        
                         {/* Exams Grid */}
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                           {paginatedAvailableExams.map((exam: any) => (
@@ -858,24 +826,47 @@ export default function StudentExams() {
                                 )}
                               </div>
 
-                              {exam.examStatus?.canStart !== false ? (
-                                <Button 
-                                  onClick={() => handleStartExam(exam)}
-                                  size="sm"
-                                  className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white"
-                                  data-testid={`button-start-exam-${exam.id}`}
-                                >
-                                  <Play className="h-3 w-3 mr-1" />
-                                  {t('studentExams.startExam')}
-                                </Button>
-                              ) : (
-                                <div className="text-center text-xs text-gray-500 py-2">
-                                  {exam.examStatus?.status === 'upcoming' ? 'Not yet available' : 'Cannot start'}
-                                </div>
-                              )}
+                              <Button 
+                                onClick={() => handleStartExam(exam)}
+                                size="sm"
+                                className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white"
+                                data-testid={`button-start-exam-${exam.id}`}
+                              >
+                                <Play className="h-3 w-3 mr-1" />
+                                {t('studentExams.startExam')}
+                              </Button>
                             </div>
                           ))}
                         </div>
+
+                        {/* Pagination */}
+                        {totalAvailablePages > 1 && (
+                          <div className="flex justify-center pt-4">
+                            <div className="flex items-center space-x-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setAvailableExamsPage(prev => Math.max(1, prev - 1))}
+                                disabled={availableExamsPage === 1}
+                                data-testid="button-prev-available-exams"
+                              >
+                                <ChevronLeft className="h-4 w-4 mr-1" />
+                                Previous
+                              </Button>
+                              <span className="text-sm text-gray-600">Page {availableExamsPage} of {totalAvailablePages}</span>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setAvailableExamsPage(prev => Math.min(totalAvailablePages, prev + 1))}
+                                disabled={availableExamsPage === totalAvailablePages}
+                                data-testid="button-next-available-exams"
+                              >
+                                Next
+                                <ChevronRight className="h-4 w-4 ml-1" />
+                              </Button>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     )}
                   </AccordionContent>
@@ -897,38 +888,6 @@ export default function StudentExams() {
                       </div>
                     ) : (
                       <div className="space-y-4">
-                        {/* Pagination Info */}
-                        {expiredExamsFiltered.length > ITEMS_PER_PAGE && (
-                          <div className="flex justify-between items-center text-sm text-gray-600">
-                            <span>
-                              Showing {((expiredExamsPage - 1) * ITEMS_PER_PAGE) + 1}-{Math.min(expiredExamsPage * ITEMS_PER_PAGE, expiredExamsFiltered.length)} of {expiredExamsFiltered.length} exams
-                            </span>
-                            <div className="flex items-center space-x-2">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => setExpiredExamsPage(prev => Math.max(1, prev - 1))}
-                                disabled={expiredExamsPage === 1}
-                                data-testid="button-prev-expired-exams"
-                              >
-                                <ChevronLeft className="h-4 w-4 mr-1" />
-                                Previous
-                              </Button>
-                              <span>Page {expiredExamsPage} of {totalExpiredPages}</span>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => setExpiredExamsPage(prev => Math.min(totalExpiredPages, prev + 1))}
-                                disabled={expiredExamsPage === totalExpiredPages}
-                                data-testid="button-next-expired-exams"
-                              >
-                                Next
-                                <ChevronRight className="h-4 w-4 ml-1" />
-                              </Button>
-                            </div>
-                          </div>
-                        )}
-                        
                         {/* Exams Grid */}
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                           {paginatedExpiredExams.map((exam: any) => (
@@ -940,8 +899,8 @@ export default function StudentExams() {
                                     {(subjects as any[]).find((s: any) => s.id === exam.subjectId)?.name || t('studentExams.unknownSubject')}
                                   </p>
                                 </div>
-                                <Badge {...getStatusBadgeProps(exam.examStatus?.status || 'expired')} className="ml-2">
-                                  {exam.examStatus?.label || 'Expired'}
+                                <Badge {...getStatusBadgeProps('expired')} className="ml-2">
+                                  Expired
                                 </Badge>
                               </div>
                               
@@ -964,6 +923,35 @@ export default function StudentExams() {
                             </div>
                           ))}
                         </div>
+
+                        {/* Pagination */}
+                        {totalExpiredPages > 1 && (
+                          <div className="flex justify-center pt-4">
+                            <div className="flex items-center space-x-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setExpiredExamsPage(prev => Math.max(1, prev - 1))}
+                                disabled={expiredExamsPage === 1}
+                                data-testid="button-prev-expired-exams"
+                              >
+                                <ChevronLeft className="h-4 w-4 mr-1" />
+                                Previous
+                              </Button>
+                              <span className="text-sm text-gray-600">Page {expiredExamsPage} of {totalExpiredPages}</span>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setExpiredExamsPage(prev => Math.min(totalExpiredPages, prev + 1))}
+                                disabled={expiredExamsPage === totalExpiredPages}
+                                data-testid="button-next-expired-exams"
+                              >
+                                Next
+                                <ChevronRight className="h-4 w-4 ml-1" />
+                              </Button>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     )}
                   </AccordionContent>
@@ -985,38 +973,6 @@ export default function StudentExams() {
                       </div>
                     ) : (
                       <div className="space-y-4">
-                        {/* Pagination Info */}
-                        {completedExamsFiltered.length > ITEMS_PER_PAGE && (
-                          <div className="flex justify-between items-center text-sm text-gray-600">
-                            <span>
-                              Showing {((completedExamsPage - 1) * ITEMS_PER_PAGE) + 1}-{Math.min(completedExamsPage * ITEMS_PER_PAGE, completedExamsFiltered.length)} of {completedExamsFiltered.length} exams
-                            </span>
-                            <div className="flex items-center space-x-2">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => setCompletedExamsPage(prev => Math.max(1, prev - 1))}
-                                disabled={completedExamsPage === 1}
-                                data-testid="button-prev-completed-exams"
-                              >
-                                <ChevronLeft className="h-4 w-4 mr-1" />
-                                Previous
-                              </Button>
-                              <span>Page {completedExamsPage} of {totalCompletedPages}</span>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => setCompletedExamsPage(prev => Math.min(totalCompletedPages, prev + 1))}
-                                disabled={completedExamsPage === totalCompletedPages}
-                                data-testid="button-next-completed-exams"
-                              >
-                                Next
-                                <ChevronRight className="h-4 w-4 ml-1" />
-                              </Button>
-                            </div>
-                          </div>
-                        )}
-                        
                         {/* Exams List */}
                         <div className="space-y-3">
                           {paginatedCompletedExams.map((exam: any) => {
@@ -1053,6 +1009,35 @@ export default function StudentExams() {
                             );
                           })}
                         </div>
+
+                        {/* Pagination */}
+                        {totalCompletedPages > 1 && (
+                          <div className="flex justify-center pt-4">
+                            <div className="flex items-center space-x-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setCompletedExamsPage(prev => Math.max(1, prev - 1))}
+                                disabled={completedExamsPage === 1}
+                                data-testid="button-prev-completed-exams"
+                              >
+                                <ChevronLeft className="h-4 w-4 mr-1" />
+                                Previous
+                              </Button>
+                              <span className="text-sm text-gray-600">Page {completedExamsPage} of {totalCompletedPages}</span>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setCompletedExamsPage(prev => Math.min(totalCompletedPages, prev + 1))}
+                                disabled={completedExamsPage === totalCompletedPages}
+                                data-testid="button-next-completed-exams"
+                              >
+                                Next
+                                <ChevronRight className="h-4 w-4 ml-1" />
+                              </Button>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     )}
                   </AccordionContent>
@@ -1061,6 +1046,7 @@ export default function StudentExams() {
             )}
           </div>
         </main>
+      </div>
     </div>
   );
 }
