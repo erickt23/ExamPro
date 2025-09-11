@@ -15,6 +15,12 @@ import { Progress } from "@/components/ui/progress";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { 
   FileText,
   Clock,
@@ -46,11 +52,12 @@ export default function StudentExams() {
   const [answers, setAnswers] = useState<{[key: number]: any}>({});
   const [timeRemaining, setTimeRemaining] = useState<number | null>(null);
   const [examStartTime, setExamStartTime] = useState<Date | null>(null);
-  const [completedExamsSearch, setCompletedExamsSearch] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [availableExamsPage, setAvailableExamsPage] = useState(1);
+  const [expiredExamsPage, setExpiredExamsPage] = useState(1);
   const [completedExamsPage, setCompletedExamsPage] = useState(1);
-  const [allExamsPage, setAllExamsPage] = useState(1);
-  const ITEMS_PER_PAGE = 6;
-  const ALL_EXAMS_PER_PAGE = 9; // 3 columns x 3 rows
+  const ITEMS_PER_PAGE = 3; // Show 3 most recent items by default
+  const [openSections, setOpenSections] = useState<string[]>(['available', 'expired', 'completed']); // All sections open by default
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -242,37 +249,73 @@ export default function StudentExams() {
   const completedExams = allExamsWithStatus.filter((exam: any) => exam.examStatus.status === 'completed');
   const inProgressExams = allExamsWithStatus.filter((exam: any) => exam.examStatus.status === 'in_progress');
 
-  // Filter completed exams based on search query
-  const filteredCompletedExams = completedExams.filter((exam: any) => {
-    if (!completedExamsSearch.trim()) return true;
+  // Filter exams based on search query
+  const filterExamsBySearch = (exams: any[]) => {
+    if (!searchQuery.trim()) return exams;
     
-    const searchLower = completedExamsSearch.toLowerCase();
-    const examTitle = exam.title.toLowerCase();
-    const subject = (subjects as any[]).find((s: any) => s.id === exam.subjectId);
-    const subjectName = subject?.name.toLowerCase() || '';
-    
-    return examTitle.includes(searchLower) || subjectName.includes(searchLower);
-  });
+    const searchLower = searchQuery.toLowerCase();
+    return exams.filter((exam: any) => {
+      const examTitle = exam.title.toLowerCase();
+      const subject = (subjects as any[]).find((s: any) => s.id === exam.subjectId);
+      const subjectName = subject?.name.toLowerCase() || '';
+      
+      return examTitle.includes(searchLower) || subjectName.includes(searchLower);
+    });
+  };
 
-  // Pagination for completed exams
-  const totalCompletedPages = Math.ceil(filteredCompletedExams.length / ITEMS_PER_PAGE);
-  const paginatedCompletedExams = filteredCompletedExams.slice(
+  // Available exams (including available, upcoming, in_progress)
+  const availableExamsFiltered = filterExamsBySearch(availableExams.concat(upcomingExams, inProgressExams))
+    .sort((a: any, b: any) => {
+      const aDate = new Date(a.availableFrom || a.createdAt || 0);
+      const bDate = new Date(b.availableFrom || b.createdAt || 0);
+      return bDate.getTime() - aDate.getTime();
+    });
+  
+  // Expired exams
+  const expiredExamsFiltered = filterExamsBySearch(expiredExams)
+    .sort((a: any, b: any) => {
+      const aDate = new Date(a.availableUntil || a.createdAt || 0);
+      const bDate = new Date(b.availableUntil || b.createdAt || 0);
+      return bDate.getTime() - aDate.getTime();
+    });
+  
+  // Completed exams
+  const completedExamsFiltered = filterExamsBySearch(completedExams)
+    .sort((a: any, b: any) => {
+      const submission = mySubmissions.find((s: any) => s.examId === a.id);
+      const aDate = new Date(submission?.submittedAt || a.createdAt || 0);
+      const submissionB = mySubmissions.find((s: any) => s.examId === b.id);
+      const bDate = new Date(submissionB?.submittedAt || b.createdAt || 0);
+      return bDate.getTime() - aDate.getTime();
+    });
+
+  // Pagination for each section
+  const totalAvailablePages = Math.ceil(availableExamsFiltered.length / ITEMS_PER_PAGE);
+  const paginatedAvailableExams = availableExamsFiltered.slice(
+    (availableExamsPage - 1) * ITEMS_PER_PAGE,
+    availableExamsPage * ITEMS_PER_PAGE
+  );
+  
+  const totalExpiredPages = Math.ceil(expiredExamsFiltered.length / ITEMS_PER_PAGE);
+  const paginatedExpiredExams = expiredExamsFiltered.slice(
+    (expiredExamsPage - 1) * ITEMS_PER_PAGE,
+    expiredExamsPage * ITEMS_PER_PAGE
+  );
+  
+  const totalCompletedPages = Math.ceil(completedExamsFiltered.length / ITEMS_PER_PAGE);
+  const paginatedCompletedExams = completedExamsFiltered.slice(
     (completedExamsPage - 1) * ITEMS_PER_PAGE,
     completedExamsPage * ITEMS_PER_PAGE
   );
 
-  // Reset page when search changes
+  // Reset pages when search changes
   useEffect(() => {
+    setAvailableExamsPage(1);
+    setExpiredExamsPage(1);
     setCompletedExamsPage(1);
-  }, [completedExamsSearch]);
+  }, [searchQuery]);
 
 
-  // Pagination for all exams
-  const totalAllExamsPages = Math.ceil(allExamsWithStatus.length / ALL_EXAMS_PER_PAGE);
-  const paginatedAllExams = allExamsWithStatus.slice(
-    (allExamsPage - 1) * ALL_EXAMS_PER_PAGE,
-    allExamsPage * ALL_EXAMS_PER_PAGE
-  );
 
   // Debug: Log all loaded data
   console.log('Student exam dashboard data:', {
@@ -712,8 +755,28 @@ export default function StudentExams() {
             </div>
 
 
-            {/* All Exams - Available, Upcoming, Expired */}
-            <Card className="mb-6">
+            {/* Search Field */}
+            <div className="mb-6">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <Input
+                  placeholder="Search exams by title or subject..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10"
+                  data-testid="input-search-exams"
+                />
+              </div>
+            </div>
+
+            {allExamsWithStatus.length === 0 ? (
+              <div className="text-center py-12">
+                <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-500 text-lg mb-2">{t('studentExams.noExamsAvailable')}</p>
+                <p className="text-gray-400">{t('studentExams.checkBackLater')}</p>
+              </div>
+            ) : (
+              <Accordion type="multiple" value={openSections} onValueChange={setOpenSections} className="space-y-4">
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <FileText className="h-5 w-5 mr-2" />
