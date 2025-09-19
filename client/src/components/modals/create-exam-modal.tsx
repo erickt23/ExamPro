@@ -539,7 +539,7 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
                 {/* Available Questions */}
                 <div className="max-w-full">
                   <Label>{t('createExamModal.availableQuestions')} ({questions?.length || 0} {t('createExamModal.total')})</Label>
-                  <div className="mt-2 max-h-80 overflow-y-auto border rounded-lg overflow-x-hidden max-w-full">
+                  <div className={`mt-2 border rounded-lg overflow-x-hidden max-w-full ${questions?.length > 5 ? 'max-h-60 overflow-y-auto' : ''}`}>
                     {questions?.length === 0 ? (
                       <div className="p-4 text-center text-gray-500">
                         {t('createExamModal.noQuestionsFound')}

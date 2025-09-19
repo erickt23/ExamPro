@@ -204,8 +204,8 @@ export default function Sidebar({ className }: SidebarProps) {
       title: "New Exam",
       icon: Plus,
       action: () => {
-        // This would open the create exam modal
-        console.log("Create exam");
+        // Navigate to exams page and trigger modal
+        setLocation("/exams?create=true");
       },
     },
   ] : [];
