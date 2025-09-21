@@ -44,7 +44,6 @@ const createExamSchema = z.object({
   attemptsAllowed: z.number().min(1).default(1),
   randomizeQuestions: z.boolean().default(false),
   randomizeOptions: z.boolean().default(false),
-  showResultsImmediately: z.boolean().default(false),
   requirePassword: z.boolean().default(false),
   password: z.string().optional(),
   availableFrom: z.string().optional(),
@@ -93,7 +92,6 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
       attemptsAllowed: 1,
       randomizeQuestions: false,
       randomizeOptions: false,
-      showResultsImmediately: false,
       requirePassword: false,
       password: '',
       availableFrom: '',
@@ -848,24 +846,6 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
                       </FormControl>
                       <div className="space-y-1 leading-none">
                         <FormLabel>{t('createExamModal.randomizeAnswerOptions')}</FormLabel>
-                      </div>
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="showResultsImmediately"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                      <FormControl>
-                        <Checkbox
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                      <div className="space-y-1 leading-none">
-                        <FormLabel>{t('createExamModal.showResultsImmediately')}</FormLabel>
                       </div>
                     </FormItem>
                   )}

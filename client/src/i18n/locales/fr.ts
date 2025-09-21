@@ -503,7 +503,16 @@ export const fr = {
     failedToSubmitExam: 'Échec de la soumission de l\'examen',
     unauthorized: 'Non Autorisé',
     loggedOutMessage: 'Vous êtes déconnecté. Reconnexion...',
-    selectMultipleAnswers: 'Sélectionnez toutes les réponses correctes :'
+    selectMultipleAnswers: 'Sélectionnez toutes les réponses correctes :',
+    passwordRequired: 'Mot de passe requis',
+    examRequiresPassword: 'Cet examen nécessite un mot de passe pour y accéder.',
+    enterPassword: 'Entrez le mot de passe',
+    passwordPlaceholder: 'Entrez le mot de passe de l\'examen...',
+    startExam: 'Commencer l\'examen',
+    passwordCorrect: 'Mot de passe correct',
+    accessGranted: 'Accès accordé. Démarrage de l\'examen...',
+    incorrectPassword: 'Mot de passe incorrect',
+    passwordIncorrect: 'Le mot de passe que vous avez entré est incorrect. Veuillez réessayer.'
   },
 
   // Grading Center

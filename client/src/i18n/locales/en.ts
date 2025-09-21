@@ -509,7 +509,16 @@ export const en = {
     failedToSubmitExam: 'Failed to submit exam',
     unauthorized: 'Unauthorized',
     loggedOutMessage: 'You are logged out. Logging in again...',
-    multipleAnswersAllowed: 'Multiple answers allowed. Select all correct options.'
+    multipleAnswersAllowed: 'Multiple answers allowed. Select all correct options.',
+    passwordRequired: 'Password Required',
+    examRequiresPassword: 'This exam requires a password to access.',
+    enterPassword: 'Enter Password',
+    passwordPlaceholder: 'Enter exam password...',
+    startExam: 'Start Exam',
+    passwordCorrect: 'Password Correct',
+    accessGranted: 'Access granted. Starting exam...',
+    incorrectPassword: 'Incorrect Password',
+    passwordIncorrect: 'The password you entered is incorrect. Please try again.'
   },
 
   // Grading Center

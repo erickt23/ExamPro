@@ -41,6 +41,9 @@ export default function StudentExamTaking() {
   const [examStartTime, setExamStartTime] = useState<Date | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [warningShown, setWarningShown] = useState(false);
+  const [passwordRequired, setPasswordRequired] = useState(false);
+  const [enteredPassword, setEnteredPassword] = useState('');
+  const [isPasswordValidated, setIsPasswordValidated] = useState(false);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -95,9 +98,18 @@ export default function StudentExamTaking() {
     retry: false,
   });
 
+  // Check password requirement
+  useEffect(() => {
+    if (exam && exam.requirePassword && !isPasswordValidated) {
+      setPasswordRequired(true);
+    } else if (exam && (!exam.requirePassword || isPasswordValidated)) {
+      setPasswordRequired(false);
+    }
+  }, [exam, isPasswordValidated]);
+
   // Initialize timer and load saved progress
   useEffect(() => {
-    if (exam && questions.length > 0) {
+    if (exam && questions.length > 0 && (!exam.requirePassword || isPasswordValidated)) {
       const submission = mySubmissions.find((s: any) => s.examId === examId && s.status === 'in_progress');
       
       if (submission && submission.progressData) {
@@ -255,6 +267,24 @@ export default function StudentExamTaking() {
     },
   });
 
+  const handlePasswordSubmit = () => {
+    if (exam && exam.password === enteredPassword) {
+      setIsPasswordValidated(true);
+      setPasswordRequired(false);
+      toast({
+        title: t('examTaking.passwordCorrect'),
+        description: t('examTaking.accessGranted'),
+      });
+    } else {
+      toast({
+        title: t('examTaking.incorrectPassword'),
+        description: t('examTaking.passwordIncorrect'),
+        variant: "destructive",
+      });
+      setEnteredPassword('');
+    }
+  };
+
   const handleSaveProgress = () => {
     if (saveProgressMutation.isPending) return;
     
@@ -363,7 +393,33 @@ export default function StudentExamTaking() {
 
     switch (question.question.questionType) {
       case 'multiple_choice':
-        const options = question.question.options || [];
+        let options = question.question.options || [];
+        
+        // Randomize answer options if exam has randomizeAnswers enabled
+        if (exam?.randomizeAnswers && options.length > 1) {
+          // Create a seeded random function using questionId for consistent randomization
+          const seed = question.questionId;
+          const random = (seed: number) => {
+            const x = Math.sin(seed) * 10000;
+            return x - Math.floor(x);
+          };
+          
+          // Create array of options with their original indices
+          const optionsWithIndices = options.map((option: string, index: number) => ({
+            option,
+            originalIndex: index,
+            originalLetter: String.fromCharCode(65 + index)
+          }));
+          
+          // Fisher-Yates shuffle with seeded random
+          for (let i = optionsWithIndices.length - 1; i > 0; i--) {
+            const j = Math.floor(random(seed + i) * (i + 1));
+            [optionsWithIndices[i], optionsWithIndices[j]] = [optionsWithIndices[j], optionsWithIndices[i]];
+          }
+          
+          // Update options to use shuffled order
+          options = optionsWithIndices.map(item => item.option);
+        }
         
         // Determine if this question supports multiple correct answers
         const hasMultipleCorrectAnswers = question.question.correctAnswers && 
@@ -990,6 +1046,55 @@ export default function StudentExamTaking() {
           <Link href="/exams">
             <Button>{t('examTaking.backToExams')}</Button>
           </Link>
+        </div>
+      </div>
+    );
+  }
+
+  // Show password prompt if required
+  if (passwordRequired) {
+    return (
+      <div className="min-h-screen bg-background dark:bg-background">
+        <Navbar />
+        <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
+          <Card className="w-full max-w-md mx-4">
+            <CardHeader>
+              <CardTitle className="text-center">{t('examTaking.passwordRequired')}</CardTitle>
+              <p className="text-center text-muted-foreground">
+                {t('examTaking.examRequiresPassword')}
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor="exam-password">{t('examTaking.enterPassword')}</Label>
+                <Input
+                  id="exam-password"
+                  type="password"
+                  value={enteredPassword}
+                  onChange={(e) => setEnteredPassword(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && handlePasswordSubmit()}
+                  placeholder={t('examTaking.passwordPlaceholder')}
+                  className="mt-2"
+                  data-testid="input-exam-password"
+                />
+              </div>
+              <div className="flex gap-2">
+                <Link href="/exams" className="flex-1">
+                  <Button variant="outline" className="w-full" data-testid="button-cancel-exam">
+                    {t('common.cancel')}
+                  </Button>
+                </Link>
+                <Button 
+                  onClick={handlePasswordSubmit} 
+                  className="flex-1"
+                  disabled={!enteredPassword.trim()}
+                  data-testid="button-submit-password"
+                >
+                  {t('examTaking.startExam')}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     );

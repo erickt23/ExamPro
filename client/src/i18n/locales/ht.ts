@@ -503,7 +503,16 @@ export const ht = {
     failedToSubmitExam: 'Echwe pou soumèt egzamen',
     unauthorized: 'Pa Gen Otorizasyon',
     loggedOutMessage: 'Ou dekonekte. Y ap konekte ankò...',
-    selectMultipleAnswers: 'Chwazi tout repons ki kòrèk yo :'
+    selectMultipleAnswers: 'Chwazi tout repons ki kòrèk yo :',
+    passwordRequired: 'Kòd sekrè obligatwa',
+    examRequiresPassword: 'Egzamen sa a bezwen yon kòd sekrè pou ou ka antre.',
+    enterPassword: 'Antre kòd sekrè a',
+    passwordPlaceholder: 'Antre kòd sekrè egzamen an...',
+    startExam: 'Kòmanse egzamen',
+    passwordCorrect: 'Kòd sekrè kòrèk',
+    accessGranted: 'Aksè akòde. Y ap kòmanse egzamen...',
+    incorrectPassword: 'Kòd sekrè pa kòrèk',
+    passwordIncorrect: 'Kòd sekrè ou antre a pa kòrèk. Tanpri eseye ankò.'
   },
 
   // Grading Center

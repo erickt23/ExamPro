@@ -21,6 +21,13 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { 
   FileText,
   Clock,
@@ -56,6 +63,8 @@ export default function StudentExams() {
   const [availableExamsPage, setAvailableExamsPage] = useState(1);
   const [expiredExamsPage, setExpiredExamsPage] = useState(1);
   const [completedExamsPage, setCompletedExamsPage] = useState(1);
+  const [showPasswordPrompt, setShowPasswordPrompt] = useState(false);
+  const [enteredPassword, setEnteredPassword] = useState('');
   const ITEMS_PER_PAGE = 3; // Show 3 most recent items by default
   const [openSections, setOpenSections] = useState<string[]>(['available', 'expired', 'completed']); // All sections open by default
 
@@ -350,7 +359,15 @@ export default function StudentExams() {
 
   const handleStartExam = (exam: any) => {
     if (exam.examStatus.canStart) {
-      setLocation(`/exams/${exam.id}/take`);
+      // Check if exam requires password
+      if (exam.requirePassword || exam.password) {
+        // Show password prompt instead of navigating directly
+        setSelectedExam(exam);
+        setShowPasswordPrompt(true);
+      } else {
+        // Navigate directly if no password required
+        setLocation(`/exams/${exam.id}/take`);
+      }
     } else {
       toast({
         title: t('studentExams.cannotStartExam'),
@@ -358,6 +375,42 @@ export default function StudentExams() {
         variant: "destructive",
       });
     }
+  };
+
+  const handlePasswordSubmit = () => {
+    if (!selectedExam || !enteredPassword) {
+      toast({
+        title: t('examTaking.incorrectPassword'),
+        description: t('examTaking.passwordIncorrect'),
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Check if entered password matches exam password
+    if (enteredPassword === selectedExam.password) {
+      toast({
+        title: t('examTaking.passwordCorrect'),
+        description: t('examTaking.accessGranted'),
+      });
+      // Close password prompt and navigate to exam
+      setShowPasswordPrompt(false);
+      setEnteredPassword('');
+      setLocation(`/exams/${selectedExam.id}/take`);
+    } else {
+      toast({
+        title: t('examTaking.incorrectPassword'),
+        description: t('examTaking.passwordIncorrect'),
+        variant: "destructive",
+      });
+      setEnteredPassword('');
+    }
+  };
+
+  const handleClosePasswordPrompt = () => {
+    setShowPasswordPrompt(false);
+    setEnteredPassword('');
+    setSelectedExam(null);
   };
 
   const handleAnswerChange = (questionId: number, answer: any) => {
@@ -731,6 +784,7 @@ export default function StudentExams() {
 
   // Main exams list view
   return (
+    <>
     <div className="min-h-screen bg-gray-50">
       <Navbar />
       <div className="flex">
@@ -1036,5 +1090,55 @@ export default function StudentExams() {
         </main>
       </div>
     </div>
+
+    {/* Password Prompt Dialog */}
+    <Dialog open={showPasswordPrompt} onOpenChange={setShowPasswordPrompt}>
+      <DialogContent className="sm:max-w-md" data-testid="exam-password-dialog">
+        <DialogHeader>
+          <DialogTitle data-testid="password-dialog-title">
+            {t('examTaking.passwordRequired')}
+          </DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4">
+          <p className="text-sm text-gray-600 dark:text-gray-400" data-testid="password-dialog-description">
+            {t('examTaking.examRequiresPassword')}
+          </p>
+          <div className="space-y-2">
+            <Label htmlFor="exam-password">{t('examTaking.enterPassword')}</Label>
+            <Input
+              id="exam-password"
+              type="password"
+              placeholder={t('examTaking.passwordPlaceholder')}
+              value={enteredPassword}
+              onChange={(e) => setEnteredPassword(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  handlePasswordSubmit();
+                }
+              }}
+              data-testid="exam-password-input"
+              autoFocus
+            />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button
+            variant="outline"
+            onClick={handleClosePasswordPrompt}
+            data-testid="button-cancel-password"
+          >
+            {t('examTaking.cancel')}
+          </Button>
+          <Button
+            onClick={handlePasswordSubmit}
+            disabled={!enteredPassword.trim()}
+            data-testid="button-submit-password"
+          >
+            {t('examTaking.startExam')}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+    </>
   );
 }

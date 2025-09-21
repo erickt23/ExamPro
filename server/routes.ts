@@ -664,7 +664,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/exams/:id/questions', isAuthenticated, async (req: any, res) => {
     try {
       const examId = parseInt(req.params.id);
-      const examQuestions = await storage.getExamQuestions(examId);
+      const userId = req.user.claims.sub;
+      
+      // Get exam details to check randomization settings
+      const exam = await storage.getExamById(examId);
+      if (!exam) {
+        return res.status(404).json({ message: "Exam not found" });
+      }
+      
+      let examQuestions = await storage.getExamQuestions(examId);
+      
+      // If randomizeQuestions is enabled, shuffle the questions for students
+      if (exam.randomizeQuestions) {
+        // Create a seeded random function using userId + examId for consistent randomization per student
+        const seed = parseInt(userId.slice(-6), 36) + examId;
+        const random = (seed: number) => {
+          const x = Math.sin(seed++) * 10000;
+          return x - Math.floor(x);
+        };
+        
+        // Fisher-Yates shuffle with seeded random
+        for (let i = examQuestions.length - 1; i > 0; i--) {
+          const j = Math.floor(random(seed + i) * (i + 1));
+          [examQuestions[i], examQuestions[j]] = [examQuestions[j], examQuestions[i]];
+        }
+      }
+      
       res.json(examQuestions);
     } catch (error) {
       console.error("Error fetching exam questions:", error);
