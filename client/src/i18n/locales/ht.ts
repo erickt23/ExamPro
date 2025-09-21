@@ -512,7 +512,9 @@ export const ht = {
     passwordCorrect: 'Kòd sekrè kòrèk',
     accessGranted: 'Aksè akòde. Y ap kòmanse egzamen...',
     incorrectPassword: 'Kòd sekrè pa kòrèk',
-    passwordIncorrect: 'Kòd sekrè ou antre a pa kòrèk. Tanpri eseye ankò.'
+    passwordIncorrect: 'Kòd sekrè ou antre a pa kòrèk. Tanpri eseye ankò.',
+    tooManyAttempts: 'Twòp Eseye',
+    waitBeforeRetrying: 'Twòp eseye ak kòd sekrè. Tanpri tann anvan ou eseye ankò.'
   },
 
   // Grading Center

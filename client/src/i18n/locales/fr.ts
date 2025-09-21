@@ -512,7 +512,9 @@ export const fr = {
     passwordCorrect: 'Mot de passe correct',
     accessGranted: 'Accès accordé. Démarrage de l\'examen...',
     incorrectPassword: 'Mot de passe incorrect',
-    passwordIncorrect: 'Le mot de passe que vous avez entré est incorrect. Veuillez réessayer.'
+    passwordIncorrect: 'Le mot de passe que vous avez entré est incorrect. Veuillez réessayer.',
+    tooManyAttempts: 'Trop de Tentatives',
+    waitBeforeRetrying: 'Trop de tentatives de mot de passe. Veuillez attendre avant de réessayer.'
   },
 
   // Grading Center

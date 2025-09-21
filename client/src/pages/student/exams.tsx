@@ -377,7 +377,7 @@ export default function StudentExams() {
     }
   };
 
-  const handlePasswordSubmit = () => {
+  const handlePasswordSubmit = async () => {
     if (!selectedExam || !enteredPassword) {
       toast({
         title: t('examTaking.incorrectPassword'),
@@ -387,22 +387,41 @@ export default function StudentExams() {
       return;
     }
 
-    // Check if entered password matches exam password
-    if (enteredPassword === selectedExam.password) {
-      toast({
-        title: t('examTaking.passwordCorrect'),
-        description: t('examTaking.accessGranted'),
+    try {
+      // Validate password on server
+      const response = await apiRequest(`/api/exams/${selectedExam.id}/validate-password`, {
+        method: 'POST',
+        body: JSON.stringify({ password: enteredPassword }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
       });
-      // Close password prompt and navigate to exam
-      setShowPasswordPrompt(false);
-      setEnteredPassword('');
-      setLocation(`/exams/${selectedExam.id}/take`);
-    } else {
-      toast({
-        title: t('examTaking.incorrectPassword'),
-        description: t('examTaking.passwordIncorrect'),
-        variant: "destructive",
-      });
+
+      if (response.access) {
+        toast({
+          title: t('examTaking.passwordCorrect'),
+          description: t('examTaking.accessGranted'),
+        });
+        // Close password prompt and navigate to exam
+        setShowPasswordPrompt(false);
+        setEnteredPassword('');
+        setLocation(`/exams/${selectedExam.id}/take`);
+      }
+    } catch (error: any) {
+      // Handle server errors
+      if (error.status === 429) {
+        toast({
+          title: t('examTaking.tooManyAttempts'),
+          description: t('examTaking.waitBeforeRetrying'),
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: t('examTaking.incorrectPassword'),
+          description: t('examTaking.passwordIncorrect'),
+          variant: "destructive",
+        });
+      }
       setEnteredPassword('');
     }
   };

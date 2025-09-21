@@ -9,6 +9,7 @@ import * as XLSX from "xlsx";
 import { eq, and, desc, max } from "drizzle-orm";
 import * as path from "path";
 import * as fs from "fs";
+import * as bcrypt from "bcrypt";
 import {
   ObjectStorageService,
   ObjectNotFoundError,
@@ -480,11 +481,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log('Search params received:', { status, search, userId });
         const exams = await storage.getExams(userId, status as string, search as string);
         console.log('Exams returned:', exams.length, 'exams');
-        res.json(exams);
+        
+        // Strip passwords from all responses, even for instructors (security best practice)
+        const sanitizedExams = exams.map(exam => ({
+          ...exam,
+          password: undefined
+        }));
+        
+        res.json(sanitizedExams);
       } else {
-        // For students, return exams they can take
+        // For students, return exams they can take but strip sensitive information
         const exams = await storage.getActiveExamsForStudents();
-        res.json(exams);
+        
+        // Strip passwords and other sensitive data for students
+        const sanitizedExams = exams.map(exam => ({
+          ...exam,
+          password: undefined, // Never expose passwords to students
+        }));
+        
+        res.json(sanitizedExams);
       }
     } catch (error) {
       console.error("Error fetching exams:", error);
@@ -501,13 +516,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Access denied" });
       }
 
-      const examData = insertExamSchema.parse({
+      let examData = insertExamSchema.parse({
         ...req.body,
         instructorId: userId,
       });
       
+      // Hash password if provided
+      if (examData.password && examData.requirePassword) {
+        const saltRounds = 12;
+        examData.password = await bcrypt.hash(examData.password, saltRounds);
+      }
+      
       const exam = await storage.createExam(examData);
-      res.status(201).json(exam);
+      
+      // Never return password hash in response
+      const safeExam = {
+        ...exam,
+        password: undefined
+      };
+      
+      res.status(201).json(safeExam);
     } catch (error) {
       console.error("Error creating exam:", error);
       if (error instanceof z.ZodError) {
@@ -520,6 +548,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/exams/:id', isAuthenticated, async (req: any, res) => {
     try {
       const examId = parseInt(req.params.id);
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
       const exam = await storage.getExamById(examId);
       
       if (!exam) {
@@ -527,9 +558,62 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Get exam questions
-      const examQuestions = await storage.getExamQuestions(examId);
+      let examQuestions = await storage.getExamQuestions(examId);
       
-      res.json({ ...exam, questions: examQuestions });
+      // For students: Strip sensitive information and check access
+      if (!hasInstructorPrivileges(user)) {
+        // Check exam availability and eligibility
+        const now = new Date();
+        if (exam.status !== 'active') {
+          return res.status(403).json({ message: "Exam is not available" });
+        }
+        
+        if (exam.availableFrom && new Date(exam.availableFrom) > now) {
+          return res.status(403).json({ message: "Exam is not yet available" });
+        }
+        
+        if (exam.availableUntil && new Date(exam.availableUntil) < now) {
+          return res.status(403).json({ message: "Exam is no longer available" });
+        }
+        
+        // Check if exam requires password and if user has access
+        if (exam.requirePassword && exam.password) {
+          const accessKey = `${userId}_${examId}`;
+          const hasAccess = req.session.examAccess?.[accessKey]?.granted;
+          
+          if (!hasAccess) {
+            return res.status(403).json({ 
+              message: "Password required", 
+              requirePassword: true 
+            });
+          }
+        }
+        
+        // Strip answer keys from questions for students
+        examQuestions = examQuestions.map(eq => ({
+          ...eq,
+          question: {
+            ...eq.question,
+            correctAnswer: undefined, // Remove correct answer
+            options: eq.question.options, // Keep options for rendering
+          }
+        }));
+        
+        // Also strip password from exam object for students
+        const sanitizedExam = {
+          ...exam,
+          password: undefined
+        };
+        
+        res.json({ ...sanitizedExam, questions: examQuestions });
+      } else {
+        // For instructors: Return full data but strip password hash
+        const sanitizedExam = {
+          ...exam,
+          password: undefined
+        };
+        res.json({ ...sanitizedExam, questions: examQuestions });
+      }
     } catch (error) {
       console.error("Error fetching exam:", error);
       res.status(500).json({ message: "Failed to fetch exam" });
@@ -578,10 +662,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
 
-      const updates = insertExamSchema.partial().parse(req.body);
+      let updates = insertExamSchema.partial().parse(req.body);
+      
+      // Hash password if it's being updated
+      if (updates.password && updates.requirePassword) {
+        const saltRounds = 12;
+        updates.password = await bcrypt.hash(updates.password, saltRounds);
+      }
+      
       const updatedExam = await storage.updateExam(examId, updates);
       
-      res.json(updatedExam);
+      // Never return password hash in response
+      const safeUpdatedExam = {
+        ...updatedExam,
+        password: undefined
+      };
+      
+      res.json(safeUpdatedExam);
     } catch (error) {
       console.error("Error updating exam:", error);
       
@@ -660,11 +757,86 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Password validation endpoint for exams
+  app.post('/api/exams/:id/validate-password', isAuthenticated, async (req: any, res) => {
+    try {
+      const examId = parseInt(req.params.id);
+      const userId = req.user.claims.sub;
+      const { password } = req.body;
+      
+      // Rate limiting - check if user has made too many attempts recently
+      const sessionKey = `exam_password_attempts_${userId}_${examId}`;
+      if (!req.session.passwordAttempts) {
+        req.session.passwordAttempts = {};
+      }
+      
+      const now = Date.now();
+      const attempts = req.session.passwordAttempts[sessionKey] || [];
+      
+      // Clean up attempts older than 15 minutes
+      const recentAttempts = attempts.filter((timestamp: number) => now - timestamp < 15 * 60 * 1000);
+      
+      // Allow max 5 attempts per 15 minutes
+      if (recentAttempts.length >= 5) {
+        return res.status(429).json({ message: "Too many password attempts. Please wait before trying again." });
+      }
+      
+      // Get exam details
+      const exam = await storage.getExamById(examId);
+      if (!exam) {
+        return res.status(404).json({ message: "Exam not found" });
+      }
+      
+      // Check exam availability and eligibility
+      const currentDate = new Date();
+      if (exam.status !== 'active') {
+        return res.status(403).json({ message: "Exam is not available" });
+      }
+      
+      if (exam.availableFrom && new Date(exam.availableFrom) > currentDate) {
+        return res.status(403).json({ message: "Exam is not yet available" });
+      }
+      
+      if (exam.availableUntil && new Date(exam.availableUntil) < currentDate) {
+        return res.status(403).json({ message: "Exam is no longer available" });
+      }
+      
+      // Check if exam requires password
+      if (!exam.requirePassword || !exam.password) {
+        return res.status(400).json({ message: "Exam does not require password" });
+      }
+      
+      // Validate password using bcrypt for secure comparison
+      const isPasswordValid = await bcrypt.compare(password, exam.password);
+      if (!isPasswordValid) {
+        // Record failed attempt
+        recentAttempts.push(now);
+        req.session.passwordAttempts[sessionKey] = recentAttempts;
+        return res.status(401).json({ message: "Incorrect password" });
+      }
+      
+      // Password is correct - grant access
+      if (!req.session.examAccess) {
+        req.session.examAccess = {};
+      }
+      req.session.examAccess[`${userId}_${examId}`] = {
+        granted: true,
+        timestamp: now
+      };
+      
+      res.json({ message: "Password validated successfully", access: true });
+    } catch (error) {
+      console.error("Error validating exam password:", error);
+      res.status(500).json({ message: "Failed to validate password" });
+    }
+  });
+
   // Exam question management
   app.get('/api/exams/:id/questions', isAuthenticated, async (req: any, res) => {
     try {
       const examId = parseInt(req.params.id);
       const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
       
       // Get exam details to check randomization settings
       const exam = await storage.getExamById(examId);
@@ -672,10 +844,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Exam not found" });
       }
       
+      // For students: Check password protection and access validation
+      if (!hasInstructorPrivileges(user)) {
+        // Check exam availability and eligibility
+        const now = new Date();
+        if (exam.status !== 'active') {
+          return res.status(403).json({ message: "Exam is not available" });
+        }
+        
+        if (exam.availableFrom && new Date(exam.availableFrom) > now) {
+          return res.status(403).json({ message: "Exam is not yet available" });
+        }
+        
+        if (exam.availableUntil && new Date(exam.availableUntil) < now) {
+          return res.status(403).json({ message: "Exam is no longer available" });
+        }
+        
+        // Check if exam requires password
+        if (exam.requirePassword && exam.password) {
+          // Check if user has validated password for this exam
+          const accessKey = `${userId}_${examId}`;
+          const hasAccess = req.session.examAccess?.[accessKey]?.granted;
+          
+          if (!hasAccess) {
+            return res.status(403).json({ 
+              message: "Password required", 
+              requirePassword: true 
+            });
+          }
+        }
+      }
+      
       let examQuestions = await storage.getExamQuestions(examId);
       
+      // For students: Strip sensitive information (answer keys)
+      if (!hasInstructorPrivileges(user)) {
+        examQuestions = examQuestions.map(eq => ({
+          ...eq,
+          question: {
+            ...eq.question,
+            correctAnswer: undefined, // Remove correct answer
+            options: eq.question.options, // Keep options for rendering
+          }
+        }));
+      }
+      
       // If randomizeQuestions is enabled, shuffle the questions for students
-      if (exam.randomizeQuestions) {
+      if (exam.randomizeQuestions && !hasInstructorPrivileges(user)) {
         // Create a seeded random function using userId + examId for consistent randomization per student
         const seed = parseInt(userId.slice(-6), 36) + examId;
         const random = (seed: number) => {
@@ -712,10 +927,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Exam not found" });
       }
 
-      const { questionId, order, points } = req.body;
-      await storage.addQuestionToExam(examId, questionId, order, points);
-      
-      res.status(201).json({ message: "Question added to exam" });
+      // Support both single question and multiple questions
+      if (req.body.questionIds && Array.isArray(req.body.questionIds)) {
+        // Multiple questions - add them with auto-generated order and default points
+        for (let i = 0; i < req.body.questionIds.length; i++) {
+          const questionId = req.body.questionIds[i];
+          const order = i + 1; // Auto-generate order based on array position
+          const points = req.body.points || 1; // Default to 1 point per question
+          await storage.addQuestionToExam(examId, questionId, order, points);
+        }
+        res.status(201).json({ message: "Questions added to exam" });
+      } else {
+        // Single question - use existing logic
+        const { questionId, order, points } = req.body;
+        await storage.addQuestionToExam(examId, questionId, order, points);
+        res.status(201).json({ message: "Question added to exam" });
+      }
     } catch (error) {
       console.error("Error adding question to exam:", error);
       res.status(500).json({ message: "Failed to add question to exam" });

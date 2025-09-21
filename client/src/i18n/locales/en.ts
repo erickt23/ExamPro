@@ -518,7 +518,9 @@ export const en = {
     passwordCorrect: 'Password Correct',
     accessGranted: 'Access granted. Starting exam...',
     incorrectPassword: 'Incorrect Password',
-    passwordIncorrect: 'The password you entered is incorrect. Please try again.'
+    passwordIncorrect: 'The password you entered is incorrect. Please try again.',
+    tooManyAttempts: 'Too Many Attempts',
+    waitBeforeRetrying: 'Too many password attempts. Please wait before trying again.'
   },
 
   // Grading Center
