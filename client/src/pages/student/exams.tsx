@@ -389,15 +389,12 @@ export default function StudentExams() {
 
     try {
       // Validate password on server
-      const response = await apiRequest(`/api/exams/${selectedExam.id}/validate-password`, {
-        method: 'POST',
-        body: JSON.stringify({ password: enteredPassword }),
-        headers: {
-          'Content-Type': 'application/json',
-        },
+      const response = await apiRequest('POST', `/api/exams/${selectedExam.id}/validate-password`, {
+        password: enteredPassword
       });
 
-      if (response.access) {
+      const data = await response.json();
+      if (data.access) {
         toast({
           title: t('examTaking.passwordCorrect'),
           description: t('examTaking.accessGranted'),
