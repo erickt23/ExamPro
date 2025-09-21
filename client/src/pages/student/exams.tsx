@@ -264,7 +264,7 @@ export default function StudentExams() {
   };
 
   // Available exams (including available, upcoming, in_progress)
-  const availableExamsFiltered = filterExamsBySearch(availableExams.concat(upcomingExams, inProgressExams))
+  const availableExamsFiltered = filterExamsBySearch(availableExams.concat(upcomingExams))
     .sort((a: any, b: any) => {
       const aDate = new Date(a.availableFrom || a.createdAt || 0);
       const bDate = new Date(b.availableFrom || b.createdAt || 0);
@@ -317,17 +317,6 @@ export default function StudentExams() {
 
 
 
-  // Debug: Log all loaded data
-  console.log('Student exam dashboard data:', {
-    totalExams: exams.length,
-    availableExams: availableExams.length,
-    inProgressExams: inProgressExams.length,
-    upcomingExams: upcomingExams.length,
-    expiredExams: expiredExams.length,
-    completedExams: completedExams.length,
-    totalSubmissions: mySubmissions.length,
-    user: user?.id
-  });
 
   // Check for URL parameter to auto-start exam
   useEffect(() => {
@@ -337,7 +326,6 @@ export default function StudentExams() {
     if (startExamId && exams && !selectedExam) {
       const examToStart = availableExams.find((exam: any) => exam.id.toString() === startExamId);
       if (examToStart) {
-        console.log('Auto-starting exam from URL parameter:', examToStart);
         handleStartExam(examToStart);
       }
     }
