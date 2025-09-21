@@ -261,7 +261,7 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 max-w-full overflow-hidden">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             {/* Basic Information */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
