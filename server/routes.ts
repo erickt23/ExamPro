@@ -605,7 +605,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           ...eq,
           question: {
             ...eq.question,
-            correctAnswer: undefined, // Remove correct answer
+            correctAnswer: null, // Remove correct answer
+            correctAnswers: null, // Remove correct answers
             options: eq.question.options, // Keep options for rendering
           }
         }));
@@ -910,7 +911,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               examId,
               studentId: userId,
               status: 'in_progress' as const,
-              totalScore: 0,
+              totalScore: '0',
               submittedAt: new Date(),
               progressData: null,
               timeRemainingSeconds: exam.duration ? exam.duration * 60 : null,
@@ -919,7 +920,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             };
             
             const submissionId = await storage.createSubmission(newSubmissionData);
-            submission = await storage.getSubmissionById(submissionId);
+            submission = typeof submissionId === 'number' ? await storage.getSubmissionById(submissionId) : null;
           }
         }
         
@@ -965,7 +966,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         // Apply shuffling and strip sensitive information
         examQuestions = examQuestions.map(eq => {
-          const permutation = permutationMappings[eq.questionId];
+          const permutation = (permutationMappings as any)[eq.questionId];
           const baseQuestion = {
             ...eq.question,
             correctAnswer: undefined, // Remove correct answer
@@ -1223,7 +1224,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
           
           // Map student answers from presented indices back to canonical indices if shuffling was used
-          const permutation = permutationMappings[answer.questionId];
+          const permutation = (permutationMappings as any)[answer.questionId];
           if (permutation && exam.randomizeOptions) {
             try {
               // Convert student answers to indices if they're letters
