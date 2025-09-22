@@ -395,8 +395,8 @@ export default function StudentExamTaking() {
       case 'multiple_choice':
         let options = question.question.options || [];
         
-        // Randomize answer options if exam has randomizeAnswers enabled
-        if (exam?.randomizeAnswers && options.length > 1) {
+        // Randomize answer options if exam has randomizeOptions enabled
+        if (exam?.randomizeOptions && options.length > 1) {
           // Create a seeded random function using questionId for consistent randomization
           const seed = question.questionId;
           const random = (seed: number) => {
