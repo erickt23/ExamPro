@@ -43,7 +43,6 @@ export default function StudentExamTaking() {
   const [warningShown, setWarningShown] = useState(false);
   const [passwordRequired, setPasswordRequired] = useState(false);
   const [enteredPassword, setEnteredPassword] = useState('');
-  const [isPasswordValidated, setIsPasswordValidated] = useState(false);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -98,18 +97,12 @@ export default function StudentExamTaking() {
     retry: false,
   });
 
-  // Check password requirement
-  useEffect(() => {
-    if (exam && exam.requirePassword && !isPasswordValidated) {
-      setPasswordRequired(true);
-    } else if (exam && (!exam.requirePassword || isPasswordValidated)) {
-      setPasswordRequired(false);
-    }
-  }, [exam, isPasswordValidated]);
+  // Password validation is handled server-side via session
+  // If we reach this page, the server has already validated access
 
   // Initialize timer and load saved progress
   useEffect(() => {
-    if (exam && questions.length > 0 && (!exam.requirePassword || isPasswordValidated)) {
+    if (exam && questions.length > 0) {
       const submission = mySubmissions.find((s: any) => s.examId === examId && s.status === 'in_progress');
       
       if (submission && submission.progressData) {
@@ -269,7 +262,6 @@ export default function StudentExamTaking() {
 
   const handlePasswordSubmit = () => {
     if (exam && exam.password === enteredPassword) {
-      setIsPasswordValidated(true);
       setPasswordRequired(false);
       toast({
         title: t('examTaking.passwordCorrect'),
