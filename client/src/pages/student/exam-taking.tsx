@@ -297,7 +297,7 @@ export default function StudentExamTaking() {
     // Convert answers to the format expected by the server
     const formattedAnswers = Object.entries(answers).map(([questionId, answer]) => {
       // Find the question to determine its type
-      const question = questions?.find(q => q.questionId === parseInt(questionId));
+      const question = questions?.find((q: any) => q.questionId === parseInt(questionId));
       
       if (Array.isArray(answer)) {
         // Check if this is a multiple choice question with multiple selections
@@ -410,13 +410,13 @@ export default function StudentExamTaking() {
           }
           
           // Update options to use shuffled order
-          options = optionsWithIndices.map(item => item.option);
+          options = optionsWithIndices.map((item: any) => item.option);
         }
         
         // Determine if this question supports multiple correct answers
-        const hasMultipleCorrectAnswers = question.question.correctAnswers && 
-          Array.isArray(question.question.correctAnswers) && 
-          question.question.correctAnswers.length > 1;
+        // Show checkboxes if the question has correctAnswers field (regardless of count)
+        const hasMultipleCorrectAnswers = question.question.correctAnswers !== null && 
+          question.question.correctAnswers !== undefined;
         
         // Handle multiple selections vs single selection
         const selectedAnswers = Array.isArray(answer) ? answer : (answer ? [answer] : []);
@@ -820,7 +820,7 @@ export default function StudentExamTaking() {
 
       case 'drag_drop':
         // Handle both stored string and object for drag-drop data
-        let dragDropData = { zones: [], items: [] };
+        let dragDropData: any = { zones: [], items: [] };
         if (question.question.options) {
           if (typeof question.question.options === 'string') {
             try {
