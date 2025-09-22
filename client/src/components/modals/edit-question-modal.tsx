@@ -27,6 +27,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Plus, List, PenTool, FileText, Pen, Upload, Paperclip, ArrowUpDown, Link, Move3D } from "lucide-react";
 
@@ -38,7 +39,8 @@ const editQuestionSchema = z.object({
   questionType: z.enum(['multiple_choice', 'short_answer', 'essay', 'fill_blank', 'matching', 'ranking', 'drag_drop']),
   category: z.enum(['exam', 'homework']),
   options: z.array(z.string()).optional(),
-  correctAnswer: z.string().optional(),
+  correctAnswer: z.string().optional().nullable(),
+  correctAnswers: z.array(z.string()).optional().nullable(),
   explanation: z.string().optional(),
   attachmentUrl: z.string().optional(),
   subjectId: z.number().min(1, "Please select a subject"),
@@ -81,7 +83,7 @@ export default function EditQuestionModal({ open, onOpenChange, questionId }: Ed
 
   const [selectedType, setSelectedType] = useState<string>('multiple_choice');
   const [mcqOptions, setMcqOptions] = useState(['', '', '', '']);
-  const [correctOption, setCorrectOption] = useState('A');
+  const [correctOptions, setCorrectOptions] = useState<string[]>(['A']);
   const [attachmentFile, setAttachmentFile] = useState<any>(null);
   const [attachmentUrl, setAttachmentUrl] = useState<string>('');
   
@@ -124,7 +126,17 @@ export default function EditQuestionModal({ open, onOpenChange, questionId }: Ed
       
       if (questionData.questionType === 'multiple_choice' && questionData.options) {
         setMcqOptions([...questionData.options, '', '', '', ''].slice(0, Math.max(4, questionData.options.length)));
-        setCorrectOption(questionData.correctAnswer || 'A');
+        
+        // Handle both single and multiple correct answers
+        if (questionData.correctAnswers && Array.isArray(questionData.correctAnswers)) {
+          // Multiple correct answers from correctAnswers field
+          setCorrectOptions(questionData.correctAnswers);
+        } else if (questionData.correctAnswer) {
+          // Single correct answer from correctAnswer field
+          setCorrectOptions([questionData.correctAnswer]);
+        } else {
+          setCorrectOptions(['A']);
+        }
       } else if (questionData.questionType === 'matching' && questionData.options) {
         setMatchingPairs(questionData.options.length > 0 ? questionData.options : [{ left: '', right: '' }, { left: '', right: '' }]);
       } else if (questionData.questionType === 'ranking' && questionData.options) {
@@ -161,13 +173,31 @@ export default function EditQuestionModal({ open, onOpenChange, questionId }: Ed
     }
   }, [questionData, form]);
 
+  // Function to toggle correct options for multiple choice
+  const toggleCorrectOption = (letter: string) => {
+    setCorrectOptions(prev => {
+      if (prev.includes(letter)) {
+        return prev.filter(option => option !== letter);
+      } else {
+        return [...prev, letter].sort();
+      }
+    });
+  };
+
   const updateQuestionMutation = useMutation({
     mutationFn: async (data: EditQuestionForm) => {
       let payload = { ...data };
       
       if (data.questionType === 'multiple_choice') {
         payload.options = mcqOptions.filter(option => option.trim());
-        payload.correctAnswer = correctOption;
+        // Save multiple correct answers
+        if (correctOptions.length > 1) {
+          payload.correctAnswers = correctOptions;
+          payload.correctAnswer = null; // Clear single answer when multiple are set
+        } else {
+          payload.correctAnswer = correctOptions[0] || 'A';
+          payload.correctAnswers = null; // Clear multiple answers when only one is set
+        }
       } else if (data.questionType === 'matching') {
         const validPairs = matchingPairs.filter(pair => pair.left.trim() && pair.right.trim());
         payload.options = validPairs.map(pair => `${pair.left}|${pair.right}`);
@@ -397,21 +427,23 @@ export default function EditQuestionModal({ open, onOpenChange, questionId }: Ed
             {selectedType === 'multiple_choice' && (
               <div>
                 <Label className="text-sm font-medium">Answer Options</Label>
+                <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg mb-3">
+                  <p className="text-sm text-blue-800 dark:text-blue-200">
+                    Select multiple correct answers by checking the boxes. You can choose one or more correct answers.
+                  </p>
+                </div>
                 <div className="space-y-3 mt-2">
                   {mcqOptions.map((option, index) => {
                     const letter = String.fromCharCode(65 + index); // A, B, C, D
                     return (
                       <div key={index} className="flex items-center space-x-3">
-                        <RadioGroup 
-                          value={correctOption} 
-                          onValueChange={setCorrectOption}
-                          className="flex"
-                        >
-                          <div className="flex items-center space-x-2">
-                            <RadioGroupItem value={letter} id={`option-${letter}`} />
-                          </div>
-                        </RadioGroup>
-                        <span className="text-sm font-medium text-gray-700 min-w-[20px]">{letter}.</span>
+                        <Checkbox
+                          checked={correctOptions.includes(letter)}
+                          onCheckedChange={() => toggleCorrectOption(letter)}
+                          id={`correct-${letter}`}
+                          className="mt-0.5"
+                        />
+                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300 min-w-[20px]">{letter}.</span>
                         <Input
                           value={option}
                           onChange={(e) => updateMcqOption(index, e.target.value)}
