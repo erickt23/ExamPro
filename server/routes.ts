@@ -16,6 +16,12 @@ import {
 } from "./objectStorage";
 import { regradeAllZeroScoreSubmissions, regradeSubmission, gradeHomeworkSubmission } from "./regradeExams";
 import { ObjectPermission } from "./objectAcl";
+import { 
+  createExamPermutations, 
+  applyPermutationToQuestion, 
+  SeededRandom, 
+  generateShuffleSeed 
+} from './utils/shuffling';
 
 // Helper function to check if user has instructor privileges (instructor or admin)
 function hasInstructorPrivileges(user: any): boolean {
@@ -877,16 +883,103 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       let examQuestions = await storage.getExamQuestions(examId);
       
-      // For students: Strip sensitive information (answer keys)
+      // For students: Handle shuffling and strip sensitive information
       if (!hasInstructorPrivileges(user)) {
-        examQuestions = examQuestions.map(eq => ({
-          ...eq,
-          question: {
+        // Get or create submission to store permutation mappings
+        let submission = null;
+        let attemptNumber = 1;
+        
+        if (exam.randomizeOptions) {
+          // Check for existing in-progress submission
+          const mySubmissions = await storage.getSubmissions(examId, userId);
+          const inProgressSubmission = mySubmissions.find(s => s.status === 'in_progress');
+          
+          if (inProgressSubmission) {
+            submission = inProgressSubmission;
+          } else {
+            // Count attempts for seeding
+            attemptNumber = mySubmissions.length + 1;
+            
+            // Create new submission for storing shuffle mappings
+            const newSubmissionData = {
+              examId,
+              studentId: userId,
+              status: 'in_progress' as const,
+              totalScore: 0,
+              submittedAt: new Date(),
+              progressData: null,
+              timeRemainingSeconds: exam.duration ? exam.duration * 60 : null,
+              startedAt: new Date(),
+              isHighestScore: false
+            };
+            
+            const submissionId = await storage.createSubmission(newSubmissionData);
+            submission = await storage.getSubmissionById(submissionId);
+          }
+        }
+        
+        // Generate or retrieve permutation mappings for answer shuffling
+        let permutationMappings = {};
+        
+        if (exam.randomizeOptions && submission) {
+          try {
+            const progressData = submission.progressData ? 
+              (typeof submission.progressData === 'string' ? 
+                JSON.parse(submission.progressData) : submission.progressData) : {};
+            
+            if (progressData.permutationMappings) {
+              // Use existing mappings for consistency
+              permutationMappings = progressData.permutationMappings;
+            } else {
+              // Generate new mappings
+              permutationMappings = createExamPermutations(
+                examQuestions.map(eq => eq.question),
+                {
+                  examId,
+                  studentId: userId,
+                  attemptNumber
+                },
+                exam.randomizeOptions
+              );
+              
+              // Store mappings in submission progress data
+              const updatedProgressData = {
+                ...progressData,
+                permutationMappings
+              };
+              
+              await storage.updateSubmission(submission.id, {
+                progressData: JSON.stringify(updatedProgressData)
+              });
+            }
+          } catch (error) {
+            console.error("Error handling permutation mappings:", error);
+            // Continue without shuffling if there's an error
+          }
+        }
+        
+        // Apply shuffling and strip sensitive information
+        examQuestions = examQuestions.map(eq => {
+          const permutation = permutationMappings[eq.questionId];
+          const baseQuestion = {
             ...eq.question,
             correctAnswer: undefined, // Remove correct answer
-            options: eq.question.options, // Keep options for rendering
+            correctAnswers: undefined, // Remove correct answers
+          };
+          
+          // Apply permutation if available
+          if (permutation && exam.randomizeOptions) {
+            return {
+              ...eq,
+              question: applyPermutationToQuestion(baseQuestion, permutation)
+            };
           }
-        }));
+          
+          return {
+            ...eq,
+            question: baseQuestion
+          };
+        });
       }
       
       // If randomizeQuestions is enabled, shuffle the questions for students
