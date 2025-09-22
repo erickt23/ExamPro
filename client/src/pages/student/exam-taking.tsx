@@ -414,9 +414,9 @@ export default function StudentExamTaking() {
         }
         
         // Determine if this question supports multiple correct answers
-        // Show checkboxes if the question has correctAnswers field (regardless of count)
-        const hasMultipleCorrectAnswers = question.question.correctAnswers !== null && 
-          question.question.correctAnswers !== undefined;
+        // Use the allowMultipleAnswers flag sent by the server (preserves UI info without exposing answers)
+        const hasMultipleCorrectAnswers = question.question.allowMultipleAnswers === true;
+        console.log(`[DEBUG] Frontend Question ${question.question.id}: allowMultipleAnswers=${question.question.allowMultipleAnswers}, hasMultipleCorrectAnswers=${hasMultipleCorrectAnswers}`);
         
         // Handle multiple selections vs single selection
         const selectedAnswers = Array.isArray(answer) ? answer : (answer ? [answer] : []);

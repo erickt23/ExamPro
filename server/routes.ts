@@ -651,15 +651,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
         
         // Strip answer keys from questions for students
-        examQuestions = examQuestions.map(eq => ({
-          ...eq,
-          question: {
-            ...eq.question,
-            correctAnswer: null, // Remove correct answer
-            correctAnswers: null, // Remove correct answers
-            options: eq.question.options, // Keep options for rendering
+        examQuestions = examQuestions.map(eq => {
+          const allowMultiple = eq.question.correctAnswers !== null && eq.question.correctAnswers !== undefined;
+          console.log(`[DEBUG] Question ${eq.question.id}: correctAnswers=${JSON.stringify(eq.question.correctAnswers)}, allowMultipleAnswers=${allowMultiple}`);
+          return {
+            ...eq,
+            question: {
+              ...eq.question,
+              correctAnswer: null, // Remove correct answer values
+              correctAnswers: null, // Remove correct answer values
+              allowMultipleAnswers: allowMultiple, // Flag for UI rendering
+              options: eq.question.options, // Keep options for rendering
+            }
           }
-        }));
+        });
         
         // Also strip password from exam object for students
         const sanitizedExam = {
@@ -667,7 +672,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
           password: undefined
         };
         
-        res.json({ ...sanitizedExam, questions: examQuestions });
+        const response = { ...sanitizedExam, questions: examQuestions };
+        console.log(`[DEBUG] Sending API response for exam ${examId} (student):`);
+        console.log(`[DEBUG] First question allowMultipleAnswers:`, response.questions?.[0]?.question?.allowMultipleAnswers);
+        res.json(response);
       } else {
         // For instructors: Return full data but strip password hash
         const sanitizedExam = {
@@ -1052,6 +1060,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const j = Math.floor(random(seed + i) * (i + 1));
           [examQuestions[i], examQuestions[j]] = [examQuestions[j], examQuestions[i]];
         }
+      }
+      
+      // Strip answer keys from questions for students and add allowMultipleAnswers flag
+      if (!hasInstructorPrivileges(user)) {
+        examQuestions = examQuestions.map(eq => {
+          const allowMultiple = eq.question.correctAnswers !== null && eq.question.correctAnswers !== undefined;
+          console.log(`[DEBUG] Question ${eq.question.id}: correctAnswers=${JSON.stringify(eq.question.correctAnswers)}, allowMultipleAnswers=${allowMultiple}`);
+          return {
+            ...eq,
+            question: {
+              ...eq.question,
+              correctAnswer: null, // Remove correct answer values
+              correctAnswers: null, // Remove correct answer values
+              allowMultipleAnswers: allowMultiple, // Flag for UI rendering
+              options: eq.question.options, // Keep options for rendering
+            }
+          }
+        });
       }
       
       res.json(examQuestions);

@@ -26,12 +26,25 @@ const getOidcConfig = memoize(
 export function getSession() {
   const sessionTtl = 7 * 24 * 60 * 60 * 1000; // 1 week
   
-  // Use memory store since PostgreSQL database is currently unavailable
-  console.log("Using memory session store (database unavailable)");
-  const memoryStore = MemoryStore(session);
-  const sessionStore = new memoryStore({
-    checkPeriod: 86400000, // prune expired entries every 24h
-  });
+  let sessionStore;
+  
+  if (process.env.DATABASE_URL) {
+    // Use PostgreSQL session store
+    console.log("Using PostgreSQL session store");
+    const pgSession = connectPg(session);
+    sessionStore = new pgSession({
+      conString: process.env.DATABASE_URL,
+      tableName: 'sessions',
+      createTableIfMissing: true,
+    });
+  } else {
+    // Fallback to memory store
+    console.log("Using memory session store (database unavailable)");
+    const memoryStore = MemoryStore(session);
+    sessionStore = new memoryStore({
+      checkPeriod: 86400000, // prune expired entries every 24h
+    });
+  }
   
   return session({
     secret: process.env.SESSION_SECRET!,
