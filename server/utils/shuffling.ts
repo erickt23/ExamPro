@@ -96,8 +96,7 @@ export function mapPresentedToCanonical(
   permutation: number[]
 ): number[] {
   return presentedIndices.map(presentedIndex => {
-    const canonicalIndex = permutation.indexOf(presentedIndex);
-    return canonicalIndex !== -1 ? canonicalIndex : presentedIndex;
+    return permutation[presentedIndex] ?? presentedIndex;
   });
 }
 
@@ -108,8 +107,7 @@ export function mapSinglePresentedToCanonical(
   presentedIndex: number, 
   permutation: number[]
 ): number {
-  const canonicalIndex = permutation.indexOf(presentedIndex);
-  return canonicalIndex !== -1 ? canonicalIndex : presentedIndex;
+  return permutation[presentedIndex] ?? presentedIndex;
 }
 
 /**
