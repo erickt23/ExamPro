@@ -400,6 +400,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Convert single-answer MCQ to multi-answer MCQ (utility endpoint for instructors)
+  app.post('/api/questions/:id/convert-to-multi-answer', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      const questionId = parseInt(req.params.id);
+      
+      if (!hasInstructorPrivileges(user)) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const question = await storage.getQuestionById(questionId);
+      if (!question || question.instructorId !== userId) {
+        return res.status(404).json({ message: "Question not found" });
+      }
+
+      if (question.questionType !== 'multiple_choice') {
+        return res.status(400).json({ message: "Only multiple choice questions can be converted" });
+      }
+
+      // Convert single correctAnswer to array in correctAnswers
+      const updates: any = {};
+      
+      if (question.correctAnswer && !question.correctAnswers) {
+        // Convert single answer to multi-answer format
+        updates.correctAnswers = [question.correctAnswer];
+        updates.correctAnswer = null; // Clear the single answer field
+        
+        const updatedQuestion = await storage.updateQuestion(questionId, updates);
+        
+        res.json({ 
+          message: "Question converted to multi-answer format", 
+          question: updatedQuestion,
+          converted: true 
+        });
+      } else if (question.correctAnswers) {
+        res.json({ 
+          message: "Question already supports multiple answers", 
+          question: question,
+          converted: false 
+        });
+      } else {
+        res.status(400).json({ message: "Question has no correct answer set" });
+      }
+    } catch (error) {
+      console.error("Error converting question:", error);
+      res.status(500).json({ message: "Failed to convert question" });
+    }
+  });
+
   // Excel import endpoint
   app.post('/api/questions/import', isAuthenticated, upload.single('file'), async (req: any, res) => {
     try {
