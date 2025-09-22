@@ -20,7 +20,12 @@ import {
   createExamPermutations, 
   applyPermutationToQuestion, 
   SeededRandom, 
-  generateShuffleSeed 
+  generateShuffleSeed,
+  mapPresentedToCanonical,
+  mapSinglePresentedToCanonical,
+  normalizeAnswerToIndices,
+  letterToIndex,
+  indexToLetter
 } from './utils/shuffling';
 
 // Helper function to check if user has instructor privileges (instructor or admin)
@@ -1151,6 +1156,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Exam not found" });
       }
 
+      // Get permutation mappings from in-progress submission if available
+      let permutationMappings = {};
+      if (exam.randomizeOptions) {
+        try {
+          const mySubmissions = await storage.getSubmissions(examId, userId);
+          const inProgressSubmission = mySubmissions.find(s => s.status === 'in_progress');
+          
+          if (inProgressSubmission && inProgressSubmission.progressData) {
+            const progressData = typeof inProgressSubmission.progressData === 'string' 
+              ? JSON.parse(inProgressSubmission.progressData) 
+              : inProgressSubmission.progressData;
+            
+            if (progressData.permutationMappings) {
+              permutationMappings = progressData.permutationMappings;
+            }
+          }
+        } catch (error) {
+          console.error("Error retrieving permutation mappings:", error);
+        }
+      }
+
       // Create submission
       const submission = await storage.createSubmission({
         examId,
@@ -1194,6 +1220,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
           } else if (answer.answerText) {
             // Handle comma-separated answers as fallback
             studentAnswers = answer.answerText.split(',').map((a: string) => a.trim()).filter((a: string) => a);
+          }
+          
+          // Map student answers from presented indices back to canonical indices if shuffling was used
+          const permutation = permutationMappings[answer.questionId];
+          if (permutation && exam.randomizeOptions) {
+            try {
+              // Convert student answers to indices if they're letters
+              const studentIndices = normalizeAnswerToIndices(studentAnswers);
+              // Map back to canonical indices
+              const canonicalIndices = mapPresentedToCanonical(studentIndices, permutation);
+              // Convert back to letters for comparison
+              studentAnswers = canonicalIndices.map(idx => indexToLetter(idx));
+            } catch (error) {
+              console.error(`Error mapping student answers for question ${answer.questionId}:`, error);
+              // Fall back to original answers if mapping fails
+            }
           }
           
           if (correctAnswers.length > 1) {
