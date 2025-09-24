@@ -18,7 +18,8 @@ import { regradeAllZeroScoreSubmissions, regradeSubmission, gradeHomeworkSubmiss
 import { ObjectPermission } from "./objectAcl";
 import { 
   createExamPermutations, 
-  applyPermutationToQuestion, 
+  applyPermutationToQuestion,
+  applyPermutationWithCorrectAnswers,
   SeededRandom, 
   generateShuffleSeed,
   mapPresentedToCanonical,
@@ -674,7 +675,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         const response = { ...sanitizedExam, questions: examQuestions };
         console.log(`[DEBUG] Sending API response for exam ${examId} (student):`);
-        console.log(`[DEBUG] First question allowMultipleAnswers:`, response.questions?.[0]?.question?.allowMultipleAnswers);
+        console.log(`[DEBUG] First question allowMultipleAnswers:`, (response.questions?.[0]?.question as any)?.allowMultipleAnswers);
         res.json(response);
       } else {
         // For instructors: Return full data but strip password hash
@@ -1022,13 +1023,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
         }
         
-        // Apply shuffling and strip sensitive information
+        // Store remapped correct answers for grading and prepare student-facing questions
+        const remappedCorrectAnswers: { [questionId: number]: any } = {};
+        
         examQuestions = examQuestions.map(eq => {
           const permutation = (permutationMappings as any)[eq.questionId];
           // Capture original correctAnswers before stripping for allowMultipleAnswers flag
           const originalCorrectAnswers = eq.question.correctAnswers;
           const allowMultiple = originalCorrectAnswers !== null && originalCorrectAnswers !== undefined;
           console.log(`[DEBUG] Question ${eq.question.id}: correctAnswers=${JSON.stringify(originalCorrectAnswers)}, allowMultipleAnswers=${allowMultiple}`);
+          
+          // Generate remapped correct answers for grading if shuffling is applied
+          if (permutation && exam.randomizeOptions) {
+            const remappedQuestion = applyPermutationWithCorrectAnswers(eq.question, permutation);
+            remappedCorrectAnswers[eq.questionId] = {
+              correctAnswer: remappedQuestion.correctAnswer,
+              correctAnswers: remappedQuestion.correctAnswers,
+              _shuffleDebug: remappedQuestion._shuffleDebug
+            };
+            console.log(`[DEBUG] Question ${eq.question.id} remapped: ${JSON.stringify(remappedQuestion.correctAnswers)} (original: ${JSON.stringify(originalCorrectAnswers)})`);
+          }
+          
           const baseQuestion = {
             ...eq.question,
             correctAnswer: undefined, // Remove correct answer
@@ -1049,6 +1064,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
             question: baseQuestion
           };
         });
+
+        // Store remapped correct answers in submission progress data for grading
+        if (Object.keys(remappedCorrectAnswers).length > 0 && submission) {
+          try {
+            const existingProgressData = submission.progressData ? 
+              (typeof submission.progressData === 'string' ? 
+                JSON.parse(submission.progressData) : submission.progressData) : {};
+            
+            const updatedProgressData = {
+              ...existingProgressData,
+              permutationMappings,
+              remappedCorrectAnswers
+            };
+            
+            await storage.updateSubmission(submission.id, {
+              progressData: JSON.stringify(updatedProgressData)
+            });
+            console.log(`[DEBUG] Stored remapped correct answers for ${Object.keys(remappedCorrectAnswers).length} questions`);
+          } catch (error) {
+            console.error("Error storing remapped correct answers:", error);
+          }
+        }
       }
       
       // If randomizeQuestions is enabled, shuffle the questions for students
@@ -1220,15 +1257,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Exam not found" });
       }
 
-      // Get permutation mappings from in-progress submission if available
+      // Get permutation mappings and progress data from in-progress submission if available
       let permutationMappings = {};
+      let progressData: any = {};
       if (exam.randomizeOptions) {
         try {
           const mySubmissions = await storage.getSubmissions(examId, userId);
           const inProgressSubmission = mySubmissions.find(s => s.status === 'in_progress');
           
           if (inProgressSubmission && inProgressSubmission.progressData) {
-            const progressData = typeof inProgressSubmission.progressData === 'string' 
+            progressData = typeof inProgressSubmission.progressData === 'string' 
               ? JSON.parse(inProgressSubmission.progressData) 
               : inProgressSubmission.progressData;
             
@@ -1270,10 +1308,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
         // Auto-grade multiple choice questions with multiple correct answer support
         if (question.questionType === 'multiple_choice') {
-          // Handle multiple correct answers
-          const correctAnswers = question.correctAnswers && Array.isArray(question.correctAnswers) 
+          // Use remapped correct answers if available (for shuffled questions), otherwise use original
+          let correctAnswers = question.correctAnswers && Array.isArray(question.correctAnswers) 
             ? question.correctAnswers 
             : (question.correctAnswer ? [question.correctAnswer] : []);
+          
+          // Check for remapped correct answers if shuffling was used
+          if (exam.randomizeOptions && progressData && progressData.remappedCorrectAnswers) {
+            const remappedData = progressData.remappedCorrectAnswers[answer.questionId];
+            if (remappedData) {
+              correctAnswers = remappedData.correctAnswers && Array.isArray(remappedData.correctAnswers)
+                ? remappedData.correctAnswers
+                : (remappedData.correctAnswer ? [remappedData.correctAnswer] : []);
+              console.log(`[DEBUG] Using remapped correct answers for question ${question.id}: ${JSON.stringify(correctAnswers)} (original: ${JSON.stringify(question.correctAnswers)})`);
+            }
+          }
           
           // Handle multiple student selections
           let studentAnswers: string[] = [];

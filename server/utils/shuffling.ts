@@ -171,6 +171,58 @@ export function createExamPermutations(
 }
 
 /**
+ * Create inverse permutation mapping (original index → new position)
+ */
+export function createInversePermutation(permutation: number[]): number[] {
+  const inverse = new Array(permutation.length);
+  for (let i = 0; i < permutation.length; i++) {
+    inverse[permutation[i]] = i;
+  }
+  return inverse;
+}
+
+/**
+ * Remap correct answers from original indices to shuffled positions
+ */
+export function remapCorrectAnswers(
+  correctAnswer: string | null,
+  correctAnswers: string[] | null,
+  inversePermutation: number[]
+): { remappedCorrectAnswer: string | null; remappedCorrectAnswers: string[] | null } {
+  let remappedCorrectAnswer = null;
+  let remappedCorrectAnswers = null;
+
+  // Handle single correct answer
+  if (correctAnswer !== null && correctAnswer !== undefined) {
+    const originalIndex = typeof correctAnswer === 'string' && isNaN(Number(correctAnswer)) 
+      ? letterToIndex(correctAnswer) 
+      : Number(correctAnswer);
+    
+    if (originalIndex >= 0 && originalIndex < inversePermutation.length) {
+      const newIndex = inversePermutation[originalIndex];
+      remappedCorrectAnswer = indexToLetter(newIndex);
+    }
+  }
+
+  // Handle multiple correct answers
+  if (correctAnswers && Array.isArray(correctAnswers)) {
+    remappedCorrectAnswers = correctAnswers.map(answer => {
+      const originalIndex = typeof answer === 'string' && isNaN(Number(answer))
+        ? letterToIndex(answer)
+        : Number(answer);
+      
+      if (originalIndex >= 0 && originalIndex < inversePermutation.length) {
+        const newIndex = inversePermutation[originalIndex];
+        return indexToLetter(newIndex);
+      }
+      return answer; // fallback
+    });
+  }
+
+  return { remappedCorrectAnswer, remappedCorrectAnswers };
+}
+
+/**
  * Apply permutation to question options for presentation to student
  */
 export function applyPermutationToQuestion(
@@ -189,5 +241,41 @@ export function applyPermutationToQuestion(
     // Remove correct answer information from student view
     correctAnswer: undefined,
     correctAnswers: undefined
+  };
+}
+
+/**
+ * Apply permutation and remap correct answers for instructor/grading purposes
+ */
+export function applyPermutationWithCorrectAnswers(
+  question: any,
+  permutation: number[]
+): any {
+  if (!question.options || !Array.isArray(question.options) || !permutation) {
+    return question;
+  }
+
+  const shuffledOptions = permutation.map(i => question.options[i]);
+  const inversePermutation = createInversePermutation(permutation);
+  
+  // Remap correct answers to new shuffled positions
+  const { remappedCorrectAnswer, remappedCorrectAnswers } = remapCorrectAnswers(
+    question.correctAnswer,
+    question.correctAnswers,
+    inversePermutation
+  );
+
+  return {
+    ...question,
+    options: shuffledOptions,
+    correctAnswer: remappedCorrectAnswer,
+    correctAnswers: remappedCorrectAnswers,
+    // Store original mapping for debugging
+    _shuffleDebug: {
+      originalPermutation: permutation,
+      inversePermutation,
+      originalCorrectAnswer: question.correctAnswer,
+      originalCorrectAnswers: question.correctAnswers
+    }
   };
 }
