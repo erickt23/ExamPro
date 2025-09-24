@@ -662,7 +662,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               correctAnswers: null, // Remove correct answer values
               allowMultipleAnswers: allowMultiple, // Flag for UI rendering
               options: eq.question.options, // Keep options for rendering
-            }
+            } as any
           }
         });
         
@@ -1025,11 +1025,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Apply shuffling and strip sensitive information
         examQuestions = examQuestions.map(eq => {
           const permutation = (permutationMappings as any)[eq.questionId];
+          // Capture original correctAnswers before stripping for allowMultipleAnswers flag
+          const originalCorrectAnswers = eq.question.correctAnswers;
+          const allowMultiple = originalCorrectAnswers !== null && originalCorrectAnswers !== undefined;
+          console.log(`[DEBUG] Question ${eq.question.id}: correctAnswers=${JSON.stringify(originalCorrectAnswers)}, allowMultipleAnswers=${allowMultiple}`);
           const baseQuestion = {
             ...eq.question,
             correctAnswer: undefined, // Remove correct answer
             correctAnswers: undefined, // Remove correct answers
-          };
+            allowMultipleAnswers: allowMultiple, // Flag for UI rendering
+          } as any;
           
           // Apply permutation if available
           if (permutation && exam.randomizeOptions) {
@@ -1060,24 +1065,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const j = Math.floor(random(seed + i) * (i + 1));
           [examQuestions[i], examQuestions[j]] = [examQuestions[j], examQuestions[i]];
         }
-      }
-      
-      // Strip answer keys from questions for students and add allowMultipleAnswers flag
-      if (!hasInstructorPrivileges(user)) {
-        examQuestions = examQuestions.map(eq => {
-          const allowMultiple = eq.question.correctAnswers !== null && eq.question.correctAnswers !== undefined;
-          console.log(`[DEBUG] Question ${eq.question.id}: correctAnswers=${JSON.stringify(eq.question.correctAnswers)}, allowMultipleAnswers=${allowMultiple}`);
-          return {
-            ...eq,
-            question: {
-              ...eq.question,
-              correctAnswer: null, // Remove correct answer values
-              correctAnswers: null, // Remove correct answer values
-              allowMultipleAnswers: allowMultiple, // Flag for UI rendering
-              options: eq.question.options, // Keep options for rendering
-            }
-          }
-        });
       }
       
       res.json(examQuestions);
