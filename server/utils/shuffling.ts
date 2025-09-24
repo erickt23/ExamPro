@@ -145,7 +145,21 @@ export function normalizeAnswerToIndices(answer: string | string[] | number[]): 
 }
 
 /**
+ * Generate a deterministic seed for a specific question within an exam attempt
+ */
+export function generateQuestionShuffleSeed(config: ShuffleConfig, questionId: number): string {
+  const secret = config.serverSecret || process.env.SHUFFLE_SECRET || 'default-secret-change-in-production';
+  const data = `${config.examId}:${config.studentId}:${config.attemptNumber}:${questionId}`;
+  
+  return crypto
+    .createHmac('sha256', secret)
+    .update(data)
+    .digest('hex');
+}
+
+/**
  * Create permutation mappings for all questions in an exam
+ * Uses per-question seeding to ensure order-invariant consistency
  */
 export function createExamPermutations(
   questions: any[], 
@@ -156,13 +170,14 @@ export function createExamPermutations(
     return {};
   }
 
-  const seed = generateShuffleSeed(config);
-  const rng = new SeededRandom(seed);
   const mappings: PermutationMapping = {};
 
   questions.forEach(question => {
     if (question.options && Array.isArray(question.options) && question.options.length > 1) {
-      const { permutation } = shuffleWithPermutation(question.options, rng);
+      // Generate unique seed per question to ensure order-invariant consistency
+      const questionSeed = generateQuestionShuffleSeed(config, question.id);
+      const questionRng = new SeededRandom(questionSeed);
+      const { permutation } = shuffleWithPermutation(question.options, questionRng);
       mappings[question.id] = permutation;
     }
   });
