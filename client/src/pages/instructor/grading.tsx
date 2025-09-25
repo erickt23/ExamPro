@@ -503,6 +503,7 @@ function GradingList() {
 // Component for individual submission grading
 function SubmissionGrading({ submissionId, isHomeworkGrading }: { submissionId: string; isHomeworkGrading: boolean }) {
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [, navigate] = useLocation();
   const [gradingData, setGradingData] = useState<Record<number, { score: number; feedback: string }>>({});
   const [saveStatuses, setSaveStatuses] = useState<Record<number, 'idle' | 'saving' | 'saved' | 'error'>>({});
@@ -549,6 +550,25 @@ function SubmissionGrading({ submissionId, isHomeworkGrading }: { submissionId: 
     enabled: !!submissionId,
     retry: false,
   });
+
+  // Fetch existing extra credits for this submission
+  const { data: extraCredits, isLoading: extraCreditsLoading } = useQuery({
+    queryKey: [isHomeworkGrading ? "/api/homework-submissions" : "/api/submissions", submissionId, "extra-credits"],
+    queryFn: async () => {
+      const endpoint = isHomeworkGrading 
+        ? `/api/homework-submissions/${submissionId}/extra-credits`
+        : `/api/submissions/${submissionId}/extra-credits`;
+      const response = await fetch(endpoint);
+      if (!response.ok) throw new Error(`${response.status}: ${response.statusText}`);
+      return response.json();
+    },
+    enabled: !!submissionId,
+    retry: false,
+  });
+
+  // Calculate total extra credits
+  const totalExtraCredits = extraCredits?.reduce((sum: number, credit: any) => 
+    sum + parseFloat(credit.points || '0'), 0) || 0;
 
   // Grade individual answer mutation with auto-save support
   const gradeAnswerMutation = useMutation({
@@ -642,6 +662,81 @@ function SubmissionGrading({ submissionId, isHomeworkGrading }: { submissionId: 
       });
     },
   });
+
+  // Extra credit mutations
+  const addExtraCreditMutation = useMutation({
+    mutationFn: async ({ points, reason }: { points: number; reason: string }) => {
+      const endpoint = isHomeworkGrading 
+        ? `/api/homework-submissions/${submissionId}/extra-credit`
+        : `/api/submissions/${submissionId}/extra-credit`;
+      await apiRequest("POST", endpoint, { points, reason });
+    },
+    onSuccess: () => {
+      const queryKey = [isHomeworkGrading ? "/api/homework-submissions" : "/api/submissions", submissionId, "extra-credits"];
+      queryClient.invalidateQueries({ queryKey });
+      const submissionQueryKey = [isHomeworkGrading ? "/api/homework-submissions" : "/api/submissions", submissionId, "grade"];
+      queryClient.invalidateQueries({ queryKey: submissionQueryKey });
+      toast({
+        title: "Success",
+        description: "Extra credit added successfully",
+      });
+    },
+    onError: (error: Error) => {
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
+      toast({
+        title: "Error",
+        description: "Failed to add extra credit",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const deleteExtraCreditMutation = useMutation({
+    mutationFn: async (creditId: number) => {
+      await apiRequest("DELETE", `/api/extra-credits/${creditId}`, {});
+    },
+    onSuccess: () => {
+      const queryKey = [isHomeworkGrading ? "/api/homework-submissions" : "/api/submissions", submissionId, "extra-credits"];
+      queryClient.invalidateQueries({ queryKey });
+      const submissionQueryKey = [isHomeworkGrading ? "/api/homework-submissions" : "/api/submissions", submissionId, "grade"];
+      queryClient.invalidateQueries({ queryKey: submissionQueryKey });
+      toast({
+        title: "Success",
+        description: "Extra credit removed successfully",
+      });
+    },
+    onError: (error: Error) => {
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
+      toast({
+        title: "Error",
+        description: "Failed to remove extra credit",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Extra credit state management
+  const [extraCreditForm, setExtraCreditForm] = useState({ points: '', reason: '' });
 
   // Auto-save function with debouncing
   const autoSaveGrade = useCallback((answerId: number) => {
@@ -813,6 +908,29 @@ function SubmissionGrading({ submissionId, isHomeworkGrading }: { submissionId: 
               </span>
             </div>
           </div>
+          
+          {/* Extra Credit Summary */}
+          {totalExtraCredits > 0 && (
+            <div className="mt-4 pt-4 border-t">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Award className="h-4 w-4 text-yellow-600" />
+                  <span className="text-sm font-medium text-gray-700">Extra Credit Applied:</span>
+                </div>
+                <Badge variant="secondary" className="bg-yellow-50 text-yellow-800" data-testid="text-extra-credit-total">
+                  <Award className="h-3 w-3 mr-1" />
+                  +{totalExtraCredits.toFixed(1)} points
+                </Badge>
+              </div>
+              <div className="mt-2 text-xs text-gray-600">
+                <span data-testid="text-base-score">Base Score: {submission.totalScore || '0'}</span>
+                <span className="mx-2">•</span>
+                <span data-testid="text-final-score">
+                  Final Score: {((parseFloat(submission.totalScore || '0')) + totalExtraCredits).toFixed(1)}
+                </span>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -1138,6 +1256,105 @@ function SubmissionGrading({ submissionId, isHomeworkGrading }: { submissionId: 
                 </div>
               </div>
             ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Extra Credit Management */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Award className="h-5 w-5 text-yellow-600" />
+            Extra Credit Management
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {/* Add Extra Credit Form */}
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Points
+                </label>
+                <Input
+                  type="number"
+                  min="0"
+                  step="0.1"
+                  placeholder="Extra points"
+                  value={extraCreditForm.points}
+                  onChange={(e) => setExtraCreditForm(prev => ({ ...prev, points: e.target.value }))}
+                  data-testid="input-ec-amount-submission"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Reason
+                </label>
+                <Input
+                  placeholder="Reason for extra credit"
+                  value={extraCreditForm.reason}
+                  onChange={(e) => setExtraCreditForm(prev => ({ ...prev, reason: e.target.value }))}
+                  data-testid="input-ec-reason-submission"
+                />
+              </div>
+              <div className="flex items-end">
+                <Button
+                  onClick={() => {
+                    const points = parseFloat(extraCreditForm.points);
+                    if (points > 0 && extraCreditForm.reason.trim()) {
+                      addExtraCreditMutation.mutate({ 
+                        points, 
+                        reason: extraCreditForm.reason.trim() 
+                      });
+                      setExtraCreditForm({ points: '', reason: '' });
+                    }
+                  }}
+                  disabled={addExtraCreditMutation.isPending || !extraCreditForm.points || !extraCreditForm.reason.trim()}
+                  className="w-full"
+                  data-testid="button-add-ec-submission"
+                >
+                  <Award className="h-4 w-4 mr-2" />
+                  Add Extra Credit
+                </Button>
+              </div>
+            </div>
+
+            {/* Existing Extra Credits List */}
+            {extraCredits && extraCredits.length > 0 && (
+              <div className="mt-6">
+                <h4 className="text-sm font-medium text-gray-700 mb-3">Existing Extra Credits</h4>
+                <div className="space-y-2">
+                  {extraCredits.map((credit: any) => (
+                    <div 
+                      key={credit.id} 
+                      className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg border"
+                      data-testid={`row-ec-${credit.id}`}
+                    >
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <Award className="h-4 w-4 text-yellow-600" />
+                          <span className="font-medium">+{parseFloat(credit.points).toFixed(1)} points</span>
+                        </div>
+                        <p className="text-sm text-gray-600 mt-1">{credit.reason}</p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          Added by {credit.grantedBy} on {new Date(credit.grantedAt).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => deleteExtraCreditMutation.mutate(credit.id)}
+                        disabled={deleteExtraCreditMutation.isPending}
+                        className="text-red-600 hover:text-red-700"
+                        data-testid={`button-delete-ec-${credit.id}`}
+                      >
+                        Remove
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
