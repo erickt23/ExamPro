@@ -293,12 +293,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Access denied" });
       }
 
-      const { subject, type, difficulty, bloomsTaxonomy, search, category, page, limit } = req.query;
+      const { subject, type, difficulty, bloomsTaxonomy, gradeLevel, search, category, page, limit } = req.query;
       const result = await storage.getQuestions(userId, {
         subjectId: subject ? parseInt(subject as string) : undefined,
         questionType: type as string,
         difficulty: difficulty as string,
         bloomsTaxonomy: bloomsTaxonomy as string,
+        gradeLevel: gradeLevel as string,
         search: search as string,
         category: (category as 'exam' | 'homework') || 'exam', // Default to exam if not specified
         page: page ? parseInt(page as string) : 1,

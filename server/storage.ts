@@ -55,6 +55,7 @@ export interface IStorage {
     questionType?: string;
     difficulty?: string;
     bloomsTaxonomy?: string;
+    gradeLevel?: string;
     search?: string;
     category?: 'exam' | 'homework'; // NEW: Filter by question category
     page?: number;
@@ -342,6 +343,7 @@ export class DatabaseStorage implements IStorage {
     questionType?: string;
     difficulty?: string;
     bloomsTaxonomy?: string;
+    gradeLevel?: string;
     search?: string;
     category?: 'exam' | 'homework';
     page?: number;

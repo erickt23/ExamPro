@@ -80,6 +80,7 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
   const [filterType, setFilterType] = useState<string>("all");
   const [filterDifficulty, setFilterDifficulty] = useState<string>("all");
   const [filterBloomsTaxonomy, setFilterBloomsTaxonomy] = useState<string>("all");
+  const [filterGradeLevel, setFilterGradeLevel] = useState<string>("all");
   const [showFilters, setShowFilters] = useState(false);
 
   const form = useForm<CreateExamForm>({
@@ -107,8 +108,26 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
     }
   }, [subjects, form]);
 
+  // Auto-filter questions based on exam's selected subject and grade level
+  React.useEffect(() => {
+    const examSubjectId = form.watch('subjectId');
+    const examGradeLevel = form.watch('gradeLevel');
+    
+    // Automatically set subject filter to match exam's subject
+    if (examSubjectId) {
+      setFilterSubject(examSubjectId.toString());
+    }
+    
+    // Automatically set grade level filter to match exam's grade level
+    if (examGradeLevel) {
+      setFilterGradeLevel(examGradeLevel);
+    } else {
+      setFilterGradeLevel("all");
+    }
+  }, [form.watch('subjectId'), form.watch('gradeLevel')]);
+
   const { data: questionsData } = useQuery({
-    queryKey: ["/api/questions", { search: questionSearch, subject: filterSubject, type: filterType, difficulty: filterDifficulty, bloomsTaxonomy: filterBloomsTaxonomy }],
+    queryKey: ["/api/questions", { search: questionSearch, subject: filterSubject, type: filterType, difficulty: filterDifficulty, bloomsTaxonomy: filterBloomsTaxonomy, gradeLevel: filterGradeLevel }],
     queryFn: async () => {
       const params = new URLSearchParams();
       if (questionSearch) params.append('search', questionSearch);
@@ -116,6 +135,7 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
       if (filterType && filterType !== 'all') params.append('type', filterType);
       if (filterDifficulty && filterDifficulty !== 'all') params.append('difficulty', filterDifficulty);
       if (filterBloomsTaxonomy && filterBloomsTaxonomy !== 'all') params.append('bloomsTaxonomy', filterBloomsTaxonomy);
+      if (filterGradeLevel && filterGradeLevel !== 'all') params.append('gradeLevel', filterGradeLevel);
       
       const response = await fetch(`/api/questions?${params}`);
       if (!response.ok) throw new Error(`${response.status}: ${response.statusText}`);
@@ -487,6 +507,35 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
                             </SelectContent>
                           </Select>
                         </div>
+                        
+                        {/* Grade Level Filter */}
+                        <div>
+                          <Label className="text-sm font-medium mb-2 block">Grade Level</Label>
+                          <Select value={filterGradeLevel} onValueChange={setFilterGradeLevel}>
+                            <SelectTrigger className="h-9">
+                              <SelectValue placeholder="All Grade Levels" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="all">All Grade Levels</SelectItem>
+                              <SelectItem value="pre_k">Pre-K</SelectItem>
+                              <SelectItem value="kindergarten">Kindergarten</SelectItem>
+                              <SelectItem value="1st">1st Grade</SelectItem>
+                              <SelectItem value="2nd">2nd Grade</SelectItem>
+                              <SelectItem value="3rd">3rd Grade</SelectItem>
+                              <SelectItem value="4th">4th Grade</SelectItem>
+                              <SelectItem value="5th">5th Grade</SelectItem>
+                              <SelectItem value="6th">6th Grade</SelectItem>
+                              <SelectItem value="7th">7th Grade</SelectItem>
+                              <SelectItem value="8th">8th Grade</SelectItem>
+                              <SelectItem value="9th">9th Grade</SelectItem>
+                              <SelectItem value="10th">10th Grade</SelectItem>
+                              <SelectItem value="11th">11th Grade</SelectItem>
+                              <SelectItem value="12th">12th Grade</SelectItem>
+                              <SelectItem value="undergraduate">Undergraduate</SelectItem>
+                              <SelectItem value="graduate">Graduate</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
                       </div>
                       
                       {/* Clear Filters Button */}
@@ -501,6 +550,7 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
                             setFilterType("all");
                             setFilterDifficulty("all");
                             setFilterBloomsTaxonomy("all");
+                            setFilterGradeLevel("all");
                           }}
                           className="text-xs"
                         >
