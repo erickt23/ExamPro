@@ -2770,6 +2770,82 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Global Proctoring Settings API
+  app.get('/api/proctoring-settings', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+
+      if (!hasInstructorPrivileges(user)) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const settings = await storage.getGlobalProctoringSettings();
+      res.json(settings);
+    } catch (error) {
+      console.error("Error fetching proctoring settings:", error);
+      res.status(500).json({ message: "Failed to fetch proctoring settings" });
+    }
+  });
+
+  app.post('/api/proctoring-settings', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+
+      if (!hasInstructorPrivileges(user)) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const {
+        enableProctoringByDefault,
+        defaultWarningThreshold,
+        defaultAutoTerminate,
+        enableFullscreenMode,
+        enableTabDetection,
+        enableContextMenuBlock,
+        enableDevToolsDetection,
+        enableCopyPasteBlock,
+        allowInstructorOverride
+      } = req.body;
+
+      // Validate proctoring settings
+      if (typeof enableProctoringByDefault !== 'boolean' || 
+          typeof defaultAutoTerminate !== 'boolean' ||
+          typeof enableFullscreenMode !== 'boolean' ||
+          typeof enableTabDetection !== 'boolean' ||
+          typeof enableContextMenuBlock !== 'boolean' ||
+          typeof enableDevToolsDetection !== 'boolean' ||
+          typeof enableCopyPasteBlock !== 'boolean' ||
+          typeof allowInstructorOverride !== 'boolean') {
+        return res.status(400).json({ message: "Invalid boolean values" });
+      }
+
+      if (typeof defaultWarningThreshold !== 'number' || 
+          defaultWarningThreshold < 1 || 
+          defaultWarningThreshold > 10) {
+        return res.status(400).json({ message: "Warning threshold must be between 1 and 10" });
+      }
+
+      const settings = await storage.setGlobalProctoringSettings({
+        enableProctoringByDefault,
+        defaultWarningThreshold,
+        defaultAutoTerminate,
+        enableFullscreenMode,
+        enableTabDetection,
+        enableContextMenuBlock,
+        enableDevToolsDetection,
+        enableCopyPasteBlock,
+        allowInstructorOverride
+      });
+
+      res.json(settings);
+    } catch (error) {
+      console.error("Error saving proctoring settings:", error);
+      res.status(500).json({ message: "Failed to save proctoring settings" });
+    }
+  });
+
   // Grade Finalization API
   app.post('/api/finalize-grades/:subjectId', isAuthenticated, async (req: any, res) => {
     try {
