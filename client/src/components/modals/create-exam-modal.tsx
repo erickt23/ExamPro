@@ -39,6 +39,7 @@ const createExamSchema = z.object({
   title: z.string().min(1, "Title is required").max(200),
   description: z.string().optional(),
   subjectId: z.number().min(1, "Subject is required"),
+  gradeLevel: z.enum(["pre_k", "kindergarten", "1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th", "10th", "11th", "12th", "undergraduate", "graduate"]).optional(),
   duration: z.number().min(1, "Duration must be at least 1 minute"),
   totalPoints: z.number().min(1, "Total points must be at least 1"),
   attemptsAllowed: z.number().min(1).default(1),
@@ -304,6 +305,42 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
                         {subjects.map((subject: any) => (
                           <SelectItem key={subject.id} value={subject.id.toString()}>{subject.name}</SelectItem>
                         ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="gradeLevel"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Grade Level</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select grade level" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="pre_k">Pre-K</SelectItem>
+                        <SelectItem value="kindergarten">Kindergarten</SelectItem>
+                        <SelectItem value="1st">1st Grade</SelectItem>
+                        <SelectItem value="2nd">2nd Grade</SelectItem>
+                        <SelectItem value="3rd">3rd Grade</SelectItem>
+                        <SelectItem value="4th">4th Grade</SelectItem>
+                        <SelectItem value="5th">5th Grade</SelectItem>
+                        <SelectItem value="6th">6th Grade</SelectItem>
+                        <SelectItem value="7th">7th Grade</SelectItem>
+                        <SelectItem value="8th">8th Grade</SelectItem>
+                        <SelectItem value="9th">9th Grade</SelectItem>
+                        <SelectItem value="10th">10th Grade</SelectItem>
+                        <SelectItem value="11th">11th Grade</SelectItem>
+                        <SelectItem value="12th">12th Grade</SelectItem>
+                        <SelectItem value="undergraduate">Undergraduate</SelectItem>
+                        <SelectItem value="graduate">Graduate</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
