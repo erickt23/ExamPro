@@ -283,18 +283,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Question routes
+  // Question routes - Updated to respect admin visibility controls
   app.get('/api/questions', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
       
-      if (!hasInstructorPrivileges(user)) {
+      if (!user || !hasInstructorPrivileges(user)) {
         return res.status(403).json({ message: "Access denied" });
       }
 
       const { subject, type, difficulty, bloomsTaxonomy, gradeLevel, search, category, page, limit } = req.query;
-      const result = await storage.getQuestions(userId, {
+      const result = await storage.getQuestionsForInstructor(userId, user.role, {
         subjectId: subject ? parseInt(subject as string) : undefined,
         questionType: type as string,
         difficulty: difficulty as string,
@@ -530,6 +530,117 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error importing questions:", error);
       res.status(500).json({ message: 'Import failed', error: (error as Error).message });
+    }
+  });
+
+  // Admin Question Management routes
+  app.post('/api/admin/questions', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user || user.role !== 'admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const { visibilityType, authorizedInstructorIds, ...questionData } = req.body;
+      
+      const adminQuestionData = {
+        ...questionData,
+        instructorId: userId, // Admin who created it
+        createdByAdmin: true,
+        visibilityType: visibilityType || 'all_instructors',
+        authorizedInstructorIds: visibilityType === 'specific_instructors' ? authorizedInstructorIds : null,
+      };
+      
+      const question = await storage.createAdminQuestion(adminQuestionData);
+      res.status(201).json(question);
+    } catch (error) {
+      console.error("Error creating admin question:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid question data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to create admin question" });
+    }
+  });
+
+  app.get('/api/admin/questions', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user || user.role !== 'admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const { subject, type, difficulty, bloomsTaxonomy, gradeLevel, search, category, visibilityType, page, limit } = req.query;
+      const result = await storage.getAdminQuestions({
+        subjectId: subject ? parseInt(subject as string) : undefined,
+        questionType: type as string,
+        difficulty: difficulty as string,
+        bloomsTaxonomy: bloomsTaxonomy as string,
+        gradeLevel: gradeLevel as string,
+        search: search as string,
+        category: (category as 'exam' | 'homework'),
+        visibilityType: visibilityType as 'all_instructors' | 'specific_instructors',
+        page: page ? parseInt(page as string) : 1,
+        limit: limit ? parseInt(limit as string) : 10,
+      });
+      
+      res.json(result);
+    } catch (error) {
+      console.error("Error fetching admin questions:", error);
+      res.status(500).json({ message: "Failed to fetch admin questions" });
+    }
+  });
+
+  app.put('/api/admin/questions/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      const questionId = parseInt(req.params.id);
+      
+      if (!user || user.role !== 'admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const { visibilityType, authorizedInstructorIds, ...updateData } = req.body;
+      
+      const adminUpdateData = {
+        ...updateData,
+        visibilityType,
+        authorizedInstructorIds: visibilityType === 'specific_instructors' ? authorizedInstructorIds : null,
+      };
+      
+      const updatedQuestion = await storage.updateAdminQuestion(questionId, adminUpdateData);
+      res.json(updatedQuestion);
+    } catch (error) {
+      console.error("Error updating admin question:", error);
+      res.status(500).json({ message: "Failed to update admin question" });
+    }
+  });
+
+  app.delete('/api/admin/questions/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      const questionId = parseInt(req.params.id);
+      
+      if (!user || user.role !== 'admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      // Verify it's an admin-created question
+      const question = await storage.getQuestionById(questionId);
+      if (!question || !question.createdByAdmin) {
+        return res.status(404).json({ message: "Admin question not found" });
+      }
+
+      await storage.deleteQuestion(questionId);
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting admin question:", error);
+      res.status(500).json({ message: "Failed to delete admin question" });
     }
   });
 
