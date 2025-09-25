@@ -49,6 +49,10 @@ const createExamSchema = z.object({
   password: z.string().optional(),
   availableFrom: z.string().optional(),
   availableUntil: z.string().optional(),
+  // Proctoring configuration
+  enableProctoring: z.boolean().default(false),
+  proctoringWarningThreshold: z.number().min(1).max(10).default(2),
+  proctoringAutoTerminate: z.boolean().default(true),
 });
 
 type CreateExamForm = z.infer<typeof createExamSchema>;
@@ -98,6 +102,10 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
       password: '',
       availableFrom: '',
       availableUntil: '',
+      // Proctoring defaults
+      enableProctoring: false,
+      proctoringWarningThreshold: 2,
+      proctoringAutoTerminate: true,
     },
   });
 
@@ -974,6 +982,88 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
                       </FormItem>
                     )}
                   />
+                )}
+              </div>
+            </div>
+
+            {/* Proctoring Configuration */}
+            <div>
+              <Label className="text-sm font-medium mb-3 block">Proctoring Configuration</Label>
+              <div className="space-y-3">
+                <FormField
+                  control={form.control}
+                  name="enableProctoring"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                      <FormControl>
+                        <Checkbox
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                          data-testid="checkbox-enable-proctoring"
+                        />
+                      </FormControl>
+                      <div className="space-y-1 leading-none">
+                        <FormLabel>Enable exam proctoring</FormLabel>
+                        <FormDescription className="text-xs text-gray-600">
+                          Monitor student behavior during the exam (fullscreen mode, tab switching, etc.)
+                        </FormDescription>
+                      </div>
+                    </FormItem>
+                  )}
+                />
+
+                {form.watch('enableProctoring') && (
+                  <div className="ml-6 space-y-3 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                    <FormField
+                      control={form.control}
+                      name="proctoringWarningThreshold"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm">Warning threshold</FormLabel>
+                          <FormControl>
+                            <Select onValueChange={(value) => field.onChange(parseInt(value))} defaultValue={field.value?.toString()}>
+                              <SelectTrigger className="max-w-xs" data-testid="select-proctoring-threshold">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="1">1 violation</SelectItem>
+                                <SelectItem value="2">2 violations</SelectItem>
+                                <SelectItem value="3">3 violations</SelectItem>
+                                <SelectItem value="4">4 violations</SelectItem>
+                                <SelectItem value="5">5 violations</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </FormControl>
+                          <FormDescription className="text-xs">
+                            Number of violations before showing warning to student
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="proctoringAutoTerminate"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                              data-testid="checkbox-auto-terminate"
+                            />
+                          </FormControl>
+                          <div className="space-y-1 leading-none">
+                            <FormLabel className="text-sm">Automatically submit exam after violations</FormLabel>
+                            <FormDescription className="text-xs text-gray-600">
+                              Automatically submit the exam when the student reaches the maximum number of violations (3 violations after warning threshold)
+                            </FormDescription>
+                          </div>
+                        </FormItem>
+                      )}
+                    />
+                  </div>
                 )}
               </div>
             </div>

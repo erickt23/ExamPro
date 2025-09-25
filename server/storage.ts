@@ -280,18 +280,51 @@ export class DatabaseStorage implements IStorage {
 
   async upsertUser(userData: UpsertUser): Promise<User> {
     try {
-      const [user] = await db
-        .insert(users)
-        .values(userData)
-        .onConflictDoUpdate({
-          target: users.id,
-          set: {
+      // Try to find existing user by ID first
+      const existingUser = await this.getUser(userData.id);
+      
+      if (existingUser) {
+        // Update existing user
+        const [user] = await db
+          .update(users)
+          .set({
             ...userData,
             updatedAt: new Date(),
-          },
-        })
-        .returning();
-      return user;
+          })
+          .where(eq(users.id, userData.id))
+          .returning();
+        return user;
+      } else {
+        // Check if email already exists for a different user
+        const [existingEmailUser] = await db
+          .select()
+          .from(users)
+          .where(eq(users.email, userData.email || ''));
+        
+        if (existingEmailUser && existingEmailUser.id !== userData.id) {
+          // Update the existing user with the new ID and other data
+          const [user] = await db
+            .update(users)
+            .set({
+              id: userData.id, // Update to new ID
+              firstName: userData.firstName,
+              lastName: userData.lastName,
+              profileImageUrl: userData.profileImageUrl,
+              role: userData.role,
+              updatedAt: new Date(),
+            })
+            .where(eq(users.email, userData.email || ''))
+            .returning();
+          return user;
+        } else {
+          // Insert new user
+          const [user] = await db
+            .insert(users)
+            .values(userData)
+            .returning();
+          return user;
+        }
+      }
     } catch (error) {
       console.warn('Database upsertUser failed, falling back to memory storage:', error);
       return memoryStorage.upsertUser(userData);

@@ -129,6 +129,10 @@ export const exams = pgTable("exams", {
   availableFrom: timestamp("available_from"),
   availableUntil: timestamp("available_until"),
   status: varchar("status", { enum: ["draft", "active", "completed", "scheduled", "archived"] }).notNull().default("draft"),
+  // Proctoring configuration
+  enableProctoring: boolean("enable_proctoring").notNull().default(false),
+  proctoringWarningThreshold: integer("proctoring_warning_threshold").notNull().default(2),
+  proctoringAutoTerminate: boolean("proctoring_auto_terminate").notNull().default(true),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
