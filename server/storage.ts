@@ -69,6 +69,40 @@ export interface IStorage {
   deleteQuestion(id: number): Promise<void>;
   incrementQuestionUsage(id: number): Promise<void>;
   
+  // Admin question operations
+  createAdminQuestion(question: InsertQuestion & { 
+    createdByAdmin: boolean; 
+    visibilityType: 'all_instructors' | 'specific_instructors';
+    authorizedInstructorIds?: string[];
+  }): Promise<Question>;
+  getAdminQuestions(filters?: {
+    subjectId?: number;
+    questionType?: string;
+    difficulty?: string;
+    bloomsTaxonomy?: string;
+    gradeLevel?: string;
+    search?: string;
+    category?: 'exam' | 'homework';
+    visibilityType?: 'all_instructors' | 'specific_instructors';
+    page?: number;
+    limit?: number;
+  }): Promise<{ questions: Question[]; total: number; page: number; totalPages: number }>;
+  updateAdminQuestion(id: number, updates: Partial<InsertQuestion & { 
+    visibilityType?: 'all_instructors' | 'specific_instructors';
+    authorizedInstructorIds?: string[];
+  }>): Promise<Question>;
+  getQuestionsForInstructor(instructorId: string, userRole: string, filters?: {
+    subjectId?: number;
+    questionType?: string;
+    difficulty?: string;
+    bloomsTaxonomy?: string;
+    gradeLevel?: string;
+    search?: string;
+    category?: 'exam' | 'homework';
+    page?: number;
+    limit?: number;
+  }): Promise<{ questions: Question[]; total: number; page: number; totalPages: number }>;
+  
   // Exam operations
   createExam(exam: InsertExam): Promise<Exam>;
   getExams(instructorId: string, status?: string, search?: string): Promise<Exam[]>;
@@ -218,6 +252,17 @@ class MemoryStorage implements IStorage {
   async updateQuestion(): Promise<Question> { throw new Error('Database unavailable'); }
   async deleteQuestion(): Promise<void> { throw new Error('Database unavailable'); }
   async incrementQuestionUsage(): Promise<void> { throw new Error('Database unavailable'); }
+  
+  // Admin question method stubs
+  async createAdminQuestion(): Promise<Question> { throw new Error('Database unavailable'); }
+  async getAdminQuestions(): Promise<{ questions: Question[]; total: number; page: number; totalPages: number }> {
+    return { questions: [], total: 0, page: 1, totalPages: 0 };
+  }
+  async updateAdminQuestion(): Promise<Question> { throw new Error('Database unavailable'); }
+  async getQuestionsForInstructor(instructorId: string, userRole: string, filters?: any): Promise<{ questions: Question[]; total: number; page: number; totalPages: number }> {
+    return { questions: [], total: 0, page: 1, totalPages: 0 };
+  }
+  
   async createExam(): Promise<Exam> { throw new Error('Database unavailable'); }
   async getExams(instructorId: string, status?: string, search?: string): Promise<Exam[]> { return []; }
   async getActiveExamsForStudents(): Promise<Exam[]> { return []; }
@@ -495,6 +540,211 @@ export class DatabaseStorage implements IStorage {
       .update(questions)
       .set({ usageCount: sql`${questions.usageCount} + 1` })
       .where(eq(questions.id, id));
+  }
+
+  // Admin question operations
+  async createAdminQuestion(question: InsertQuestion & { 
+    createdByAdmin: boolean; 
+    visibilityType: 'all_instructors' | 'specific_instructors';
+    authorizedInstructorIds?: string[];
+  }): Promise<Question> {
+    const [newQuestion] = await db
+      .insert(questions)
+      .values(question)
+      .returning();
+    return newQuestion;
+  }
+
+  async getAdminQuestions(filters?: {
+    subjectId?: number;
+    questionType?: string;
+    difficulty?: string;
+    bloomsTaxonomy?: string;
+    gradeLevel?: string;
+    search?: string;
+    category?: 'exam' | 'homework';
+    visibilityType?: 'all_instructors' | 'specific_instructors';
+    page?: number;
+    limit?: number;
+  }): Promise<{ questions: Question[]; total: number; page: number; totalPages: number }> {
+    try {
+      // Start with admin-created questions only
+      const conditions = [eq(questions.createdByAdmin, true), eq(questions.isActive, true)];
+      
+      // Apply filters
+      if (filters?.category) {
+        conditions.push(eq(questions.category, filters.category));
+      }
+      if (filters?.subjectId) {
+        conditions.push(eq(questions.subjectId, filters.subjectId));
+      }
+      if (filters?.questionType) {
+        conditions.push(eq(questions.questionType, filters.questionType as any));
+      }
+      if (filters?.difficulty) {
+        conditions.push(eq(questions.difficulty, filters.difficulty as any));
+      }
+      if (filters?.bloomsTaxonomy) {
+        conditions.push(eq(questions.bloomsTaxonomy, filters.bloomsTaxonomy as any));
+      }
+      if (filters?.visibilityType) {
+        conditions.push(eq(questions.visibilityType, filters.visibilityType as any));
+      }
+      if (filters?.search) {
+        conditions.push(
+          or(
+            ilike(questions.title, `%${filters.search}%`),
+            ilike(questions.questionText, `%${filters.search}%`)
+          )!
+        );
+      }
+
+      // Get pagination parameters
+      const page = filters?.page || 1;
+      const limit = filters?.limit || 10;
+      const offset = (page - 1) * limit;
+
+      // Get total count for pagination
+      const totalCountResult = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(questions)
+        .where(and(...conditions));
+      
+      const total = totalCountResult[0]?.count || 0;
+      const totalPages = Math.ceil(total / limit);
+
+      // Get paginated questions
+      const questionsResult = await db
+        .select()
+        .from(questions)
+        .where(and(...conditions))
+        .orderBy(desc(questions.createdAt))
+        .limit(limit)
+        .offset(offset);
+
+      return {
+        questions: questionsResult as Question[],
+        total,
+        page,
+        totalPages
+      };
+
+    } catch (error) {
+      console.error('Error fetching admin questions:', error);
+      throw error;
+    }
+  }
+
+  async updateAdminQuestion(id: number, updates: Partial<InsertQuestion & { 
+    visibilityType?: 'all_instructors' | 'specific_instructors';
+    authorizedInstructorIds?: string[];
+  }>): Promise<Question> {
+    const [question] = await db
+      .update(questions)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(and(eq(questions.id, id), eq(questions.createdByAdmin, true)))
+      .returning();
+    return question;
+  }
+
+  async getQuestionsForInstructor(instructorId: string, userRole: string, filters?: {
+    subjectId?: number;
+    questionType?: string;
+    difficulty?: string;
+    bloomsTaxonomy?: string;
+    gradeLevel?: string;
+    search?: string;
+    category?: 'exam' | 'homework';
+    page?: number;
+    limit?: number;
+  }): Promise<{ questions: Question[]; total: number; page: number; totalPages: number }> {
+    try {
+      // Base conditions for active questions
+      let conditions = [eq(questions.isActive, true)];
+      
+      // Filter by category (default to 'exam' for backward compatibility)
+      if (filters?.category) {
+        conditions.push(eq(questions.category, filters.category));
+      } else {
+        conditions.push(eq(questions.category, 'exam'));
+      }
+
+      // If user is admin, show all questions
+      if (userRole === 'admin') {
+        // Admin can see all questions
+      } else {
+        // For instructors, show:
+        // 1. Questions they created themselves
+        // 2. Admin questions with 'all_instructors' visibility
+        // 3. Admin questions with 'specific_instructors' visibility where they are authorized
+        const visibilityConditions = or(
+          eq(questions.instructorId, instructorId), // Own questions
+          and(eq(questions.createdByAdmin, true), eq(questions.visibilityType, 'all_instructors')), // Public admin questions
+          and(
+            eq(questions.createdByAdmin, true), 
+            eq(questions.visibilityType, 'specific_instructors'),
+            sql`${instructorId} = ANY(${questions.authorizedInstructorIds})` // Authorized for specific questions
+          )
+        );
+        conditions.push(visibilityConditions!);
+      }
+
+      // Apply additional filters
+      if (filters?.subjectId) {
+        conditions.push(eq(questions.subjectId, filters.subjectId));
+      }
+      if (filters?.questionType) {
+        conditions.push(eq(questions.questionType, filters.questionType as any));
+      }
+      if (filters?.difficulty) {
+        conditions.push(eq(questions.difficulty, filters.difficulty as any));
+      }
+      if (filters?.bloomsTaxonomy) {
+        conditions.push(eq(questions.bloomsTaxonomy, filters.bloomsTaxonomy as any));
+      }
+      if (filters?.search) {
+        conditions.push(
+          or(
+            ilike(questions.title, `%${filters.search}%`),
+            ilike(questions.questionText, `%${filters.search}%`)
+          )!
+        );
+      }
+
+      // Get pagination parameters
+      const page = filters?.page || 1;
+      const limit = filters?.limit || 10;
+      const offset = (page - 1) * limit;
+
+      // Get total count for pagination
+      const totalCountResult = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(questions)
+        .where(and(...conditions));
+      
+      const total = totalCountResult[0]?.count || 0;
+      const totalPages = Math.ceil(total / limit);
+
+      // Get paginated questions
+      const questionsResult = await db
+        .select()
+        .from(questions)
+        .where(and(...conditions))
+        .orderBy(desc(questions.createdAt))
+        .limit(limit)
+        .offset(offset);
+
+      return {
+        questions: questionsResult as Question[],
+        total,
+        page,
+        totalPages
+      };
+
+    } catch (error) {
+      console.error('Error fetching questions for instructor:', error);
+      throw error;
+    }
   }
 
   // Exam operations
