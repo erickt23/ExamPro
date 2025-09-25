@@ -73,12 +73,22 @@ async function upsertUser(
   claims: any,
 ) {
   try {
+    // Validate and sanitize role from claims
+    const validRoles = ["instructor", "student", "admin"];
+    const claimedRole = claims["role"];
+    const role = validRoles.includes(claimedRole) ? claimedRole : "student";
+    
+    if (claimedRole && !validRoles.includes(claimedRole)) {
+      console.warn(`Invalid role "${claimedRole}" in OIDC claims, defaulting to "student"`);
+    }
+    
     await storage.upsertUser({
       id: claims["sub"],
       email: claims["email"],
       firstName: claims["first_name"],
       lastName: claims["last_name"],
       profileImageUrl: claims["profile_image_url"],
+      role: role,
     });
   } catch (error) {
     console.warn("Failed to upsert user to database, continuing with in-memory session:", error);

@@ -238,6 +238,7 @@ export default function EditQuestionModal({ open, onOpenChange, questionId }: Ed
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/questions"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/questions", questionId] });
       toast({
         title: "Success",
         description: "Question updated successfully",
