@@ -46,6 +46,7 @@ const createQuestionSchema = z.object({
   subjectId: z.number().min(1, "Please select a subject"),
   difficulty: z.enum(['easy', 'medium', 'hard']),
   bloomsTaxonomy: z.enum(['remember', 'understand', 'apply', 'analyze', 'evaluate', 'create']).optional(),
+  gradeLevel: z.enum(['pre_k', 'kindergarten', '1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th', '11th', '12th', 'undergraduate', 'graduate']).optional(),
   points: z.number().min(1).default(1),
   timeLimit: z.number().optional(),
 });
