@@ -11,6 +11,7 @@ import {
   homeworkSubmissions,
   homeworkAnswers,
   gradeSettings,
+  proctoringSettings,
   finalizedGrades,
   type User,
   type UpsertUser,
@@ -30,6 +31,8 @@ import {
   type HomeworkAnswer,
   type InsertGradeSettings,
   type GradeSettings,
+  type InsertProctoringSettings,
+  type ProctoringSettings,
   type InsertFinalizedGrade,
   type FinalizedGrade,
 } from "@shared/schema";
@@ -166,6 +169,10 @@ export interface IStorage {
   setCourseGradeSettings(courseId: number, settings: { assignmentCoefficient: number; examCoefficient: number }): Promise<GradeSettings>;
   getGradeSettingsForCourse(courseId?: number): Promise<GradeSettings | undefined>;
   
+  // Proctoring settings operations
+  getGlobalProctoringSettings(): Promise<ProctoringSettings | undefined>;
+  setGlobalProctoringSettings(settings: InsertProctoringSettings): Promise<ProctoringSettings>;
+  
   // Grade finalization operations
   finalizeGradesForSubject(subjectId: number, finalizedBy: string): Promise<FinalizedGrade[]>;
   isSubjectGradesFinalized(subjectId: number): Promise<boolean>;
@@ -257,6 +264,8 @@ class MemoryStorage implements IStorage {
   async setGlobalGradeSettings(): Promise<GradeSettings> { throw new Error('Database unavailable'); }
   async setCourseGradeSettings(): Promise<GradeSettings> { throw new Error('Database unavailable'); }
   async getGradeSettingsForCourse(): Promise<GradeSettings | undefined> { return undefined; }
+  async getGlobalProctoringSettings(): Promise<ProctoringSettings | undefined> { return undefined; }
+  async setGlobalProctoringSettings(): Promise<ProctoringSettings> { throw new Error('Database unavailable'); }
   async finalizeGradesForSubject(): Promise<FinalizedGrade[]> { throw new Error('Database unavailable'); }
   async isSubjectGradesFinalized(): Promise<boolean> { return false; }
   async getFinalizedGradesForSubject(): Promise<FinalizedGrade[]> { return []; }
@@ -1518,6 +1527,43 @@ export class DatabaseStorage implements IStorage {
       .limit(1);
     
     return globalSetting;
+  }
+
+  // Global proctoring settings operations
+  async getGlobalProctoringSettings(): Promise<ProctoringSettings | undefined> {
+    const [settings] = await db
+      .select()
+      .from(proctoringSettings)
+      .limit(1);
+    
+    return settings;
+  }
+
+  async setGlobalProctoringSettings(settingsData: InsertProctoringSettings): Promise<ProctoringSettings> {
+    const existing = await db
+      .select()
+      .from(proctoringSettings)
+      .limit(1);
+
+    if (existing.length > 0) {
+      // Update existing settings
+      const [updated] = await db
+        .update(proctoringSettings)
+        .set({
+          ...settingsData,
+          updatedAt: new Date(),
+        })
+        .where(eq(proctoringSettings.id, existing[0].id))
+        .returning();
+      return updated;
+    } else {
+      // Create new settings
+      const [created] = await db
+        .insert(proctoringSettings)
+        .values(settingsData)
+        .returning();
+      return created;
+    }
   }
 
   // Grade finalization operations
