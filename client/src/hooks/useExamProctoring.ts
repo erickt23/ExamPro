@@ -49,15 +49,33 @@ export function useExamProctoring(options: ExamProctoringOptions = {}) {
   const warningShownRef = useRef(false);
   const terminatedRef = useRef(false);
   const prevIsFullscreenRef = useRef(false);
+  const lastViolationTimeRef = useRef<{ [key: string]: number }>({});
 
   // Generate unique violation ID
   const generateViolationId = () => {
     return `violation_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   };
 
-  // Log a violation
+  // Log a violation with debounce to prevent double-counting
   const logViolation = useCallback((type: ViolationLog['type'], description: string) => {
     if (terminatedRef.current) return;
+
+    // Implement debounce to prevent double-counting similar violations
+    const now = Date.now();
+    const DEBOUNCE_TIME = 2000; // 2 seconds
+    
+    // Group similar violation types to prevent double-counting
+    const violationGroup = type === 'tab_switch' || type === 'window_blur' ? 'focus_loss' : type;
+    
+    if (lastViolationTimeRef.current[violationGroup] && 
+        now - lastViolationTimeRef.current[violationGroup] < DEBOUNCE_TIME) {
+      // Skip this violation as it's too close to the previous one of the same group
+      console.log(`Skipping duplicate violation of type ${type} (grouped as ${violationGroup})`);
+      return;
+    }
+    
+    // Update the last violation time for this group
+    lastViolationTimeRef.current[violationGroup] = now;
 
     const violation: ViolationLog = {
       id: generateViolationId(),
