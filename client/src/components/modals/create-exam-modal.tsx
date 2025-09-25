@@ -15,6 +15,12 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import {
   Form,
   FormControl,
   FormDescription,
@@ -289,134 +295,148 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            {/* Basic Information */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="title"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t('createExamModal.examTitle')}</FormLabel>
-                    <FormControl>
-                      <Input placeholder={t('createExamModal.examTitlePlaceholder')} {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="subjectId"
-                render={({ field }) => (
-                  <FormItem>
-                    <div className="flex items-center justify-between mb-2">
-                      <FormLabel>{t('createExamModal.subject')}</FormLabel>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setShowCreateSubjectModal(true)}
-                        className="h-auto p-1 text-primary hover:text-primary/80"
-                        title={t('createExamModal.addNewSubject')}
-                      >
-                        <Plus className="h-3 w-3" />
-                      </Button>
-                    </div>
-                    <Select onValueChange={(value) => field.onChange(parseInt(value))} defaultValue={field.value?.toString()}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder={t('createExamModal.selectSubject')} />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {subjects.map((subject: any) => (
-                          <SelectItem key={subject.id} value={subject.id.toString()}>{subject.name}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="gradeLevel"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Grade Level</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select grade level" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="pre_k">Pre-K</SelectItem>
-                        <SelectItem value="kindergarten">Kindergarten</SelectItem>
-                        <SelectItem value="1st">1st Grade</SelectItem>
-                        <SelectItem value="2nd">2nd Grade</SelectItem>
-                        <SelectItem value="3rd">3rd Grade</SelectItem>
-                        <SelectItem value="4th">4th Grade</SelectItem>
-                        <SelectItem value="5th">5th Grade</SelectItem>
-                        <SelectItem value="6th">6th Grade</SelectItem>
-                        <SelectItem value="7th">7th Grade</SelectItem>
-                        <SelectItem value="8th">8th Grade</SelectItem>
-                        <SelectItem value="9th">9th Grade</SelectItem>
-                        <SelectItem value="10th">10th Grade</SelectItem>
-                        <SelectItem value="11th">11th Grade</SelectItem>
-                        <SelectItem value="12th">12th Grade</SelectItem>
-                        <SelectItem value="undergraduate">Undergraduate</SelectItem>
-                        <SelectItem value="graduate">Graduate</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t('createExamModal.description')}</FormLabel>
-                  <FormControl>
-                    <Textarea 
-                      rows={3}
-                      placeholder={t('createExamModal.descriptionPlaceholder')} 
-                      {...field} 
+            <Accordion type="multiple" defaultValue={["section1", "section2", "section3"]} className="w-full">
+              {/* Section 1: Basic Information */}
+              <AccordionItem value="section1">
+                <AccordionTrigger className="text-lg font-semibold">
+                  Basic Information
+                </AccordionTrigger>
+                <AccordionContent className="space-y-4 pt-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="title"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t('createExamModal.examTitle')}</FormLabel>
+                          <FormControl>
+                            <Input placeholder={t('createExamModal.examTitlePlaceholder')} {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
                     />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
 
-            {/* Question Selection Method */}
-            <div>
-              <Label className="text-sm font-medium">{t('createExamModal.questionSelectionMethod')}</Label>
-              <RadioGroup 
-                value={selectionMethod} 
-                onValueChange={(value: 'manual' | 'random') => setSelectionMethod(value)}
-                className="mt-2"
-              >
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="manual" id="manual" />
-                  <Label htmlFor="manual">{t('createExamModal.manualSelection')}</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="random" id="random" />
-                  <Label htmlFor="random">{t('createExamModal.randomSelection')}</Label>
-                </div>
-              </RadioGroup>
-            </div>
+                    <FormField
+                      control={form.control}
+                      name="subjectId"
+                      render={({ field }) => (
+                        <FormItem>
+                          <div className="flex items-center justify-between mb-2">
+                            <FormLabel>{t('createExamModal.subject')}</FormLabel>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setShowCreateSubjectModal(true)}
+                              className="h-auto p-1 text-primary hover:text-primary/80"
+                              title={t('createExamModal.addNewSubject')}
+                            >
+                              <Plus className="h-3 w-3" />
+                            </Button>
+                          </div>
+                          <Select onValueChange={(value) => field.onChange(parseInt(value))} defaultValue={field.value?.toString()}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder={t('createExamModal.selectSubject')} />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {subjects.map((subject: any) => (
+                                <SelectItem key={subject.id} value={subject.id.toString()}>{subject.name}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-            {/* Manual Question Selection */}
-            {selectionMethod === 'manual' && (
-              <div className="space-y-4">
+                    <FormField
+                      control={form.control}
+                      name="gradeLevel"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Grade Level</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select grade level" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="pre_k">Pre-K</SelectItem>
+                              <SelectItem value="kindergarten">Kindergarten</SelectItem>
+                              <SelectItem value="1st">1st Grade</SelectItem>
+                              <SelectItem value="2nd">2nd Grade</SelectItem>
+                              <SelectItem value="3rd">3rd Grade</SelectItem>
+                              <SelectItem value="4th">4th Grade</SelectItem>
+                              <SelectItem value="5th">5th Grade</SelectItem>
+                              <SelectItem value="6th">6th Grade</SelectItem>
+                              <SelectItem value="7th">7th Grade</SelectItem>
+                              <SelectItem value="8th">8th Grade</SelectItem>
+                              <SelectItem value="9th">9th Grade</SelectItem>
+                              <SelectItem value="10th">10th Grade</SelectItem>
+                              <SelectItem value="11th">11th Grade</SelectItem>
+                              <SelectItem value="12th">12th Grade</SelectItem>
+                              <SelectItem value="undergraduate">Undergraduate</SelectItem>
+                              <SelectItem value="graduate">Graduate</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <FormField
+                    control={form.control}
+                    name="description"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t('createExamModal.description')}</FormLabel>
+                        <FormControl>
+                          <Textarea 
+                            rows={3}
+                            placeholder={t('createExamModal.descriptionPlaceholder')} 
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </AccordionContent>
+              </AccordionItem>
+
+              {/* Section 2: Question Selection */}
+              <AccordionItem value="section2">
+                <AccordionTrigger className="text-lg font-semibold">
+                  Question Selection
+                </AccordionTrigger>
+                <AccordionContent className="space-y-4 pt-4">
+                  {/* Question Selection Method */}
+                  <div>
+                    <Label className="text-sm font-medium">{t('createExamModal.questionSelectionMethod')}</Label>
+                    <RadioGroup 
+                      value={selectionMethod} 
+                      onValueChange={(value: 'manual' | 'random') => setSelectionMethod(value)}
+                      className="mt-2"
+                    >
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="manual" id="manual" />
+                        <Label htmlFor="manual">{t('createExamModal.manualSelection')}</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="random" id="random" />
+                        <Label htmlFor="random">{t('createExamModal.randomSelection')}</Label>
+                      </div>
+                    </RadioGroup>
+                  </div>
+
+                  {/* Manual Question Selection */}
+                  {selectionMethod === 'manual' && (
+                    <div className="space-y-4">
                 <div>
                   <div className="flex items-center justify-between mb-3">
                     <Label>{t('createExamModal.searchAndSelectQuestions')}</Label>
@@ -1065,8 +1085,11 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
                     />
                   </div>
                 )}
-              </div>
-            </div>
+                    </div>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
 
             <DialogFooter className="space-x-3">
               <Button 
