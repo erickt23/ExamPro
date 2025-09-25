@@ -26,6 +26,9 @@ import {
   AlertCircle
 } from "lucide-react";
 import { ObjectUploader } from "@/components/ObjectUploader";
+import { useExamProctoring } from "@/hooks/useExamProctoring";
+import ProctoringWarningModal from "@/components/exam/ProctoringWarningModal";
+import ProctoringTerminationModal from "@/components/exam/ProctoringTerminationModal";
 
 export default function StudentExamTaking() {
   const { toast } = useToast();
@@ -43,6 +46,28 @@ export default function StudentExamTaking() {
   const [warningShown, setWarningShown] = useState(false);
   const [passwordRequired, setPasswordRequired] = useState(false);
   const [enteredPassword, setEnteredPassword] = useState('');
+  const [examStarted, setExamStarted] = useState(false);
+
+  // Initialize proctoring system
+  const proctoring = useExamProctoring({
+    warningThreshold: 1,
+    terminationThreshold: 3,
+    onWarning: () => {
+      toast({
+        title: "Proctoring Warning",
+        description: "Suspicious activity detected. Please stay focused on your exam.",
+        variant: "destructive",
+      });
+    },
+    onAutoSubmit: () => {
+      toast({
+        title: "Exam Terminated",
+        description: "Too many violations detected. Your exam has been automatically submitted.",
+        variant: "destructive",
+      });
+      handleSubmitExam();
+    },
+  });
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -150,6 +175,18 @@ export default function StudentExamTaking() {
       }
     }
   }, [exam, questions, mySubmissions, examId]);
+
+  // Start proctoring for exams without passwords
+  useEffect(() => {
+    if (exam && questions.length > 0 && !passwordRequired && !examStarted) {
+      const startProctoringForNonPasswordExam = async () => {
+        setExamStarted(true);
+        await proctoring.startProctoring();
+      };
+      
+      startProctoringForNonPasswordExam();
+    }
+  }, [exam, questions, passwordRequired, examStarted, proctoring]);
 
   // Timer countdown
   useEffect(() => {
@@ -260,9 +297,14 @@ export default function StudentExamTaking() {
     },
   });
 
-  const handlePasswordSubmit = () => {
+  const handlePasswordSubmit = async () => {
     if (exam && exam.password === enteredPassword) {
       setPasswordRequired(false);
+      setExamStarted(true);
+      
+      // Start proctoring when exam begins
+      await proctoring.startProctoring();
+      
       toast({
         title: t('examTaking.passwordCorrect'),
         description: t('examTaking.accessGranted'),
@@ -354,11 +396,18 @@ export default function StudentExamTaking() {
       }
     });
     
+    // Include proctoring violation data
+    const violationData = proctoring.getViolationsForSubmission();
+    
     const submissionData = {
       answers: formattedAnswers,
       timeRemaining: timeRemaining || 0,
-      submittedAt: new Date().toISOString()
+      submittedAt: new Date().toISOString(),
+      proctoringData: violationData
     };
+
+    // Stop proctoring before submitting
+    proctoring.stopProctoring();
 
     submitExamMutation.mutate(submissionData);
   };
@@ -1232,6 +1281,21 @@ export default function StudentExamTaking() {
           </div>
         </main>
       </div>
+      
+      {/* Proctoring Modals */}
+      <ProctoringWarningModal
+        isOpen={proctoring.showWarning}
+        onClose={proctoring.dismissWarning}
+        violationCount={proctoring.violationCount}
+        maxViolations={3}
+        onReturnToFullscreen={proctoring.enterFullscreen}
+      />
+      
+      <ProctoringTerminationModal
+        isOpen={proctoring.isTerminated}
+        violationCount={proctoring.violationCount}
+        onClose={() => setLocation("/exams")}
+      />
     </div>
   );
 }
