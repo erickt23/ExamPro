@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { Users, Shield, HelpCircle, Plus, Edit, Trash2, Eye, EyeOff } from "lucide-react";
-// import CreateAdminQuestionModal from "@/components/modals/create-admin-question-modal";
+import CreateAdminQuestionModal from "@/components/modals/create-admin-question-modal";
 
 export default function AdminPage() {
   const { toast } = useToast();
@@ -379,6 +379,11 @@ export default function AdminPage() {
       </TabsContent>
       
       </Tabs>
+
+      <CreateAdminQuestionModal
+        open={showCreateQuestionModal}
+        onOpenChange={setShowCreateQuestionModal}
+      />
     </div>
   );
 }

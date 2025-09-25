@@ -48,7 +48,7 @@ function Router() {
     );
   }
 
-  const isInstructor = user?.role === 'instructor';
+  const isInstructor = user?.role === 'instructor' || user?.role === 'admin';
 
   return (
     <Switch>
