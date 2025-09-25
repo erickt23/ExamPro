@@ -437,30 +437,30 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
                   {/* Manual Question Selection */}
                   {selectionMethod === 'manual' && (
                     <div className="space-y-4">
-                <div>
-                  <div className="flex items-center justify-between mb-3">
-                    <Label>{t('createExamModal.searchAndSelectQuestions')}</Label>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setShowFilters(!showFilters)}
-                      className="text-xs"
-                    >
-                      {showFilters ? t('createExamModal.hideFilters') : t('createExamModal.showFilters')}
-                    </Button>
-                  </div>
-                  
-                  {/* Search Bar */}
-                  <div className="relative">
-                    <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                    <Input
-                      placeholder={t('createExamModal.searchQuestionsPlaceholder')}
-                      value={questionSearch}
-                      onChange={(e) => setQuestionSearch(e.target.value)}
-                      className="pl-9"
-                    />
-                  </div>
+                      <div>
+                        <div className="flex items-center justify-between mb-3">
+                          <Label>{t('createExamModal.searchAndSelectQuestions')}</Label>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setShowFilters(!showFilters)}
+                            className="text-xs"
+                          >
+                            {showFilters ? t('createExamModal.hideFilters') : t('createExamModal.showFilters')}
+                          </Button>
+                        </div>
+                        
+                        {/* Search Bar */}
+                        <div className="relative">
+                          <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                          <Input
+                            placeholder={t('createExamModal.searchQuestionsPlaceholder')}
+                            value={questionSearch}
+                            onChange={(e) => setQuestionSearch(e.target.value)}
+                            className="pl-9"
+                          />
+                        </div>
                   
                   {/* Filter Section */}
                   {showFilters && (
@@ -795,216 +795,224 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
                     {t('createExamModal.settingUpRandomSelection')}
                   </div>
                 )}
-              </div>
-            )}
+                    </div>
+                  )}
+                </AccordionContent>
+              </AccordionItem>
 
-            {/* Exam Settings */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="duration"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t('createExamModal.durationMinutes')}</FormLabel>
-                    <FormControl>
-                      <Input 
-                        type="number" 
-                        min="1" 
-                        {...field} 
-                        onChange={(e) => field.onChange(parseInt(e.target.value))}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="totalPoints"
-                render={({ field }) => {
-                  const questionsToCalculate = selectionMethod === 'manual' ? selectedQuestions : randomQuestions;
-                  const calculatedPoints = questionsToCalculate.reduce((sum, question) => sum + (question.points || 1), 0);
-                  const isAutoCalculated = questionsToCalculate.length > 0;
-                  
-                  return (
-                    <FormItem>
-                      <FormLabel className="flex items-center gap-2">
-                        {t('createExamModal.totalPoints')}
-                        {isAutoCalculated && (
-                          <Badge variant="secondary" className="text-xs bg-green-100 text-green-800">
-                            {t('createExamModal.autoCalculated')}
-                          </Badge>
-                        )}
-                      </FormLabel>
-                      <FormControl>
-                        <div className="relative">
-                          <Input 
-                            type="number" 
-                            min="1" 
-                            {...field} 
-                            onChange={(e) => field.onChange(parseInt(e.target.value))}
-                            className={isAutoCalculated ? "bg-green-50 border-green-200" : ""}
-                          />
-                          {isAutoCalculated && (
-                            <div className="absolute inset-y-0 right-3 flex items-center">
-                              <span className="text-xs text-green-600 font-medium">
-                                = {calculatedPoints} {t('createExamModal.pointsCalculatedSuffix')}
-                              </span>
-                            </div>
-                          )}
-                        </div>
-                      </FormControl>
-                      {isAutoCalculated && (
-                        <FormDescription className="text-green-600 text-xs">
-                          {t('createExamModal.pointsAutoCalculatedDescription', { count: questionsToCalculate.length, plural: questionsToCalculate.length === 1 ? t('createExamModal.question') : t('createExamModal.questions') })}
-                        </FormDescription>
+              {/* Section 3: Exam Settings & Configuration */}
+              <AccordionItem value="section3">
+                <AccordionTrigger className="text-lg font-semibold">
+                  Exam Settings & Configuration
+                </AccordionTrigger>
+                <AccordionContent className="space-y-4 pt-4">
+                  {/* Duration and Points */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="duration"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t('createExamModal.durationMinutes')}</FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="number" 
+                              min="1" 
+                              {...field} 
+                              onChange={(e) => field.onChange(parseInt(e.target.value))}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
                       )}
-                      <FormMessage />
-                    </FormItem>
-                  );
-                }}
-              />
+                    />
 
-            </div>
+                    <FormField
+                      control={form.control}
+                      name="totalPoints"
+                      render={({ field }) => {
+                        const questionsToCalculate = selectionMethod === 'manual' ? selectedQuestions : randomQuestions;
+                        const calculatedPoints = questionsToCalculate.reduce((sum, question) => sum + (question.points || 1), 0);
+                        const isAutoCalculated = questionsToCalculate.length > 0;
+                        
+                        return (
+                          <FormItem>
+                            <FormLabel className="flex items-center gap-2">
+                              {t('createExamModal.totalPoints')}
+                              {isAutoCalculated && (
+                                <Badge variant="secondary" className="text-xs bg-green-100 text-green-800">
+                                  {t('createExamModal.autoCalculated')}
+                                </Badge>
+                              )}
+                            </FormLabel>
+                            <FormControl>
+                              <div className="relative">
+                                <Input 
+                                  type="number" 
+                                  min="1" 
+                                  {...field} 
+                                  onChange={(e) => field.onChange(parseInt(e.target.value))}
+                                  className={isAutoCalculated ? "bg-green-50 border-green-200" : ""}
+                                />
+                                {isAutoCalculated && (
+                                  <div className="absolute inset-y-0 right-3 flex items-center">
+                                    <span className="text-xs text-green-600 font-medium">
+                                      = {calculatedPoints} {t('createExamModal.pointsCalculatedSuffix')}
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
+                            </FormControl>
+                            {isAutoCalculated && (
+                              <FormDescription className="text-green-600 text-xs">
+                                {t('createExamModal.pointsAutoCalculatedDescription', { count: questionsToCalculate.length, plural: questionsToCalculate.length === 1 ? t('createExamModal.question') : t('createExamModal.questions') })}
+                              </FormDescription>
+                            )}
+                            <FormMessage />
+                          </FormItem>
+                        );
+                      }}
+                    />
 
-            {/* Additional Settings Row */}
-            <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
-              <FormField
-                control={form.control}
-                name="attemptsAllowed"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t('createExamModal.attemptsAllowed')}</FormLabel>
-                    <Select onValueChange={(value) => field.onChange(parseInt(value))} defaultValue={field.value?.toString()}>
-                      <FormControl>
-                        <SelectTrigger className="max-w-xs">
-                          <SelectValue />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="1">{t('createExamModal.oneAttempt')}</SelectItem>
-                        <SelectItem value="2">{t('createExamModal.twoAttempts')}</SelectItem>
-                        <SelectItem value="3">{t('createExamModal.threeAttempts')}</SelectItem>
-                        <SelectItem value="-1">{t('createExamModal.unlimited')}</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+                  </div>
 
-            {/* Scheduling */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="availableFrom"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t('createExamModal.availableFrom')}</FormLabel>
-                    <FormControl>
-                      <Input type="datetime-local" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                  {/* Additional Settings */}
+                  <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="attemptsAllowed"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t('createExamModal.attemptsAllowed')}</FormLabel>
+                          <Select onValueChange={(value) => field.onChange(parseInt(value))} defaultValue={field.value?.toString()}>
+                            <FormControl>
+                              <SelectTrigger className="max-w-xs">
+                                <SelectValue />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="1">{t('createExamModal.oneAttempt')}</SelectItem>
+                              <SelectItem value="2">{t('createExamModal.twoAttempts')}</SelectItem>
+                              <SelectItem value="3">{t('createExamModal.threeAttempts')}</SelectItem>
+                              <SelectItem value="-1">{t('createExamModal.unlimited')}</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
 
-              <FormField
-                control={form.control}
-                name="availableUntil"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t('createExamModal.availableUntil')}</FormLabel>
-                    <FormControl>
-                      <Input type="datetime-local" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+                  {/* Scheduling */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="availableFrom"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t('createExamModal.availableFrom')}</FormLabel>
+                          <FormControl>
+                            <Input type="datetime-local" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-            {/* Exam Options */}
-            <div>
-              <Label className="text-sm font-medium mb-3 block">{t('createExamModal.examOptions')}</Label>
-              <div className="space-y-3">
-                <FormField
-                  control={form.control}
-                  name="randomizeQuestions"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                      <FormControl>
-                        <Checkbox
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
+                    <FormField
+                      control={form.control}
+                      name="availableUntil"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{t('createExamModal.availableUntil')}</FormLabel>
+                          <FormControl>
+                            <Input type="datetime-local" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  {/* Exam Options */}
+                  <div>
+                    <Label className="text-sm font-medium mb-3 block">{t('createExamModal.examOptions')}</Label>
+                    <div className="space-y-3">
+                      <FormField
+                        control={form.control}
+                        name="randomizeQuestions"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                            <FormControl>
+                              <Checkbox
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                              />
+                            </FormControl>
+                            <div className="space-y-1 leading-none">
+                              <FormLabel>{t('createExamModal.randomizeQuestionOrder')}</FormLabel>
+                            </div>
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="randomizeOptions"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                            <FormControl>
+                              <Checkbox
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                              />
+                            </FormControl>
+                            <div className="space-y-1 leading-none">
+                              <FormLabel>{t('createExamModal.randomizeAnswerOptions')}</FormLabel>
+                            </div>
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="requirePassword"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                            <FormControl>
+                              <Checkbox
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                              />
+                            </FormControl>
+                            <div className="space-y-1 leading-none">
+                              <FormLabel>{t('createExamModal.requirePasswordToStart')}</FormLabel>
+                            </div>
+                          </FormItem>
+                        )}
+                      />
+
+                      {form.watch('requirePassword') && (
+                        <FormField
+                          control={form.control}
+                          name="password"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>{t('createExamModal.examPassword')}</FormLabel>
+                              <FormControl>
+                                <Input 
+                                  type="password" 
+                                  placeholder={t('createExamModal.enterExamPassword')} 
+                                  {...field} 
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
                         />
-                      </FormControl>
-                      <div className="space-y-1 leading-none">
-                        <FormLabel>{t('createExamModal.randomizeQuestionOrder')}</FormLabel>
-                      </div>
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="randomizeOptions"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                      <FormControl>
-                        <Checkbox
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                      <div className="space-y-1 leading-none">
-                        <FormLabel>{t('createExamModal.randomizeAnswerOptions')}</FormLabel>
-                      </div>
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="requirePassword"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                      <FormControl>
-                        <Checkbox
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                      <div className="space-y-1 leading-none">
-                        <FormLabel>{t('createExamModal.requirePasswordToStart')}</FormLabel>
-                      </div>
-                    </FormItem>
-                  )}
-                />
-
-                {form.watch('requirePassword') && (
-                  <FormField
-                    control={form.control}
-                    name="password"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t('createExamModal.examPassword')}</FormLabel>
-                        <FormControl>
-                          <Input 
-                            type="password" 
-                            placeholder={t('createExamModal.enterExamPassword')} 
-                            {...field} 
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                )}
-              </div>
-            </div>
+                      )}
+                    </div>
+                  </div>
 
             {/* Proctoring Configuration */}
             <div>
