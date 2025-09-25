@@ -992,13 +992,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
               (typeof submission.progressData === 'string' ? 
                 JSON.parse(submission.progressData) : submission.progressData) : {};
             
+            console.log(`[DEBUG] Processing randomization for exam ${examId}, submission ${submission.id}`);
+            
             if (progressData.permutationMappings) {
               // Use existing mappings for consistency
               permutationMappings = progressData.permutationMappings;
+              console.log(`[DEBUG] Using existing permutation mappings for ${Object.keys(permutationMappings).length} questions`);
             } else {
               // Generate new mappings
+              console.log(`[DEBUG] Generating new permutation mappings for ${examQuestions.length} questions`);
               permutationMappings = createExamPermutations(
-                examQuestions.map(eq => eq.question),
+                examQuestions.map(eq => ({ ...eq.question, id: eq.questionId })),
                 {
                   examId,
                   studentId: userId,
@@ -1006,6 +1010,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 },
                 exam.randomizeOptions
               );
+              
+              console.log(`[DEBUG] Generated permutation mappings for ${Object.keys(permutationMappings).length} questions`);
               
               // Store mappings in submission progress data
               const updatedProgressData = {
@@ -1016,6 +1022,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               await storage.updateSubmission(submission.id, {
                 progressData: JSON.stringify(updatedProgressData)
               });
+              console.log(`[DEBUG] Stored permutation mappings in submission ${submission.id}`);
             }
           } catch (error) {
             console.error("Error handling permutation mappings:", error);
@@ -1035,6 +1042,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           // Generate remapped correct answers for grading if shuffling is applied
           if (permutation && exam.randomizeOptions) {
+            console.log(`[DEBUG] Applying permutation to question ${eq.question.id}, permutation exists: ${!!permutation}`);
             const remappedQuestion = applyPermutationWithCorrectAnswers(eq.question, permutation);
             remappedCorrectAnswers[eq.questionId] = {
               correctAnswer: remappedQuestion.correctAnswer,
@@ -1042,6 +1050,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
               _shuffleDebug: remappedQuestion._shuffleDebug
             };
             console.log(`[DEBUG] Question ${eq.question.id} remapped: ${JSON.stringify(remappedQuestion.correctAnswers)} (original: ${JSON.stringify(originalCorrectAnswers)})`);
+          } else {
+            console.log(`[DEBUG] Skipping permutation for question ${eq.question.id}: permutation=${!!permutation}, randomizeOptions=${exam.randomizeOptions}`);
           }
           
           const baseQuestion = {

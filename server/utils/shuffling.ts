@@ -166,22 +166,31 @@ export function createExamPermutations(
   config: ShuffleConfig,
   randomizeOptions: boolean = false
 ): PermutationMapping {
+  console.log(`[DEBUG] createExamPermutations called: randomizeOptions=${randomizeOptions}, questions=${questions.length}`);
+  
   if (!randomizeOptions) {
+    console.log(`[DEBUG] createExamPermutations: randomizeOptions is false, returning empty mappings`);
     return {};
   }
 
   const mappings: PermutationMapping = {};
 
-  questions.forEach(question => {
+  questions.forEach((question, index) => {
+    console.log(`[DEBUG] Processing question ${index}: id=${question.id}, options=${JSON.stringify(question.options)}`);
+    
     if (question.options && Array.isArray(question.options) && question.options.length > 1) {
       // Generate unique seed per question to ensure order-invariant consistency
       const questionSeed = generateQuestionShuffleSeed(config, question.id);
       const questionRng = new SeededRandom(questionSeed);
       const { permutation } = shuffleWithPermutation(question.options, questionRng);
       mappings[question.id] = permutation;
+      console.log(`[DEBUG] Generated permutation for question ${question.id}: ${JSON.stringify(permutation)}`);
+    } else {
+      console.log(`[DEBUG] Skipping question ${question.id}: options=${!!question.options}, isArray=${Array.isArray(question.options)}, length=${question.options?.length}`);
     }
   });
 
+  console.log(`[DEBUG] createExamPermutations returning mappings for ${Object.keys(mappings).length} questions: ${JSON.stringify(Object.keys(mappings))}`);
   return mappings;
 }
 
