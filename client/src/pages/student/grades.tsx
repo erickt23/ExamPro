@@ -50,6 +50,39 @@ export default function StudentGrades() {
     retry: false,
   });
 
+  // Fetch extra credits for all submissions
+  const submissionIds = submissions?.map((s: any) => s.id) || [];
+  const { data: allExtraCredits = {} } = useQuery({
+    queryKey: ["/api/submissions", "extra-credits", "batch"],
+    queryFn: async () => {
+      if (submissionIds.length === 0) return {};
+      
+      const extraCreditsMap: any = {};
+      
+      // Fetch extra credits for each submission
+      for (const submissionId of submissionIds) {
+        try {
+          const response = await fetch(`/api/submissions/${submissionId}/extra-credits`);
+          if (response.ok) {
+            const extraCredits = await response.json();
+            const total = extraCredits.reduce((sum: number, credit: any) => sum + parseFloat(credit.points), 0);
+            extraCreditsMap[submissionId] = {
+              credits: extraCredits,
+              total: total
+            };
+          }
+        } catch (error) {
+          // Skip errors for individual submissions
+          extraCreditsMap[submissionId] = { credits: [], total: 0 };
+        }
+      }
+      
+      return extraCreditsMap;
+    },
+    enabled: submissionIds.length > 0,
+    retry: false,
+  });
+
   if (isLoading || !isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -61,20 +94,30 @@ export default function StudentGrades() {
     );
   }
 
-  // Process submissions with exam details
+  // Process submissions with exam details and extra credits
   const gradesData = submissions?.map((submission: any) => {
     const exam = exams?.find((e: any) => e.id === submission.examId);
+    const extraCreditData = allExtraCredits[submission.id] || { credits: [], total: 0 };
+    const baseScore = parseFloat(submission.totalScore || '0');
+    const finalScore = baseScore + extraCreditData.total;
+    
     return {
       ...submission,
       exam,
+      extraCredits: extraCreditData.credits,
+      extraCreditTotal: extraCreditData.total,
+      baseScore,
+      finalScore: submission.totalScore !== null ? finalScore : null,
     };
   }).filter((item: any) => item.exam) || [];
 
-  // Calculate statistics
+  // Calculate statistics including extra credits
   const completedGrades = gradesData.filter((g: any) => g.totalScore !== null);
-  const totalScore = completedGrades.reduce((sum: number, g: any) => sum + parseFloat(g.totalScore || '0'), 0);
+  const totalBaseScore = completedGrades.reduce((sum: number, g: any) => sum + g.baseScore, 0);
+  const totalExtraCredits = completedGrades.reduce((sum: number, g: any) => sum + g.extraCreditTotal, 0);
+  const totalFinalScore = completedGrades.reduce((sum: number, g: any) => sum + g.finalScore, 0);
   const totalMaxScore = completedGrades.reduce((sum: number, g: any) => sum + parseFloat(g.maxScore || '0'), 0);
-  const overallAverage = totalMaxScore > 0 ? (totalScore / totalMaxScore) * 100 : 0;
+  const overallAverage = totalMaxScore > 0 ? (totalFinalScore / totalMaxScore) * 100 : 0;
 
   const getScoreColor = (score: number) => {
     if (score >= 90) return 'text-green-600';
@@ -222,11 +265,13 @@ export default function StudentGrades() {
                 ) : (
                   <div className="space-y-4">
                     {gradesData.map((grade: any, index: number) => {
-                      const percentage = grade.totalScore ? 
+                      const percentage = grade.finalScore ? 
+                        getScorePercentage(grade.finalScore, grade.maxScore) : null;
+                      const basePercentage = grade.totalScore ? 
                         getScorePercentage(grade.totalScore, grade.maxScore) : null;
                       const previousGrade = index < gradesData.length - 1 ? gradesData[index + 1] : null;
-                      const previousPercentage = previousGrade?.totalScore ? 
-                        getScorePercentage(previousGrade.totalScore, previousGrade.maxScore) : null;
+                      const previousPercentage = previousGrade?.finalScore ? 
+                        getScorePercentage(previousGrade.finalScore, previousGrade.maxScore) : null;
 
                       return (
                         <div key={grade.id} className="border rounded-lg p-6 hover:shadow-sm transition-shadow">
@@ -282,16 +327,32 @@ export default function StudentGrades() {
                               {grade.totalScore ? (
                                 <div>
                                   <div className="flex items-center space-x-2 mb-1">
-                                    <span className={`text-2xl font-bold ${getScoreColor(percentage || 0)}`}>
-                                      {formatScore(grade.totalScore, grade.maxScore)}
+                                    <span className={`text-2xl font-bold ${getScoreColor(percentage || 0)}`} data-testid={`text-final-score-${grade.id}`}>
+                                      {formatScore(grade.finalScore, grade.maxScore)}
                                     </span>
                                     {getTrendIcon(percentage || 0, previousPercentage || undefined)}
                                   </div>
                                   <div className="flex items-center space-x-2">
-                                    <span className={`text-lg font-medium ${getScoreColor(percentage || 0)}`}>
+                                    <span className={`text-lg font-medium ${getScoreColor(percentage || 0)}`} data-testid={`text-final-percentage-${grade.id}`}>
                                       {percentage?.toFixed(1)}%
                                     </span>
                                   </div>
+                                  
+                                  {/* Extra Credit Breakdown */}
+                                  {grade.extraCreditTotal > 0 && (
+                                    <div className="text-xs text-gray-600 mt-1" data-testid={`text-score-breakdown-${grade.id}`}>
+                                      <div className="flex flex-col items-end space-y-1">
+                                        <span data-testid={`text-base-score-${grade.id}`}>
+                                          Base: {formatScore(grade.baseScore, grade.maxScore)} ({basePercentage?.toFixed(1)}%)
+                                        </span>
+                                        <span className="text-yellow-600 flex items-center" data-testid={`text-extra-credits-${grade.id}`}>
+                                          <Award className="h-3 w-3 mr-1" />
+                                          Extra: +{grade.extraCreditTotal.toFixed(1)} pts
+                                        </span>
+                                      </div>
+                                    </div>
+                                  )}
+                                  
                                   <Progress value={percentage || 0} className="w-24 h-2 mt-2" />
                                 </div>
                               ) : (
@@ -331,6 +392,49 @@ export default function StudentGrades() {
                                       'N/A'
                                     }
                                   </p>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Extra Credit Details Section */}
+                          {grade.extraCredits && grade.extraCredits.length > 0 && (
+                            <div className="mt-4 pt-4 border-t border-gray-100">
+                              <div className="flex items-start space-x-3">
+                                <Award className="h-5 w-5 text-yellow-600 mt-0.5" />
+                                <div className="flex-1">
+                                  <p className="text-sm font-medium text-gray-900 mb-2">Extra Credit Awarded</p>
+                                  <div className="space-y-2">
+                                    {grade.extraCredits.map((credit: any, creditIndex: number) => (
+                                      <div 
+                                        key={credit.id} 
+                                        className="flex items-center justify-between p-2 bg-yellow-50 rounded-lg border border-yellow-200"
+                                        data-testid={`student-ec-detail-${grade.id}-${credit.id}`}
+                                      >
+                                        <div className="flex-1">
+                                          <p className="text-sm text-gray-800 font-medium">
+                                            {credit.reason}
+                                          </p>
+                                          <p className="text-xs text-gray-500 mt-1">
+                                            Awarded by {credit.grantedBy} on {new Date(credit.grantedAt).toLocaleDateString()}
+                                          </p>
+                                        </div>
+                                        <div className="text-right">
+                                          <span className="text-sm font-bold text-yellow-700" data-testid={`student-ec-points-${credit.id}`}>
+                                            +{parseFloat(credit.points).toFixed(1)} pts
+                                          </span>
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                  <div className="mt-3 pt-2 border-t border-yellow-200">
+                                    <div className="flex justify-between items-center text-sm">
+                                      <span className="font-medium text-gray-700">Total Extra Credit:</span>
+                                      <span className="font-bold text-yellow-700" data-testid={`student-total-ec-${grade.id}`}>
+                                        +{grade.extraCreditTotal.toFixed(1)} points
+                                      </span>
+                                    </div>
+                                  </div>
                                 </div>
                               </div>
                             </div>
