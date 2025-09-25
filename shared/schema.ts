@@ -44,6 +44,7 @@ export const questionTypeEnum = pgEnum('question_type', ['multiple_choice', 'sho
 export const difficultyEnum = pgEnum('difficulty', ['easy', 'medium', 'hard']);
 export const bloomsTaxonomyEnum = pgEnum('blooms_taxonomy', ['remember', 'understand', 'apply', 'analyze', 'evaluate', 'create']);
 export const questionCategoryEnum = pgEnum('question_category', ['exam', 'homework']);
+export const gradeLevelEnum = pgEnum('grade_level', ['pre_k', 'kindergarten', '1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th', '11th', '12th', 'undergraduate', 'graduate']);
 
 // Subjects table
 export const subjects = pgTable("subjects", {
@@ -99,6 +100,7 @@ export const questions = pgTable("questions", {
   subjectId: integer("subject_id").notNull().references(() => subjects.id),
   difficulty: difficultyEnum("difficulty").notNull(),
   bloomsTaxonomy: bloomsTaxonomyEnum("blooms_taxonomy"),
+  gradeLevel: gradeLevelEnum("grade_level"),
   points: integer("points").notNull().default(1),
   timeLimit: integer("time_limit"), // in minutes
   version: varchar("version").notNull().default("1.0"),
