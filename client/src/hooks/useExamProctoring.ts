@@ -238,6 +238,8 @@ export function useExamProctoring(options: ExamProctoringOptions = {}) {
       }
     };
 
+    // Store reference for cleanup and add event listener
+    preventShortcutsRef.current = preventShortcuts;
     document.addEventListener('keydown', preventShortcuts);
 
     console.log('Exam proctoring started');
@@ -250,6 +252,9 @@ export function useExamProctoring(options: ExamProctoringOptions = {}) {
     handleKeyDown,
   ]);
 
+  // Store reference to prevent shortcuts handler for cleanup
+  const preventShortcutsRef = useRef<((e: KeyboardEvent) => void) | null>(null);
+
   // Stop proctoring
   const stopProctoring = useCallback(async () => {
     // Remove event listeners
@@ -260,6 +265,12 @@ export function useExamProctoring(options: ExamProctoringOptions = {}) {
     window.removeEventListener('blur', handleWindowBlur);
     document.removeEventListener('contextmenu', handleContextMenu);
     document.removeEventListener('keydown', handleKeyDown);
+
+    // Remove prevent shortcuts handler if it exists
+    if (preventShortcutsRef.current) {
+      document.removeEventListener('keydown', preventShortcutsRef.current);
+      preventShortcutsRef.current = null;
+    }
 
     // Exit fullscreen
     await exitFullscreen();
