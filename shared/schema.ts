@@ -265,6 +265,24 @@ export const homeworkAnswers = pgTable("homework_answers", {
   gradedBy: varchar("graded_by").references(() => users.id),
 });
 
+// Extra Credits table - for awarding bonus points to students after submission
+export const extraCredits = pgTable("extra_credits", {
+  id: serial("id").primaryKey(),
+  submissionId: integer("submission_id").references(() => submissions.id, { onDelete: "cascade" }),
+  homeworkSubmissionId: integer("homework_submission_id").references(() => homeworkSubmissions.id, { onDelete: "cascade" }),
+  studentId: varchar("student_id").notNull().references(() => users.id), // Denormalized for fast queries
+  points: decimal("points", { precision: 5, scale: 2 }).notNull(),
+  reason: text("reason").notNull(),
+  grantedBy: varchar("granted_by").notNull().references(() => users.id),
+  grantedAt: timestamp("granted_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => [
+  // Ensure only one type of submission is referenced
+  index("idx_extra_credits_submission").on(table.submissionId),
+  index("idx_extra_credits_homework_submission").on(table.homeworkSubmissionId),
+  index("idx_extra_credits_student").on(table.studentId),
+]);
+
 // Relations
 export const subjectsRelations = relations(subjects, ({ many }) => ({
   questions: many(questions),
@@ -329,6 +347,7 @@ export const submissionsRelations = relations(submissions, ({ one, many }) => ({
     references: [users.id],
   }),
   answers: many(answers),
+  extraCredits: many(extraCredits),
 }));
 
 export const answersRelations = relations(answers, ({ one }) => ({
@@ -381,6 +400,7 @@ export const homeworkSubmissionsRelations = relations(homeworkSubmissions, ({ on
     references: [users.id],
   }),
   answers: many(homeworkAnswers),
+  extraCredits: many(extraCredits),
 }));
 
 export const homeworkAnswersRelations = relations(homeworkAnswers, ({ one }) => ({
@@ -394,6 +414,25 @@ export const homeworkAnswersRelations = relations(homeworkAnswers, ({ one }) => 
   }),
   grader: one(users, {
     fields: [homeworkAnswers.gradedBy],
+    references: [users.id],
+  }),
+}));
+
+export const extraCreditsRelations = relations(extraCredits, ({ one }) => ({
+  submission: one(submissions, {
+    fields: [extraCredits.submissionId],
+    references: [submissions.id],
+  }),
+  homeworkSubmission: one(homeworkSubmissions, {
+    fields: [extraCredits.homeworkSubmissionId],
+    references: [homeworkSubmissions.id],
+  }),
+  student: one(users, {
+    fields: [extraCredits.studentId],
+    references: [users.id],
+  }),
+  granter: one(users, {
+    fields: [extraCredits.grantedBy],
     references: [users.id],
   }),
 }));
@@ -493,6 +532,14 @@ export const insertFinalizedGradeSchema = createInsertSchema(finalizedGrades).om
   finalizedAt: true,
 });
 
+export const insertExtraCreditSchema = createInsertSchema(extraCredits).omit({
+  id: true,
+  grantedAt: true,
+  updatedAt: true,
+}).extend({
+  points: z.number().nonnegative().transform((val) => val.toString()),
+});
+
 // Types
 export type UpsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
@@ -516,3 +563,5 @@ export type InsertProctoringSettings = z.infer<typeof insertProctoringSettingsSc
 export type ProctoringSettings = typeof proctoringSettings.$inferSelect;
 export type InsertFinalizedGrade = z.infer<typeof insertFinalizedGradeSchema>;
 export type FinalizedGrade = typeof finalizedGrades.$inferSelect;
+export type InsertExtraCredit = z.infer<typeof insertExtraCreditSchema>;
+export type ExtraCredit = typeof extraCredits.$inferSelect;
