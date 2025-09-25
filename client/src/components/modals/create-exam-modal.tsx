@@ -295,7 +295,7 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <Accordion type="multiple" defaultValue={["section1", "section2", "section3"]} className="w-full">
+            <Accordion type="multiple" defaultValue={["section1"]} className="w-full">
               {/* Section 1: Basic Information */}
               <AccordionItem value="section1">
                 <AccordionTrigger className="text-lg font-semibold">
