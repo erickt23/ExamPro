@@ -24,6 +24,10 @@ export type GradeCalculationResult = {
   totalExamMaxScore: number;
   examPercentage: number;
   finalGrade: number;
+  // Extra credit information
+  assignmentExtraCredits?: number;
+  examExtraCredits?: number;
+  totalExtraCredits?: number;
 };
 
 // Helper function to calculate final grade
@@ -33,10 +37,16 @@ export function calculateFinalGrade(
   examScore: number,
   examMaxScore: number,
   assignmentCoeff?: number,
-  examCoeff?: number
+  examCoeff?: number,
+  assignmentExtraCredits?: number,
+  examExtraCredits?: number
 ): number {
-  const assignmentPercentage = assignmentMaxScore > 0 ? (assignmentScore / assignmentMaxScore) * 100 : 0;
-  const examPercentage = examMaxScore > 0 ? (examScore / examMaxScore) * 100 : 0;
+  // Include extra credits in scores
+  const totalAssignmentScore = assignmentScore + (assignmentExtraCredits || 0);
+  const totalExamScore = examScore + (examExtraCredits || 0);
+  
+  const assignmentPercentage = assignmentMaxScore > 0 ? (totalAssignmentScore / assignmentMaxScore) * 100 : 0;
+  const examPercentage = examMaxScore > 0 ? (totalExamScore / examMaxScore) * 100 : 0;
   
   // Use provided coefficients or fall back to defaults
   const aCoeff = assignmentCoeff ?? GRADE_CALCULATION_CONFIG.ASSIGNMENT_COEFFICIENT;
@@ -48,4 +58,48 @@ export function calculateFinalGrade(
   );
   
   return Math.round(finalGrade * 100) / 100; // Round to 2 decimal places
+}
+
+// Enhanced version that returns detailed calculation result with extra credits
+export function calculateDetailedGrade(
+  assignmentScore: number,
+  assignmentMaxScore: number,
+  examScore: number,
+  examMaxScore: number,
+  assignmentCoeff?: number,
+  examCoeff?: number,
+  assignmentExtraCredits?: number,
+  examExtraCredits?: number
+): {
+  assignmentPercentage: number;
+  examPercentage: number;
+  finalGrade: number;
+  totalAssignmentScore: number;
+  totalExamScore: number;
+  totalExtraCredits: number;
+} {
+  const totalAssignmentScore = assignmentScore + (assignmentExtraCredits || 0);
+  const totalExamScore = examScore + (examExtraCredits || 0);
+  const totalExtraCredits = (assignmentExtraCredits || 0) + (examExtraCredits || 0);
+  
+  const assignmentPercentage = assignmentMaxScore > 0 ? (totalAssignmentScore / assignmentMaxScore) * 100 : 0;
+  const examPercentage = examMaxScore > 0 ? (totalExamScore / examMaxScore) * 100 : 0;
+  
+  // Use provided coefficients or fall back to defaults
+  const aCoeff = assignmentCoeff ?? GRADE_CALCULATION_CONFIG.ASSIGNMENT_COEFFICIENT;
+  const eCoeff = examCoeff ?? GRADE_CALCULATION_CONFIG.EXAM_COEFFICIENT;
+  
+  const finalGrade = (
+    assignmentPercentage * aCoeff +
+    examPercentage * eCoeff
+  );
+  
+  return {
+    assignmentPercentage: Math.round(assignmentPercentage * 100) / 100,
+    examPercentage: Math.round(examPercentage * 100) / 100,
+    finalGrade: Math.round(finalGrade * 100) / 100,
+    totalAssignmentScore,
+    totalExamScore,
+    totalExtraCredits
+  };
 }

@@ -1846,29 +1846,83 @@ export class DatabaseStorage implements IStorage {
     const assignmentCoeff = gradeSettings ? Number(gradeSettings.assignmentCoefficient) : 0.4;
     const examCoeff = gradeSettings ? Number(gradeSettings.examCoefficient) : 0.6;
     
+    // Get all submission IDs for extra credit calculation
+    const allSubmissionIds: number[] = [];
+    const allHomeworkSubmissionIds: number[] = [];
+    
+    // Extract submission IDs from student grades for batch extra credit lookup
+    for (const grade of subjectGrades) {
+      // Get submission IDs for this student's exams in this subject
+      const examSubmissions = await this.getSubmissions(undefined, grade.studentId);
+      for (const submission of examSubmissions) {
+        if (submission.status === 'graded') {
+          allSubmissionIds.push(submission.id);
+        }
+      }
+      
+      // Get homework submission IDs for this student in this subject
+      const homeworkSubmissions = await this.getHomeworkSubmissions(undefined, grade.studentId);
+      for (const hwSubmission of homeworkSubmissions) {
+        if (hwSubmission.status === 'graded') {
+          allHomeworkSubmissionIds.push(hwSubmission.id);
+        }
+      }
+    }
+
+    // Get extra credit totals in batch
+    const examExtraCredits = await this.getExtraCreditTotalsForSubmissions(allSubmissionIds);
+    const homeworkExtraCredits = await this.getExtraCreditTotalsForHomeworkSubmissions(allHomeworkSubmissionIds);
+
     // Create finalized grade records
-    const finalizedGradeData: InsertFinalizedGrade[] = subjectGrades.map(grade => {
+    const finalizedGradeData: InsertFinalizedGrade[] = [];
+    
+    for (const grade of subjectGrades) {
+      // Calculate extra credits for this student's submissions
+      let totalExamExtraCredits = 0;
+      let totalHomeworkExtraCredits = 0;
+      
+      // Get exam submissions for this student and calculate extra credits
+      const examSubmissions = await this.getSubmissions(undefined, grade.studentId);
+      for (const submission of examSubmissions) {
+        if (submission.status === 'graded' && examExtraCredits[submission.id]) {
+          totalExamExtraCredits += examExtraCredits[submission.id];
+        }
+      }
+      
+      // Get homework submissions for this student and calculate extra credits
+      const homeworkSubmissions = await this.getHomeworkSubmissions(undefined, grade.studentId);
+      for (const hwSubmission of homeworkSubmissions) {
+        if (hwSubmission.status === 'graded' && homeworkExtraCredits[hwSubmission.id]) {
+          totalHomeworkExtraCredits += homeworkExtraCredits[hwSubmission.id];
+        }
+      }
+      
+      // Calculate scores with extra credits included
+      const examScoreWithExtra = grade.totalExamScore + totalExamExtraCredits;
+      const assignmentScoreWithExtra = grade.totalAssignmentScore + totalHomeworkExtraCredits;
+      
+      // Calculate percentages with extra credits (can exceed 100% based on architect recommendation)
       const assignmentPercentage = grade.totalAssignmentMaxScore > 0 
-        ? (grade.totalAssignmentScore / grade.totalAssignmentMaxScore) * 100 
+        ? (assignmentScoreWithExtra / grade.totalAssignmentMaxScore) * 100 
         : 0;
       const examPercentage = grade.totalExamMaxScore > 0 
-        ? (grade.totalExamScore / grade.totalExamMaxScore) * 100 
+        ? (examScoreWithExtra / grade.totalExamMaxScore) * 100 
         : 0;
       const finalGrade = (assignmentPercentage * assignmentCoeff) + (examPercentage * examCoeff);
-      
-      return {
+
+      finalizedGradeData.push({
         studentId: grade.studentId,
         subjectId: grade.subjectId,
         finalGrade: finalGrade.toFixed(2),
-        assignmentScore: grade.totalAssignmentScore.toFixed(2),
+        assignmentScore: assignmentScoreWithExtra.toFixed(2),
         assignmentMaxScore: grade.totalAssignmentMaxScore.toFixed(2),
-        examScore: grade.totalExamScore.toFixed(2),
+        examScore: examScoreWithExtra.toFixed(2),
         examMaxScore: grade.totalExamMaxScore.toFixed(2),
         assignmentCoefficient: assignmentCoeff.toFixed(4),
         examCoefficient: examCoeff.toFixed(4),
         finalizedBy,
-      };
-    });
+      });
+    }
     
     // Insert finalized grades (replace if they already exist)
     const results: FinalizedGrade[] = [];
