@@ -117,6 +117,7 @@ export const exams = pgTable("exams", {
   title: varchar("title").notNull(),
   description: text("description"),
   subjectId: integer("subject_id").notNull().references(() => subjects.id),
+  gradeLevel: gradeLevelEnum("grade_level"),
   duration: integer("duration").notNull(), // in minutes
   totalPoints: integer("total_points").notNull(),
   attemptsAllowed: integer("attempts_allowed").notNull().default(1),
