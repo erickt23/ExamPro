@@ -48,6 +48,7 @@ export function useExamProctoring(options: ExamProctoringOptions = {}) {
 
   const warningShownRef = useRef(false);
   const terminatedRef = useRef(false);
+  const prevIsFullscreenRef = useRef(false);
 
   // Generate unique violation ID
   const generateViolationId = () => {
@@ -147,10 +148,13 @@ export function useExamProctoring(options: ExamProctoringOptions = {}) {
     setState(prevState => ({ ...prevState, isFullscreen: isCurrentlyFullscreen }));
 
     // Log violation if exiting fullscreen unexpectedly
-    if (!isCurrentlyFullscreen && state.isFullscreen && enableFullscreen) {
+    if (!isCurrentlyFullscreen && prevIsFullscreenRef.current && enableFullscreen) {
       logViolation('fullscreen_exit', 'Student exited fullscreen mode');
     }
-  }, [state.isFullscreen, enableFullscreen, logViolation]);
+
+    // Update the ref for next time
+    prevIsFullscreenRef.current = isCurrentlyFullscreen;
+  }, [enableFullscreen, logViolation]);
 
   // Handle visibility change (tab switching)
   const handleVisibilityChange = useCallback(() => {
@@ -197,8 +201,20 @@ export function useExamProctoring(options: ExamProctoringOptions = {}) {
   const startProctoring = useCallback(async () => {
     if (terminatedRef.current) return;
 
+    // Initialize fullscreen ref
+    prevIsFullscreenRef.current = false;
+
     // Enter fullscreen
     await enterFullscreen();
+
+    // Set fullscreen ref after entering fullscreen
+    setTimeout(() => {
+      prevIsFullscreenRef.current = !!(
+        document.fullscreenElement ||
+        (document as any).webkitFullscreenElement ||
+        (document as any).msFullscreenElement
+      );
+    }, 100);
 
     // Add event listeners
     document.addEventListener('fullscreenchange', handleFullscreenChange);
