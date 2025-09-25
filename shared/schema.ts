@@ -66,6 +66,23 @@ export const gradeSettings = pgTable("grade_settings", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Global Proctoring Settings table
+export const proctoringSettings = pgTable("proctoring_settings", {
+  id: serial("id").primaryKey(),
+  // Global proctoring configuration that applies to all exams unless overridden
+  enableProctoringByDefault: boolean("enable_proctoring_by_default").notNull().default(false),
+  defaultWarningThreshold: integer("default_warning_threshold").notNull().default(2),
+  defaultAutoTerminate: boolean("default_auto_terminate").notNull().default(true),
+  enableFullscreenMode: boolean("enable_fullscreen_mode").notNull().default(true),
+  enableTabDetection: boolean("enable_tab_detection").notNull().default(true),
+  enableContextMenuBlock: boolean("enable_context_menu_block").notNull().default(true),
+  enableDevToolsDetection: boolean("enable_dev_tools_detection").notNull().default(true),
+  enableCopyPasteBlock: boolean("enable_copy_paste_block").notNull().default(false),
+  allowInstructorOverride: boolean("allow_instructor_override").notNull().default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Final grades table - stores finalized grades that are immune to coefficient changes
 export const finalizedGrades = pgTable("finalized_grades", {
   id: serial("id").primaryKey(),
@@ -383,6 +400,8 @@ export const gradeSettingsRelations = relations(gradeSettings, ({ one }) => ({
   }),
 }));
 
+export const proctoringSettingsRelations = relations(proctoringSettings, () => ({}));
+
 export const finalizedGradesRelations = relations(finalizedGrades, ({ one }) => ({
   student: one(users, {
     fields: [finalizedGrades.studentId],
@@ -458,6 +477,12 @@ export const insertGradeSettingsSchema = createInsertSchema(gradeSettings).omit(
   updatedAt: true,
 });
 
+export const insertProctoringSettingsSchema = createInsertSchema(proctoringSettings).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 export const insertFinalizedGradeSchema = createInsertSchema(finalizedGrades).omit({
   id: true,
   finalizedAt: true,
@@ -482,5 +507,7 @@ export type HomeworkSubmission = typeof homeworkSubmissions.$inferSelect;
 export type HomeworkAnswer = typeof homeworkAnswers.$inferSelect;
 export type InsertGradeSettings = z.infer<typeof insertGradeSettingsSchema>;
 export type GradeSettings = typeof gradeSettings.$inferSelect;
+export type InsertProctoringSettings = z.infer<typeof insertProctoringSettingsSchema>;
+export type ProctoringSettings = typeof proctoringSettings.$inferSelect;
 export type InsertFinalizedGrade = z.infer<typeof insertFinalizedGradeSchema>;
 export type FinalizedGrade = typeof finalizedGrades.$inferSelect;
