@@ -13,6 +13,7 @@ import {
   gradeSettings,
   proctoringSettings,
   finalizedGrades,
+  extraCredits,
   type User,
   type UpsertUser,
   type InsertSubject,
@@ -35,6 +36,8 @@ import {
   type ProctoringSettings,
   type InsertFinalizedGrade,
   type FinalizedGrade,
+  type InsertExtraCredit,
+  type ExtraCredit,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, asc, and, or, count, avg, sum, like, ilike, inArray, sql, ne, isNull } from "drizzle-orm";
@@ -212,6 +215,15 @@ export interface IStorage {
   isSubjectGradesFinalized(subjectId: number): Promise<boolean>;
   getFinalizedGradesForSubject(subjectId: number): Promise<FinalizedGrade[]>;
   unfinalizeGradesForSubject(subjectId: number): Promise<void>;
+  
+  // Extra credit operations
+  createExtraCreditForSubmission(submissionId: number, extraCredit: { points: number; reason: string }, grantedBy: string): Promise<ExtraCredit>;
+  createExtraCreditForHomeworkSubmission(homeworkSubmissionId: number, extraCredit: { points: number; reason: string }, grantedBy: string): Promise<ExtraCredit>;
+  listExtraCreditsForSubmission(submissionId: number): Promise<ExtraCredit[]>;
+  listExtraCreditsForHomeworkSubmission(homeworkSubmissionId: number): Promise<ExtraCredit[]>;
+  deleteExtraCredit(creditId: number): Promise<void>;
+  getExtraCreditTotalsForSubmissions(submissionIds: number[]): Promise<Record<number, number>>;
+  getExtraCreditTotalsForHomeworkSubmissions(homeworkSubmissionIds: number[]): Promise<Record<number, number>>;
 }
 
 // In-memory fallback storage for when database is unavailable
@@ -315,6 +327,13 @@ class MemoryStorage implements IStorage {
   async isSubjectGradesFinalized(): Promise<boolean> { return false; }
   async getFinalizedGradesForSubject(): Promise<FinalizedGrade[]> { return []; }
   async unfinalizeGradesForSubject(): Promise<void> { throw new Error('Database unavailable'); }
+  async createExtraCreditForSubmission(): Promise<ExtraCredit> { throw new Error('Database unavailable'); }
+  async createExtraCreditForHomeworkSubmission(): Promise<ExtraCredit> { throw new Error('Database unavailable'); }
+  async listExtraCreditsForSubmission(): Promise<ExtraCredit[]> { return []; }
+  async listExtraCreditsForHomeworkSubmission(): Promise<ExtraCredit[]> { return []; }
+  async deleteExtraCredit(): Promise<void> { throw new Error('Database unavailable'); }
+  async getExtraCreditTotalsForSubmissions(): Promise<Record<number, number>> { return {}; }
+  async getExtraCreditTotalsForHomeworkSubmissions(): Promise<Record<number, number>> { return {}; }
 }
 
 // Create a memory storage instance for fallback
@@ -1891,6 +1910,113 @@ export class DatabaseStorage implements IStorage {
     await db
       .delete(finalizedGrades)
       .where(eq(finalizedGrades.subjectId, subjectId));
+  }
+
+  // Extra credit operations
+  async createExtraCreditForSubmission(submissionId: number, extraCredit: { points: number; reason: string }, grantedBy: string): Promise<ExtraCredit> {
+    // Get submission to verify it exists and get student ID
+    const submission = await this.getSubmissionById(submissionId);
+    if (!submission) {
+      throw new Error('Submission not found');
+    }
+
+    const [extraCreditRecord] = await db
+      .insert(extraCredits)
+      .values({
+        submissionId,
+        homeworkSubmissionId: null,
+        studentId: submission.studentId,
+        points: extraCredit.points.toString(),
+        reason: extraCredit.reason,
+        grantedBy,
+      })
+      .returning();
+    return extraCreditRecord;
+  }
+
+  async createExtraCreditForHomeworkSubmission(homeworkSubmissionId: number, extraCredit: { points: number; reason: string }, grantedBy: string): Promise<ExtraCredit> {
+    // Get homework submission to verify it exists and get student ID
+    const homeworkSubmission = await this.getHomeworkSubmissionById(homeworkSubmissionId);
+    if (!homeworkSubmission) {
+      throw new Error('Homework submission not found');
+    }
+
+    const [extraCreditRecord] = await db
+      .insert(extraCredits)
+      .values({
+        submissionId: null,
+        homeworkSubmissionId,
+        studentId: homeworkSubmission.studentId,
+        points: extraCredit.points.toString(),
+        reason: extraCredit.reason,
+        grantedBy,
+      })
+      .returning();
+    return extraCreditRecord;
+  }
+
+  async listExtraCreditsForSubmission(submissionId: number): Promise<ExtraCredit[]> {
+    return await db
+      .select()
+      .from(extraCredits)
+      .where(eq(extraCredits.submissionId, submissionId))
+      .orderBy(desc(extraCredits.grantedAt));
+  }
+
+  async listExtraCreditsForHomeworkSubmission(homeworkSubmissionId: number): Promise<ExtraCredit[]> {
+    return await db
+      .select()
+      .from(extraCredits)
+      .where(eq(extraCredits.homeworkSubmissionId, homeworkSubmissionId))
+      .orderBy(desc(extraCredits.grantedAt));
+  }
+
+  async deleteExtraCredit(creditId: number): Promise<void> {
+    await db
+      .delete(extraCredits)
+      .where(eq(extraCredits.id, creditId));
+  }
+
+  async getExtraCreditTotalsForSubmissions(submissionIds: number[]): Promise<Record<number, number>> {
+    if (submissionIds.length === 0) return {};
+
+    const results = await db
+      .select({
+        submissionId: extraCredits.submissionId,
+        total: sum(extraCredits.points).as('total'),
+      })
+      .from(extraCredits)
+      .where(inArray(extraCredits.submissionId, submissionIds))
+      .groupBy(extraCredits.submissionId);
+
+    const totals: Record<number, number> = {};
+    for (const result of results) {
+      if (result.submissionId) {
+        totals[result.submissionId] = Number(result.total) || 0;
+      }
+    }
+    return totals;
+  }
+
+  async getExtraCreditTotalsForHomeworkSubmissions(homeworkSubmissionIds: number[]): Promise<Record<number, number>> {
+    if (homeworkSubmissionIds.length === 0) return {};
+
+    const results = await db
+      .select({
+        homeworkSubmissionId: extraCredits.homeworkSubmissionId,
+        total: sum(extraCredits.points).as('total'),
+      })
+      .from(extraCredits)
+      .where(inArray(extraCredits.homeworkSubmissionId, homeworkSubmissionIds))
+      .groupBy(extraCredits.homeworkSubmissionId);
+
+    const totals: Record<number, number> = {};
+    for (const result of results) {
+      if (result.homeworkSubmissionId) {
+        totals[result.homeworkSubmissionId] = Number(result.total) || 0;
+      }
+    }
+    return totals;
   }
 }
 
