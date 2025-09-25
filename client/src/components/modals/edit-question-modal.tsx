@@ -46,6 +46,7 @@ const editQuestionSchema = z.object({
   subjectId: z.number().min(1, "Please select a subject"),
   difficulty: z.enum(['easy', 'medium', 'hard']),
   bloomsTaxonomy: z.enum(['remember', 'understand', 'apply', 'analyze', 'evaluate', 'create']).optional(),
+  gradeLevel: z.enum(['pre_k', 'kindergarten', '1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th', '11th', '12th', 'undergraduate', 'graduate']).optional(),
   points: z.number().min(1).default(1),
   timeLimit: z.number().optional(),
 });
@@ -116,6 +117,7 @@ export default function EditQuestionModal({ open, onOpenChange, questionId }: Ed
         subjectId: questionData.subjectId,
         difficulty: questionData.difficulty,
         bloomsTaxonomy: questionData.bloomsTaxonomy || undefined,
+        gradeLevel: questionData.gradeLevel || undefined,
         points: questionData.points || 1,
         timeLimit: questionData.timeLimit || undefined,
         explanation: questionData.explanation || '',
@@ -693,7 +695,7 @@ export default function EditQuestionModal({ open, onOpenChange, questionId }: Ed
             )}
 
             {/* Tagging and Categorization */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <FormField
                 control={form.control}
                 name="subjectId"
@@ -759,6 +761,42 @@ export default function EditQuestionModal({ open, onOpenChange, questionId }: Ed
                         <SelectItem value="analyze">Analyze</SelectItem>
                         <SelectItem value="evaluate">Evaluate</SelectItem>
                         <SelectItem value="create">Create</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="gradeLevel"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Grade Level</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select grade level" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="pre_k">Pre-K</SelectItem>
+                        <SelectItem value="kindergarten">Kindergarten</SelectItem>
+                        <SelectItem value="1st">1st Grade</SelectItem>
+                        <SelectItem value="2nd">2nd Grade</SelectItem>
+                        <SelectItem value="3rd">3rd Grade</SelectItem>
+                        <SelectItem value="4th">4th Grade</SelectItem>
+                        <SelectItem value="5th">5th Grade</SelectItem>
+                        <SelectItem value="6th">6th Grade</SelectItem>
+                        <SelectItem value="7th">7th Grade</SelectItem>
+                        <SelectItem value="8th">8th Grade</SelectItem>
+                        <SelectItem value="9th">9th Grade</SelectItem>
+                        <SelectItem value="10th">10th Grade</SelectItem>
+                        <SelectItem value="11th">11th Grade</SelectItem>
+                        <SelectItem value="12th">12th Grade</SelectItem>
+                        <SelectItem value="undergraduate">Undergraduate</SelectItem>
+                        <SelectItem value="graduate">Graduate</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
