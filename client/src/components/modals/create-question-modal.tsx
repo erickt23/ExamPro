@@ -91,6 +91,7 @@ export default function CreateQuestionModal({ open, onOpenChange, questionCatego
       questionType: 'multiple_choice',
       category: questionCategory,
       subjectId: subjects.length > 0 ? subjects[0].id : undefined,
+      difficulty: 'medium',
       points: 1,
     },
   });
