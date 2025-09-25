@@ -45,6 +45,7 @@ export const difficultyEnum = pgEnum('difficulty', ['easy', 'medium', 'hard']);
 export const bloomsTaxonomyEnum = pgEnum('blooms_taxonomy', ['remember', 'understand', 'apply', 'analyze', 'evaluate', 'create']);
 export const questionCategoryEnum = pgEnum('question_category', ['exam', 'homework']);
 export const gradeLevelEnum = pgEnum('grade_level', ['pre_k', 'kindergarten', '1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th', '11th', '12th', 'undergraduate', 'graduate']);
+export const visibilityTypeEnum = pgEnum('visibility_type', ['all_instructors', 'specific_instructors']);
 
 // Subjects table
 export const subjects = pgTable("subjects", {
@@ -123,6 +124,10 @@ export const questions = pgTable("questions", {
   version: varchar("version").notNull().default("1.0"),
   isActive: boolean("is_active").notNull().default(true),
   usageCount: integer("usage_count").notNull().default(0),
+  // Admin visibility control fields
+  createdByAdmin: boolean("created_by_admin").notNull().default(false),
+  visibilityType: visibilityTypeEnum("visibility_type").notNull().default('all_instructors'),
+  authorizedInstructorIds: text("authorized_instructor_ids").array(), // Array of instructor IDs for specific visibility
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
