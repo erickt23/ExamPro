@@ -38,6 +38,7 @@ const editExamSchema = z.object({
   title: z.string().min(1, "Title is required").max(200),
   description: z.string().optional(),
   subjectId: z.number().min(1, "Subject is required"),
+  gradeLevel: z.enum(["pre_k", "kindergarten", "1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th", "9th", "10th", "11th", "12th", "undergraduate", "graduate"]).optional(),
   duration: z.number().min(1, "Duration must be at least 1 minute"),
   totalPoints: z.number().min(1, "Total points must be at least 1"),
   attemptsAllowed: z.number().min(1).default(1),
@@ -103,12 +104,21 @@ export default function EditExamModal({ open, onOpenChange, examId }: EditExamMo
     retry: false,
   });
 
-  // Fetch available questions for adding
+  // Filter state for questions (will be set after form is declared)
+  const [questionFilters, setQuestionFilters] = useState<{
+    search?: string;
+    subject?: number;
+    gradeLevel?: string;
+  }>({ search: questionSearch });
+
+  // Fetch available questions for adding - after form is declared
   const { data: availableQuestionsData } = useQuery({
-    queryKey: ["/api/questions", { search: questionSearch }],
+    queryKey: ["/api/questions", questionFilters],
     queryFn: async () => {
       const params = new URLSearchParams();
-      if (questionSearch) params.append('search', questionSearch);
+      if (questionFilters.search) params.append('search', questionFilters.search);
+      if (questionFilters.subject) params.append('subject', questionFilters.subject.toString());
+      if (questionFilters.gradeLevel) params.append('gradeLevel', questionFilters.gradeLevel);
       
       const response = await fetch(`/api/questions?${params}`);
       if (!response.ok) throw new Error(`${response.status}: ${response.statusText}`);
@@ -135,6 +145,7 @@ export default function EditExamModal({ open, onOpenChange, examId }: EditExamMo
       title: '',
       description: '',
       subjectId: 1,
+      gradeLevel: undefined,
       duration: 90,
       totalPoints: 100,
       attemptsAllowed: 1,
@@ -156,6 +167,7 @@ export default function EditExamModal({ open, onOpenChange, examId }: EditExamMo
         title: examData.title || '',
         description: examData.description || '',
         subjectId: examData.subjectId || 1,
+        gradeLevel: examData.gradeLevel || undefined,
         duration: examData.duration || 90,
         totalPoints: examData.totalPoints || 100,
         attemptsAllowed: examData.attemptsAllowed || 1,
@@ -185,6 +197,15 @@ export default function EditExamModal({ open, onOpenChange, examId }: EditExamMo
       }
     }
   }, [currentExamQuestions, form]);
+
+  // Update question filters when form values change
+  useEffect(() => {
+    setQuestionFilters({
+      search: questionSearch,
+      subject: form.watch('subjectId'),
+      gradeLevel: form.watch('gradeLevel'),
+    });
+  }, [form.watch('subjectId'), form.watch('gradeLevel'), questionSearch]);
 
   const updateExamMutation = useMutation({
     mutationFn: async (data: EditExamForm) => {
@@ -383,7 +404,7 @@ export default function EditExamModal({ open, onOpenChange, examId }: EditExamMo
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 max-w-full overflow-hidden">
             {/* Basic Information */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <FormField
                 control={form.control}
                 name="title"
@@ -426,6 +447,42 @@ export default function EditExamModal({ open, onOpenChange, examId }: EditExamMo
                         {subjects.map((subject: any) => (
                           <SelectItem key={subject.id} value={subject.id.toString()}>{subject.name}</SelectItem>
                         ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="gradeLevel"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Grade Level</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select grade level" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="pre_k">Pre-K</SelectItem>
+                        <SelectItem value="kindergarten">Kindergarten</SelectItem>
+                        <SelectItem value="1st">1st Grade</SelectItem>
+                        <SelectItem value="2nd">2nd Grade</SelectItem>
+                        <SelectItem value="3rd">3rd Grade</SelectItem>
+                        <SelectItem value="4th">4th Grade</SelectItem>
+                        <SelectItem value="5th">5th Grade</SelectItem>
+                        <SelectItem value="6th">6th Grade</SelectItem>
+                        <SelectItem value="7th">7th Grade</SelectItem>
+                        <SelectItem value="8th">8th Grade</SelectItem>
+                        <SelectItem value="9th">9th Grade</SelectItem>
+                        <SelectItem value="10th">10th Grade</SelectItem>
+                        <SelectItem value="11th">11th Grade</SelectItem>
+                        <SelectItem value="12th">12th Grade</SelectItem>
+                        <SelectItem value="undergraduate">Undergraduate</SelectItem>
+                        <SelectItem value="graduate">Graduate</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
