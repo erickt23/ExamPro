@@ -1260,7 +1260,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.claims.sub;
       const examId = parseInt(req.params.id);
-      const { answers, timeTaken } = req.body;
+      const { answers, timeTaken, proctoringData } = req.body;
 
       // Get exam details to check settings
       const exam = await storage.getExamById(examId);
@@ -1297,6 +1297,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         submittedAt: new Date(),
         timeTaken,
         status: 'submitted',
+        proctoringData: proctoringData || null,
       });
 
       // Create answers and check for subjective questions

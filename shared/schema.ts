@@ -160,6 +160,8 @@ export const submissions = pgTable("submissions", {
   progressData: jsonb("progress_data"), // Stores answers, current question, time remaining, etc.
   lastSavedAt: timestamp("last_saved_at"),
   timeRemainingSeconds: integer("time_remaining_seconds"), // Track remaining time for resuming
+  // Proctoring data
+  proctoringData: jsonb("proctoring_data"), // Stores violation logs, timestamps, and proctoring metadata
 });
 
 // Student Answers table
