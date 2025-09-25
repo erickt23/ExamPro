@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { 
@@ -25,7 +26,10 @@ import {
   Edit,
   Trash2,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Shield,
+  Eye,
+  Monitor
 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -55,6 +59,17 @@ export default function SettingsPage() {
     assignmentCoefficient: number;
     examCoefficient: number;
   }>>({});
+  const [proctoringSettings, setProctoringSettings] = useState({
+    enableProctoringByDefault: false,
+    defaultWarningThreshold: 3,
+    defaultAutoTerminate: false,
+    enableFullscreenMode: true,
+    enableTabDetection: true,
+    enableContextMenuBlock: true,
+    enableDevToolsDetection: true,
+    enableCopyPasteBlock: true,
+    allowInstructorOverride: true
+  });
 
   // Subject management state
   const [showCreateSubjectModal, setShowCreateSubjectModal] = useState(false);
@@ -116,6 +131,24 @@ export default function SettingsPage() {
     retry: false,
   });
 
+  // Fetch proctoring settings
+  const { data: currentProctoringSettings, isLoading: proctoringSettingsLoading } = useQuery({
+    queryKey: ["/api/proctoring-settings"],
+    queryFn: async () => {
+      const response = await fetch("/api/proctoring-settings");
+      if (!response.ok) {
+        if (response.status === 404) {
+          // No settings exist yet, use defaults
+          return null;
+        }
+        throw new Error(`${response.status}: ${response.statusText}`);
+      }
+      return response.json();
+    },
+    enabled: !!user,
+    retry: false,
+  });
+
   // Initialize settings when data loads
   useEffect(() => {
     if (currentSettings) {
@@ -138,6 +171,23 @@ export default function SettingsPage() {
       setCourseSettings(convertedCourses);
     }
   }, [currentSettings]);
+
+  // Initialize proctoring settings when data loads
+  useEffect(() => {
+    if (currentProctoringSettings) {
+      setProctoringSettings({
+        enableProctoringByDefault: currentProctoringSettings.enableProctoringByDefault || false,
+        defaultWarningThreshold: currentProctoringSettings.defaultWarningThreshold || 3,
+        defaultAutoTerminate: currentProctoringSettings.defaultAutoTerminate || false,
+        enableFullscreenMode: currentProctoringSettings.enableFullscreenMode !== false,
+        enableTabDetection: currentProctoringSettings.enableTabDetection !== false,
+        enableContextMenuBlock: currentProctoringSettings.enableContextMenuBlock !== false,
+        enableDevToolsDetection: currentProctoringSettings.enableDevToolsDetection !== false,
+        enableCopyPasteBlock: currentProctoringSettings.enableCopyPasteBlock !== false,
+        allowInstructorOverride: currentProctoringSettings.allowInstructorOverride !== false
+      });
+    }
+  }, [currentProctoringSettings]);
 
   // Save global settings mutation
   const saveGlobalSettingsMutation = useMutation({
@@ -206,6 +256,38 @@ export default function SettingsPage() {
     },
   });
 
+  // Save proctoring settings mutation
+  const saveProctoringSettingsMutation = useMutation({
+    mutationFn: async (settings: typeof proctoringSettings) => {
+      await apiRequest("POST", "/api/proctoring-settings", settings);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/proctoring-settings"] });
+      toast({
+        title: "Proctoring settings saved",
+        description: "Global proctoring settings have been updated.",
+      });
+    },
+    onError: (error) => {
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
+      toast({
+        title: "Error",
+        description: "Failed to save proctoring settings. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleGlobalSettingsChange = (field: string, value: string) => {
     const numValue = parseFloat(value);
     if (isNaN(numValue) || numValue < 0 || numValue > 1) return;
@@ -256,6 +338,26 @@ export default function SettingsPage() {
       return;
     }
     saveCourseSettingsMutation.mutate({ courseId, settings });
+  };
+
+  // Proctoring settings handlers
+  const handleProctoringSettingsChange = (field: keyof typeof proctoringSettings, value: boolean | number) => {
+    setProctoringSettings(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleSaveProctoringSettings = () => {
+    if (proctoringSettings.defaultWarningThreshold < 1 || proctoringSettings.defaultWarningThreshold > 10) {
+      toast({
+        title: "Invalid warning threshold",
+        description: "Warning threshold must be between 1 and 10",
+        variant: "destructive",
+      });
+      return;
+    }
+    saveProctoringSettingsMutation.mutate(proctoringSettings);
   };
 
   // Subject management mutations
@@ -432,6 +534,10 @@ export default function SettingsPage() {
                 <TabsTrigger value="courses" className="flex items-center gap-2">
                   <Calculator className="h-4 w-4" />
                   {t('settings.courseSpecificSettings')}
+                </TabsTrigger>
+                <TabsTrigger value="proctoring" className="flex items-center gap-2">
+                  <Settings2 className="h-4 w-4" />
+                  {t('settings.proctoringSettings')}
                 </TabsTrigger>
               </TabsList>
 
@@ -742,6 +848,192 @@ export default function SettingsPage() {
                           })}
                         </TableBody>
                       </Table>
+                    )}
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="proctoring">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Settings2 className="h-5 w-5" />
+                      {t('settings.proctoringSettings')}
+                    </CardTitle>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      {t('settings.proctoringDescription')}
+                    </p>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    {proctoringSettingsLoading ? (
+                      <div className="text-center py-8 text-gray-500">
+                        <Settings2 className="h-8 w-8 mx-auto mb-4 animate-spin text-gray-300" />
+                        <p>Loading proctoring settings...</p>
+                      </div>
+                    ) : (
+                      <>
+                        {/* Global Proctoring Toggle */}
+                        <div className="space-y-4">
+                          <div className="flex items-center justify-between p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                            <div className="flex items-center gap-3">
+                              <Shield className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                              <div>
+                                <Label className="text-base font-medium">Enable Proctoring by Default</Label>
+                                <p className="text-sm text-gray-600 dark:text-gray-400">
+                                  Automatically enable proctoring for all new exams
+                                </p>
+                              </div>
+                            </div>
+                            <Switch
+                              checked={proctoringSettings.enableProctoringByDefault}
+                              onCheckedChange={(checked) => handleProctoringSettingsChange('enableProctoringByDefault', checked)}
+                              data-testid="switch-enable-proctoring-default"
+                            />
+                          </div>
+                        </div>
+
+                        {/* Warning Threshold */}
+                        <div className="space-y-2">
+                          <Label className="flex items-center gap-2">
+                            <AlertCircle className="h-4 w-4" />
+                            Default Warning Threshold
+                          </Label>
+                          <div className="flex items-center gap-4">
+                            <Input
+                              type="number"
+                              min={1}
+                              max={10}
+                              value={proctoringSettings.defaultWarningThreshold}
+                              onChange={(e) => handleProctoringSettingsChange('defaultWarningThreshold', parseInt(e.target.value) || 3)}
+                              className="w-24"
+                              data-testid="input-warning-threshold"
+                            />
+                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                              Number of warnings before action (1-10)
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Auto-terminate */}
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <AlertCircle className="h-5 w-5 text-red-500" />
+                            <div>
+                              <Label>Auto-terminate Exam</Label>
+                              <p className="text-sm text-gray-600 dark:text-gray-400">
+                                Automatically end exam when warning threshold is reached
+                              </p>
+                            </div>
+                          </div>
+                          <Switch
+                            checked={proctoringSettings.defaultAutoTerminate}
+                            onCheckedChange={(checked) => handleProctoringSettingsChange('defaultAutoTerminate', checked)}
+                            data-testid="switch-auto-terminate"
+                          />
+                        </div>
+
+                        {/* Proctoring Features */}
+                        <div className="space-y-4">
+                          <h4 className="font-medium flex items-center gap-2">
+                            <Monitor className="h-4 w-4" />
+                            Proctoring Features
+                          </h4>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                              <div>
+                                <Label>Fullscreen Mode</Label>
+                                <p className="text-xs text-gray-600 dark:text-gray-400">Require fullscreen during exam</p>
+                              </div>
+                              <Switch
+                                checked={proctoringSettings.enableFullscreenMode}
+                                onCheckedChange={(checked) => handleProctoringSettingsChange('enableFullscreenMode', checked)}
+                                data-testid="switch-fullscreen-mode"
+                              />
+                            </div>
+
+                            <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                              <div>
+                                <Label>Tab Detection</Label>
+                                <p className="text-xs text-gray-600 dark:text-gray-400">Detect when students switch tabs</p>
+                              </div>
+                              <Switch
+                                checked={proctoringSettings.enableTabDetection}
+                                onCheckedChange={(checked) => handleProctoringSettingsChange('enableTabDetection', checked)}
+                                data-testid="switch-tab-detection"
+                              />
+                            </div>
+
+                            <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                              <div>
+                                <Label>Context Menu Block</Label>
+                                <p className="text-xs text-gray-600 dark:text-gray-400">Disable right-click context menu</p>
+                              </div>
+                              <Switch
+                                checked={proctoringSettings.enableContextMenuBlock}
+                                onCheckedChange={(checked) => handleProctoringSettingsChange('enableContextMenuBlock', checked)}
+                                data-testid="switch-context-menu-block"
+                              />
+                            </div>
+
+                            <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                              <div>
+                                <Label>DevTools Detection</Label>
+                                <p className="text-xs text-gray-600 dark:text-gray-400">Detect when DevTools are opened</p>
+                              </div>
+                              <Switch
+                                checked={proctoringSettings.enableDevToolsDetection}
+                                onCheckedChange={(checked) => handleProctoringSettingsChange('enableDevToolsDetection', checked)}
+                                data-testid="switch-devtools-detection"
+                              />
+                            </div>
+
+                            <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                              <div>
+                                <Label>Copy/Paste Block</Label>
+                                <p className="text-xs text-gray-600 dark:text-gray-400">Disable copy and paste functions</p>
+                              </div>
+                              <Switch
+                                checked={proctoringSettings.enableCopyPasteBlock}
+                                onCheckedChange={(checked) => handleProctoringSettingsChange('enableCopyPasteBlock', checked)}
+                                data-testid="switch-copy-paste-block"
+                              />
+                            </div>
+
+                            <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                              <div>
+                                <Label>Instructor Override</Label>
+                                <p className="text-xs text-gray-600 dark:text-gray-400">Allow instructors to modify settings per exam</p>
+                              </div>
+                              <Switch
+                                checked={proctoringSettings.allowInstructorOverride}
+                                onCheckedChange={(checked) => handleProctoringSettingsChange('allowInstructorOverride', checked)}
+                                data-testid="switch-instructor-override"
+                              />
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Save Button */}
+                        <div className="flex justify-end pt-4">
+                          <Button
+                            onClick={handleSaveProctoringSettings}
+                            disabled={saveProctoringSettingsMutation.isPending}
+                            className="flex items-center gap-2 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+                            data-testid="button-save-proctoring-settings"
+                          >
+                            <Save className="h-4 w-4" />
+                            {saveProctoringSettingsMutation.isPending ? 'Saving...' : 'Save Proctoring Settings'}
+                          </Button>
+                        </div>
+
+                        {/* Info Alert */}
+                        <Alert>
+                          <AlertCircle className="h-4 w-4" />
+                          <AlertDescription>
+                            These settings apply to all exams by default. Individual instructors can override these settings for specific exams if "Instructor Override" is enabled.
+                          </AlertDescription>
+                        </Alert>
+                      </>
                     )}
                   </CardContent>
                 </Card>
