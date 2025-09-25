@@ -50,6 +50,8 @@ export function useExamProctoring(options: ExamProctoringOptions = {}) {
   const terminatedRef = useRef(false);
   const prevIsFullscreenRef = useRef(false);
   const lastViolationTimeRef = useRef<{ [key: string]: number }>({});
+  const proctoringStartTimeRef = useRef<number>(0);
+  const isInitializedRef = useRef(false);
 
   // Generate unique violation ID
   const generateViolationId = () => {
@@ -60,8 +62,16 @@ export function useExamProctoring(options: ExamProctoringOptions = {}) {
   const logViolation = useCallback((type: ViolationLog['type'], description: string) => {
     if (terminatedRef.current) return;
 
-    // Implement debounce to prevent double-counting similar violations
     const now = Date.now();
+    
+    // Grace period: Don't log violations for the first 3 seconds after proctoring starts
+    const GRACE_PERIOD = 3000; // 3 seconds
+    if (proctoringStartTimeRef.current && now - proctoringStartTimeRef.current < GRACE_PERIOD) {
+      console.log(`Skipping violation during grace period: ${type}`);
+      return;
+    }
+
+    // Implement debounce to prevent double-counting similar violations
     const DEBOUNCE_TIME = 2000; // 2 seconds
     
     // Group similar violation types to prevent double-counting
@@ -219,6 +229,10 @@ export function useExamProctoring(options: ExamProctoringOptions = {}) {
   const startProctoring = useCallback(async () => {
     if (terminatedRef.current) return;
 
+    // Set proctoring start time for grace period
+    proctoringStartTimeRef.current = Date.now();
+    isInitializedRef.current = false;
+
     // Initialize fullscreen ref
     prevIsFullscreenRef.current = false;
 
@@ -260,7 +274,13 @@ export function useExamProctoring(options: ExamProctoringOptions = {}) {
     preventShortcutsRef.current = preventShortcuts;
     document.addEventListener('keydown', preventShortcuts);
 
-    console.log('Exam proctoring started');
+    // Mark proctoring as fully initialized after grace period
+    setTimeout(() => {
+      isInitializedRef.current = true;
+      console.log('Proctoring grace period ended - violations will now be logged');
+    }, 3000);
+
+    console.log('Exam proctoring started with 3-second grace period');
   }, [
     enterFullscreen,
     handleFullscreenChange,
