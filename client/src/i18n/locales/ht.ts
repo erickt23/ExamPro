@@ -13,6 +13,7 @@ export const ht = {
     grading: 'Sant Nòt',
     submissionsReview: 'Revizyon Nòt yo',
     examResults: 'Rezilta Egzamen yo',
+    proctoringLogs: 'Jounal Sivèy yo',
     analytics: 'Analitik',
     students: 'Elèv yo',
     homework: 'Devwa yo',
@@ -582,6 +583,38 @@ export const ht = {
     pendingReview: 'Revizyon k ap Tann',
     selected: 'Chwazi :',
     correct: 'Kòrèk :'
+  },
+
+  // Proctoring
+  proctoring: {
+    title: 'Avètisman Sivèy Egzamen',
+    subtitle: 'Y ap sivèye aktivite egzamen ou an pou entegrite akademik.',
+    warningText: 'Avètisman: Yo detekte aktivite ki sispè pandan egzamen ou an.',
+    violationsDetected: 'Vyolasyon yo detekte:',
+    violationsRemaining: 'Ou gen {count} vyolasyon ki rete anvan egzamen ou an soumèt otomatikman.',
+    monitoredActivities: 'Aktivite yo k ap sivèye yo gen ladan:',
+    leavingFullscreen: 'Kite mòd ecran konplè a',
+    switchingTabs: 'Chanje sou lòt onglet oswa fenèt yo',
+    usingDevTools: 'Sèvi ak zouti devlopman yo',
+    openingContextMenus: 'Louvri meni kontèks yo',
+    toContinue: 'Pou kontinye:',
+    stayFullscreen: 'Rete nan mòd ecran konplè a epi konsantre sèlman sou egzamen ou an. Evite chanje onglet, louvri lòt aplikasyon, oswa kite paj sa a.',
+    understand: 'Mwen Konprann',
+    returnToFullscreen: 'Tounen nan Ecran Konplè'
+  },
+
+  // Proctoring Logs
+  proctoringLogs: {
+    title: 'Jounal Sivèy yo',
+    description: 'Sivèye aktivite sivèy egzamen ak vyolasyon yo',
+    student: 'Elèv',
+    exam: 'Egzamen',
+    violations: 'Vyolasyon yo',
+    timestamp: 'Mak Tan',
+    actions: 'Aksyon yo',
+    viewDetails: 'Gade Detay yo',
+    noLogs: 'Pa gen jounal sivèy yo jwenn',
+    loading: 'Y ap chaje jounal sivèy yo...'
   },
 
   // Settings

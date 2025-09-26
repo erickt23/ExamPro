@@ -13,6 +13,7 @@ export const fr = {
     grading: 'Centre de Notes',
     submissionsReview: 'Révision des Notes',
     examResults: 'Résultats d\'Examens',
+    proctoringLogs: 'Journaux de Surveillance',
     analytics: 'Analytique',
     students: 'Étudiants',
     homework: 'Devoirs',
@@ -582,6 +583,38 @@ export const fr = {
     pendingReview: 'Révision En Attente',
     selected: 'Sélectionné :',
     correct: 'Correct :'
+  },
+
+  // Proctoring
+  proctoring: {
+    title: 'Avertissement de Surveillance d\'Examen',
+    subtitle: 'Votre activité d\'examen est surveillée pour l\'intégrité académique.',
+    warningText: 'Avertissement : Activité suspecte détectée pendant votre examen.',
+    violationsDetected: 'Violations détectées :',
+    violationsRemaining: 'Il vous reste {count} violations avant que votre examen soit automatiquement soumis.',
+    monitoredActivities: 'Les activités surveillées incluent :',
+    leavingFullscreen: 'Quitter le mode plein écran',
+    switchingTabs: 'Changer d\'onglets ou de fenêtres',
+    usingDevTools: 'Utiliser les outils de développement',
+    openingContextMenus: 'Ouvrir les menus contextuels',
+    toContinue: 'Pour continuer :',
+    stayFullscreen: 'Restez en mode plein écran et concentrez-vous uniquement sur votre examen. Évitez de changer d\'onglets, d\'ouvrir d\'autres applications ou de quitter cette page.',
+    understand: 'Je Comprends',
+    returnToFullscreen: 'Retourner en Plein Écran'
+  },
+
+  // Proctoring Logs
+  proctoringLogs: {
+    title: 'Journaux de Surveillance',
+    description: 'Surveiller les activités de surveillance d\'examen et les violations',
+    student: 'Étudiant',
+    exam: 'Examen',
+    violations: 'Violations',
+    timestamp: 'Horodatage',
+    actions: 'Actions',
+    viewDetails: 'Voir les Détails',
+    noLogs: 'Aucun journal de surveillance trouvé',
+    loading: 'Chargement des journaux de surveillance...'
   },
 
   // Settings

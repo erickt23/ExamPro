@@ -591,6 +591,38 @@ export const en = {
     correct: 'Correct:'
   },
 
+  // Proctoring
+  proctoring: {
+    title: 'Exam Proctoring Warning',
+    subtitle: 'Your exam activity is being monitored for academic integrity.',
+    warningText: 'Warning: Suspicious activity detected during your exam.',
+    violationsDetected: 'Violations detected:',
+    violationsRemaining: 'You have {count} violations remaining before your exam is automatically submitted.',
+    monitoredActivities: 'Monitored activities include:',
+    leavingFullscreen: 'Leaving fullscreen mode',
+    switchingTabs: 'Switching to other tabs or windows',
+    usingDevTools: 'Using developer tools',
+    openingContextMenus: 'Opening context menus',
+    toContinue: 'To continue:',
+    stayFullscreen: 'Stay in fullscreen mode and focus only on your exam. Avoid switching tabs, opening other applications, or leaving this page.',
+    understand: 'I Understand',
+    returnToFullscreen: 'Return to Fullscreen'
+  },
+
+  // Proctoring Logs
+  proctoringLogs: {
+    title: 'Proctoring Logs',
+    description: 'Monitor exam proctoring activities and violations',
+    student: 'Student',
+    exam: 'Exam',
+    violations: 'Violations',
+    timestamp: 'Timestamp',
+    actions: 'Actions',
+    viewDetails: 'View Details',
+    noLogs: 'No proctoring logs found',
+    loading: 'Loading proctoring logs...'
+  },
+
   // Settings
   settings: {
     title: 'Settings',
