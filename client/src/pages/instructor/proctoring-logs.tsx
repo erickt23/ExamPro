@@ -46,6 +46,8 @@ import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import Navbar from "@/components/layout/navbar";
+import Sidebar from "@/components/layout/sidebar";
 
 // Types
 interface ProctoringViolation {
@@ -217,22 +219,36 @@ export default function ProctoringLogs() {
 
   if (error) {
     return (
-      <div className="p-6">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-center">
-              <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold mb-2">Error Loading Proctoring Logs</h3>
-              <p className="text-muted-foreground">Unable to load proctoring data. Please try again later.</p>
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <div className="flex">
+          <Sidebar />
+          <main className="flex-1 overflow-y-auto ml-0 transition-all duration-300">
+            <div className="p-3 md:p-6">
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="text-center">
+                    <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold mb-2">Error Loading Proctoring Logs</h3>
+                    <p className="text-muted-foreground">Unable to load proctoring data. Please try again later.</p>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
-          </CardContent>
-        </Card>
+          </main>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="p-6 space-y-6" data-testid="proctoring-logs-page">
+    <div className="min-h-screen bg-background">
+      <Navbar />
+      <div className="flex">
+        <Sidebar />
+        <main className="flex-1 overflow-y-auto ml-0 transition-all duration-300">
+          <div className="p-3 md:p-6">
+            <div className="space-y-6" data-testid="proctoring-logs-page">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -672,6 +688,10 @@ export default function ProctoringLogs() {
           )}
         </DialogContent>
       </Dialog>
+            </div>
+          </div>
+        </main>
+      </div>
     </div>
   );
 }
