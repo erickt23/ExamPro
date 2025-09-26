@@ -3061,6 +3061,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Proctoring Logs API - Get all submissions with proctoring data
+  app.get('/api/proctoring-logs', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+
+      if (!hasInstructorPrivileges(user)) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const submissions = await storage.getSubmissions();
+      
+      // Filter submissions to only include those with proctoring data and enrich with student/exam info
+      const proctoringSubmissions = await Promise.all(
+        submissions
+          .filter((sub: any) => sub.proctoringData)
+          .map(async (sub: any) => {
+            const student = await storage.getUser(sub.studentId);
+            const exam = await storage.getExamById(sub.examId);
+            const studentName = student ? `${student.firstName || ''} ${student.lastName || ''}`.trim() : 'Unknown Student';
+            
+            return {
+              id: sub.id,
+              examId: sub.examId,
+              studentId: sub.studentId,
+              studentName: studentName || 'Unknown Student',
+              studentEmail: student?.email || '',
+              examTitle: exam?.title || 'Unknown Exam',
+              startedAt: sub.startedAt,
+              submittedAt: sub.submittedAt,
+              timeTaken: sub.timeTaken,
+              totalScore: sub.totalScore,
+              maxScore: sub.maxScore,
+              status: sub.status,
+              proctoringData: typeof sub.proctoringData === 'string' 
+                ? JSON.parse(sub.proctoringData) 
+                : sub.proctoringData,
+            };
+          })
+      );
+
+      res.json(proctoringSubmissions);
+    } catch (error) {
+      console.error("Error fetching proctoring logs:", error);
+      res.status(500).json({ message: "Failed to fetch proctoring logs" });
+    }
+  });
+
   // Global Proctoring Settings API
   app.get('/api/proctoring-settings', isAuthenticated, async (req: any, res) => {
     try {

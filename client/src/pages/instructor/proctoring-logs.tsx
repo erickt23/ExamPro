@@ -108,7 +108,7 @@ export default function ProctoringLogs() {
   const { data: submissions = [], isLoading, error } = useQuery({
     queryKey: ["/api/proctoring-logs"],
     staleTime: 30000, // Cache for 30 seconds
-  });
+  }) as { data: SubmissionWithProctoring[], isLoading: boolean, error: any };
 
   // Process and filter data
   const filteredSubmissions = useMemo(() => {
