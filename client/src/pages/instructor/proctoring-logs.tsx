@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   AlertTriangle,
@@ -44,6 +44,8 @@ import {
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
 
 // Types
 interface ProctoringViolation {
@@ -98,16 +100,34 @@ const VIOLATION_TYPE_COLORS: Record<string, string> = {
 };
 
 export default function ProctoringLogs() {
+  const { toast } = useToast();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterViolations, setFilterViolations] = useState("all");
   const [selectedSubmission, setSelectedSubmission] = useState<SubmissionWithProctoring | null>(null);
   const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
 
+  // Redirect if not authenticated
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      toast({
+        title: "Unauthorized",
+        description: "You are logged out. Logging in again...",
+        variant: "destructive",
+      });
+      setTimeout(() => {
+        window.location.href = "/api/login";
+      }, 500);
+      return;
+    }
+  }, [isAuthenticated, authLoading, toast]);
+
   // Fetch submissions with proctoring data
   const { data: submissions = [], isLoading, error } = useQuery({
     queryKey: ["/api/proctoring-logs"],
     staleTime: 30000, // Cache for 30 seconds
+    enabled: isAuthenticated, // Only fetch when authenticated
   }) as { data: SubmissionWithProctoring[], isLoading: boolean, error: any };
 
   // Process and filter data
