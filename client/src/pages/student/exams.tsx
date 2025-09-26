@@ -43,7 +43,9 @@ import {
   ExternalLink,
   Search,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Shield,
+  AlertTriangle
 } from "lucide-react";
 import { ObjectUploader } from "@/components/ObjectUploader";
 import { Input } from "@/components/ui/input";
@@ -1232,6 +1234,122 @@ export default function StudentExams() {
                     </div>
                   ))}
                 </div>
+              </div>
+            )}
+
+            {/* Proctoring Information */}
+            {selectedResultSubmission.proctoringData && (
+              <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+                <h3 className="font-medium text-gray-900 dark:text-gray-100 mb-3 flex items-center gap-2">
+                  <Shield className="h-4 w-4 text-blue-600" />
+                  Proctoring Information
+                </h3>
+                {(() => {
+                  try {
+                    const proctoringData = typeof selectedResultSubmission.proctoringData === 'string' 
+                      ? JSON.parse(selectedResultSubmission.proctoringData) 
+                      : selectedResultSubmission.proctoringData;
+                    
+                    const violations = proctoringData?.violations || [];
+                    const totalViolations = proctoringData?.totalViolations || 0;
+                    const wasTerminated = proctoringData?.isTerminatedForViolations || false;
+                    
+                    return (
+                      <div className="space-y-3">
+                        {/* Proctoring Summary */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                          <div className="flex justify-between items-center">
+                            <span className="text-gray-600 dark:text-gray-400">Violations:</span>
+                            <Badge 
+                              variant={totalViolations === 0 ? "default" : totalViolations >= 3 ? "destructive" : "outline"}
+                              className="text-xs"
+                              data-testid="student-results-violations-count"
+                            >
+                              {totalViolations}
+                            </Badge>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-gray-600 dark:text-gray-400">Status:</span>
+                            <Badge 
+                              variant={totalViolations === 0 ? "default" : totalViolations >= 3 ? "destructive" : "secondary"}
+                              className="text-xs"
+                              data-testid="student-results-proctoring-status"
+                            >
+                              {totalViolations === 0 ? "Clean" : totalViolations >= 3 ? "High Risk" : "Low Risk"}
+                            </Badge>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-gray-600 dark:text-gray-400">Auto-terminated:</span>
+                            <Badge 
+                              variant={wasTerminated ? "destructive" : "default"}
+                              className="text-xs"
+                              data-testid="student-results-terminated-status"
+                            >
+                              {wasTerminated ? "Yes" : "No"}
+                            </Badge>
+                          </div>
+                        </div>
+
+                        {/* Violation Details */}
+                        {violations.length > 0 && (
+                          <div>
+                            <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Violation Details:</h4>
+                            <div className="space-y-2 max-h-32 overflow-y-auto">
+                              {violations.map((violation: any, index: number) => (
+                                <div 
+                                  key={index}
+                                  className="flex items-center justify-between text-xs p-2 bg-white dark:bg-gray-800 rounded border"
+                                  data-testid={`student-results-violation-${index}`}
+                                >
+                                  <div className="flex items-center gap-2">
+                                    <Badge variant="outline" className="text-xs">
+                                      {violation.type?.replace('_', ' ').toUpperCase()}
+                                    </Badge>
+                                    <span className="text-gray-600 dark:text-gray-400">{violation.description}</span>
+                                  </div>
+                                  <span className="text-gray-500">
+                                    {new Date(violation.timestamp).toLocaleTimeString()}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Termination Notice */}
+                        {wasTerminated && (
+                          <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded">
+                            <div className="flex items-center gap-2">
+                              <AlertTriangle className="h-4 w-4 text-red-600" />
+                              <span className="text-sm font-medium text-red-800 dark:text-red-200">
+                                Your exam was automatically terminated due to excessive proctoring violations.
+                              </span>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Clean Exam Notice */}
+                        {totalViolations === 0 && (
+                          <div className="p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded">
+                            <div className="flex items-center gap-2">
+                              <CheckCircle className="h-4 w-4 text-green-600" />
+                              <span className="text-sm font-medium text-green-800 dark:text-green-200">
+                                Your exam was completed without any proctoring violations.
+                              </span>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  } catch (e) {
+                    console.error('Error parsing proctoring data:', e);
+                    return (
+                      <div className="text-sm text-gray-600 dark:text-gray-400">
+                        Unable to load proctoring information.
+                      </div>
+                    );
+                  }
+                })()}
               </div>
             )}
 
