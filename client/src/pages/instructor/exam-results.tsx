@@ -23,7 +23,10 @@ import {
   ChevronDown,
   ChevronUp,
   Search,
-  Filter
+  Filter,
+  Shield,
+  AlertTriangle,
+  CheckCircle
 } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 
@@ -731,6 +734,153 @@ export default function ExamResults() {
                   </CardContent>
                   </Card>
                   </div>
+
+                  {/* Proctoring Analytics */}
+                  {selectedExamId && examData?.enableProctoring && (
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <Shield className="h-5 w-5 text-blue-600" />
+                          Proctoring Analytics
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        {(() => {
+                          // Calculate proctoring statistics from submissions
+                          const proctoringStats = submissions.reduce((stats: any, sub: any) => {
+                            if (sub.proctoringData) {
+                              try {
+                                const proctoringData = typeof sub.proctoringData === 'string' 
+                                  ? JSON.parse(sub.proctoringData) 
+                                  : sub.proctoringData;
+                                
+                                const violations = proctoringData?.violations || [];
+                                const totalViolations = proctoringData?.totalViolations || 0;
+                                const wasTerminated = proctoringData?.isTerminatedForViolations || false;
+                                
+                                stats.totalViolations += totalViolations;
+                                stats.submissionsWithViolations += totalViolations > 0 ? 1 : 0;
+                                stats.cleanSubmissions += totalViolations === 0 ? 1 : 0;
+                                stats.terminatedSubmissions += wasTerminated ? 1 : 0;
+                                stats.totalSubmissions += 1;
+                                
+                                // Count violation types
+                                violations.forEach((v: any) => {
+                                  stats.violationTypes[v.type] = (stats.violationTypes[v.type] || 0) + 1;
+                                });
+                              } catch (e) {
+                                console.error('Error parsing proctoring data:', e);
+                              }
+                            } else {
+                              stats.cleanSubmissions += 1;
+                              stats.totalSubmissions += 1;
+                            }
+                            return stats;
+                          }, {
+                            totalViolations: 0,
+                            submissionsWithViolations: 0,
+                            cleanSubmissions: 0,
+                            terminatedSubmissions: 0,
+                            totalSubmissions: 0,
+                            violationTypes: {} as Record<string, number>
+                          });
+
+                          return (
+                            <div className="space-y-4">
+                              {/* Proctoring Metrics Grid */}
+                              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                <Card>
+                                  <CardContent className="p-3">
+                                    <div className="flex items-center justify-between">
+                                      <div>
+                                        <p className="text-xs font-medium text-gray-600 dark:text-muted-foreground">Total Violations</p>
+                                        <p className="text-lg font-bold text-gray-900 dark:text-foreground" data-testid="analytics-total-violations">
+                                          {proctoringStats.totalViolations}
+                                        </p>
+                                      </div>
+                                      <div className="p-2 bg-red-100 dark:bg-red-800/20 rounded-lg">
+                                        <AlertTriangle className="h-4 w-4 text-red-600 dark:text-red-400" />
+                                      </div>
+                                    </div>
+                                  </CardContent>
+                                </Card>
+
+                                <Card>
+                                  <CardContent className="p-3">
+                                    <div className="flex items-center justify-between">
+                                      <div>
+                                        <p className="text-xs font-medium text-gray-600 dark:text-muted-foreground">Clean Submissions</p>
+                                        <p className="text-lg font-bold text-gray-900 dark:text-foreground" data-testid="analytics-clean-submissions">
+                                          {proctoringStats.cleanSubmissions}
+                                        </p>
+                                      </div>
+                                      <div className="p-2 bg-green-100 dark:bg-green-800/20 rounded-lg">
+                                        <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
+                                      </div>
+                                    </div>
+                                  </CardContent>
+                                </Card>
+
+                                <Card>
+                                  <CardContent className="p-3">
+                                    <div className="flex items-center justify-between">
+                                      <div>
+                                        <p className="text-xs font-medium text-gray-600 dark:text-muted-foreground">Auto-terminated</p>
+                                        <p className="text-lg font-bold text-gray-900 dark:text-foreground" data-testid="analytics-terminated-submissions">
+                                          {proctoringStats.terminatedSubmissions}
+                                        </p>
+                                      </div>
+                                      <div className="p-2 bg-orange-100 dark:bg-orange-800/20 rounded-lg">
+                                        <AlertTriangle className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+                                      </div>
+                                    </div>
+                                  </CardContent>
+                                </Card>
+
+                                <Card>
+                                  <CardContent className="p-3">
+                                    <div className="flex items-center justify-between">
+                                      <div>
+                                        <p className="text-xs font-medium text-gray-600 dark:text-muted-foreground">Violation Rate</p>
+                                        <p className="text-lg font-bold text-gray-900 dark:text-foreground" data-testid="analytics-violation-rate">
+                                          {proctoringStats.totalSubmissions > 0 ? 
+                                            `${Math.round((proctoringStats.submissionsWithViolations / proctoringStats.totalSubmissions) * 100)}%` : 
+                                            '0%'
+                                          }
+                                        </p>
+                                      </div>
+                                      <div className="p-2 bg-yellow-100 dark:bg-yellow-800/20 rounded-lg">
+                                        <BarChart3 className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
+                                      </div>
+                                    </div>
+                                  </CardContent>
+                                </Card>
+                              </div>
+
+                              {/* Violation Breakdown */}
+                              {Object.keys(proctoringStats.violationTypes).length > 0 && (
+                                <div>
+                                  <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Violation Breakdown</h4>
+                                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                    {Object.entries(proctoringStats.violationTypes).map(([type, count]) => (
+                                      <div key={type} className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800/50 rounded-lg" data-testid={`analytics-violation-${type}`}>
+                                        <span className="text-xs font-medium capitalize">
+                                          {type.replace('_', ' ')}
+                                        </span>
+                                        <Badge variant="outline" className="text-xs">
+                                          {Number(count)}
+                                        </Badge>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })()}
+                      </CardContent>
+                    </Card>
+                  )}
 
                   {/* Exam Info */}
                   <Card>

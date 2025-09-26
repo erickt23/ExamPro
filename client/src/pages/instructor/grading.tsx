@@ -32,7 +32,9 @@ import {
   BookOpen,
   Notebook,
   Calculator,
-  CloudUpload
+  CloudUpload,
+  Shield,
+  AlertTriangle
 } from "lucide-react";
 import { calculateFinalGrade } from "@shared/gradeConfig";
 
@@ -929,6 +931,102 @@ function SubmissionGrading({ submissionId, isHomeworkGrading }: { submissionId: 
                   Final Score: {((parseFloat(submission.totalScore || '0')) + totalExtraCredits).toFixed(1)}
                 </span>
               </div>
+            </div>
+          )}
+
+          {/* Proctoring Logs Section */}
+          {!isHomeworkGrading && submission.proctoringData && (
+            <div className="mt-4 pt-4 border-t">
+              <div className="flex items-center gap-2 mb-3">
+                <Shield className="h-4 w-4 text-blue-600" />
+                <span className="text-sm font-medium text-gray-700">Proctoring Information</span>
+              </div>
+              
+              {(() => {
+                const proctoringData = typeof submission.proctoringData === 'string' 
+                  ? JSON.parse(submission.proctoringData) 
+                  : submission.proctoringData;
+                
+                const violations = proctoringData?.violations || [];
+                const totalViolations = proctoringData?.totalViolations || 0;
+                const wasTerminated = proctoringData?.isTerminatedForViolations || false;
+                
+                return (
+                  <div className="space-y-3">
+                    {/* Summary */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Total Violations:</span>
+                        <Badge 
+                          variant={totalViolations === 0 ? "secondary" : totalViolations >= 3 ? "destructive" : "outline"}
+                          className="text-xs"
+                          data-testid="proctoring-violations-count"
+                        >
+                          {totalViolations}
+                        </Badge>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Auto-terminated:</span>
+                        <Badge 
+                          variant={wasTerminated ? "destructive" : "secondary"}
+                          className="text-xs"
+                          data-testid="proctoring-terminated-status"
+                        >
+                          {wasTerminated ? "Yes" : "No"}
+                        </Badge>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Status:</span>
+                        <Badge 
+                          variant={totalViolations === 0 ? "default" : totalViolations >= 3 ? "destructive" : "outline"}
+                          className="text-xs"
+                          data-testid="proctoring-overall-status"
+                        >
+                          {totalViolations === 0 ? "Clean" : totalViolations >= 3 ? "High Risk" : "Low Risk"}
+                        </Badge>
+                      </div>
+                    </div>
+
+                    {/* Violation Details */}
+                    {violations.length > 0 && (
+                      <div className="mt-3">
+                        <h4 className="text-xs font-medium text-gray-700 mb-2">Violation Details:</h4>
+                        <div className="space-y-2 max-h-32 overflow-y-auto">
+                          {violations.map((violation: any, index: number) => (
+                            <div 
+                              key={index}
+                              className="flex items-center justify-between text-xs p-2 bg-gray-50 dark:bg-gray-800/50 rounded"
+                              data-testid={`proctoring-violation-${index}`}
+                            >
+                              <div className="flex items-center gap-2">
+                                <Badge variant="outline" className="text-xs">
+                                  {violation.type?.replace('_', ' ').toUpperCase()}
+                                </Badge>
+                                <span className="text-gray-600">{violation.description}</span>
+                              </div>
+                              <span className="text-gray-500">
+                                {new Date(violation.timestamp).toLocaleTimeString()}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Termination Notice */}
+                    {wasTerminated && (
+                      <div className="mt-3 p-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded">
+                        <div className="flex items-center gap-2">
+                          <AlertTriangle className="h-4 w-4 text-red-600" />
+                          <span className="text-xs font-medium text-red-800 dark:text-red-200">
+                            This exam was automatically terminated due to excessive proctoring violations.
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
             </div>
           )}
         </CardContent>
