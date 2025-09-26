@@ -65,6 +65,8 @@ export default function StudentExams() {
   const [completedExamsPage, setCompletedExamsPage] = useState(1);
   const [showPasswordPrompt, setShowPasswordPrompt] = useState(false);
   const [enteredPassword, setEnteredPassword] = useState('');
+  const [showResultsModal, setShowResultsModal] = useState(false);
+  const [selectedResultSubmission, setSelectedResultSubmission] = useState<any>(null);
   const ITEMS_PER_PAGE = 3; // Show 3 most recent items by default
   const [openSections, setOpenSections] = useState<string[]>(['available', 'expired', 'completed']); // All sections open by default
 
@@ -178,6 +180,30 @@ export default function StudentExams() {
       return response.json();
     },
     enabled: !!selectedExam,
+    retry: false,
+  });
+
+  // Fetch exam results for selected submission
+  const { data: examResults } = useQuery({
+    queryKey: ["/api/submissions", selectedResultSubmission?.id, "results"],
+    queryFn: async () => {
+      const response = await fetch(`/api/submissions/${selectedResultSubmission.id}/grade`);
+      if (!response.ok) throw new Error(`${response.status}: ${response.statusText}`);
+      return response.json();
+    },
+    enabled: !!selectedResultSubmission,
+    retry: false,
+  });
+
+  // Fetch extra credits for selected submission
+  const { data: submissionExtraCredits = [] } = useQuery({
+    queryKey: ["/api/submissions", selectedResultSubmission?.id, "extra-credits"],
+    queryFn: async () => {
+      const response = await fetch(`/api/submissions/${selectedResultSubmission.id}/extra-credits`);
+      if (!response.ok) return [];
+      return response.json();
+    },
+    enabled: !!selectedResultSubmission,
     retry: false,
   });
 
@@ -427,6 +453,16 @@ export default function StudentExams() {
     setShowPasswordPrompt(false);
     setEnteredPassword('');
     setSelectedExam(null);
+  };
+
+  const handleViewResults = (exam: any, submission: any) => {
+    setSelectedResultSubmission(submission);
+    setShowResultsModal(true);
+  };
+
+  const handleCloseResults = () => {
+    setShowResultsModal(false);
+    setSelectedResultSubmission(null);
   };
 
   const handleAnswerChange = (questionId: number, answer: any) => {
@@ -1036,7 +1072,12 @@ export default function StudentExams() {
                           {paginatedCompletedExams.map((exam: any) => {
                             const submission = mySubmissions.find((s: any) => s.examId === exam.id);
                             return (
-                              <div key={exam.id} className="flex items-center justify-between p-4 border rounded-lg bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                              <div 
+                                key={exam.id} 
+                                onClick={() => handleViewResults(exam, submission)}
+                                className="flex items-center justify-between p-4 border rounded-lg bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer"
+                                data-testid={`completed-exam-${exam.id}`}
+                              >
                                 <div className="flex-1">
                                   <h4 className="font-medium text-gray-900 dark:text-gray-100">{exam.title}</h4>
                                   <p className="text-sm text-gray-600 dark:text-gray-400">{(subjects as any[]).find((s: any) => s.id === exam.subjectId)?.name || t('studentExams.unknownSubject')}</p>
@@ -1106,6 +1147,142 @@ export default function StudentExams() {
         </main>
       </div>
     </div>
+
+    {/* Exam Results Modal */}
+    <Dialog open={showResultsModal} onOpenChange={setShowResultsModal}>
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto" data-testid="exam-results-modal">
+        <DialogHeader>
+          <DialogTitle data-testid="results-modal-title">
+            Exam Results
+          </DialogTitle>
+        </DialogHeader>
+        
+        {selectedResultSubmission && examResults && (
+          <div className="space-y-6">
+            {/* Exam Info */}
+            <div className="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-lg">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                <div>
+                  <span className="text-gray-600 dark:text-gray-400">Exam:</span>
+                  <p className="font-medium">{examResults.exam?.title}</p>
+                </div>
+                <div>
+                  <span className="text-gray-600 dark:text-gray-400">Subject:</span>
+                  <p className="font-medium">{examResults.exam?.subject}</p>
+                </div>
+                <div>
+                  <span className="text-gray-600 dark:text-gray-400">Completed:</span>
+                  <p className="font-medium">
+                    {new Date(selectedResultSubmission.submittedAt).toLocaleDateString()}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Score Summary */}
+            <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-medium text-gray-900 dark:text-gray-100">Score Summary</h3>
+                  <div className="mt-2 space-y-1 text-sm">
+                    <div className="flex justify-between" data-testid="results-base-score">
+                      <span>Base Score:</span>
+                      <span>{selectedResultSubmission.totalScore}/{selectedResultSubmission.maxScore}</span>
+                    </div>
+                    {submissionExtraCredits.length > 0 && (
+                      <>
+                        <div className="flex justify-between text-yellow-700 dark:text-yellow-400" data-testid="results-extra-credits">
+                          <span>Extra Credit:</span>
+                          <span>+{submissionExtraCredits.reduce((sum: number, credit: any) => sum + parseFloat(credit.points), 0).toFixed(1)} points</span>
+                        </div>
+                        <div className="flex justify-between font-medium border-t pt-1" data-testid="results-final-score">
+                          <span>Final Score:</span>
+                          <span>
+                            {(parseFloat(selectedResultSubmission.totalScore) + submissionExtraCredits.reduce((sum: number, credit: any) => sum + parseFloat(credit.points), 0)).toFixed(1)}/{selectedResultSubmission.maxScore}
+                          </span>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                    {((parseFloat(selectedResultSubmission.totalScore) + submissionExtraCredits.reduce((sum: number, credit: any) => sum + parseFloat(credit.points), 0)) / parseFloat(selectedResultSubmission.maxScore) * 100).toFixed(1)}%
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Extra Credit Details */}
+            {submissionExtraCredits.length > 0 && (
+              <div className="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg">
+                <h3 className="font-medium text-gray-900 dark:text-gray-100 mb-3">Extra Credit Awarded</h3>
+                <div className="space-y-2">
+                  {submissionExtraCredits.map((credit: any) => (
+                    <div key={credit.id} className="flex justify-between items-center text-sm" data-testid={`results-ec-${credit.id}`}>
+                      <div>
+                        <p className="font-medium">{credit.reason}</p>
+                        <p className="text-gray-500 dark:text-gray-400 text-xs">
+                          Added by {credit.grantedBy} on {new Date(credit.grantedAt).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <span className="font-bold text-yellow-700 dark:text-yellow-400">
+                        +{parseFloat(credit.points).toFixed(1)} pts
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Questions and Answers */}
+            {examResults.questions && examResults.questions.length > 0 && (
+              <div className="space-y-4">
+                <h3 className="font-medium text-gray-900 dark:text-gray-100">Question Review</h3>
+                {examResults.questions.map((question: any, index: number) => (
+                  <div key={question.id} className="border rounded-lg p-4" data-testid={`results-question-${question.id}`}>
+                    <div className="flex justify-between items-start mb-3">
+                      <h4 className="font-medium">Question {index + 1}</h4>
+                      <span className="text-sm text-gray-600 dark:text-gray-400">
+                        {question.points} points
+                      </span>
+                    </div>
+                    <p className="text-gray-800 dark:text-gray-200 mb-3">{question.questionText}</p>
+                    
+                    {/* Student Answer */}
+                    <div className="bg-gray-50 dark:bg-gray-800/50 p-3 rounded">
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Your Answer:</p>
+                      <p className="text-gray-900 dark:text-gray-100">
+                        {question.studentAnswer || "No answer provided"}
+                      </p>
+                    </div>
+                    
+                    {/* Score */}
+                    <div className="mt-2 text-right">
+                      <span className={`text-sm font-medium ${
+                        question.score === question.points 
+                          ? 'text-green-600 dark:text-green-400' 
+                          : question.score > 0 
+                            ? 'text-yellow-600 dark:text-yellow-400' 
+                            : 'text-red-600 dark:text-red-400'
+                      }`}>
+                        {question.score}/{question.points} points
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+        
+        <DialogFooter>
+          <Button onClick={handleCloseResults} data-testid="button-close-results">
+            Close
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
 
     {/* Password Prompt Dialog */}
     <Dialog open={showPasswordPrompt} onOpenChange={setShowPasswordPrompt}>
