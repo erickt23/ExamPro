@@ -1149,8 +1149,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const permutation = (permutationMappings as any)[eq.questionId];
           // Capture original correctAnswers before stripping for allowMultipleAnswers flag
           const originalCorrectAnswers = eq.question.correctAnswers;
-          const allowMultiple = originalCorrectAnswers !== null && originalCorrectAnswers !== undefined;
-          console.log(`[DEBUG] Question ${eq.question.id}: correctAnswers=${JSON.stringify(originalCorrectAnswers)}, allowMultipleAnswers=${allowMultiple}`);
+          const originalCorrectAnswer = eq.question.correctAnswer;
+          
+          // Determine if this question allows multiple answers:
+          // 1. If correctAnswers field exists (new format)
+          // 2. If correctAnswer contains comma-separated values (legacy format)
+          // 3. If correctAnswer is an array (edge case)
+          let allowMultiple = false;
+          
+          if (originalCorrectAnswers !== null && originalCorrectAnswers !== undefined) {
+            allowMultiple = true;
+          } else if (originalCorrectAnswer && typeof originalCorrectAnswer === 'string' && originalCorrectAnswer.includes(',')) {
+            allowMultiple = true;
+          } else if (Array.isArray(originalCorrectAnswer)) {
+            allowMultiple = true;
+          }
+          
+          console.log(`[DEBUG] Question ${eq.question.id}: correctAnswers=${JSON.stringify(originalCorrectAnswers)}, correctAnswer=${JSON.stringify(originalCorrectAnswer)}, allowMultipleAnswers=${allowMultiple}`);
           
           // Generate remapped correct answers for grading if shuffling is applied
           if (permutation && exam.randomizeOptions) {
