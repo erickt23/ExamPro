@@ -13,6 +13,7 @@ export const en = {
     grading: 'Grading Center',
     submissionsReview: 'Grade Review',
     examResults: 'Exam Results',
+    proctoringLogs: 'Proctoring Logs',
     analytics: 'Analytics',
     students: 'Students',
     homework: 'Homework',

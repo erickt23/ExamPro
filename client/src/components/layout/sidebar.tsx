@@ -19,7 +19,8 @@ import {
   Menu,
   X,
   ChevronDown,
-  ChevronRight
+  ChevronRight,
+  Shield
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -123,6 +124,11 @@ export default function Sidebar({ className }: SidebarProps) {
           title: t('nav.examResults'),
           href: "/exam-results",
           icon: BarChart3,
+        },
+        {
+          title: t('nav.proctoringLogs'),
+          href: "/proctoring-logs",
+          icon: Shield,
         },
       ]
     },
