@@ -680,6 +680,38 @@ export const fr = {
     showingXtoYofZ: 'Affichage de {start} à {end} sur {total} matières'
   },
 
+  // Extra Credits Management
+  extraCredits: {
+    title: 'Gestion des Crédits Supplémentaires',
+    description: 'Attribuer des points bonus aux étudiants pour tous les cours',
+    manageExtraCredits: 'Gérer Crédits Supplémentaires',
+    addExtraCredit: 'Ajouter Crédit Supplémentaire',
+    allExtraCredits: 'Tous les Crédits Supplémentaires',
+    student: 'Étudiant',
+    course: 'Cours',
+    points: 'Points',
+    reason: 'Raison',
+    grantedBy: 'Accordé Par',
+    grantedAt: 'Date d\'Attribution',
+    actions: 'Actions',
+    delete: 'Supprimer',
+    selectStudent: 'Sélectionner Étudiant',
+    selectCourse: 'Sélectionner Cours',
+    enterPoints: 'Entrer Points',
+    enterReason: 'Entrer Raison',
+    addCredit: 'Ajouter Crédit',
+    adding: 'Ajout en cours...',
+    deleteConfirm: 'Êtes-vous sûr de vouloir supprimer ce crédit supplémentaire ?',
+    deleteWarning: 'Ceci affectera la note finale de l\'étudiant.',
+    noExtraCredits: 'Aucun crédit supplémentaire trouvé',
+    noExtraCreditsMessage: 'Aucun crédit supplémentaire n\'a encore été attribué.',
+    creditAdded: 'Crédit supplémentaire ajouté avec succès',
+    creditDeleted: 'Crédit supplémentaire supprimé avec succès',
+    failedToAdd: 'Échec de l\'ajout du crédit supplémentaire',
+    failedToDelete: 'Échec de la suppression du crédit supplémentaire',
+    loading: 'Chargement des crédits supplémentaires...'
+  },
+
   // Import Questions Modal
   importQuestions: {
     title: 'Importer Questions depuis Excel',

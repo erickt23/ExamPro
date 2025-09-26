@@ -680,6 +680,38 @@ export const ht = {
     showingXtoYofZ: 'Montre {start} a {end} nan {total} matye'
   },
 
+  // Extra Credits Management
+  extraCredits: {
+    title: 'Jesyon Kredi Siplemantè yo',
+    description: 'Ba elèv yo pwen bonus nan tout kou yo',
+    manageExtraCredits: 'Jere Kredi Siplemantè yo',
+    addExtraCredit: 'Ajoute Kredi Siplemantè',
+    allExtraCredits: 'Tout Kredi Siplemantè yo',
+    student: 'Elèv',
+    course: 'Kou',
+    points: 'Pwen',
+    reason: 'Rezn',
+    grantedBy: 'Oke Pa',
+    grantedAt: 'Dat yo Ba',
+    actions: 'Aksyon yo',
+    delete: 'Efase',
+    selectStudent: 'Chwazi Elèv',
+    selectCourse: 'Chwazi Kou',
+    enterPoints: 'Antre Pwen',
+    enterReason: 'Antre Rezn',
+    addCredit: 'Ajoute Kredi',
+    adding: 'Y ap ajoute...',
+    deleteConfirm: 'Eske ou kwè w vle efase kredi siplemantè sa a?',
+    deleteWarning: 'Sa a pral afekte nòt final elèv la.',
+    noExtraCredits: 'Pa gen kredi siplemantè',
+    noExtraCreditsMessage: 'Yo poko bay okenn kredi siplemantè ankò.',
+    creditAdded: 'Kredi siplemantè yo ajoute ak siksè',
+    creditDeleted: 'Kredi siplemantè yo efase ak siksè',
+    failedToAdd: 'Yo pa ka ajoute kredi siplemantè a',
+    failedToDelete: 'Yo pa ka efase kredi siplemantè a',
+    loading: 'Y ap chaje kredi siplemantè yo...'
+  },
+
   // Import Questions Modal
   importQuestions: {
     title: 'Enpòte Kesyon yo depi Excel',

@@ -16,6 +16,17 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { 
   ArrowLeft, 
   Clock, 
@@ -32,6 +43,9 @@ import {
   BookOpen,
   Notebook,
   Calculator,
+  Star,
+  Plus,
+  Trash2,
   CloudUpload,
   Shield,
   AlertTriangle
@@ -337,6 +351,10 @@ function GradingList() {
             <Calculator className="h-4 w-4" />
             {t('grading.finalGrades')}
           </TabsTrigger>
+          <TabsTrigger value="extra-credits" className="flex items-center gap-2">
+            <Star className="h-4 w-4" />
+            {t('extraCredits.manageExtraCredits')}
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="exams">
@@ -496,6 +514,10 @@ function GradingList() {
               </div>
             )}
           </div>
+        </TabsContent>
+
+        <TabsContent value="extra-credits">
+          <ExtraCreditsManagement />
         </TabsContent>
       </Tabs>
     </div>
@@ -1478,6 +1500,342 @@ function SubmissionGrading({ submissionId, isHomeworkGrading }: { submissionId: 
           </div>
         </CardContent>
       </Card>
+    </div>
+  );
+}
+
+// Extra Credits Management Component
+function ExtraCreditsManagement() {
+  const { t } = useTranslation();
+  const { toast } = useToast();
+  const { user } = useAuth();
+  const [selectedStudent, setSelectedStudent] = useState<string>('');
+  const [selectedSubject, setSelectedSubject] = useState<number | ''>('');
+  const [points, setPoints] = useState<string>('');
+  const [reason, setReason] = useState<string>('');
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [creditToDelete, setCreditToDelete] = useState<number | null>(null);
+
+  // Fetch all students for dropdown
+  const { data: students = [] } = useQuery({
+    queryKey: ["/api/admin/users"],
+    queryFn: async () => {
+      const response = await fetch("/api/admin/users");
+      if (!response.ok) throw new Error(`${response.status}: ${response.statusText}`);
+      const users = await response.json();
+      return users.filter((user: any) => user.role === 'student');
+    },
+    retry: false,
+  });
+
+  // Fetch all subjects for dropdown
+  const { data: subjects = [] } = useQuery({
+    queryKey: ["/api/subjects"],
+    retry: false,
+  });
+
+  // Fetch all extra credits
+  const { data: allExtraCredits = [], refetch: refetchExtraCredits, isLoading: creditsLoading } = useQuery({
+    queryKey: ["/api/instructor/all-extra-credits"],
+    queryFn: async () => {
+      const response = await fetch("/api/instructor/all-extra-credits");
+      if (!response.ok) throw new Error(`${response.status}: ${response.statusText}`);
+      return response.json();
+    },
+    retry: false,
+  });
+
+  // Add extra credit mutation
+  const addExtraCreditMutation = useMutation({
+    mutationFn: async (creditData: { studentId: string; subjectId: number; points: number; reason: string }) => {
+      return await apiRequest("POST", "/api/instructor/extra-credit", creditData);
+    },
+    onSuccess: () => {
+      toast({
+        title: t('extraCredits.creditAdded'),
+        description: t('extraCredits.creditAdded'),
+      });
+      refetchExtraCredits();
+      // Reset form
+      setSelectedStudent('');
+      setSelectedSubject('');
+      setPoints('');
+      setReason('');
+    },
+    onError: (error: Error) => {
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
+      toast({
+        title: "Error",
+        description: t('extraCredits.failedToAdd'),
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Delete extra credit mutation
+  const deleteExtraCreditMutation = useMutation({
+    mutationFn: async (creditId: number) => {
+      return await apiRequest("DELETE", `/api/extra-credits/${creditId}`, {});
+    },
+    onSuccess: () => {
+      toast({
+        title: t('extraCredits.creditDeleted'),
+        description: t('extraCredits.creditDeleted'),
+      });
+      refetchExtraCredits();
+      setDeleteDialogOpen(false);
+      setCreditToDelete(null);
+    },
+    onError: (error: Error) => {
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
+      toast({
+        title: "Error",
+        description: t('extraCredits.failedToDelete'),
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleAddExtraCredit = () => {
+    if (!selectedStudent || !selectedSubject || !points || !reason) {
+      toast({
+        title: "Validation Error",
+        description: "Please fill in all fields",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const pointsValue = parseFloat(points);
+    if (isNaN(pointsValue) || pointsValue <= 0) {
+      toast({
+        title: "Validation Error", 
+        description: "Points must be a positive number",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    addExtraCreditMutation.mutate({
+      studentId: selectedStudent,
+      subjectId: Number(selectedSubject),
+      points: pointsValue,
+      reason: reason.trim(),
+    });
+  };
+
+  const handleDeleteExtraCredit = (creditId: number) => {
+    setCreditToDelete(creditId);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = () => {
+    if (creditToDelete) {
+      deleteExtraCreditMutation.mutate(creditToDelete);
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-xl font-semibold">{t('extraCredits.title')}</h2>
+        <p className="text-sm text-gray-600 mt-1">{t('extraCredits.description')}</p>
+      </div>
+
+      {/* Add Extra Credit Form */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Plus className="h-5 w-5" />
+            {t('extraCredits.addExtraCredit')}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+            <div>
+              <label className="text-sm font-medium mb-1 block">{t('extraCredits.student')}</label>
+              <Select value={selectedStudent} onValueChange={setSelectedStudent}>
+                <SelectTrigger>
+                  <SelectValue placeholder={t('extraCredits.selectStudent')} />
+                </SelectTrigger>
+                <SelectContent>
+                  {students.map((student: any) => (
+                    <SelectItem key={student.id} value={student.id}>
+                      {student.firstName} {student.lastName} ({student.email})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <label className="text-sm font-medium mb-1 block">{t('extraCredits.course')}</label>
+              <Select value={selectedSubject.toString()} onValueChange={(value) => setSelectedSubject(Number(value))}>
+                <SelectTrigger>
+                  <SelectValue placeholder={t('extraCredits.selectCourse')} />
+                </SelectTrigger>
+                <SelectContent>
+                  {subjects.map((subject: any) => (
+                    <SelectItem key={subject.id} value={subject.id.toString()}>
+                      {subject.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <label className="text-sm font-medium mb-1 block">{t('extraCredits.points')}</label>
+              <Input
+                type="number"
+                step="0.01"
+                min="0"
+                placeholder={t('extraCredits.enterPoints')}
+                value={points}
+                onChange={(e) => setPoints(e.target.value)}
+              />
+            </div>
+
+            <div>
+              <label className="text-sm font-medium mb-1 block">{t('extraCredits.reason')}</label>
+              <Input
+                placeholder={t('extraCredits.enterReason')}
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+              />
+            </div>
+
+            <div className="flex items-end">
+              <Button 
+                onClick={handleAddExtraCredit}
+                disabled={addExtraCreditMutation.isPending || !selectedStudent || !selectedSubject || !points || !reason}
+                className="w-full"
+              >
+                {addExtraCreditMutation.isPending ? t('extraCredits.adding') : t('extraCredits.addCredit')}
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* All Extra Credits Table */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Star className="h-5 w-5" />
+            {t('extraCredits.allExtraCredits')}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {creditsLoading ? (
+            <div className="text-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+              <p>{t('extraCredits.loading')}</p>
+            </div>
+          ) : !allExtraCredits || allExtraCredits.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              <Star className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+              <p>{t('extraCredits.noExtraCredits')}</p>
+              <p className="text-sm mt-2">{t('extraCredits.noExtraCreditsMessage')}</p>
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>{t('extraCredits.student')}</TableHead>
+                  <TableHead>{t('extraCredits.course')}</TableHead>
+                  <TableHead>{t('extraCredits.points')}</TableHead>
+                  <TableHead>{t('extraCredits.reason')}</TableHead>
+                  <TableHead>{t('extraCredits.grantedBy')}</TableHead>
+                  <TableHead>{t('extraCredits.grantedAt')}</TableHead>
+                  <TableHead>{t('extraCredits.actions')}</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {allExtraCredits.map((credit: any) => (
+                  <TableRow key={credit.id}>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <User className="h-4 w-4" />
+                        {credit.studentName || credit.student?.firstName + ' ' + credit.student?.lastName}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="font-medium">{credit.subjectName || credit.subject?.name}</div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="secondary" className="bg-green-100 text-green-800">
+                        +{credit.points}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <div className="max-w-xs truncate" title={credit.reason}>
+                        {credit.reason}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="text-sm text-gray-600">{credit.grantedByName || credit.granter?.firstName}</div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="text-sm text-gray-600">
+                        {credit.grantedAt ? new Date(credit.grantedAt).toLocaleDateString() : ''}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={() => handleDeleteExtraCredit(credit.id)}
+                        disabled={deleteExtraCreditMutation.isPending}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('extraCredits.deleteConfirm')}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('extraCredits.deleteWarning')}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-red-600 hover:bg-red-700">
+              {t('extraCredits.delete')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
