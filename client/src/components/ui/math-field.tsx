@@ -34,10 +34,32 @@ const MathField = forwardRef<HTMLElement, MathFieldProps>(
             mathField.readonly = readonly;
           }
           
-          // Set virtual keyboard policy if available - disable to prevent popover errors
-          if (typeof mathField.mathVirtualKeyboardPolicy !== 'undefined') {
-            mathField.mathVirtualKeyboardPolicy = 'off';
+          // Comprehensive configuration to prevent popover errors
+          const config = {
+            mathVirtualKeyboardPolicy: 'off',
+            virtualKeyboardMode: 'off',
+            menuItems: [],
+            popoverPolicy: 'off',
+            contextMenuPolicy: 'none',
+            keybindings: []
+          };
+
+          // Apply each configuration safely
+          Object.keys(config).forEach(key => {
+            try {
+              if (typeof mathField[key] !== 'undefined') {
+                mathField[key] = config[key as keyof typeof config];
+              }
+            } catch (configError) {
+              // Silently ignore individual config errors
+            }
+          });
+
+          // Additional safety: disable menu-related functions
+          if (mathField.menuItems) {
+            mathField.menuItems = [];
           }
+          
         } catch (error) {
           console.warn('MathLive configuration error:', error);
         }
