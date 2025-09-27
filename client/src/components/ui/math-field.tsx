@@ -87,29 +87,65 @@ const MathField = forwardRef<HTMLElement, MathFieldProps>(
             mathField.readonly = readonly;
           }
           
-          // Configuration for persistent virtual keyboard
+          // Configuration for full MathLive functionality
           const config = {
             mathVirtualKeyboardPolicy: 'manual',
             virtualKeyboardMode: 'manual',
-            virtualKeyboard: false,
-            menuItems: [],
-            contextMenuPolicy: 'none',
-            keybindings: [],
             readOnly: readonly,
             smartFence: true,
             smartMode: true,
             smartSuperscript: true,
-            // Disable all toolbar/menu elements
-            toolbarButtons: [],
-            inlineShortcuts: {},
-            macros: {},
-            // Remove any default UI elements
-            customVirtualKeyboard: false,
+            // Enable full toolbar functionality
+            toolbarButtons: [
+              'virtual-keyboard-toggle', 
+              'separator',
+              'undo', 'redo',
+              'separator', 
+              'copy', 'paste',
+              'separator',
+              'insert-matrix',
+              'insert-derivative',
+              'insert-integral',
+              'insert-sum',
+              'insert-product',
+              'insert-sqrt',
+              'insert-nth-root',
+              'insert-fraction',
+              'insert-absolute-value',
+              'insert-logarithm',
+              'insert-exponential',
+              'insert-trigonometric',
+              'insert-complex',
+              'separator',
+              'toggle-mode'
+            ],
+            // Enable context menu with full functionality
+            contextMenuPolicy: 'auto',
+            menuItems: [
+              'copy',
+              'paste', 
+              'cut',
+              'select-all',
+              'separator',
+              'undo',
+              'redo',
+              'separator',
+              'insert-matrix',
+              'insert-derivative', 
+              'insert-integral',
+              'insert-sum',
+              'insert-product',
+              'insert-sqrt',
+              'insert-nth-root',
+              'insert-fraction',
+              'insert-absolute-value',
+              'insert-logarithm',
+              'insert-exponential',
+              'insert-trigonometric',
+              'insert-complex'
+            ],
             plonkSound: null,
-            keypressSound: null,
-            spaceBehavesLikeTab: false,
-            scriptDepth: 0,
-            removeExtraneousParentheses: true
+            keypressSound: null
           };
 
           // Apply each configuration safely
@@ -123,28 +159,28 @@ const MathField = forwardRef<HTMLElement, MathFieldProps>(
             }
           });
 
-          // Additional safety: disable menu-related functions
-          if (mathField.menuItems) {
-            mathField.menuItems = [];
-          }
-          
-          // Force disable any toolbar/menu elements that might appear
+          // Apply theme styling to shadow DOM elements
           try {
-            mathField.toolbarButtons = [];
             if (mathField.shadowRoot) {
-              // Hide any toolbar elements in shadow DOM
               const style = document.createElement('style');
               style.textContent = `
                 .ML__toolbar,
                 .ml__toolbar,
-                .ML__virtual-keyboard-toggle,
-                .ml__virtual-keyboard-toggle,
                 .ML__menu,
-                .ml__menu,
-                math-toolbar,
-                .toolbar {
-                  display: none !important;
-                  visibility: hidden !important;
+                .ml__menu {
+                  background: hsl(var(--background, 0 0% 100%)) !important;
+                  border-color: hsl(var(--border, 214.3 31.8% 91.4%)) !important;
+                  color: hsl(var(--foreground, 222.2 84% 4.9%)) !important;
+                }
+                
+                .ML__toolbar-button,
+                .ml__toolbar-button {
+                  color: hsl(var(--foreground, 222.2 84% 4.9%)) !important;
+                }
+                
+                .ML__toolbar-button:hover,
+                .ml__toolbar-button:hover {
+                  background: hsl(var(--accent, 210 40% 98%)) !important;
                 }
               `;
               mathField.shadowRoot.appendChild(style);
