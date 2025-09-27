@@ -2,7 +2,7 @@ import { useEffect, useRef, forwardRef, useState } from 'react';
 import 'mathlive';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { Calculator } from 'lucide-react';
+import { Calculator, Plus, Square, Sigma, Pi } from 'lucide-react';
 
 interface MathFieldProps {
   value?: string;
@@ -89,95 +89,15 @@ const MathField = forwardRef<HTMLElement, MathFieldProps>(
           
           // Apply configuration directly to mathField (MathLive 0.107.0+ format)
           try {
-            // Basic configuration
+            // Basic configuration - only set what we know works
             mathField.readOnly = readonly;
             mathField.smartFence = true;
             mathField.smartMode = true;
             mathField.smartSuperscript = true;
             mathField.mathVirtualKeyboardPolicy = 'manual';
             
-            // Enable full context menu with mathematical functions
-            mathField.menuItems = [
-              'copy',
-              'paste',
-              'cut',
-              'selectAll',
-              '|',
-              'undo',
-              'redo',
-              '|',
-              {
-                label: 'Insert Fraction',
-                command: ['insert', '\\frac{\\placeholder{numerator}}{\\placeholder{denominator}}']
-              },
-              {
-                label: 'Insert Square Root',
-                command: ['insert', '\\sqrt{\\placeholder{}}']
-              },
-              {
-                label: 'Insert nth Root',
-                command: ['insert', '\\sqrt[\\placeholder{n}]{\\placeholder{}}']
-              },
-              {
-                label: 'Insert Superscript',
-                command: ['insert', '^{\\placeholder{}}']
-              },
-              {
-                label: 'Insert Subscript',
-                command: ['insert', '_{\\placeholder{}}']
-              },
-              '|',
-              {
-                label: 'Insert Integral',
-                command: ['insert', '\\int_{\\placeholder{from}}^{\\placeholder{to}} \\placeholder{} \\, d\\placeholder{x}']
-              },
-              {
-                label: 'Insert Derivative',
-                command: ['insert', '\\frac{d}{d\\placeholder{x}} \\placeholder{}']
-              },
-              {
-                label: 'Insert Sum',
-                command: ['insert', '\\sum_{\\placeholder{n=1}}^{\\placeholder{\\infty}} \\placeholder{}']
-              },
-              {
-                label: 'Insert Product',
-                command: ['insert', '\\prod_{\\placeholder{n=1}}^{\\placeholder{\\infty}} \\placeholder{}']
-              },
-              '|',
-              {
-                label: 'Insert Matrix 2×2',
-                command: ['insert', '\\begin{pmatrix} \\placeholder{} & \\placeholder{} \\\\ \\placeholder{} & \\placeholder{} \\end{pmatrix}']
-              },
-              {
-                label: 'Insert Absolute Value',
-                command: ['insert', '\\left| \\placeholder{} \\right|']
-              },
-              {
-                label: 'Insert Logarithm',
-                command: ['insert', '\\log_{\\placeholder{}} \\placeholder{}']
-              },
-              {
-                label: 'Insert Natural Log',
-                command: ['insert', '\\ln \\placeholder{}']
-              },
-              {
-                label: 'Insert Exponential',
-                command: ['insert', 'e^{\\placeholder{}}']
-              },
-              '|',
-              {
-                label: 'Insert Sin',
-                command: ['insert', '\\sin \\placeholder{}']
-              },
-              {
-                label: 'Insert Cos',
-                command: ['insert', '\\cos \\placeholder{}']
-              },
-              {
-                label: 'Insert Tan',
-                command: ['insert', '\\tan \\placeholder{}']
-              }
-            ];
+            // Don't override the default menu - let MathLive handle it
+            // The default menu should include mathematical functions
             
           } catch (error) {
             console.warn('MathLive configuration error:', error);
@@ -355,8 +275,128 @@ const MathField = forwardRef<HTMLElement, MathFieldProps>(
       };
     }, [value, onChange, readonly, onFocus, onBlur]);
 
+    // Function to insert mathematical expressions
+    const insertMath = (latex: string) => {
+      if (mathFieldRef.current && !readonly) {
+        try {
+          mathFieldRef.current.insert(latex);
+          if (onChange) {
+            onChange(mathFieldRef.current.value);
+          }
+        } catch (error) {
+          console.warn('Error inserting LaTeX:', error);
+        }
+      }
+    };
+
     return (
       <div className="relative">
+        {/* Mathematical Functions Toolbar - Only show when not readonly */}
+        {!readonly && (
+          <div className="flex flex-wrap gap-1 mb-2 p-2 bg-muted/50 rounded-md border">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => insertMath('\\frac{\\placeholder{numerator}}{\\placeholder{denominator}}')}
+              title="Insert Fraction"
+              className="h-8 px-2"
+            >
+              ½
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => insertMath('\\sqrt{\\placeholder{}}')}
+              title="Insert Square Root"
+              className="h-8 px-2"
+            >
+              √
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => insertMath('^{\\placeholder{}}')}
+              title="Insert Superscript"
+              className="h-8 px-2"
+            >
+              x²
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => insertMath('_{\\placeholder{}}')}
+              title="Insert Subscript"
+              className="h-8 px-2"
+            >
+              x₁
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => insertMath('\\int_{\\placeholder{a}}^{\\placeholder{b}} \\placeholder{f(x)} \\, dx')}
+              title="Insert Integral"
+              className="h-8 px-2"
+            >
+              ∫
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => insertMath('\\sum_{\\placeholder{n=1}}^{\\placeholder{\\infty}} \\placeholder{}')}
+              title="Insert Sum"
+              className="h-8 px-2"
+            >
+              <Sigma className="h-3 w-3" />
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => insertMath('\\log_{\\placeholder{}} \\placeholder{}')}
+              title="Insert Logarithm"
+              className="h-8 px-2"
+            >
+              log
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => insertMath('\\sin \\placeholder{}')}
+              title="Insert Sine"
+              className="h-8 px-2"
+            >
+              sin
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => insertMath('\\cos \\placeholder{}')}
+              title="Insert Cosine"
+              className="h-8 px-2"
+            >
+              cos
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => insertMath('\\begin{pmatrix} \\placeholder{} & \\placeholder{} \\\\ \\placeholder{} & \\placeholder{} \\end{pmatrix}')}
+              title="Insert 2×2 Matrix"
+              className="h-8 px-2"
+            >
+              [ ]
+            </Button>
+          </div>
+        )}
+        
         <math-field
           ref={(el: any) => {
             mathFieldRef.current = el;
