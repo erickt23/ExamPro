@@ -981,6 +981,61 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Add extra time to exam (for emergencies)
+  app.put('/api/exams/:id/add-time', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      const examId = parseInt(req.params.id);
+      
+      if (!hasInstructorPrivileges(user)) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const exam = await storage.getExamById(examId);
+      if (!exam) {
+        return res.status(404).json({ message: "Exam not found" });
+      }
+
+      // Admin can add time to any exam, instructors can only add time to their own exams
+      if (user.role !== 'admin' && exam.instructorId !== userId) {
+        return res.status(403).json({ message: "You can only add time to your own exams" });
+      }
+
+      const { additionalMinutes } = req.body;
+      
+      if (!additionalMinutes || additionalMinutes <= 0 || additionalMinutes > 120) {
+        return res.status(400).json({ 
+          message: "Additional minutes must be between 1 and 120" 
+        });
+      }
+
+      // Update the extra time for the exam
+      const currentExtraTime = exam.extraTimeMinutes || 0;
+      const newExtraTime = currentExtraTime + additionalMinutes;
+      
+      const updatedExam = await storage.updateExam(examId, { 
+        extraTimeMinutes: newExtraTime 
+      });
+      
+      // Log the time addition for audit purposes
+      console.log(`Extra time added: User ${userId} (${user.role}) added ${additionalMinutes} minutes to exam ${examId}. Total extra time: ${newExtraTime} minutes.`);
+      
+      res.json({
+        message: `Successfully added ${additionalMinutes} minutes to the exam`,
+        exam: {
+          ...updatedExam,
+          password: undefined // Never return password hash
+        },
+        totalExtraTime: newExtraTime,
+        addedMinutes: additionalMinutes
+      });
+    } catch (error) {
+      console.error("Error adding extra time to exam:", error);
+      res.status(500).json({ message: "Failed to add extra time to exam" });
+    }
+  });
+
   // Delete exam
   app.delete('/api/exams/:id', isAuthenticated, async (req: any, res) => {
     try {
