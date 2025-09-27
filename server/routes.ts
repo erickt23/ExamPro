@@ -2411,7 +2411,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log(`Role update request: User ${userId} updating ${targetUserId} to role ${role}`);
       
-      if (!role || !['instructor', 'student'].includes(role)) {
+      if (!role || !['instructor', 'student', 'admin'].includes(role)) {
         return res.status(400).json({ message: "Invalid role" });
       }
       
