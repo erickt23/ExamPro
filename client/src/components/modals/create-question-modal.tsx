@@ -424,7 +424,7 @@ export default function CreateQuestionModal({ open, onOpenChange, questionCatego
                         onChange={field.onChange}
                         placeholder={t('assignments.enterYourQuestionHere')}
                         data-testid="input-question-text-math"
-                        className="min-h-[100px]"
+                        className="min-h-[200px]"
                       />
                     ) : (
                       <Textarea 

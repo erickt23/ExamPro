@@ -23,15 +23,40 @@ const MathField = forwardRef<HTMLElement, MathFieldProps>(
     const toggleVirtualKeyboard = () => {
       if (window.mathVirtualKeyboard) {
         if (!isKeyboardVisible) {
+          // Show keyboard
           window.mathVirtualKeyboard.show();
+          
+          // Ensure it's visible after showing
+          const keyboardElement = document.querySelector('math-virtual-keyboard') || 
+                                document.querySelector('.ML__virtual-keyboard') ||
+                                document.querySelector('.ml__virtual-keyboard');
+          if (keyboardElement) {
+            (keyboardElement as HTMLElement).style.display = 'block';
+            (keyboardElement as HTMLElement).style.visibility = 'visible';
+            (keyboardElement as HTMLElement).style.opacity = '1';
+          }
+          
           setIsKeyboardVisible(true);
         } else {
-          // Use the stored original hide function
-          if ((window.mathVirtualKeyboard as any).manualHide) {
-            (window.mathVirtualKeyboard as any).manualHide.call(window.mathVirtualKeyboard);
-          } else {
-            window.mathVirtualKeyboard.hide();
+          // Hide keyboard
+          const keyboardElement = document.querySelector('math-virtual-keyboard') || 
+                                document.querySelector('.ML__virtual-keyboard') ||
+                                document.querySelector('.ml__virtual-keyboard');
+          if (keyboardElement) {
+            (keyboardElement as HTMLElement).style.display = 'none';
+            (keyboardElement as HTMLElement).style.visibility = 'hidden';
+            (keyboardElement as HTMLElement).style.opacity = '0';
           }
+          
+          // Also try the original hide function if available
+          if ((window.mathVirtualKeyboard as any).originalHide) {
+            try {
+              (window.mathVirtualKeyboard as any).originalHide.call(window.mathVirtualKeyboard);
+            } catch (e) {
+              // Silently fail if hide doesn't work
+            }
+          }
+          
           setIsKeyboardVisible(false);
         }
       }
@@ -110,15 +135,16 @@ const MathField = forwardRef<HTMLElement, MathFieldProps>(
                 `;
               }
               
-              // Override the hide functionality to keep keyboard persistent
-              const originalHide = window.mathVirtualKeyboard.hide;
+              // Store original hide function and override to prevent auto-hide
+              if (!((window.mathVirtualKeyboard as any).originalHide)) {
+                (window.mathVirtualKeyboard as any).originalHide = window.mathVirtualKeyboard.hide;
+              }
+              
+              // Override hide to prevent auto-hiding
               window.mathVirtualKeyboard.hide = function() {
-                // Don't auto-hide - only hide when manually closed
+                // Don't auto-hide - only hide when manually called from toggle
                 return false;
               };
-              
-              // Store original hide function for manual closing
-              (window.mathVirtualKeyboard as any).manualHide = originalHide;
               
               // Handle clipboard permissions gracefully
               if (typeof navigator.clipboard !== 'undefined') {
