@@ -96,8 +96,88 @@ const MathField = forwardRef<HTMLElement, MathFieldProps>(
             mathField.smartSuperscript = true;
             mathField.mathVirtualKeyboardPolicy = 'manual';
             
-            // Enable default menu - let MathLive handle the menu items
-            // This should show the full mathematical functions menu
+            // Enable full context menu with mathematical functions
+            mathField.menuItems = [
+              'copy',
+              'paste',
+              'cut',
+              'selectAll',
+              '|',
+              'undo',
+              'redo',
+              '|',
+              {
+                label: 'Insert Fraction',
+                command: ['insert', '\\frac{\\placeholder{numerator}}{\\placeholder{denominator}}']
+              },
+              {
+                label: 'Insert Square Root',
+                command: ['insert', '\\sqrt{\\placeholder{}}']
+              },
+              {
+                label: 'Insert nth Root',
+                command: ['insert', '\\sqrt[\\placeholder{n}]{\\placeholder{}}']
+              },
+              {
+                label: 'Insert Superscript',
+                command: ['insert', '^{\\placeholder{}}']
+              },
+              {
+                label: 'Insert Subscript',
+                command: ['insert', '_{\\placeholder{}}']
+              },
+              '|',
+              {
+                label: 'Insert Integral',
+                command: ['insert', '\\int_{\\placeholder{from}}^{\\placeholder{to}} \\placeholder{} \\, d\\placeholder{x}']
+              },
+              {
+                label: 'Insert Derivative',
+                command: ['insert', '\\frac{d}{d\\placeholder{x}} \\placeholder{}']
+              },
+              {
+                label: 'Insert Sum',
+                command: ['insert', '\\sum_{\\placeholder{n=1}}^{\\placeholder{\\infty}} \\placeholder{}']
+              },
+              {
+                label: 'Insert Product',
+                command: ['insert', '\\prod_{\\placeholder{n=1}}^{\\placeholder{\\infty}} \\placeholder{}']
+              },
+              '|',
+              {
+                label: 'Insert Matrix 2×2',
+                command: ['insert', '\\begin{pmatrix} \\placeholder{} & \\placeholder{} \\\\ \\placeholder{} & \\placeholder{} \\end{pmatrix}']
+              },
+              {
+                label: 'Insert Absolute Value',
+                command: ['insert', '\\left| \\placeholder{} \\right|']
+              },
+              {
+                label: 'Insert Logarithm',
+                command: ['insert', '\\log_{\\placeholder{}} \\placeholder{}']
+              },
+              {
+                label: 'Insert Natural Log',
+                command: ['insert', '\\ln \\placeholder{}']
+              },
+              {
+                label: 'Insert Exponential',
+                command: ['insert', 'e^{\\placeholder{}}']
+              },
+              '|',
+              {
+                label: 'Insert Sin',
+                command: ['insert', '\\sin \\placeholder{}']
+              },
+              {
+                label: 'Insert Cos',
+                command: ['insert', '\\cos \\placeholder{}']
+              },
+              {
+                label: 'Insert Tan',
+                command: ['insert', '\\tan \\placeholder{}']
+              }
+            ];
             
           } catch (error) {
             console.warn('MathLive configuration error:', error);
