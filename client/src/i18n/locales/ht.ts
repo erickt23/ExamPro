@@ -146,7 +146,8 @@ export const ht = {
     fillInBlank: 'Ranpli Espas yo',
     matching: 'Asosye',
     ranking: 'Klase/Òganize',
-    dragAndDrop: 'Trennen epi Lage'
+    dragAndDrop: 'Trennen epi Lage',
+    stem: 'STEM (Math/Syans)'
   },
 
   // Difficulty Levels

@@ -146,7 +146,8 @@ export const fr = {
     fillInBlank: 'Remplir les Blancs',
     matching: 'Association',
     ranking: 'Classement/Ordre',
-    dragAndDrop: 'Glisser-Déposer'
+    dragAndDrop: 'Glisser-Déposer',
+    stem: 'STEM (Math/Sciences)'
   },
 
   // Difficulty Levels

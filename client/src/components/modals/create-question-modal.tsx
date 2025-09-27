@@ -29,15 +29,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { Plus, List, PenTool, FileText, Pen, Upload, Paperclip, ArrowUpDown, Link, Move3D } from "lucide-react";
+import { Plus, List, PenTool, FileText, Pen, Upload, Paperclip, ArrowUpDown, Link, Move3D, Calculator } from "lucide-react";
 
 import { ObjectUploader } from "@/components/ObjectUploader";
 import { useTranslation } from "@/hooks/useTranslation";
+import { MathField } from "@/components/ui/math-field";
 
 const createQuestionSchema = z.object({
   title: z.string().min(1, "Title is required").max(200),
   questionText: z.string().min(1, "Question text is required"),
-  questionType: z.enum(['multiple_choice', 'short_answer', 'essay', 'fill_blank', 'matching', 'ranking', 'drag_drop']),
+  questionType: z.enum(['multiple_choice', 'short_answer', 'essay', 'fill_blank', 'matching', 'ranking', 'drag_drop', 'stem']),
   category: z.enum(['exam', 'homework']),
   options: z.union([z.array(z.string()), z.string()]).optional(),
   correctAnswer: z.string().optional(),
@@ -199,6 +200,7 @@ export default function CreateQuestionModal({ open, onOpenChange, questionCatego
     { value: 'matching', label: t('questionTypes.matching'), icon: Link },
     { value: 'ranking', label: t('questionTypes.ranking'), icon: ArrowUpDown },
     { value: 'drag_drop', label: t('questionTypes.dragAndDrop'), icon: Move3D },
+    { value: 'stem', label: t('questionTypes.stem'), icon: Calculator },
   ];
 
   const onSubmit = (data: CreateQuestionForm) => {
@@ -407,13 +409,31 @@ export default function CreateQuestionModal({ open, onOpenChange, questionCatego
               name="questionText"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t('assignments.questionText')}</FormLabel>
+                  <FormLabel>
+                    {t('assignments.questionText')}
+                    {form.watch('questionType') === 'stem' && (
+                      <span className="text-sm text-muted-foreground ml-2">
+                        (Mathematical expressions supported)
+                      </span>
+                    )}
+                  </FormLabel>
                   <FormControl>
-                    <Textarea 
-                      rows={4}
-                      placeholder={t('assignments.enterYourQuestionHere')} 
-                      {...field} 
-                    />
+                    {form.watch('questionType') === 'stem' ? (
+                      <MathField
+                        value={field.value}
+                        onChange={field.onChange}
+                        placeholder={t('assignments.enterYourQuestionHere')}
+                        data-testid="input-question-text-math"
+                        className="min-h-[100px]"
+                      />
+                    ) : (
+                      <Textarea 
+                        rows={4}
+                        placeholder={t('assignments.enterYourQuestionHere')} 
+                        {...field} 
+                        data-testid="input-question-text"
+                      />
+                    )}
                   </FormControl>
                   <FormMessage />
                 </FormItem>

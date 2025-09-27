@@ -149,7 +149,8 @@ export const en = {
     fillInBlank: 'Fill in Blank',
     matching: 'Matching',
     ranking: 'Ranking/Ordering',
-    dragAndDrop: 'Drag and Drop'
+    dragAndDrop: 'Drag and Drop',
+    stem: 'STEM (Math/Science)'
   },
 
   // Difficulty Levels
