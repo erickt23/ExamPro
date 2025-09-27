@@ -34,9 +34,9 @@ const MathField = forwardRef<HTMLElement, MathFieldProps>(
             mathField.readonly = readonly;
           }
           
-          // Set virtual keyboard policy if available
+          // Set virtual keyboard policy if available - disable to prevent popover errors
           if (typeof mathField.mathVirtualKeyboardPolicy !== 'undefined') {
-            mathField.mathVirtualKeyboardPolicy = 'manual';
+            mathField.mathVirtualKeyboardPolicy = 'off';
           }
         } catch (error) {
           console.warn('MathLive configuration error:', error);
@@ -57,9 +57,7 @@ const MathField = forwardRef<HTMLElement, MathFieldProps>(
 
       const handleFocus = () => {
         try {
-          if (!readonly && typeof window !== 'undefined' && window.mathVirtualKeyboard && typeof window.mathVirtualKeyboard.show === 'function') {
-            window.mathVirtualKeyboard.show();
-          }
+          // Skip virtual keyboard to prevent popover errors
           if (onFocus) onFocus();
         } catch (error) {
           console.warn('MathField focus error:', error);
@@ -69,9 +67,7 @@ const MathField = forwardRef<HTMLElement, MathFieldProps>(
 
       const handleBlur = () => {
         try {
-          if (typeof window !== 'undefined' && window.mathVirtualKeyboard && typeof window.mathVirtualKeyboard.hide === 'function') {
-            window.mathVirtualKeyboard.hide();
-          }
+          // Skip virtual keyboard to prevent popover errors
           if (onBlur) onBlur();
         } catch (error) {
           console.warn('MathField blur error:', error);
