@@ -12,6 +12,7 @@ import CreateExamModal from "@/components/modals/create-exam-modal";
 import EditExamModal from "@/components/modals/edit-exam-modal";
 import ExamPreviewModal from "@/components/modals/exam-preview-modal";
 import ExamResultsModal from "@/components/modals/exam-results-modal";
+import AddExtraTimeModal from "@/components/modals/add-extra-time-modal";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -72,6 +73,8 @@ export default function InstructorExams() {
   const [expandedExamIds, setExpandedExamIds] = useState<Set<number>>(new Set());
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
+  const [showAddTimeModal, setShowAddTimeModal] = useState(false);
+  const [addingTimeExamId, setAddingTimeExamId] = useState<number | null>(null);
 
   // Check URL parameters for auto-opening modals
   useEffect(() => {
@@ -246,6 +249,11 @@ export default function InstructorExams() {
 
   const handlePublishExam = (examId: number) => {
     publishExamMutation.mutate(examId);
+  };
+
+  const handleAddExtraTime = (examId: number) => {
+    setAddingTimeExamId(examId);
+    setShowAddTimeModal(true);
   };
 
   if (isLoading || !isAuthenticated) {
@@ -459,6 +467,12 @@ export default function InstructorExams() {
                                           <Copy className="h-4 w-4 mr-2" />
                                           Duplicate Exam
                                         </DropdownMenuItem>
+                                        {exam.status === 'active' && (
+                                          <DropdownMenuItem onClick={() => handleAddExtraTime(exam.id)}>
+                                            <Clock className="h-4 w-4 mr-2" />
+                                            Add Extra Time
+                                          </DropdownMenuItem>
+                                        )}
                                         {(exam.status === 'active' || exam.status === 'completed') && (
                                           <DropdownMenuItem onClick={() => setArchivingExamId(exam.id)}>
                                             <Archive className="h-4 w-4 mr-2" />
@@ -650,6 +664,16 @@ export default function InstructorExams() {
           }
         }}
         examId={viewingResultsExamId}
+      />
+
+      <AddExtraTimeModal
+        isOpen={showAddTimeModal}
+        onClose={() => {
+          setShowAddTimeModal(false);
+          setAddingTimeExamId(null);
+        }}
+        examId={addingTimeExamId}
+        examTitle={addingTimeExamId ? exams?.find((e: any) => e.id === addingTimeExamId)?.title : undefined}
       />
 
       {/* Archive Confirmation Dialog */}
