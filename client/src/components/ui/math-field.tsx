@@ -87,77 +87,21 @@ const MathField = forwardRef<HTMLElement, MathFieldProps>(
             mathField.readonly = readonly;
           }
           
-          // Configuration for full MathLive functionality
-          const config = {
-            mathVirtualKeyboardPolicy: 'manual',
-            virtualKeyboardMode: 'manual',
-            readOnly: readonly,
-            smartFence: true,
-            smartMode: true,
-            smartSuperscript: true,
-            // Enable full toolbar functionality
-            toolbarButtons: [
-              'virtual-keyboard-toggle', 
-              'separator',
-              'undo', 'redo',
-              'separator', 
-              'copy', 'paste',
-              'separator',
-              'insert-matrix',
-              'insert-derivative',
-              'insert-integral',
-              'insert-sum',
-              'insert-product',
-              'insert-sqrt',
-              'insert-nth-root',
-              'insert-fraction',
-              'insert-absolute-value',
-              'insert-logarithm',
-              'insert-exponential',
-              'insert-trigonometric',
-              'insert-complex',
-              'separator',
-              'toggle-mode'
-            ],
-            // Enable context menu with full functionality
-            contextMenuPolicy: 'auto',
-            menuItems: [
-              'copy',
-              'paste', 
-              'cut',
-              'select-all',
-              'separator',
-              'undo',
-              'redo',
-              'separator',
-              'insert-matrix',
-              'insert-derivative', 
-              'insert-integral',
-              'insert-sum',
-              'insert-product',
-              'insert-sqrt',
-              'insert-nth-root',
-              'insert-fraction',
-              'insert-absolute-value',
-              'insert-logarithm',
-              'insert-exponential',
-              'insert-trigonometric',
-              'insert-complex'
-            ],
-            plonkSound: null,
-            keypressSound: null
-          };
-
-          // Apply each configuration safely
-          Object.keys(config).forEach(key => {
-            try {
-              if (typeof mathField[key] !== 'undefined') {
-                mathField[key] = config[key as keyof typeof config];
-              }
-            } catch (configError) {
-              // Silently ignore individual config errors
-            }
-          });
+          // Apply configuration directly to mathField (MathLive 0.107.0+ format)
+          try {
+            // Basic configuration
+            mathField.readOnly = readonly;
+            mathField.smartFence = true;
+            mathField.smartMode = true;
+            mathField.smartSuperscript = true;
+            mathField.mathVirtualKeyboardPolicy = 'manual';
+            
+            // Enable default menu - let MathLive handle the menu items
+            // This should show the full mathematical functions menu
+            
+          } catch (error) {
+            console.warn('MathLive configuration error:', error);
+          }
 
           // Apply theme styling to shadow DOM elements and fix menu z-index
           try {
