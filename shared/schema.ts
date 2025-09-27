@@ -40,7 +40,7 @@ export const users = pgTable("users", {
 });
 
 // Question types enum
-export const questionTypeEnum = pgEnum('question_type', ['multiple_choice', 'short_answer', 'essay', 'fill_blank', 'matching', 'ranking', 'drag_drop']);
+export const questionTypeEnum = pgEnum('question_type', ['multiple_choice', 'short_answer', 'essay', 'fill_blank', 'matching', 'ranking', 'drag_drop', 'stem']);
 export const difficultyEnum = pgEnum('difficulty', ['easy', 'medium', 'hard']);
 export const bloomsTaxonomyEnum = pgEnum('blooms_taxonomy', ['remember', 'understand', 'apply', 'analyze', 'evaluate', 'create']);
 export const questionCategoryEnum = pgEnum('question_category', ['exam', 'homework']);
