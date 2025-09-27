@@ -70,6 +70,7 @@ interface SubmissionWithProctoring {
   studentName: string;
   studentEmail: string;
   examTitle: string;
+  gradeLevel: string | null;
   startedAt: string;
   submittedAt: string | null;
   timeTaken: number | null;
@@ -102,12 +103,33 @@ const VIOLATION_TYPE_COLORS: Record<string, string> = {
   keyboard_shortcut: "bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400",
 };
 
+// Grade level mappings for better display
+const GRADE_LEVEL_LABELS: Record<string, string> = {
+  pre_k: "Pre-K",
+  kindergarten: "Kindergarten",
+  "1st": "1st Grade",
+  "2nd": "2nd Grade",
+  "3rd": "3rd Grade",
+  "4th": "4th Grade",
+  "5th": "5th Grade",
+  "6th": "6th Grade",
+  "7th": "7th Grade",
+  "8th": "8th Grade",
+  "9th": "9th Grade",
+  "10th": "10th Grade",
+  "11th": "11th Grade",
+  "12th": "12th Grade",
+  undergraduate: "Undergraduate",
+  graduate: "Graduate",
+};
+
 export default function ProctoringLogs() {
   const { toast } = useToast();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterViolations, setFilterViolations] = useState("all");
+  const [filterGradeLevel, setFilterGradeLevel] = useState("all");
   const [selectedSubmission, setSelectedSubmission] = useState<SubmissionWithProctoring | null>(null);
   const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
   const [currentPage, setCurrentPage] = useState(1);
@@ -162,13 +184,17 @@ export default function ProctoringLogs() {
         (filterViolations === "medium" && violationCount >= 3 && violationCount <= 5) ||
         (filterViolations === "high" && violationCount > 5);
 
-      return matchesSearch && matchesStatus && matchesViolations;
+      // Grade level filter
+      const matchesGradeLevel = filterGradeLevel === "all" || 
+        submission.gradeLevel === filterGradeLevel;
+
+      return matchesSearch && matchesStatus && matchesViolations && matchesGradeLevel;
     });
 
     return filtered.sort((a: SubmissionWithProctoring, b: SubmissionWithProctoring) => 
       new Date(b.startedAt).getTime() - new Date(a.startedAt).getTime()
     );
-  }, [submissions, searchTerm, filterStatus, filterViolations]);
+  }, [submissions, searchTerm, filterStatus, filterViolations, filterGradeLevel]);
 
   // Pagination calculations
   const totalItems = filteredSubmissions.length;
@@ -180,7 +206,7 @@ export default function ProctoringLogs() {
   // Reset page when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, filterStatus, filterViolations]);
+  }, [searchTerm, filterStatus, filterViolations, filterGradeLevel]);
 
   // Calculate statistics
   const statistics = useMemo(() => {
@@ -378,6 +404,25 @@ export default function ProctoringLogs() {
                   <SelectItem value="low">Low (1-2)</SelectItem>
                   <SelectItem value="medium">Medium (3-5)</SelectItem>
                   <SelectItem value="high">High (6+)</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select value={filterGradeLevel} onValueChange={setFilterGradeLevel}>
+                <SelectTrigger className="w-48" data-testid="filter-grade-level">
+                  <SelectValue placeholder="Filter by grade level" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Grade Levels</SelectItem>
+                  {Array.from(new Set(submissions
+                    .filter(s => s.proctoringData && s.gradeLevel)
+                    .map(s => s.gradeLevel)
+                  ))
+                  .sort()
+                  .map(gradeLevel => (
+                    <SelectItem key={gradeLevel} value={gradeLevel!}>
+                      {GRADE_LEVEL_LABELS[gradeLevel!] || gradeLevel}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>

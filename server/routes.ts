@@ -3175,6 +3175,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               studentName: studentName || 'Unknown Student',
               studentEmail: student?.email || '',
               examTitle: exam?.title || 'Unknown Exam',
+              gradeLevel: exam?.gradeLevel || null,
               startedAt: sub.startedAt,
               submittedAt: sub.submittedAt,
               timeTaken: sub.timeTaken,
