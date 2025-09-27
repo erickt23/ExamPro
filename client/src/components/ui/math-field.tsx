@@ -137,12 +137,28 @@ const MathField = forwardRef<HTMLElement, MathFieldProps>(
                   border: 1px solid hsl(var(--border, 214.3 31.8% 91.4%)) !important;
                   border-radius: 6px !important;
                   box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1) !important;
+                  position: fixed !important;
                 }
               `;
               mathField.shadowRoot.appendChild(style);
             }
           } catch (e) {
             // Silently ignore styling errors
+          }
+          
+          // Prevent popover errors by intercepting and handling them safely
+          const originalShowPopover = (HTMLElement.prototype as any).showPopover;
+          if (originalShowPopover) {
+            (HTMLElement.prototype as any).showPopover = function(options?: any) {
+              try {
+                if (this.isConnected && this.offsetParent !== null) {
+                  return originalShowPopover.call(this, options);
+                }
+              } catch (error: any) {
+                // Silently handle popover errors to prevent runtime crashes
+                console.debug('Popover operation skipped:', error.message);
+              }
+            };
           }
           
           // Configure persistent virtual keyboard behavior
