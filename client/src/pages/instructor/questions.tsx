@@ -9,8 +9,8 @@ import { formatSubmissionTime } from "@/lib/dateUtils";
 import Navbar from "@/components/layout/navbar";
 import Sidebar from "@/components/layout/sidebar";
 import CreateQuestionModal from "@/components/modals/create-question-modal";
-
 import EditQuestionModal from "@/components/modals/edit-question-modal";
+import { MathField } from "@/components/ui/math-field";
 import ImportQuestionsModal from "@/components/modals/import-questions-modal";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -317,9 +317,19 @@ export default function InstructorQuestions() {
                               </Badge>
                             </div>
                             <h4 className="font-medium text-gray-900 mb-2">{question.title || question.questionText.substring(0, 100)}</h4>
-                            <p className="text-sm text-gray-600 mb-3 line-clamp-2">
-                              {question.questionText}
-                            </p>
+                            {question.questionType === 'stem' ? (
+                              <div className="text-sm text-gray-600 mb-3 line-clamp-2">
+                                <MathField
+                                  value={question.questionText}
+                                  readonly={true}
+                                  className="min-h-[50px] border-none bg-transparent p-0 text-sm"
+                                />
+                              </div>
+                            ) : (
+                              <p className="text-sm text-gray-600 mb-3 line-clamp-2">
+                                {question.questionText}
+                              </p>
+                            )}
                             <div className="flex items-center space-x-4 text-sm text-gray-500">
                               <span className="flex items-center">
                                 <Eye className="h-4 w-4 mr-1" />

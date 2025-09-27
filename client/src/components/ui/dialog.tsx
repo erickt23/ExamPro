@@ -46,8 +46,13 @@ const DialogContent = React.forwardRef<
         const target = e.target as Element;
         if (target?.closest('math-virtual-keyboard') || 
             target?.closest('.ML__virtual-keyboard') ||
-            target?.closest('.ml__virtual-keyboard')) {
+            target?.closest('.ml__virtual-keyboard') ||
+            target?.closest('[data-ml]') ||
+            target?.closest('.ML__') ||
+            target?.hasAttribute?.('data-ml') ||
+            (target as any)?.tagName?.toLowerCase() === 'math-virtual-keyboard') {
           e.preventDefault();
+          return;
         }
       }}
       onInteractOutside={(e) => {
@@ -55,8 +60,27 @@ const DialogContent = React.forwardRef<
         const target = e.target as Element;
         if (target?.closest('math-virtual-keyboard') || 
             target?.closest('.ML__virtual-keyboard') ||
-            target?.closest('.ml__virtual-keyboard')) {
+            target?.closest('.ml__virtual-keyboard') ||
+            target?.closest('[data-ml]') ||
+            target?.closest('.ML__') ||
+            target?.hasAttribute?.('data-ml') ||
+            (target as any)?.tagName?.toLowerCase() === 'math-virtual-keyboard') {
           e.preventDefault();
+          return;
+        }
+      }}
+      onEscapeKeyDown={(e) => {
+        // Check if virtual keyboard is open, if so don't close modal
+        const keyboardElement = document.querySelector('math-virtual-keyboard') || 
+                              document.querySelector('.ML__virtual-keyboard') ||
+                              document.querySelector('.ml__virtual-keyboard');
+        if (keyboardElement && keyboardElement.getAttribute('aria-hidden') !== 'true') {
+          const isVisible = (keyboardElement as HTMLElement).style.display !== 'none' &&
+                           (keyboardElement as HTMLElement).style.visibility !== 'hidden';
+          if (isVisible) {
+            e.preventDefault();
+            return;
+          }
         }
       }}
       {...props}

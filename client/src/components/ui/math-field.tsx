@@ -69,9 +69,17 @@ const MathField = forwardRef<HTMLElement, MathFieldProps>(
       // Wait for MathLive to be fully loaded
       const initializeMathField = () => {
         try {
-          // Set initial value safely
-          if (value !== mathField.value) {
-            mathField.value = value || '';
+          // Set initial value safely with LaTeX validation
+          const cleanValue = value || '';
+          if (cleanValue !== mathField.value) {
+            try {
+              // Sanitize and validate LaTeX before setting
+              const sanitizedValue = cleanValue.replace(/\\placeholder\{\}/g, '');
+              mathField.value = sanitizedValue;
+            } catch (latexError) {
+              console.warn('LaTeX parsing error, setting empty value:', latexError);
+              mathField.value = '';
+            }
           }
 
           // Configure mathfield safely
