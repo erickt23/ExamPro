@@ -190,3 +190,22 @@ math-virtual-keyboard::before {
   color: #9ca3af;
   background: #374151;
 }
+
+/* Hide all MathLive toolbar and menu elements */
+.ML__toolbar,
+.ml__toolbar,
+.ML__virtual-keyboard-toggle,
+.ml__virtual-keyboard-toggle,
+.ML__menu,
+.ml__menu,
+math-toolbar,
+.toolbar,
+.ML__toolbar-button,
+.ml__toolbar-button,
+.ML__menu-toggle,
+.ml__menu-toggle {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}

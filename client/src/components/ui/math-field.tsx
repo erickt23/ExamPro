@@ -91,16 +91,25 @@ const MathField = forwardRef<HTMLElement, MathFieldProps>(
           const config = {
             mathVirtualKeyboardPolicy: 'manual',
             virtualKeyboardMode: 'manual',
-            virtualKeyboardLayout: 'symbols',
-            virtualKeyboard: 'symbols',
-            virtualKeyboardTargetOrigin: 'auto',
+            virtualKeyboard: false,
             menuItems: [],
             contextMenuPolicy: 'none',
             keybindings: [],
             readOnly: readonly,
             smartFence: true,
             smartMode: true,
-            smartSuperscript: true
+            smartSuperscript: true,
+            // Disable all toolbar/menu elements
+            toolbarButtons: [],
+            inlineShortcuts: {},
+            macros: {},
+            // Remove any default UI elements
+            customVirtualKeyboard: false,
+            plonkSound: null,
+            keypressSound: null,
+            spaceBehavesLikeTab: false,
+            scriptDepth: 0,
+            removeExtraneousParentheses: true
           };
 
           // Apply each configuration safely
@@ -117,6 +126,31 @@ const MathField = forwardRef<HTMLElement, MathFieldProps>(
           // Additional safety: disable menu-related functions
           if (mathField.menuItems) {
             mathField.menuItems = [];
+          }
+          
+          // Force disable any toolbar/menu elements that might appear
+          try {
+            mathField.toolbarButtons = [];
+            if (mathField.shadowRoot) {
+              // Hide any toolbar elements in shadow DOM
+              const style = document.createElement('style');
+              style.textContent = `
+                .ML__toolbar,
+                .ml__toolbar,
+                .ML__virtual-keyboard-toggle,
+                .ml__virtual-keyboard-toggle,
+                .ML__menu,
+                .ml__menu,
+                math-toolbar,
+                .toolbar {
+                  display: none !important;
+                  visibility: hidden !important;
+                }
+              `;
+              mathField.shadowRoot.appendChild(style);
+            }
+          } catch (e) {
+            // Silently ignore styling errors
           }
           
           // Configure persistent virtual keyboard behavior
