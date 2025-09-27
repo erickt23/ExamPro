@@ -246,7 +246,8 @@ const MathField = forwardRef<HTMLElement, MathFieldProps>(
           }}
           data-testid={testId}
           className={cn(
-            "block w-full rounded-md border border-input bg-background px-3 py-2 pr-10 text-sm ring-offset-background",
+            "block w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background",
+            !readonly && "pr-10", // Only add right padding when button is present
             "placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
             "focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
             "dark:border-input dark:bg-background dark:text-foreground",
@@ -263,20 +264,22 @@ const MathField = forwardRef<HTMLElement, MathFieldProps>(
           {placeholder && !value ? placeholder : value}
         </math-field>
         
-        {/* Virtual Keyboard Toggle Button */}
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          className="absolute right-1 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0"
-          onClick={toggleVirtualKeyboard}
-          data-testid="toggle-virtual-keyboard"
-        >
-          <Calculator className={cn(
-            "h-4 w-4", 
-            isKeyboardVisible ? "text-blue-600 dark:text-blue-400" : "text-gray-500 dark:text-gray-400"
-          )} />
-        </Button>
+        {/* Virtual Keyboard Toggle Button - Only show when not readonly */}
+        {!readonly && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="absolute right-1 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0"
+            onClick={toggleVirtualKeyboard}
+            data-testid="toggle-virtual-keyboard"
+          >
+            <Calculator className={cn(
+              "h-4 w-4", 
+              isKeyboardVisible ? "text-blue-600 dark:text-blue-400" : "text-gray-500 dark:text-gray-400"
+            )} />
+          </Button>
+        )}
       </div>
     );
   }
