@@ -15,6 +15,7 @@ import {
   Download,
   ChevronDown,
   ChevronRight,
+  ChevronLeft,
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -109,6 +110,8 @@ export default function ProctoringLogs() {
   const [filterViolations, setFilterViolations] = useState("all");
   const [selectedSubmission, setSelectedSubmission] = useState<SubmissionWithProctoring | null>(null);
   const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -166,6 +169,18 @@ export default function ProctoringLogs() {
       new Date(b.startedAt).getTime() - new Date(a.startedAt).getTime()
     );
   }, [submissions, searchTerm, filterStatus, filterViolations]);
+
+  // Pagination calculations
+  const totalItems = filteredSubmissions.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedSubmissions = filteredSubmissions.slice(startIndex, endIndex);
+
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, filterStatus, filterViolations]);
 
   // Calculate statistics
   const statistics = useMemo(() => {
@@ -374,8 +389,11 @@ export default function ProctoringLogs() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
-            <span>Proctoring Sessions ({filteredSubmissions.length})</span>
-            {filteredSubmissions.length > 0 && (
+            <span>
+              Proctoring Sessions ({totalItems} total
+              {totalPages > 1 && `, page ${currentPage} of ${totalPages}`})
+            </span>
+            {totalItems > 0 && (
               <Button variant="outline" size="sm">
                 <Download className="h-4 w-4 mr-2" />
                 Export
@@ -389,7 +407,7 @@ export default function ProctoringLogs() {
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto"></div>
               <p className="mt-2 text-muted-foreground">Loading proctoring logs...</p>
             </div>
-          ) : filteredSubmissions.length === 0 ? (
+          ) : totalItems === 0 ? (
             <div className="text-center py-8">
               <Shield className="h-12 w-12 text-gray-400 mx-auto mb-4" />
               <h3 className="text-lg font-semibold mb-2">No Proctoring Data Found</h3>
@@ -416,7 +434,7 @@ export default function ProctoringLogs() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredSubmissions.map((submission: SubmissionWithProctoring) => {
+                  {paginatedSubmissions.map((submission: SubmissionWithProctoring) => {
                     const isExpanded = expandedRows.has(submission.id);
                     const violationCount = submission.proctoringData?.totalViolations || 0;
                     const severity = getViolationSeverity(violationCount);
@@ -552,39 +570,69 @@ export default function ProctoringLogs() {
               </Table>
             </div>
           )}
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between mt-4 pt-4 border-t">
+              <div className="text-sm text-muted-foreground">
+                Showing {startIndex + 1} to {Math.min(endIndex, totalItems)} of {totalItems} entries
+              </div>
+              <div className="flex items-center space-x-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  data-testid="pagination-previous"
+                >
+                  <ChevronLeft className="h-4 w-4 mr-1" />
+                  Previous
+                </Button>
+                
+                <div className="flex items-center space-x-1">
+                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                    let pageNumber;
+                    if (totalPages <= 5) {
+                      pageNumber = i + 1;
+                    } else if (currentPage <= 3) {
+                      pageNumber = i + 1;
+                    } else if (currentPage >= totalPages - 2) {
+                      pageNumber = totalPages - 4 + i;
+                    } else {
+                      pageNumber = currentPage - 2 + i;
+                    }
+                    
+                    return (
+                      <Button
+                        key={pageNumber}
+                        variant={currentPage === pageNumber ? "default" : "outline"}
+                        size="sm"
+                        className="w-8 h-8 p-0"
+                        onClick={() => setCurrentPage(pageNumber)}
+                        data-testid={`pagination-page-${pageNumber}`}
+                      >
+                        {pageNumber}
+                      </Button>
+                    );
+                  })}
+                </div>
+                
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  data-testid="pagination-next"
+                >
+                  Next
+                  <ChevronRight className="h-4 w-4 ml-1" />
+                </Button>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 
-      {/* Violation Types Overview */}
-      {Object.keys(statistics.violationTypes).length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <BarChart3 className="h-5 w-5" />
-              Violation Types Breakdown
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {Object.entries(statistics.violationTypes)
-                .sort(([,a], [,b]) => (b as number) - (a as number))
-                .map(([type, count]) => (
-                  <div 
-                    key={type} 
-                    className="p-3 border rounded-lg"
-                    data-testid={`violation-type-${type}`}
-                  >
-                    <Badge className={cn("mb-2", VIOLATION_TYPE_COLORS[type] || "bg-gray-100 text-gray-800")}>
-                      {VIOLATION_TYPE_LABELS[type] || type}
-                    </Badge>
-                    <p className="text-2xl font-bold">{count}</p>
-                    <p className="text-xs text-muted-foreground">occurrences</p>
-                  </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
 
       {/* Detailed View Dialog */}
       <Dialog open={!!selectedSubmission} onOpenChange={() => setSelectedSubmission(null)}>
