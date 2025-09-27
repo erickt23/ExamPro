@@ -17,7 +17,10 @@ export const en = {
     analytics: 'Analytics',
     students: 'Students',
     homework: 'Homework',
-    grades: 'Grades'
+    grades: 'Grades',
+    adminSection: 'Administration',
+    adminQuestionManagement: 'Question Management',
+    adminPanel: 'Admin Panel'
   },
 
 

@@ -17,7 +17,10 @@ export const fr = {
     analytics: 'Analytique',
     students: 'Étudiants',
     homework: 'Devoirs',
-    grades: 'Notes'
+    grades: 'Notes',
+    adminSection: 'Administration',
+    adminQuestionManagement: 'Gestion des Questions',
+    adminPanel: 'Panneau d\'Administration'
   },
 
   // Authentication

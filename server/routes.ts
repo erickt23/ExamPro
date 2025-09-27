@@ -630,17 +630,88 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Admin access required" });
       }
 
-      // Verify it's an admin-created question
+      // Admin can delete ANY question (not just admin-created ones)
       const question = await storage.getQuestionById(questionId);
-      if (!question || !question.createdByAdmin) {
-        return res.status(404).json({ message: "Admin question not found" });
+      if (!question) {
+        return res.status(404).json({ message: "Question not found" });
       }
 
       await storage.deleteQuestion(questionId);
       res.status(204).send();
     } catch (error) {
-      console.error("Error deleting admin question:", error);
-      res.status(500).json({ message: "Failed to delete admin question" });
+      console.error("Error deleting question:", error);
+      res.status(500).json({ message: "Failed to delete question" });
+    }
+  });
+
+  // Admin endpoint to view ALL questions from all instructors
+  app.get('/api/admin/all-questions', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user || user.role !== 'admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const { 
+        subject, 
+        type, 
+        difficulty, 
+        bloomsTaxonomy, 
+        gradeLevel, 
+        search, 
+        category, 
+        createdBy,
+        visibilityType, 
+        page, 
+        limit 
+      } = req.query;
+      
+      const result = await storage.getAllQuestionsForAdmin({
+        subjectId: subject ? parseInt(subject as string) : undefined,
+        questionType: type as string,
+        difficulty: difficulty as string,
+        bloomsTaxonomy: bloomsTaxonomy as string,
+        gradeLevel: gradeLevel as string,
+        search: search as string,
+        category: (category as 'exam' | 'homework'),
+        createdBy: createdBy as string, // 'all', 'admins', 'instructors'
+        visibilityType: visibilityType as 'all_instructors' | 'specific_instructors',
+        page: page ? parseInt(page as string) : 1,
+        limit: limit ? parseInt(limit as string) : 10,
+      });
+      
+      res.json(result);
+    } catch (error) {
+      console.error("Error fetching all questions for admin:", error);
+      res.status(500).json({ message: "Failed to fetch questions" });
+    }
+  });
+
+  // Admin endpoint to update question visibility
+  app.put('/api/admin/questions/:id/visibility', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      const questionId = parseInt(req.params.id);
+      
+      if (!user || user.role !== 'admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const { visibilityType, authorizedInstructorIds } = req.body;
+      
+      const updates = {
+        visibilityType: visibilityType || 'all_instructors',
+        authorizedInstructorIds: visibilityType === 'specific_instructors' ? authorizedInstructorIds : null,
+      };
+      
+      const question = await storage.updateQuestionVisibility(questionId, updates);
+      res.json(question);
+    } catch (error) {
+      console.error("Error updating question visibility:", error);
+      res.status(500).json({ message: "Failed to update question visibility" });
     }
   });
 

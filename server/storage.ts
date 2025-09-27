@@ -766,6 +766,138 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
+  // Admin function to get ALL questions from all instructors
+  async getAllQuestionsForAdmin(filters?: {
+    subjectId?: number;
+    questionType?: string;
+    difficulty?: string;
+    bloomsTaxonomy?: string;
+    gradeLevel?: string;
+    search?: string;
+    category?: 'exam' | 'homework';
+    createdBy?: string; // 'all', 'admins', 'instructors'
+    visibilityType?: 'all_instructors' | 'specific_instructors';
+    page?: number;
+    limit?: number;
+  }): Promise<{ questions: any[]; total: number; page: number; totalPages: number }> {
+    try {
+      // Base conditions for active questions
+      let conditions = [eq(questions.isActive, true)];
+      
+      // Apply filters
+      if (filters?.category) {
+        conditions.push(eq(questions.category, filters.category));
+      }
+      if (filters?.subjectId) {
+        conditions.push(eq(questions.subjectId, filters.subjectId));
+      }
+      if (filters?.questionType) {
+        conditions.push(eq(questions.questionType, filters.questionType as any));
+      }
+      if (filters?.difficulty) {
+        conditions.push(eq(questions.difficulty, filters.difficulty as any));
+      }
+      if (filters?.bloomsTaxonomy) {
+        conditions.push(eq(questions.bloomsTaxonomy, filters.bloomsTaxonomy as any));
+      }
+      if (filters?.visibilityType) {
+        conditions.push(eq(questions.visibilityType, filters.visibilityType as any));
+      }
+      if (filters?.createdBy === 'admins') {
+        conditions.push(eq(questions.createdByAdmin, true));
+      } else if (filters?.createdBy === 'instructors') {
+        conditions.push(eq(questions.createdByAdmin, false));
+      }
+      if (filters?.search) {
+        conditions.push(
+          or(
+            ilike(questions.title, `%${filters.search}%`),
+            ilike(questions.questionText, `%${filters.search}%`)
+          )!
+        );
+      }
+
+      // Get pagination parameters
+      const page = filters?.page || 1;
+      const limit = filters?.limit || 10;
+      const offset = (page - 1) * limit;
+
+      // Get total count for pagination
+      const totalCountResult = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(questions)
+        .where(and(...conditions));
+      
+      const total = totalCountResult[0]?.count || 0;
+      const totalPages = Math.ceil(total / limit);
+
+      // Get paginated questions with join to get instructor and subject info
+      const questionsResult = await db
+        .select({
+          id: questions.id,
+          instructorId: questions.instructorId,
+          title: questions.title,
+          questionText: questions.questionText,
+          questionType: questions.questionType,
+          category: questions.category,
+          options: questions.options,
+          correctAnswer: questions.correctAnswer,
+          correctAnswers: questions.correctAnswers,
+          explanation: questions.explanation,
+          attachmentUrl: questions.attachmentUrl,
+          subjectId: questions.subjectId,
+          difficulty: questions.difficulty,
+          bloomsTaxonomy: questions.bloomsTaxonomy,
+          gradeLevel: questions.gradeLevel,
+          points: questions.points,
+          timeLimit: questions.timeLimit,
+          version: questions.version,
+          isActive: questions.isActive,
+          usageCount: questions.usageCount,
+          createdByAdmin: questions.createdByAdmin,
+          visibilityType: questions.visibilityType,
+          authorizedInstructorIds: questions.authorizedInstructorIds,
+          createdAt: questions.createdAt,
+          updatedAt: questions.updatedAt,
+          // Instructor info
+          instructorName: sql<string>`CONCAT(${users.firstName}, ' ', ${users.lastName})`,
+          // Subject info
+          subject: sql<any>`json_build_object('id', ${subjects.id}, 'name', ${subjects.name})`,
+        })
+        .from(questions)
+        .leftJoin(users, eq(questions.instructorId, users.id))
+        .leftJoin(subjects, eq(questions.subjectId, subjects.id))
+        .where(and(...conditions))
+        .orderBy(desc(questions.createdAt))
+        .limit(limit)
+        .offset(offset);
+
+      return {
+        questions: questionsResult,
+        total,
+        page,
+        totalPages
+      };
+
+    } catch (error) {
+      console.error('Error fetching all questions for admin:', error);
+      throw error;
+    }
+  }
+
+  // Update question visibility settings
+  async updateQuestionVisibility(id: number, updates: {
+    visibilityType?: 'all_instructors' | 'specific_instructors';
+    authorizedInstructorIds?: string[] | null;
+  }): Promise<Question> {
+    const [question] = await db
+      .update(questions)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(questions.id, id))
+      .returning();
+    return question;
+  }
+
   // Exam operations
   async createExam(exam: InsertExam): Promise<Exam> {
     const [newExam] = await db

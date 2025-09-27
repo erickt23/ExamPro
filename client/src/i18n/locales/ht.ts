@@ -17,7 +17,10 @@ export const ht = {
     analytics: 'Analitik',
     students: 'Elèv yo',
     homework: 'Devwa yo',
-    grades: 'Nòt yo'
+    grades: 'Nòt yo',
+    adminSection: 'Administrasyon',
+    adminQuestionManagement: 'Jesyon Kesyon yo',
+    adminPanel: 'Panèl Administratè'
   },
 
   // Authentication
