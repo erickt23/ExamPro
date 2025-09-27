@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import { ObjectUploader } from "@/components/ObjectUploader";
 import { useExamProctoring } from "@/hooks/useExamProctoring";
+import { MathField } from "@/components/ui/math-field";
 import ProctoringWarningModal from "@/components/exam/ProctoringWarningModal";
 import ProctoringTerminationModal from "@/components/exam/ProctoringTerminationModal";
 
@@ -1082,6 +1083,27 @@ export default function StudentExamTaking() {
                 </div>
               </>
             )}
+          </div>
+        );
+
+      case 'stem':
+        return (
+          <div className="space-y-4">
+            <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg border border-green-200 dark:border-green-800">
+              <p className="text-sm text-green-800 dark:text-green-200 mb-2">
+                <strong>STEM Question:</strong> Use mathematical notation, formulas, and symbols as needed.
+              </p>
+              <p className="text-xs text-green-600 dark:text-green-300">
+                Mathematical expressions and scientific notation are supported.
+              </p>
+            </div>
+            <MathField
+              value={answer || ''}
+              onChange={(value) => handleAnswerChange(question.questionId, value)}
+              placeholder={t('examTaking.enterYourAnswer')}
+              data-testid="input-stem-answer"
+              className="min-h-[100px] w-full"
+            />
           </div>
         );
 
