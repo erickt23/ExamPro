@@ -173,10 +173,18 @@ export default function AdminPage() {
                           : user.email || `User ${user.id}`}
                       </p>
                       <Badge 
-                        variant={user.role === "instructor" ? "default" : "secondary"}
-                        className={user.role === "instructor" ? "bg-blue-100 text-blue-800" : ""}
+                        variant={
+                          user.role === "instructor" ? "default" : 
+                          user.role === "admin" ? "default" : "secondary"
+                        }
+                        className={
+                          user.role === "instructor" ? "bg-blue-100 text-blue-800" :
+                          user.role === "admin" ? "bg-purple-100 text-purple-800" : ""
+                        }
                       >
-                        {user.role}
+                        {user.role === "instructor" ? "Instructeur" : 
+                         user.role === "admin" ? "Admin" : 
+                         user.role}
                       </Badge>
                     </div>
                     <p className="text-sm text-gray-500">{user.email}</p>
@@ -194,7 +202,8 @@ export default function AdminPage() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="student">Student</SelectItem>
-                      <SelectItem value="instructor">Instructor</SelectItem>
+                      <SelectItem value="instructor">Instructeur</SelectItem>
+                      <SelectItem value="admin">Admin</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
