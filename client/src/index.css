@@ -119,12 +119,14 @@
 }
 
 /* Virtual Keyboard Positioning - Fixed on right side */
-math-virtual-keyboard {
+math-virtual-keyboard,
+.ML__virtual-keyboard,
+.ml__virtual-keyboard {
   position: fixed !important;
   right: 20px !important;
   top: 50% !important;
   transform: translateY(-50%) !important;
-  z-index: 9999 !important;
+  z-index: 99999 !important;
   max-height: 600px !important;
   width: 350px !important;
   background: white !important;
@@ -132,13 +134,29 @@ math-virtual-keyboard {
   border-radius: 12px !important;
   box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 10px 10px -5px rgb(0 0 0 / 0.04) !important;
   font-family: system-ui, -apple-system, sans-serif !important;
+  left: auto !important;
+  bottom: auto !important;
 }
 
 /* Dark mode virtual keyboard */
-.dark math-virtual-keyboard {
+.dark math-virtual-keyboard,
+.dark .ML__virtual-keyboard,
+.dark .ml__virtual-keyboard {
   background: #1f2937 !important;
   border-color: #374151 !important;
   color: white !important;
+}
+
+/* Override any bottom positioning from MathLive */
+body .ML__virtual-keyboard,
+body .ml__virtual-keyboard,
+body math-virtual-keyboard {
+  bottom: auto !important;
+  left: auto !important;
+  right: 20px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  position: fixed !important;
 }
 
 /* Ensure keyboard doesn't get hidden */

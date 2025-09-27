@@ -57,12 +57,17 @@ const MathField = forwardRef<HTMLElement, MathFieldProps>(
           // Configuration for persistent virtual keyboard
           const config = {
             mathVirtualKeyboardPolicy: 'manual',
-            virtualKeyboardMode: 'onfocus',
-            virtualKeyboardLayout: 'dvorak',
+            virtualKeyboardMode: 'manual',
+            virtualKeyboardLayout: 'symbols',
+            virtualKeyboard: 'symbols',
             virtualKeyboardTargetOrigin: 'auto',
             menuItems: [],
             contextMenuPolicy: 'none',
-            keybindings: []
+            keybindings: [],
+            readOnly: readonly,
+            smartFence: true,
+            smartMode: true,
+            smartSuperscript: true
           };
 
           // Apply each configuration safely
@@ -89,6 +94,22 @@ const MathField = forwardRef<HTMLElement, MathFieldProps>(
               window.mathVirtualKeyboard.originValidator = () => true;
               window.mathVirtualKeyboard.targetOrigin = '*';
               
+              // Force right-side positioning with CSS override
+              const keyboardElement = document.querySelector('math-virtual-keyboard') || 
+                                    document.querySelector('.ML__virtual-keyboard') ||
+                                    document.querySelector('.ml__virtual-keyboard');
+              if (keyboardElement) {
+                (keyboardElement as HTMLElement).style.cssText = `
+                  position: fixed !important;
+                  right: 20px !important;
+                  top: 50% !important;
+                  transform: translateY(-50%) !important;
+                  z-index: 99999 !important;
+                  left: auto !important;
+                  bottom: auto !important;
+                `;
+              }
+              
               // Override the hide functionality to keep keyboard persistent
               const originalHide = window.mathVirtualKeyboard.hide;
               window.mathVirtualKeyboard.hide = function() {
@@ -99,8 +120,19 @@ const MathField = forwardRef<HTMLElement, MathFieldProps>(
               // Store original hide function for manual closing
               (window.mathVirtualKeyboard as any).manualHide = originalHide;
               
+              // Handle clipboard permissions gracefully
+              if (typeof navigator.clipboard !== 'undefined') {
+                const originalWriteText = navigator.clipboard.writeText;
+                navigator.clipboard.writeText = function(text: string) {
+                  return originalWriteText.call(this, text).catch(() => {
+                    // Silently fail clipboard operations to prevent error messages
+                    return Promise.resolve();
+                  });
+                };
+              }
+              
             } catch (keyboardError) {
-              console.warn('Virtual keyboard configuration error:', keyboardError);
+              // Silently handle keyboard configuration errors
             }
           }
           
