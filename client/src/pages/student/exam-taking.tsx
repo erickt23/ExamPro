@@ -122,6 +122,15 @@ export default function StudentExamTaking() {
     retry: false,
   });
 
+  // Periodically check for exam updates (extra time additions)
+  const { data: updatedExam } = useQuery<any>({
+    queryKey: ["/api/exams", examId, "updates"],
+    queryFn: () => fetch(`/api/exams/${examId}`).then(res => res.json()),
+    enabled: !!examId && examStarted,
+    refetchInterval: 30000, // Check every 30 seconds
+    retry: false,
+  });
+
   // Password validation is handled server-side via session
   // If we reach this page, the server has already validated access
 
@@ -149,7 +158,8 @@ export default function StudentExamTaking() {
             setTimeRemaining(submission.timeRemainingSeconds);
           } else if (exam.duration && submission.startedAt) {
             const elapsed = Math.floor((Date.now() - new Date(submission.startedAt).getTime()) / 1000);
-            const remaining = (exam.duration * 60) - elapsed;
+            const totalDuration = exam.duration + (exam.extraTimeMinutes || 0);
+            const remaining = (totalDuration * 60) - elapsed;
             setTimeRemaining(Math.max(0, remaining));
           }
           
@@ -167,7 +177,8 @@ export default function StudentExamTaking() {
       } else {
         // Initialize new exam session
         if (exam.duration) {
-          setTimeRemaining(exam.duration * 60);
+          const totalDuration = exam.duration + (exam.extraTimeMinutes || 0);
+          setTimeRemaining(totalDuration * 60);
         } else {
           setTimeRemaining(null);
         }
@@ -175,6 +186,39 @@ export default function StudentExamTaking() {
       }
     }
   }, [exam, questions, mySubmissions, examId]);
+
+  // Handle real-time extra time updates
+  useEffect(() => {
+    if (updatedExam && exam && examStarted && updatedExam.extraTimeMinutes !== exam.extraTimeMinutes) {
+      const extraTimeAdded = (updatedExam.extraTimeMinutes || 0) - (exam.extraTimeMinutes || 0);
+      if (extraTimeAdded > 0) {
+        // Add the extra time to current remaining time
+        setTimeRemaining(prev => {
+          if (prev === null) return null;
+          const newTime = prev + (extraTimeAdded * 60);
+          
+          // Show notification to student
+          toast({
+            title: "Extra Time Added",
+            description: `${extraTimeAdded} minutes have been added to your exam time.`,
+            variant: "default",
+          });
+          
+          // Reset warning state if we now have more time
+          if (newTime > 30) {
+            setWarningShown(false);
+          }
+          
+          return newTime;
+        });
+        
+        // Update the exam object to prevent duplicate additions
+        if (exam) {
+          exam.extraTimeMinutes = updatedExam.extraTimeMinutes;
+        }
+      }
+    }
+  }, [updatedExam, exam, examStarted, toast]);
 
   // Start proctoring for exams without passwords
   useEffect(() => {

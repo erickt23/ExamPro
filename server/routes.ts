@@ -997,6 +997,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Exam not found" });
       }
 
+      if (!user) {
+        return res.status(401).json({ message: "User not found" });
+      }
+
       // Admin can add time to any exam, instructors can only add time to their own exams
       if (user.role !== 'admin' && exam.instructorId !== userId) {
         return res.status(403).json({ message: "You can only add time to your own exams" });
