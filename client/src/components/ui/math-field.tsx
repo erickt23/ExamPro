@@ -1,6 +1,8 @@
-import { useEffect, useRef, forwardRef } from 'react';
+import { useEffect, useRef, forwardRef, useState } from 'react';
 import 'mathlive';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { Calculator } from 'lucide-react';
 
 interface MathFieldProps {
   value?: string;
@@ -16,6 +18,24 @@ interface MathFieldProps {
 const MathField = forwardRef<HTMLElement, MathFieldProps>(
   ({ value = '', onChange, readonly = false, placeholder = '', className, 'data-testid': testId, onBlur, onFocus }, ref) => {
     const mathFieldRef = useRef<any>(null);
+    const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
+
+    const toggleVirtualKeyboard = () => {
+      if (window.mathVirtualKeyboard) {
+        if (!isKeyboardVisible) {
+          window.mathVirtualKeyboard.show();
+          setIsKeyboardVisible(true);
+        } else {
+          // Use the stored original hide function
+          if ((window.mathVirtualKeyboard as any).manualHide) {
+            (window.mathVirtualKeyboard as any).manualHide.call(window.mathVirtualKeyboard);
+          } else {
+            window.mathVirtualKeyboard.hide();
+          }
+          setIsKeyboardVisible(false);
+        }
+      }
+    };
 
     useEffect(() => {
       const mathField = mathFieldRef.current;
@@ -34,12 +54,13 @@ const MathField = forwardRef<HTMLElement, MathFieldProps>(
             mathField.readonly = readonly;
           }
           
-          // Comprehensive configuration to prevent popover errors
+          // Configuration for persistent virtual keyboard
           const config = {
-            mathVirtualKeyboardPolicy: 'off',
-            virtualKeyboardMode: 'off',
+            mathVirtualKeyboardPolicy: 'manual',
+            virtualKeyboardMode: 'onfocus',
+            virtualKeyboardLayout: 'dvorak',
+            virtualKeyboardTargetOrigin: 'auto',
             menuItems: [],
-            popoverPolicy: 'off',
             contextMenuPolicy: 'none',
             keybindings: []
           };
@@ -58,6 +79,29 @@ const MathField = forwardRef<HTMLElement, MathFieldProps>(
           // Additional safety: disable menu-related functions
           if (mathField.menuItems) {
             mathField.menuItems = [];
+          }
+          
+          // Configure persistent virtual keyboard behavior
+          if (window.mathVirtualKeyboard) {
+            try {
+              // Position keyboard on the right side and keep it persistent
+              window.mathVirtualKeyboard.container = document.body;
+              window.mathVirtualKeyboard.originValidator = () => true;
+              window.mathVirtualKeyboard.targetOrigin = '*';
+              
+              // Override the hide functionality to keep keyboard persistent
+              const originalHide = window.mathVirtualKeyboard.hide;
+              window.mathVirtualKeyboard.hide = function() {
+                // Don't auto-hide - only hide when manually closed
+                return false;
+              };
+              
+              // Store original hide function for manual closing
+              (window.mathVirtualKeyboard as any).manualHide = originalHide;
+              
+            } catch (keyboardError) {
+              console.warn('Virtual keyboard configuration error:', keyboardError);
+            }
           }
           
         } catch (error) {
@@ -124,33 +168,50 @@ const MathField = forwardRef<HTMLElement, MathFieldProps>(
     }, [value, onChange, readonly, onFocus, onBlur]);
 
     return (
-      <math-field
-        ref={(el: any) => {
-          mathFieldRef.current = el;
-          if (typeof ref === 'function') {
-            ref(el);
-          } else if (ref) {
-            (ref as any).current = el;
-          }
-        }}
-        data-testid={testId}
-        className={cn(
-          "block w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background",
-          "placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-          "focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
-          "dark:border-input dark:bg-background dark:text-foreground",
-          readonly && "cursor-default",
-          className
-        )}
-        style={{
-          fontSize: '16px',
-          lineHeight: '1.5',
-          minHeight: '40px',
-          fontFamily: 'inherit',
-        }}
-      >
-        {placeholder && !value ? placeholder : value}
-      </math-field>
+      <div className="relative">
+        <math-field
+          ref={(el: any) => {
+            mathFieldRef.current = el;
+            if (typeof ref === 'function') {
+              ref(el);
+            } else if (ref) {
+              (ref as any).current = el;
+            }
+          }}
+          data-testid={testId}
+          className={cn(
+            "block w-full rounded-md border border-input bg-background px-3 py-2 pr-10 text-sm ring-offset-background",
+            "placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+            "focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+            "dark:border-input dark:bg-background dark:text-foreground",
+            readonly && "cursor-default",
+            className
+          )}
+          style={{
+            fontSize: '16px',
+            lineHeight: '1.5',
+            minHeight: '40px',
+            fontFamily: 'inherit',
+          }}
+        >
+          {placeholder && !value ? placeholder : value}
+        </math-field>
+        
+        {/* Virtual Keyboard Toggle Button */}
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="absolute right-1 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0"
+          onClick={toggleVirtualKeyboard}
+          data-testid="toggle-virtual-keyboard"
+        >
+          <Calculator className={cn(
+            "h-4 w-4", 
+            isKeyboardVisible ? "text-blue-600 dark:text-blue-400" : "text-gray-500 dark:text-gray-400"
+          )} />
+        </Button>
+      </div>
     );
   }
 );
