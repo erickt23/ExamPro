@@ -159,7 +159,7 @@ const MathField = forwardRef<HTMLElement, MathFieldProps>(
             }
           });
 
-          // Apply theme styling to shadow DOM elements
+          // Apply theme styling to shadow DOM elements and fix menu z-index
           try {
             if (mathField.shadowRoot) {
               const style = document.createElement('style');
@@ -171,6 +171,7 @@ const MathField = forwardRef<HTMLElement, MathFieldProps>(
                   background: hsl(var(--background, 0 0% 100%)) !important;
                   border-color: hsl(var(--border, 214.3 31.8% 91.4%)) !important;
                   color: hsl(var(--foreground, 222.2 84% 4.9%)) !important;
+                  z-index: 999999 !important;
                 }
                 
                 .ML__toolbar-button,
@@ -181,6 +182,17 @@ const MathField = forwardRef<HTMLElement, MathFieldProps>(
                 .ML__toolbar-button:hover,
                 .ml__toolbar-button:hover {
                   background: hsl(var(--accent, 210 40% 98%)) !important;
+                }
+                
+                .ML__popup,
+                .ml__popup,
+                .ML__popover,
+                .ml__popover {
+                  z-index: 999999 !important;
+                  background: hsl(var(--background, 0 0% 100%)) !important;
+                  border: 1px solid hsl(var(--border, 214.3 31.8% 91.4%)) !important;
+                  border-radius: 6px !important;
+                  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1) !important;
                 }
               `;
               mathField.shadowRoot.appendChild(style);

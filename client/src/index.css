@@ -191,7 +191,7 @@ math-virtual-keyboard::before {
   background: #374151;
 }
 
-/* Style MathLive toolbar and menu elements */
+/* Style MathLive toolbar and menu elements with proper z-index */
 .ML__toolbar,
 .ml__toolbar,
 .ML__menu,
@@ -201,6 +201,18 @@ math-virtual-keyboard::before {
   background: hsl(var(--background)) !important;
   border-color: hsl(var(--border)) !important;
   color: hsl(var(--foreground)) !important;
+  z-index: 999999 !important;
+}
+
+.ML__popup,
+.ml__popup,
+.ML__popover,
+.ml__popover {
+  z-index: 999999 !important;
+  background: hsl(var(--background)) !important;
+  border: 1px solid hsl(var(--border)) !important;
+  border-radius: 6px !important;
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1) !important;
 }
 
 .dark .ML__toolbar,
@@ -208,7 +220,11 @@ math-virtual-keyboard::before {
 .dark .ML__menu,
 .dark .ml__menu,
 .dark .ML__toolbar-button,
-.dark .ml__toolbar-button {
+.dark .ml__toolbar-button,
+.dark .ML__popup,
+.dark .ml__popup,
+.dark .ML__popover,
+.dark .ml__popover {
   background: hsl(var(--background)) !important;
   border-color: hsl(var(--border)) !important;
   color: hsl(var(--foreground)) !important;
