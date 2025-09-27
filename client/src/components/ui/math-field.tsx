@@ -21,45 +21,87 @@ const MathField = forwardRef<HTMLElement, MathFieldProps>(
       const mathField = mathFieldRef.current;
       if (!mathField) return;
 
-      // Set initial value
-      if (value !== mathField.value) {
-        mathField.value = value;
-      }
+      // Wait for MathLive to be fully loaded
+      const initializeMathField = () => {
+        try {
+          // Set initial value safely
+          if (value !== mathField.value) {
+            mathField.value = value || '';
+          }
 
-      // Configure mathfield
-      mathField.readonly = readonly;
-      mathField.mathVirtualKeyboardPolicy = 'manual';
+          // Configure mathfield safely
+          if (typeof mathField.readonly !== 'undefined') {
+            mathField.readonly = readonly;
+          }
+          
+          // Set virtual keyboard policy if available
+          if (typeof mathField.mathVirtualKeyboardPolicy !== 'undefined') {
+            mathField.mathVirtualKeyboardPolicy = 'manual';
+          }
+        } catch (error) {
+          console.warn('MathLive configuration error:', error);
+        }
+      };
 
-      // Event handlers
+      // Event handlers with safety checks
       const handleInput = (event: Event) => {
-        const target = event.target as any;
-        if (onChange) {
-          onChange(target.value);
+        try {
+          const target = event.target as any;
+          if (onChange && target && typeof target.value !== 'undefined') {
+            onChange(target.value);
+          }
+        } catch (error) {
+          console.warn('MathField input error:', error);
         }
       };
 
       const handleFocus = () => {
-        if (!readonly && window.mathVirtualKeyboard) {
-          window.mathVirtualKeyboard.show();
+        try {
+          if (!readonly && typeof window !== 'undefined' && window.mathVirtualKeyboard && typeof window.mathVirtualKeyboard.show === 'function') {
+            window.mathVirtualKeyboard.show();
+          }
+          if (onFocus) onFocus();
+        } catch (error) {
+          console.warn('MathField focus error:', error);
+          if (onFocus) onFocus();
         }
-        if (onFocus) onFocus();
       };
 
       const handleBlur = () => {
-        if (window.mathVirtualKeyboard) {
-          window.mathVirtualKeyboard.hide();
+        try {
+          if (typeof window !== 'undefined' && window.mathVirtualKeyboard && typeof window.mathVirtualKeyboard.hide === 'function') {
+            window.mathVirtualKeyboard.hide();
+          }
+          if (onBlur) onBlur();
+        } catch (error) {
+          console.warn('MathField blur error:', error);
+          if (onBlur) onBlur();
         }
-        if (onBlur) onBlur();
       };
 
-      mathField.addEventListener('input', handleInput);
-      mathField.addEventListener('focusin', handleFocus);
-      mathField.addEventListener('focusout', handleBlur);
+      // Initialize after a short delay to ensure MathLive is ready
+      const timer = setTimeout(initializeMathField, 100);
+
+      // Add event listeners safely
+      try {
+        mathField.addEventListener('input', handleInput);
+        mathField.addEventListener('focusin', handleFocus);
+        mathField.addEventListener('focusout', handleBlur);
+      } catch (error) {
+        console.warn('MathField event listener error:', error);
+      }
 
       return () => {
-        mathField.removeEventListener('input', handleInput);
-        mathField.removeEventListener('focusin', handleFocus);
-        mathField.removeEventListener('focusout', handleBlur);
+        clearTimeout(timer);
+        try {
+          if (mathField && typeof mathField.removeEventListener === 'function') {
+            mathField.removeEventListener('input', handleInput);
+            mathField.removeEventListener('focusin', handleFocus);
+            mathField.removeEventListener('focusout', handleBlur);
+          }
+        } catch (error) {
+          console.warn('MathField cleanup error:', error);
+        }
       };
     }, [value, onChange, readonly, onFocus, onBlur]);
 
