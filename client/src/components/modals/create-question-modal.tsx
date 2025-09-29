@@ -433,28 +433,75 @@ export default function CreateQuestionModal({ open, onOpenChange, questionCatego
                           hideToolbar={true}
                           hideVirtualKeyboardToggle={true}
                         />
-                        {/* Virtual Keyboard Button */}
-                        <div className="absolute -right-2 top-1/2 -translate-y-1/2">
+                        {/* Virtual Keyboard Controls */}
+                        <div className="absolute -right-2 top-1/2 -translate-y-1/2 flex flex-col gap-2">
                           <Button
                             type="button"
                             variant="outline"
-                            className="h-12 w-24 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 border-2 border-blue-300 hover:from-blue-600 hover:to-indigo-700 shadow-lg hover:shadow-xl transition-all duration-200 group"
+                            className="h-10 w-20 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 border-2 border-blue-300 hover:from-blue-600 hover:to-indigo-700 shadow-lg hover:shadow-xl transition-all duration-200 group"
                             onClick={() => {
-                              // Simple workaround: Focus the math field to naturally show keyboard
+                              // Focus the math field to show keyboard
                               const mathField = document.querySelector('math-field') as any;
                               if (mathField) {
                                 mathField.focus();
-                                // Small delay to ensure focus is processed
                                 setTimeout(() => {
-                                  mathField.click(); // Simulate click to ensure keyboard shows
+                                  mathField.click();
                                 }, 50);
                               }
                             }}
                             title="Focus Math Input (Shows Virtual Keyboard)"
                           >
                             <div className="flex flex-col items-center justify-center text-white">
-                              <Calculator className="h-4 w-4 mb-0.5 group-hover:scale-110 transition-transform" />
-                              <span className="text-[9px] font-medium leading-tight">Focus<br />Math</span>
+                              <Calculator className="h-3 w-3 mb-0.5 group-hover:scale-110 transition-transform" />
+                              <span className="text-[8px] font-medium">Show</span>
+                            </div>
+                          </Button>
+                          
+                          <Button
+                            type="button"
+                            variant="outline"
+                            className="h-10 w-20 rounded-lg bg-gradient-to-br from-red-500 to-red-600 border-2 border-red-300 hover:from-red-600 hover:to-red-700 shadow-lg hover:shadow-xl transition-all duration-200 group"
+                            onClick={() => {
+                              // Multiple methods to close the keyboard
+                              const mathField = document.querySelector('math-field') as any;
+                              if (mathField) {
+                                mathField.blur(); // Remove focus first
+                              }
+                              
+                              // Try MathLive API
+                              if (window.mathVirtualKeyboard) {
+                                try {
+                                  window.mathVirtualKeyboard.hide();
+                                } catch (error) {
+                                  console.warn('MathLive hide API failed:', error);
+                                }
+                              }
+                              
+                              // Force hide via DOM manipulation
+                              setTimeout(() => {
+                                const selectors = [
+                                  'math-virtual-keyboard',
+                                  '.ML__virtual-keyboard', 
+                                  '.ml__virtual-keyboard',
+                                  '.ML__keyboard'
+                                ];
+                                
+                                selectors.forEach(selector => {
+                                  const elements = document.querySelectorAll(selector);
+                                  elements.forEach((element) => {
+                                    const htmlElement = element as HTMLElement;
+                                    htmlElement.style.display = 'none';
+                                    htmlElement.style.visibility = 'hidden';
+                                    htmlElement.style.opacity = '0';
+                                  });
+                                });
+                              }, 100);
+                            }}
+                            title="Close Virtual Keyboard"
+                          >
+                            <div className="flex flex-col items-center justify-center text-white">
+                              <div className="h-3 w-3 mb-0.5 group-hover:scale-110 transition-transform text-[10px]">✕</div>
+                              <span className="text-[8px] font-medium">Hide</span>
                             </div>
                           </Button>
                         </div>
