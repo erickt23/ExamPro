@@ -19,6 +19,9 @@ export function configureMathLive() {
             (window as any).MathfieldElement.configure({
               fontsDirectory: null, // Auto-detect
               mathVirtualKeyboardPolicy: 'manual',
+              virtualKeyboardToggleGlyph: null, // Remove keyboard toggle icon
+              menuToggleGlyph: null, // Remove menu toggle icon  
+              virtualKeyboardMode: 'manual',
             });
           }
         }
