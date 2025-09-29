@@ -43,20 +43,20 @@ export default function Navbar() {
               </Badge>
             </div>
           </div>
-          
+
           <div className="flex items-center space-x-2 md:space-x-4">
             <div className="hidden sm:block">
               <LanguageSelector />
             </div>
             <ThemeToggle />
-            
+
             <Button variant="ghost" size="sm" className="relative hidden md:flex">
               <Bell className="h-5 w-5" />
               <span className="absolute -top-1 -right-1 h-4 w-4 bg-destructive text-destructive-foreground text-xs rounded-full flex items-center justify-center">
                 3
               </span>
             </Button>
-            
+
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="flex items-center space-x-2 p-2">
@@ -72,8 +72,13 @@ export default function Navbar() {
                 <DropdownMenuItem>{t('settings.profile')}</DropdownMenuItem>
                 <DropdownMenuItem>{t('nav.settings')}</DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => window.location.href = '/api/logout'}>
-                  {t('auth.logout')}
+                <DropdownMenuItem 
+                  onClick={async () => {
+                    await fetch("/api/logout", { method: "POST" });
+                    window.location.reload();
+                  }}
+                >
+                  Logout
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

@@ -7,6 +7,7 @@ import { ThemeProvider } from "@/contexts/theme-context";
 // Import MathLive configuration early to fix font loading issues
 import "@/lib/mathlive-config";
 import { useAuth } from "@/hooks/useAuth";
+import { LocalLoginForm } from "@/components/LocalLoginForm";
 import NotFound from "@/pages/not-found";
 import Landing from "@/pages/landing";
 import InstructorDashboard from "@/pages/instructor/dashboard";
@@ -44,12 +45,7 @@ function Router() {
   }
 
   if (!isAuthenticated) {
-    return (
-      <Switch>
-        <Route path="/" component={Landing} />
-        <Route component={NotFound} />
-      </Switch>
-    );
+    return <LocalLoginForm />;
   }
 
   const isInstructor = user?.role === 'instructor' || user?.role === 'admin';

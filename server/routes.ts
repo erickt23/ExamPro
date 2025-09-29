@@ -78,7 +78,7 @@ async function updateHighestScore(examId: number, studentId: string, submissionI
 // Helper function to validate and transform Excel row
 async function validateAndTransformRow(row: any, rowNumber: number) {
   const required = ['title', 'questionText', 'questionType', 'subject'];
-  
+
   // Check required fields
   for (const field of required) {
     if (!row[field]) {
@@ -95,36 +95,36 @@ async function validateAndTransformRow(row: any, rowNumber: number) {
   // Parse options and answers based on question type
   let options = null;
   let correctAnswer = null;
-  
+
   if (row.questionType === 'multiple_choice') {
     if (!row.options) {
       throw new Error('Multiple choice questions must have options');
     }
-    
+
     // Parse options (assuming they're separated by semicolons)
     options = row.options.split(';').map((opt: string) => opt.trim()).filter(Boolean);
-    
+
     if (options.length < 2) {
       throw new Error('Multiple choice questions must have at least 2 options');
     }
-    
+
     correctAnswer = row.correctAnswer || 'A';
   } else if (row.questionType === 'matching') {
     if (!row.options) {
       throw new Error('Matching questions must have options');
     }
-    
+
     // Parse options for matching: "Left1;Left2|Right1;Right2"
     const parts = row.options.split('|');
     if (parts.length !== 2) {
       throw new Error('Matching options must be in format: "Left1;Left2|Right1;Right2"');
     }
-    
+
     const leftItems = parts[0].split(';').map((opt: string) => opt.trim()).filter(Boolean);
     const rightItems = parts[1].split(';').map((opt: string) => opt.trim()).filter(Boolean);
-    
+
     options = { leftItems, rightItems };
-    
+
     // Parse correct answer as JSON
     try {
       correctAnswer = row.correctAnswer ? JSON.parse(row.correctAnswer) : null;
@@ -135,14 +135,14 @@ async function validateAndTransformRow(row: any, rowNumber: number) {
     if (!row.options) {
       throw new Error('Ranking questions must have options');
     }
-    
+
     // Parse options for ranking: "Item1;Item2;Item3"
     options = row.options.split(';').map((opt: string) => opt.trim()).filter(Boolean);
-    
+
     if (options.length < 2) {
       throw new Error('Ranking questions must have at least 2 items');
     }
-    
+
     // Parse correct answer as JSON array
     try {
       correctAnswer = row.correctAnswer ? JSON.parse(row.correctAnswer) : null;
@@ -153,18 +153,18 @@ async function validateAndTransformRow(row: any, rowNumber: number) {
     if (!row.options) {
       throw new Error('Drag and drop questions must have options');
     }
-    
+
     // Parse options for drag drop: "Category1;Category2|Item1;Item2"
     const parts = row.options.split('|');
     if (parts.length !== 2) {
       throw new Error('Drag drop options must be in format: "Category1;Category2|Item1;Item2"');
     }
-    
+
     const categories = parts[0].split(';').map((opt: string) => opt.trim()).filter(Boolean);
     const items = parts[1].split(';').map((opt: string) => opt.trim()).filter(Boolean);
-    
+
     options = { categories, items };
-    
+
     // Parse correct answer as JSON
     try {
       correctAnswer = row.correctAnswer ? JSON.parse(row.correctAnswer) : null;
@@ -208,7 +208,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Auth routes
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
       res.json(user);
     } catch (error) {
@@ -230,9 +230,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/subjects', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
-      
+
       if (!hasInstructorPrivileges(user)) {
         return res.status(403).json({ message: "Access denied" });
       }
@@ -248,10 +248,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put('/api/subjects/:id', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
       const subjectId = parseInt(req.params.id);
-      
+
       if (!hasInstructorPrivileges(user)) {
         return res.status(403).json({ message: "Access denied" });
       }
@@ -267,10 +267,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.delete('/api/subjects/:id', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
       const subjectId = parseInt(req.params.id);
-      
+
       if (!hasInstructorPrivileges(user)) {
         return res.status(403).json({ message: "Access denied" });
       }
@@ -286,9 +286,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Question routes - Updated to respect admin visibility controls
   app.get('/api/questions', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
-      
+
       if (!user || !hasInstructorPrivileges(user)) {
         return res.status(403).json({ message: "Access denied" });
       }
@@ -305,7 +305,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         page: page ? parseInt(page as string) : 1,
         limit: limit ? parseInt(limit as string) : 10,
       });
-      
+
       res.json(result);
     } catch (error) {
       console.error("Error fetching questions:", error);
@@ -315,9 +315,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/questions', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
-      
+
       if (!hasInstructorPrivileges(user)) {
         return res.status(403).json({ message: "Access denied" });
       }
@@ -326,7 +326,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ...req.body,
         instructorId: userId,
       });
-      
+
       const question = await storage.createQuestion(questionData);
       res.status(201).json(question);
     } catch (error) {
@@ -342,7 +342,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const questionId = parseInt(req.params.id);
       const question = await storage.getQuestionById(questionId);
-      
+
       if (!question) {
         return res.status(404).json({ message: "Question not found" });
       }
@@ -356,10 +356,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put('/api/questions/:id', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
       const questionId = parseInt(req.params.id);
-      
+
       if (!hasInstructorPrivileges(user)) {
         return res.status(403).json({ message: "Access denied" });
       }
@@ -371,7 +371,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const updates = insertQuestionSchema.partial().parse(req.body);
       const updatedQuestion = await storage.updateQuestion(questionId, updates);
-      
+
       res.json(updatedQuestion);
     } catch (error) {
       console.error("Error updating question:", error);
@@ -381,10 +381,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.delete('/api/questions/:id', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
       const questionId = parseInt(req.params.id);
-      
+
       if (!hasInstructorPrivileges(user)) {
         return res.status(403).json({ message: "Access denied" });
       }
@@ -405,10 +405,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Convert single-answer MCQ to multi-answer MCQ (utility endpoint for instructors)
   app.post('/api/questions/:id/convert-to-multi-answer', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
       const questionId = parseInt(req.params.id);
-      
+
       if (!hasInstructorPrivileges(user)) {
         return res.status(403).json({ message: "Access denied" });
       }
@@ -422,16 +422,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Only multiple choice questions can be converted" });
       }
 
-      // Convert single correctAnswer to array in correctAnswers
+      // Convert single correctAnswer to multi-answer format
       const updates: any = {};
-      
+
       if (question.correctAnswer && !question.correctAnswers) {
         // Convert single answer to multi-answer format
         updates.correctAnswers = [question.correctAnswer];
         updates.correctAnswer = null; // Clear the single answer field
-        
+
         const updatedQuestion = await storage.updateQuestion(questionId, updates);
-        
+
         res.json({ 
           message: "Question converted to multi-answer format", 
           question: updatedQuestion,
@@ -455,9 +455,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Excel import endpoint
   app.post('/api/questions/import', isAuthenticated, upload.single('file'), async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
-      
+
       if (!hasInstructorPrivileges(user)) {
         return res.status(403).json({ message: "Access denied" });
       }
@@ -481,18 +481,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Process each row
       for (let i = 0; i < jsonData.length; i++) {
         const row = jsonData[i] as any;
-        
+
         try {
           // Validate and transform row data
           const questionData = await validateAndTransformRow(row, i + 2); // +2 for header row
-          
+
           // Check for duplicate questions before creating
           const existingQuestionsResult = await storage.getQuestions(userId, {
             search: questionData.title, // Search by title first
             subjectId: questionData.subjectId,
             category: questionData.category
           });
-          
+
           // Check if any existing question has the same title and question text
           const isDuplicate = existingQuestionsResult.questions.some((existing: any) => 
             existing.title?.toLowerCase().trim() === questionData.title?.toLowerCase().trim() &&
@@ -501,7 +501,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             existing.subjectId === questionData.subjectId &&
             existing.category === questionData.category
           );
-          
+
           if (isDuplicate) {
             (results.warnings as any[]).push({
               row: i + 2,
@@ -514,7 +514,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               ...questionData,
               instructorId: userId
             });
-            
+
             results.imported++;
           }
         } catch (error: any) {
@@ -536,15 +536,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Admin Question Management routes
   app.post('/api/admin/questions', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
-      
+
       if (!user || user.role !== 'admin') {
         return res.status(403).json({ message: "Admin access required" });
       }
 
       const { visibilityType, authorizedInstructorIds, ...questionData } = req.body;
-      
+
       const adminQuestionData = {
         ...questionData,
         instructorId: userId, // Admin who created it
@@ -552,7 +552,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         visibilityType: visibilityType || 'all_instructors',
         authorizedInstructorIds: visibilityType === 'specific_instructors' ? authorizedInstructorIds : null,
       };
-      
+
       const question = await storage.createAdminQuestion(adminQuestionData);
       res.status(201).json(question);
     } catch (error) {
@@ -566,9 +566,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get('/api/admin/questions', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
-      
+
       if (!user || user.role !== 'admin') {
         return res.status(403).json({ message: "Admin access required" });
       }
@@ -586,7 +586,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         page: page ? parseInt(page as string) : 1,
         limit: limit ? parseInt(limit as string) : 10,
       });
-      
+
       res.json(result);
     } catch (error) {
       console.error("Error fetching admin questions:", error);
@@ -596,22 +596,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put('/api/admin/questions/:id', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
       const questionId = parseInt(req.params.id);
-      
+
       if (!user || user.role !== 'admin') {
         return res.status(403).json({ message: "Admin access required" });
       }
 
       const { visibilityType, authorizedInstructorIds, ...updateData } = req.body;
-      
+
       const adminUpdateData = {
         ...updateData,
         visibilityType,
         authorizedInstructorIds: visibilityType === 'specific_instructors' ? authorizedInstructorIds : null,
       };
-      
+
       const updatedQuestion = await storage.updateAdminQuestion(questionId, adminUpdateData);
       res.json(updatedQuestion);
     } catch (error) {
@@ -622,10 +622,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.delete('/api/admin/questions/:id', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
       const questionId = parseInt(req.params.id);
-      
+
       if (!user || user.role !== 'admin') {
         return res.status(403).json({ message: "Admin access required" });
       }
@@ -647,9 +647,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Admin endpoint to view ALL questions from all instructors
   app.get('/api/admin/all-questions', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
-      
+
       if (!user || user.role !== 'admin') {
         return res.status(403).json({ message: "Admin access required" });
       }
@@ -667,7 +667,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         page, 
         limit 
       } = req.query;
-      
+
       const result = await storage.getAllQuestionsForAdmin({
         subjectId: subject ? parseInt(subject as string) : undefined,
         questionType: type as string,
@@ -681,7 +681,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         page: page ? parseInt(page as string) : 1,
         limit: limit ? parseInt(limit as string) : 10,
       });
-      
+
       res.json(result);
     } catch (error) {
       console.error("Error fetching all questions for admin:", error);
@@ -692,21 +692,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Admin endpoint to update question visibility
   app.put('/api/admin/questions/:id/visibility', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
       const questionId = parseInt(req.params.id);
-      
+
       if (!user || user.role !== 'admin') {
         return res.status(403).json({ message: "Admin access required" });
       }
 
       const { visibilityType, authorizedInstructorIds } = req.body;
-      
+
       const updates = {
         visibilityType: visibilityType || 'all_instructors',
         authorizedInstructorIds: visibilityType === 'specific_instructors' ? authorizedInstructorIds : null,
       };
-      
+
       const question = await storage.updateQuestionVisibility(questionId, updates);
       res.json(question);
     } catch (error) {
@@ -718,32 +718,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Exam routes
   app.get('/api/exams', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
-      
+
       if (hasInstructorPrivileges(user)) {
         const { status, search } = req.query;
         console.log('Search params received:', { status, search, userId });
         const exams = await storage.getExams(userId, status as string, search as string);
         console.log('Exams returned:', exams.length, 'exams');
-        
+
         // Strip passwords from all responses, even for instructors (security best practice)
         const sanitizedExams = exams.map(exam => ({
           ...exam,
           password: undefined
         }));
-        
+
         res.json(sanitizedExams);
       } else {
         // For students, return exams they can take but strip sensitive information
         const exams = await storage.getActiveExamsForStudents();
-        
+
         // Strip passwords and other sensitive data for students
         const sanitizedExams = exams.map(exam => ({
           ...exam,
           password: undefined, // Never expose passwords to students
         }));
-        
+
         res.json(sanitizedExams);
       }
     } catch (error) {
@@ -754,9 +754,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/exams', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
-      
+
       if (!hasInstructorPrivileges(user)) {
         return res.status(403).json({ message: "Access denied" });
       }
@@ -765,21 +765,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ...req.body,
         instructorId: userId,
       });
-      
+
       // Hash password if provided
       if (examData.password && examData.requirePassword) {
         const saltRounds = 12;
         examData.password = await bcrypt.hash(examData.password, saltRounds);
       }
-      
+
       const exam = await storage.createExam(examData);
-      
+
       // Never return password hash in response
       const safeExam = {
         ...exam,
         password: undefined
       };
-      
+
       res.status(201).json(safeExam);
     } catch (error) {
       console.error("Error creating exam:", error);
@@ -793,18 +793,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/exams/:id', isAuthenticated, async (req: any, res) => {
     try {
       const examId = parseInt(req.params.id);
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
-      
+
       const exam = await storage.getExamById(examId);
-      
+
       if (!exam) {
         return res.status(404).json({ message: "Exam not found" });
       }
 
       // Get exam questions
       let examQuestions = await storage.getExamQuestions(examId);
-      
+
       // For students: Strip sensitive information and check access
       if (!hasInstructorPrivileges(user)) {
         // Check exam availability and eligibility
@@ -812,20 +812,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (exam.status !== 'active') {
           return res.status(403).json({ message: "Exam is not available" });
         }
-        
+
         if (exam.availableFrom && new Date(exam.availableFrom) > now) {
           return res.status(403).json({ message: "Exam is not yet available" });
         }
-        
+
         if (exam.availableUntil && new Date(exam.availableUntil) < now) {
           return res.status(403).json({ message: "Exam is no longer available" });
         }
-        
+
         // Check if exam requires password and if user has access
         if (exam.requirePassword && exam.password) {
           const accessKey = `${userId}_${examId}`;
           const hasAccess = req.session.examAccess?.[accessKey]?.granted;
-          
+
           if (!hasAccess) {
             return res.status(403).json({ 
               message: "Password required", 
@@ -833,7 +833,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             });
           }
         }
-        
+
         // Strip answer keys from questions for students
         examQuestions = examQuestions.map(eq => {
           const allowMultiple = eq.question.correctAnswers !== null && eq.question.correctAnswers !== undefined;
@@ -849,13 +849,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
             } as any
           }
         });
-        
+
         // Also strip password from exam object for students
         const sanitizedExam = {
           ...exam,
           password: undefined
         };
-        
+
         const response = { ...sanitizedExam, questions: examQuestions };
         console.log(`[DEBUG] Sending API response for exam ${examId} (student):`);
         console.log(`[DEBUG] First question allowMultipleAnswers:`, (response.questions?.[0]?.question as any)?.allowMultipleAnswers);
@@ -876,10 +876,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put('/api/exams/:id', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
       const examId = parseInt(req.params.id);
-      
+
       if (!hasInstructorPrivileges(user)) {
         return res.status(403).json({ message: "Access denied" });
       }
@@ -902,13 +902,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
             message: "Cannot publish exam without questions. Please add at least one question." 
           });
         }
-        
+
         if (!exam.title || exam.title.trim().length === 0) {
           return res.status(400).json({ 
             message: "Cannot publish exam without a title." 
           });
         }
-        
+
         if (!exam.duration || exam.duration <= 0) {
           return res.status(400).json({ 
             message: "Cannot publish exam without a valid duration." 
@@ -917,25 +917,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       let updates = insertExamSchema.partial().parse(req.body);
-      
+
       // Hash password if it's being updated
       if (updates.password && updates.requirePassword) {
         const saltRounds = 12;
         updates.password = await bcrypt.hash(updates.password, saltRounds);
       }
-      
+
       const updatedExam = await storage.updateExam(examId, updates);
-      
+
       // Never return password hash in response
       const safeUpdatedExam = {
         ...updatedExam,
         password: undefined
       };
-      
+
       res.json(safeUpdatedExam);
     } catch (error) {
       console.error("Error updating exam:", error);
-      
+
       // Handle specific error types
       if (error instanceof Error) {
         if (error.message.includes('connection') || error.message.includes('pool')) {
@@ -943,14 +943,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
             message: "Database connection error. Please try again in a moment." 
           });
         }
-        
+
         if (error.message.includes('validation') || error.message.includes('parse')) {
           return res.status(400).json({ 
             message: "Invalid exam data provided." 
           });
         }
       }
-      
+
       res.status(500).json({ 
         message: "Failed to update exam. Please try again." 
       });
@@ -960,10 +960,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Archive exam
   app.put('/api/exams/:id/archive', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
       const examId = parseInt(req.params.id);
-      
+
       if (!hasInstructorPrivileges(user)) {
         return res.status(403).json({ message: "Access denied" });
       }
@@ -984,10 +984,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Add extra time to exam (for emergencies)
   app.put('/api/exams/:id/add-time', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
       const examId = parseInt(req.params.id);
-      
+
       if (!hasInstructorPrivileges(user)) {
         return res.status(403).json({ message: "Access denied" });
       }
@@ -1007,7 +1007,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const { additionalMinutes } = req.body;
-      
+
       if (!additionalMinutes || additionalMinutes <= 0 || additionalMinutes > 120) {
         return res.status(400).json({ 
           message: "Additional minutes must be between 1 and 120" 
@@ -1017,14 +1017,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Update the extra time for the exam
       const currentExtraTime = exam.extraTimeMinutes || 0;
       const newExtraTime = currentExtraTime + additionalMinutes;
-      
+
       const updatedExam = await storage.updateExam(examId, { 
         extraTimeMinutes: newExtraTime 
       });
-      
+
       // Log the time addition for audit purposes
       console.log(`Extra time added: User ${userId} (${user.role}) added ${additionalMinutes} minutes to exam ${examId}. Total extra time: ${newExtraTime} minutes.`);
-      
+
       res.json({
         message: `Successfully added ${additionalMinutes} minutes to the exam`,
         exam: {
@@ -1043,10 +1043,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Delete exam
   app.delete('/api/exams/:id', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
       const examId = parseInt(req.params.id);
-      
+
       if (!hasInstructorPrivileges(user)) {
         return res.status(403).json({ message: "Access denied" });
       }
@@ -1074,51 +1074,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/exams/:id/validate-password', isAuthenticated, async (req: any, res) => {
     try {
       const examId = parseInt(req.params.id);
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const { password } = req.body;
-      
+
       // Rate limiting - check if user has made too many attempts recently
       const sessionKey = `exam_password_attempts_${userId}_${examId}`;
       if (!req.session.passwordAttempts) {
         req.session.passwordAttempts = {};
       }
-      
+
       const now = Date.now();
       const attempts = req.session.passwordAttempts[sessionKey] || [];
-      
+
       // Clean up attempts older than 15 minutes
       const recentAttempts = attempts.filter((timestamp: number) => now - timestamp < 15 * 60 * 1000);
-      
+
       // Allow max 5 attempts per 15 minutes
       if (recentAttempts.length >= 5) {
         return res.status(429).json({ message: "Too many password attempts. Please wait before trying again." });
       }
-      
+
       // Get exam details
       const exam = await storage.getExamById(examId);
       if (!exam) {
         return res.status(404).json({ message: "Exam not found" });
       }
-      
+
       // Check exam availability and eligibility
       const currentDate = new Date();
       if (exam.status !== 'active') {
         return res.status(403).json({ message: "Exam is not available" });
       }
-      
+
       if (exam.availableFrom && new Date(exam.availableFrom) > currentDate) {
         return res.status(403).json({ message: "Exam is not yet available" });
       }
-      
+
       if (exam.availableUntil && new Date(exam.availableUntil) < currentDate) {
         return res.status(403).json({ message: "Exam is no longer available" });
       }
-      
+
       // Check if exam requires password
       if (!exam.requirePassword || !exam.password) {
         return res.status(400).json({ message: "Exam does not require password" });
       }
-      
+
       // Validate password using bcrypt for secure comparison
       const isPasswordValid = await bcrypt.compare(password, exam.password);
       if (!isPasswordValid) {
@@ -1127,7 +1127,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         req.session.passwordAttempts[sessionKey] = recentAttempts;
         return res.status(401).json({ message: "Incorrect password" });
       }
-      
+
       // Password is correct - grant access
       if (!req.session.examAccess) {
         req.session.examAccess = {};
@@ -1136,7 +1136,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         granted: true,
         timestamp: now
       };
-      
+
       res.json({ message: "Password validated successfully", access: true });
     } catch (error) {
       console.error("Error validating exam password:", error);
@@ -1148,15 +1148,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/exams/:id/questions', isAuthenticated, async (req: any, res) => {
     try {
       const examId = parseInt(req.params.id);
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
-      
+
       // Get exam details to check randomization settings
       const exam = await storage.getExamById(examId);
       if (!exam) {
         return res.status(404).json({ message: "Exam not found" });
       }
-      
+
       // For students: Check password protection and access validation
       if (!hasInstructorPrivileges(user)) {
         // Check exam availability and eligibility
@@ -1164,21 +1164,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (exam.status !== 'active') {
           return res.status(403).json({ message: "Exam is not available" });
         }
-        
+
         if (exam.availableFrom && new Date(exam.availableFrom) > now) {
           return res.status(403).json({ message: "Exam is not yet available" });
         }
-        
+
         if (exam.availableUntil && new Date(exam.availableUntil) < now) {
           return res.status(403).json({ message: "Exam is no longer available" });
         }
-        
+
         // Check if exam requires password
         if (exam.requirePassword && exam.password) {
           // Check if user has validated password for this exam
           const accessKey = `${userId}_${examId}`;
           const hasAccess = req.session.examAccess?.[accessKey]?.granted;
-          
+
           if (!hasAccess) {
             return res.status(403).json({ 
               message: "Password required", 
@@ -1187,26 +1187,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
         }
       }
-      
+
       let examQuestions = await storage.getExamQuestions(examId);
-      
+
       // For students: Handle shuffling and strip sensitive information
       if (!hasInstructorPrivileges(user)) {
         // Get or create submission to store permutation mappings
         let submission = null;
         let attemptNumber = 1;
-        
+
         if (exam.randomizeOptions) {
           // Check for existing in-progress submission
           const mySubmissions = await storage.getSubmissions(examId, userId);
           const inProgressSubmission = mySubmissions.find(s => s.status === 'in_progress');
-          
+
           if (inProgressSubmission) {
             submission = inProgressSubmission;
           } else {
             // Count attempts for seeding
             attemptNumber = mySubmissions.length + 1;
-            
+
             // Create new submission for storing shuffle mappings
             const newSubmissionData = {
               examId,
@@ -1219,23 +1219,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
               startedAt: new Date(),
               isHighestScore: false
             };
-            
+
             const submissionId = await storage.createSubmission(newSubmissionData);
             submission = typeof submissionId === 'number' ? await storage.getSubmissionById(submissionId) : null;
           }
         }
-        
+
         // Generate or retrieve permutation mappings for answer shuffling
         let permutationMappings = {};
-        
+
         if (exam.randomizeOptions && submission) {
           try {
             const progressData = submission.progressData ? 
               (typeof submission.progressData === 'string' ? 
                 JSON.parse(submission.progressData) : submission.progressData) : {};
-            
+
             console.log(`[DEBUG] Processing randomization for exam ${examId}, submission ${submission.id}`);
-            
+
             if (progressData.permutationMappings) {
               // Use existing mappings for consistency
               permutationMappings = progressData.permutationMappings;
@@ -1252,15 +1252,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 },
                 exam.randomizeOptions
               );
-              
+
               console.log(`[DEBUG] Generated permutation mappings for ${Object.keys(permutationMappings).length} questions`);
-              
+
               // Store mappings in submission progress data
               const updatedProgressData = {
                 ...progressData,
                 permutationMappings
               };
-              
+
               await storage.updateSubmission(submission.id, {
                 progressData: JSON.stringify(updatedProgressData)
               });
@@ -1271,22 +1271,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
             // Continue without shuffling if there's an error
           }
         }
-        
+
         // Store remapped correct answers for grading and prepare student-facing questions
         const remappedCorrectAnswers: { [questionId: number]: any } = {};
-        
+
         examQuestions = examQuestions.map(eq => {
           const permutation = (permutationMappings as any)[eq.questionId];
           // Capture original correctAnswers before stripping for allowMultipleAnswers flag
           const originalCorrectAnswers = eq.question.correctAnswers;
           const originalCorrectAnswer = eq.question.correctAnswer;
-          
+
           // Determine if this question allows multiple answers:
           // 1. If correctAnswers field exists (new format)
           // 2. If correctAnswer contains comma-separated values (legacy format)
           // 3. If correctAnswer is an array (edge case)
           let allowMultiple = false;
-          
+
           if (originalCorrectAnswers !== null && originalCorrectAnswers !== undefined) {
             allowMultiple = true;
           } else if (originalCorrectAnswer && typeof originalCorrectAnswer === 'string' && originalCorrectAnswer.includes(',')) {
@@ -1294,9 +1294,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           } else if (Array.isArray(originalCorrectAnswer)) {
             allowMultiple = true;
           }
-          
+
           console.log(`[DEBUG] Question ${eq.question.id}: correctAnswers=${JSON.stringify(originalCorrectAnswers)}, correctAnswer=${JSON.stringify(originalCorrectAnswer)}, allowMultipleAnswers=${allowMultiple}`);
-          
+
           // Generate remapped correct answers for grading if shuffling is applied
           if (permutation && exam.randomizeOptions) {
             console.log(`[DEBUG] Applying permutation to question ${eq.question.id}, permutation exists: ${!!permutation}`);
@@ -1310,14 +1310,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
           } else {
             console.log(`[DEBUG] Skipping permutation for question ${eq.question.id}: permutation=${!!permutation}, randomizeOptions=${exam.randomizeOptions}`);
           }
-          
+
           const baseQuestion = {
             ...eq.question,
             correctAnswer: undefined, // Remove correct answer
             correctAnswers: undefined, // Remove correct answers
             allowMultipleAnswers: allowMultiple, // Flag for UI rendering
           } as any;
-          
+
           // Apply permutation if available
           if (permutation && exam.randomizeOptions) {
             return {
@@ -1325,7 +1325,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               question: applyPermutationToQuestion(baseQuestion, permutation)
             };
           }
-          
+
           return {
             ...eq,
             question: baseQuestion
@@ -1338,13 +1338,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
             const existingProgressData = submission.progressData ? 
               (typeof submission.progressData === 'string' ? 
                 JSON.parse(submission.progressData) : submission.progressData) : {};
-            
+
             const updatedProgressData = {
               ...existingProgressData,
               permutationMappings,
               remappedCorrectAnswers
             };
-            
+
             await storage.updateSubmission(submission.id, {
               progressData: JSON.stringify(updatedProgressData)
             });
@@ -1354,7 +1354,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
         }
       }
-      
+
       // If randomizeQuestions is enabled, shuffle the questions for students
       if (exam.randomizeQuestions && !hasInstructorPrivileges(user)) {
         // Create a seeded random function using userId + examId for consistent randomization per student
@@ -1363,14 +1363,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const x = Math.sin(seed++) * 10000;
           return x - Math.floor(x);
         };
-        
+
         // Fisher-Yates shuffle with seeded random
         for (let i = examQuestions.length - 1; i > 0; i--) {
           const j = Math.floor(random(seed + i) * (i + 1));
           [examQuestions[i], examQuestions[j]] = [examQuestions[j], examQuestions[i]];
         }
       }
-      
+
       res.json(examQuestions);
     } catch (error) {
       console.error("Error fetching exam questions:", error);
@@ -1380,10 +1380,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/exams/:id/questions', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
       const examId = parseInt(req.params.id);
-      
+
       if (!hasInstructorPrivileges(user)) {
         return res.status(403).json({ message: "Access denied" });
       }
@@ -1417,11 +1417,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.delete('/api/exams/:examId/questions/:questionId', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
       const examId = parseInt(req.params.examId);
       const questionId = parseInt(req.params.questionId);
-      
+
       if (!hasInstructorPrivileges(user)) {
         return res.status(403).json({ message: "Access denied" });
       }
@@ -1442,7 +1442,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Save progress endpoints
   app.post('/api/exams/:id/save-progress', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const examId = parseInt(req.params.id);
       const { answers, currentQuestionIndex, timeRemainingSeconds } = req.body;
 
@@ -1488,7 +1488,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get('/api/exams/:id/progress', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const examId = parseInt(req.params.id);
 
       // Find in-progress submission
@@ -1514,7 +1514,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Submission routes
   app.post('/api/exams/:id/submit', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const examId = parseInt(req.params.id);
       const { answers, timeTaken, proctoringData } = req.body;
 
@@ -1531,12 +1531,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         try {
           const mySubmissions = await storage.getSubmissions(examId, userId);
           const inProgressSubmission = mySubmissions.find(s => s.status === 'in_progress');
-          
+
           if (inProgressSubmission && inProgressSubmission.progressData) {
             progressData = typeof inProgressSubmission.progressData === 'string' 
               ? JSON.parse(inProgressSubmission.progressData) 
               : inProgressSubmission.progressData;
-            
+
             if (progressData.permutationMappings) {
               permutationMappings = progressData.permutationMappings;
             }
@@ -1580,7 +1580,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           let correctAnswers = question.correctAnswers && Array.isArray(question.correctAnswers) 
             ? question.correctAnswers 
             : (question.correctAnswer ? [question.correctAnswer] : []);
-          
+
           // Check for remapped correct answers if shuffling was used
           if (exam.randomizeOptions && progressData && progressData.remappedCorrectAnswers) {
             const remappedData = progressData.remappedCorrectAnswers[answer.questionId];
@@ -1591,7 +1591,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               console.log(`[DEBUG] Using remapped correct answers for question ${question.id}: ${JSON.stringify(correctAnswers)} (original: ${JSON.stringify(question.correctAnswers)})`);
             }
           }
-          
+
           // Handle multiple student selections
           let studentAnswers: string[] = [];
           if (answer.selectedOptions && Array.isArray(answer.selectedOptions)) {
@@ -1602,7 +1602,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             // Handle comma-separated answers as fallback
             studentAnswers = answer.answerText.split(',').map((a: string) => a.trim()).filter((a: string) => a);
           }
-          
+
           // Map student answers from presented indices back to canonical indices if shuffling was used
           const permutation = (permutationMappings as any)[answer.questionId];
           if (permutation && exam.randomizeOptions) {
@@ -1618,24 +1618,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
               // Fall back to original answers if mapping fails
             }
           }
-          
+
           if (correctAnswers.length > 1) {
             // Multiple correct answers - calculate partial credit
             console.log(`DEBUG - Multiple choice grading for question ${question.id}:`);
             console.log(`  Correct answers:`, correctAnswers);
             console.log(`  Student answers:`, studentAnswers);
             console.log(`  Raw answer data:`, { selectedOptions: answer.selectedOptions, selectedOption: answer.selectedOption, answerText: answer.answerText });
-            
+
             const correctCount = studentAnswers.filter(ans => correctAnswers.includes(ans)).length;
             const incorrectCount = studentAnswers.filter(ans => !correctAnswers.includes(ans)).length;
-            
+
             console.log(`  Correct count: ${correctCount}, Incorrect count: ${incorrectCount}`);
-            
+
             // Award partial credit: (correct selections - incorrect selections) / total correct answers
             // Minimum score is 0
             const partialScore = Math.max(0, (correctCount - incorrectCount) / correctAnswers.length);
             score = Math.round(partialScore * question.points * 100) / 100;
-            
+
             console.log(`Exam submission grading - Multiple choice question ${question.id}: ${correctCount} correct, ${incorrectCount} incorrect out of ${correctAnswers.length} total correct answers. Score: ${score}/${question.points}`);
           } else {
             // Single correct answer - traditional grading
@@ -1652,7 +1652,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         else if (question.questionType === 'matching') {
           try {
             let correctAnswer, studentAnswer;
-            
+
             try {
               correctAnswer = typeof question.correctAnswer === 'string' 
                 ? JSON.parse(question.correctAnswer) 
@@ -1661,7 +1661,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               console.error('Error parsing matching question correctAnswer:', parseError, 'Value:', question.correctAnswer);
               correctAnswer = {};
             }
-            
+
             try {
               studentAnswer = typeof answer.answerText === 'string'
                 ? JSON.parse(answer.answerText || '{}')
@@ -1670,19 +1670,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
               console.error('Error parsing matching question studentAnswer:', parseError, 'Value:', answer.answerText);
               studentAnswer = {};
             }
-            
+
             let correctMatches = 0;
             let totalMatches = 0;
-            
+
             console.log(`Grading matching question ${question.id}:`, {
               correctAnswer: JSON.stringify(correctAnswer),
               studentAnswer: JSON.stringify(studentAnswer)
             });
-            
+
             // Handle array of pairs format: [{left: "A", right: "B"}, ...]
             if (Array.isArray(correctAnswer)) {
               totalMatches = correctAnswer.length;
-              
+
               // Create mapping from left items to their correct right matches
               const correctMapping: { [key: string]: string } = {};
               correctAnswer.forEach((pair: any) => {
@@ -1690,7 +1690,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   correctMapping[pair.left] = pair.right;
                 }
               });
-              
+
               // Check student's answers: format is {0: "selected_option", 1: "another_option", ...}
               // where index corresponds to the left item position in the array
               correctAnswer.forEach((pair: any, index: number) => {
@@ -1704,7 +1704,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             else if (typeof correctAnswer === 'object' && correctAnswer !== null) {
               const correctPairs = Object.entries(correctAnswer);
               totalMatches = correctPairs.length;
-              
+
               correctPairs.forEach(([leftItem, rightItem], index) => {
                 const studentSelection = studentAnswer[index];
                 if (studentSelection && studentSelection === rightItem) {
@@ -1712,7 +1712,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 }
               });
             }
-            
+
             // Partial credit for matching
             score = totalMatches > 0 ? (correctMatches / totalMatches) * question.points : 0;
             console.log(`Matching grading: ${correctMatches}/${totalMatches} correct, score: ${score}/${question.points}`);
@@ -1732,26 +1732,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
             const studentAnswer = typeof rawStudentAnswer === 'string'
               ? JSON.parse(rawStudentAnswer || '{}')
               : rawStudentAnswer || {};
-            
+
             let correctPlacements = 0;
             let totalItems = 0;
-            
+
             console.log(`Grading drag-drop question ${question.id}:`, {
               correctAnswer: JSON.stringify(correctAnswer),
               studentAnswer: JSON.stringify(studentAnswer)
             });
-            
+
             // Build mapping from item to correct zone index AND zone name mapping
             const itemToZoneMapping: { [item: string]: number } = {};
             const zoneIndexToName: { [index: number]: string } = {};
-            
+
             if (correctAnswer && correctAnswer.zones && Array.isArray(correctAnswer.zones)) {
               // Handle zones array format: { zones: [{ zone: "Nord", items: ["Cap-Haitien"] }] }
               correctAnswer.zones.forEach((zone: any, zoneIndex: number) => {
                 // Store zone name mapping
                 const zoneName = zone.zone || zone.name || `Zone ${zoneIndex}`;
                 zoneIndexToName[zoneIndex] = zoneName;
-                
+
                 if (zone && Array.isArray(zone.items)) {
                   zone.items.forEach((item: string) => {
                     if (item && String(item).trim()) {
@@ -1772,11 +1772,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 }
               });
             }
-            
+
             console.log(`Built item-to-zone mapping:`, itemToZoneMapping);
             console.log(`Zone index to name mapping:`, zoneIndexToName);
             console.log(`Total items to match: ${totalItems}`);
-            
+
             // Check student's placements against correct mapping
             if (studentAnswer && typeof studentAnswer === 'object') {
               // Handle multiple student answer formats
@@ -1814,11 +1814,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 });
               }
             }
-            
+
             console.log(`=== FINAL DRAG-DROP RESULT ===`);
             console.log(`Question ${question.id}: ${correctPlacements}/${totalItems} correct, score: ${(correctPlacements / totalItems) * question.points}/${question.points}`);
             console.log(`=== END DRAG-DROP RESULT ===`);
-            
+
             // Partial credit for drag-and-drop
             score = totalItems > 0 ? (correctPlacements / totalItems) * question.points : 0;
           } catch (error) {
@@ -1831,13 +1831,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         else if (question.questionType === 'ranking') {
           try {
             let correctOrder, studentOrder;
-            
+
             // Handle multiple formats for correct answer
             if (Array.isArray(question.correctAnswer)) {
               correctOrder = question.correctAnswer;
             } else if (typeof question.correctAnswer === 'string') {
               const rawCorrectAnswer = question.correctAnswer;
-              
+
               // Check for malformed JSON format like {"item1","item2",...}
               if (rawCorrectAnswer.startsWith('{') && rawCorrectAnswer.includes('",') && !rawCorrectAnswer.includes(':')) {
                 console.log('Detected malformed ranking JSON, converting to array format');
@@ -1846,7 +1846,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   .replace(/^\{/, '[')  // Replace opening brace with bracket
                   .replace(/\}$/, ']')  // Replace closing brace with bracket
                   .replace(/(?<!")([^",\[\]]+)(?!")/g, '"$1"'); // Quote unquoted strings
-                
+
                 try {
                   correctOrder = JSON.parse(cleanedAnswer);
                   console.log('Successfully converted malformed JSON:', {
@@ -1865,21 +1865,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
             } else {
               correctOrder = [];
             }
-            
+
             // Parse student answer
             studentOrder = Array.isArray(answer.answerText)
               ? answer.answerText
               : JSON.parse(answer.answerText || '[]');
-            
+
             console.log(`Grading ranking question ${question.id}:`, {
               correctOrder,
               studentOrder,
               rawCorrectAnswer: `${question.correctAnswer}`
             });
-            
+
             let correctPositions = 0;
             const totalItems = correctOrder.length;
-            
+
             for (let i = 0; i < totalItems; i++) {
               if (studentOrder[i] === correctOrder[i]) {
                 correctPositions++;
@@ -1888,7 +1888,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 console.log(`Position ${i}: "${studentOrder[i]}" should be "${correctOrder[i]}"`);
               }
             }
-            
+
             // Partial credit for ranking
             score = totalItems > 0 ? (correctPositions / totalItems) * question.points : 0;
             console.log(`Ranking question ${question.id}: ${correctPositions}/${totalItems} correct, score: ${score}/${question.points}`);
@@ -1934,7 +1934,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Determine final status based on question types
       let finalStatus: 'graded' | 'pending' = 'graded';
-      
+
       // Log grading summary
       console.log(`Exam submission grading summary:`, {
         examId,
@@ -1944,7 +1944,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         hasSubjectiveQuestions,
         answersProcessed: answers.length
       });
-      
+
       // If there are subjective questions, always mark as pending for manual grading
       if (hasSubjectiveQuestions) {
         finalStatus = 'pending';
@@ -1970,26 +1970,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Grading routes
   app.get('/api/submissions', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
       const { examId, studentId, status } = req.query;
-      
+
       if (hasInstructorPrivileges(user)) {
         let submissions = await storage.getSubmissionsWithDetails(
           examId ? parseInt(examId as string) : undefined,
           studentId as string
         );
-        
+
         // Filter by status if provided
         if (status) {
           submissions = submissions.filter(sub => sub.status === status);
         }
-        
+
         res.json(submissions);
       } else {
         // Students can only see their own submissions
         const submissions = await storage.getSubmissions(undefined, userId);
-        
+
         // Hide scores for pending submissions and mark highest scores
         const filteredSubmissions = submissions.map(submission => {
           if (submission.status === 'pending') {
@@ -2005,7 +2005,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             isHighestScore: submission.isHighestScore || false
           };
         });
-        
+
         res.json(filteredSubmissions);
       }
     } catch (error) {
@@ -2017,10 +2017,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get submission details for manual grading
   app.get('/api/submissions/:id/grade', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
       const submissionId = parseInt(req.params.id);
-      
+
       if (!hasInstructorPrivileges(user)) {
         return res.status(403).json({ message: "Access denied" });
       }
@@ -2033,7 +2033,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const answers = await storage.getAnswers(submissionId);
       const exam = await storage.getExamById(submission.examId);
       const student = await storage.getUser(submission.studentId);
-      
+
       // Get question details for each answer
       const answersWithQuestions = await Promise.all(
         answers.map(async (answer) => {
@@ -2056,11 +2056,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put('/api/answers/:id/grade', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
       const answerId = parseInt(req.params.id);
       const { score, feedback } = req.body;
-      
+
       if (!hasInstructorPrivileges(user)) {
         return res.status(403).json({ message: "Access denied" });
       }
@@ -2087,10 +2087,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get homework submission details for grading
   app.get('/api/homework-submissions/:id/grade', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
       const submissionId = parseInt(req.params.id);
-      
+
       if (!hasInstructorPrivileges(user)) {
         return res.status(403).json({ message: "Access denied" });
       }
@@ -2103,7 +2103,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const answers = await storage.getHomeworkAnswers(submissionId);
       const homework = await storage.getHomeworkAssignmentById(submission.homeworkId);
       const student = await storage.getUser(submission.studentId);
-      
+
       // Get question details for each answer
       const answersWithQuestions = await Promise.all(
         answers.map(async (answer) => {
@@ -2127,11 +2127,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Grade individual homework answer
   app.put('/api/homework-answers/:id/grade', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
       const answerId = parseInt(req.params.id);
       const { score, feedback } = req.body;
-      
+
       if (!hasInstructorPrivileges(user)) {
         return res.status(403).json({ message: "Access denied" });
       }
@@ -2158,10 +2158,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Finalize homework submission grading
   app.put('/api/homework-submissions/:id/finalize', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
       const submissionId = parseInt(req.params.id);
-      
+
       if (!hasInstructorPrivileges(user)) {
         return res.status(403).json({ message: "Access denied" });
       }
@@ -2192,10 +2192,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Finalize submission grading
   app.put('/api/submissions/:id/finalize', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
       const submissionId = parseInt(req.params.id);
-      
+
       if (!hasInstructorPrivileges(user)) {
         return res.status(403).json({ message: "Access denied" });
       }
@@ -2229,10 +2229,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Extra credit management routes
   app.post('/api/submissions/:id/extra-credit', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
       const submissionId = parseInt(req.params.id);
-      
+
       if (!hasInstructorPrivileges(user)) {
         return res.status(403).json({ message: "Access denied" });
       }
@@ -2278,10 +2278,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/homework-submissions/:id/extra-credit', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
       const homeworkSubmissionId = parseInt(req.params.id);
-      
+
       if (!hasInstructorPrivileges(user)) {
         return res.status(403).json({ message: "Access denied" });
       }
@@ -2327,10 +2327,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get('/api/submissions/:id/extra-credits', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
       const submissionId = parseInt(req.params.id);
-      
+
       if (!hasInstructorPrivileges(user)) {
         return res.status(403).json({ message: "Access denied" });
       }
@@ -2356,10 +2356,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get('/api/homework-submissions/:id/extra-credits', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
       const homeworkSubmissionId = parseInt(req.params.id);
-      
+
       if (!hasInstructorPrivileges(user)) {
         return res.status(403).json({ message: "Access denied" });
       }
@@ -2385,10 +2385,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.delete('/api/extra-credits/:id', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
       const creditId = parseInt(req.params.id);
-      
+
       if (!hasInstructorPrivileges(user)) {
         return res.status(403).json({ message: "Access denied" });
       }
@@ -2409,9 +2409,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Analytics routes
   app.get('/api/analytics/instructor-stats', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
-      
+
       if (!hasInstructorPrivileges(user)) {
         return res.status(403).json({ message: "Access denied" });
       }
@@ -2426,10 +2426,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get('/api/analytics/exam/:id', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
       const examId = parseInt(req.params.id);
-      
+
       if (!hasInstructorPrivileges(user)) {
         return res.status(403).json({ message: "Access denied" });
       }
@@ -2450,9 +2450,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Role management routes (for testing purposes)
   app.get('/api/admin/users', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
-      
+
       // For testing - allow any user to view all users for role assignment
       const users = await storage.getAllUsers();
       res.json(users);
@@ -2464,16 +2464,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.patch('/api/admin/users/:id/role', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const targetUserId = req.params.id;
       const { role } = req.body;
-      
+
       console.log(`Role update request: User ${userId} updating ${targetUserId} to role ${role}`);
-      
+
       if (!role || !['instructor', 'student', 'admin'].includes(role)) {
         return res.status(400).json({ message: "Invalid role" });
       }
-      
+
       // For testing - allow any user to update roles
       const updatedUser = await storage.updateUserRole(targetUserId, role);
       console.log(`Role updated successfully: ${JSON.stringify(updatedUser)}`);
@@ -2486,7 +2486,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Object storage routes for file uploads
   app.get("/objects/:objectPath(*)", isAuthenticated, async (req, res) => {
-    const userId = (req.user as any)?.claims?.sub;
+    const userId = (req.user as any)?.id;
     const objectStorageService = new ObjectStorageService();
     try {
       const objectFile = await objectStorageService.getObjectEntityFile(
@@ -2521,7 +2521,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.status(400).json({ error: "attachmentURL is required" });
     }
 
-    const userId = req.user.claims.sub;
+    const userId = req.user.id;
     const answerId = parseInt(req.params.id);
 
     try {
@@ -2556,7 +2556,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const objectStorageService = new ObjectStorageService();
       const normalizedPath = objectStorageService.normalizeObjectEntityPath(req.body.path);
-      
+
       res.json({ normalizedPath });
     } catch (error) {
       console.error("Error normalizing path:", error);
@@ -2569,7 +2569,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.status(400).json({ error: "attachmentURL is required" });
     }
 
-    const userId = req.user.claims.sub;
+    const userId = req.user.id;
     const user = await storage.getUser(userId);
     const questionId = parseInt(req.params.id);
 
@@ -2607,14 +2607,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Homework routes
   app.get('/api/homework', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
-      
+
       if (hasInstructorPrivileges(user)) {
         const { status, search, page, limit } = req.query;
         const pageNum = page ? parseInt(page as string) : undefined;
         const limitNum = limit ? parseInt(limit as string) : undefined;
-        
+
         const homework = await storage.getHomework(userId, {
           status: status as string,
           search: search as string,
@@ -2635,9 +2635,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/homework', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
-      
+
       if (!hasInstructorPrivileges(user)) {
         return res.status(403).json({ message: "Access denied" });
       }
@@ -2646,7 +2646,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ...req.body,
         instructorId: userId,
       });
-      
+
       const homework = await storage.createHomework(homeworkData);
       res.status(201).json(homework);
     } catch (error) {
@@ -2660,9 +2660,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put('/api/homework/:id', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
-      
+
       if (!hasInstructorPrivileges(user)) {
         return res.status(403).json({ message: "Access denied" });
       }
@@ -2686,9 +2686,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Homework Questions API - separate from exam questions
   app.get('/api/homework-questions', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
-      
+
       if (!hasInstructorPrivileges(user)) {
         return res.status(403).json({ message: "Access denied" });
       }
@@ -2702,7 +2702,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         search: search as string,
         category: 'homework', // Only show homework questions
       });
-      
+
       res.json(questionsResult);
     } catch (error) {
       console.error("Error fetching homework questions:", error);
@@ -2713,9 +2713,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Add question to homework assignment
   app.post('/api/homework/:id/questions', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
-      
+
       if (!hasInstructorPrivileges(user)) {
         return res.status(403).json({ message: "Access denied" });
       }
@@ -2726,7 +2726,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const { questionId, order, points } = req.body;
-      
+
       if (!questionId || !order || !points) {
         return res.status(400).json({ message: "Missing required fields: questionId, order, points" });
       }
@@ -2742,7 +2742,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get specific homework assignment details
   app.get('/api/homework/:id', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
       const homeworkId = parseInt(req.params.id);
 
@@ -2770,7 +2770,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get homework questions for taking
   app.get('/api/homework/:id/questions', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
       const homeworkId = parseInt(req.params.id);
 
@@ -2800,7 +2800,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get existing homework submission and answers
   app.get('/api/homework/:id/submission', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
       const homeworkId = parseInt(req.params.id);
 
@@ -2815,17 +2815,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Get existing submissions for this homework and student
       const submissions = await storage.getHomeworkSubmissions(homeworkId, userId);
-      
+
       if (submissions.length === 0) {
         return res.json({ submission: null, answers: [] });
       }
 
       // Get the latest submission
       const latestSubmission = submissions[0]; // Already ordered by startedAt desc
-      
+
       // Get answers for this submission
       const answers = await storage.getHomeworkAnswers(latestSubmission.id);
-      
+
       res.json({ 
         submission: latestSubmission,
         answers: answers
@@ -2855,12 +2855,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get homework submissions for current student
   app.get('/api/homework-submissions', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
       const { status } = req.query;
-      
+
       console.log('Homework submissions request:', { userId, userRole: user?.role, status });
-      
+
       if (user?.role === 'student') {
         // Students can only see their own submissions
         const submissions = await storage.getHomeworkSubmissions(undefined, userId);
@@ -2889,7 +2889,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Save homework progress endpoints
   app.post('/api/homework/:id/save-progress', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const homeworkId = parseInt(req.params.id);
       const { answers, currentQuestionIndex } = req.body;
 
@@ -2934,7 +2934,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get('/api/homework/:id/progress', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const homeworkId = parseInt(req.params.id);
 
       // Find in-progress submission
@@ -2959,7 +2959,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Submit homework answers
   app.post('/api/homework/:id/submit', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
       const homeworkId = parseInt(req.params.id);
 
@@ -2998,30 +2998,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Check for existing submissions
       const existingSubmissions = await storage.getHomeworkSubmissions(homeworkId, userId);
-      
+
       let submission;
       let attemptNumber = 1;
-      
+
       if (existingSubmissions.length > 0) {
         // Check attempt limits
         if (homework.attemptsAllowed !== -1 && existingSubmissions.length >= homework.attemptsAllowed) {
           return res.status(403).json({ message: "Maximum attempts exceeded" });
         }
-        
+
         // Use the latest existing submission and update it
         const latestSubmission = existingSubmissions[0];
         attemptNumber = latestSubmission.attemptNumber + 1;
-        
+
         submission = await storage.updateHomeworkSubmission(latestSubmission.id, {
           submittedAt: new Date(),
           status: 'submitted',
           attemptNumber,
           isLate: homework.dueDate ? new Date() > new Date(homework.dueDate) : false,
         });
-        
+
         // Delete existing answers for this submission (they will be replaced)
         const existingAnswers = await storage.getHomeworkAnswers(latestSubmission.id);
-        
+
       } else {
         // Create new submission
         submission = await storage.createHomeworkSubmission({
@@ -3069,7 +3069,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Final Grade Calculation endpoints
   app.get('/api/student-grades/:studentId', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
       const studentId = req.params.studentId;
 
@@ -3090,7 +3090,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get('/api/instructor-student-grades', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
 
       if (!hasInstructorPrivileges(user)) {
@@ -3108,7 +3108,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Grade Settings API endpoints
   app.get('/api/grade-settings', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
 
       if (!hasInstructorPrivileges(user)) {
@@ -3125,7 +3125,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/grade-settings/global', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
 
       if (!hasInstructorPrivileges(user)) {
@@ -3161,7 +3161,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/grade-settings/course/:courseId', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
       const courseId = parseInt(req.params.courseId);
 
@@ -3209,7 +3209,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Proctoring Logs API - Get all submissions with proctoring data
   app.get('/api/proctoring-logs', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
 
       if (!hasInstructorPrivileges(user)) {
@@ -3217,7 +3217,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const submissions = await storage.getSubmissions();
-      
+
       // Filter submissions to only include those with proctoring data and enrich with student/exam info
       const proctoringSubmissions = await Promise.all(
         submissions
@@ -3226,7 +3226,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             const student = await storage.getUser(sub.studentId);
             const exam = await storage.getExamById(sub.examId);
             const studentName = student ? `${student.firstName || ''} ${student.lastName || ''}`.trim() : 'Unknown Student';
-            
+
             return {
               id: sub.id,
               examId: sub.examId,
@@ -3258,7 +3258,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Global Proctoring Settings API
   app.get('/api/proctoring-settings', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
 
       if (!hasInstructorPrivileges(user)) {
@@ -3275,7 +3275,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/proctoring-settings', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
 
       if (!hasInstructorPrivileges(user)) {
@@ -3334,9 +3334,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Grade Finalization API
   app.post('/api/finalize-grades/:subjectId', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
-      
+
       if (!hasInstructorPrivileges(user)) {
         return res.status(403).json({ message: "Access denied" });
       }
@@ -3362,9 +3362,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.delete('/api/finalize-grades/:subjectId', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
-      
+
       if (!hasInstructorPrivileges(user)) {
         return res.status(403).json({ message: "Access denied" });
       }
@@ -3384,9 +3384,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get('/api/finalize-grades/:subjectId/status', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
-      
+
       if (!hasInstructorPrivileges(user)) {
         return res.status(403).json({ message: "Access denied" });
       }
@@ -3407,13 +3407,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Admin route to re-grade all submissions with zero scores
   app.post('/api/admin/regrade-submissions', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
-      
+
       if (!hasInstructorPrivileges(user)) {
         return res.status(403).json({ message: "Access denied" });
       }
-      
+
       await regradeAllZeroScoreSubmissions();
       res.json({ message: "Re-grading completed successfully" });
     } catch (error) {
@@ -3424,18 +3424,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/admin/regrade-submission/:id', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
-      
+
       if (!hasInstructorPrivileges(user)) {
         return res.status(403).json({ message: "Access denied" });
       }
-      
+
       const submissionId = parseInt(req.params.id);
       if (isNaN(submissionId)) {
         return res.status(400).json({ message: "Invalid submission ID" });
       }
-      
+
       const result = await regradeSubmission(submissionId);
       res.json({ 
         message: "Re-grading completed successfully",
@@ -3455,7 +3455,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (isNaN(submissionId)) {
         return res.status(400).json({ message: "Invalid submission ID" });
       }
-      
+
       console.log(`Re-grading submission ${submissionId} via public endpoint`);
       const result = await regradeSubmission(submissionId);
       res.json({ 
@@ -3472,18 +3472,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Test endpoint for enhanced drag-drop and matching grading
   app.post("/api/admin/test-grading", isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
-      
+
       if (!hasInstructorPrivileges(user)) {
         return res.status(403).json({ message: "Access denied" });
       }
 
       const { questionType, correctAnswer, studentAnswer, points } = req.body;
-      
+
       let score = 0;
       let details = {};
-      
+
       if (questionType === 'matching') {
         try {
           const correctAnswerParsed = typeof correctAnswer === 'string' 
@@ -3492,11 +3492,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const studentAnswerParsed = typeof studentAnswer === 'string'
             ? JSON.parse(studentAnswer || '{}')
             : studentAnswer || {};
-          
+
           let correctMatches = 0;
           let totalMatches = 0;
           const matchResults: any[] = [];
-          
+
           if (Array.isArray(correctAnswerParsed)) {
             totalMatches = correctAnswerParsed.length;
             const correctMapping: { [key: string]: string } = {};
@@ -3505,7 +3505,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 correctMapping[pair.left] = pair.right;
               }
             });
-            
+
             if (typeof studentAnswerParsed === 'object' && studentAnswerParsed !== null) {
               Object.entries(studentAnswerParsed).forEach(([leftItem, rightItem]) => {
                 const isCorrect = correctMapping[leftItem] === rightItem;
@@ -3519,7 +3519,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               });
             }
           }
-          
+
           score = totalMatches > 0 ? (correctMatches / totalMatches) * (points || 4) : 0;
           details = { correctMatches, totalMatches, matchResults };
         } catch (error) {
@@ -3534,12 +3534,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const studentAnswerParsed = typeof studentAnswer === 'string'
             ? JSON.parse(studentAnswer || '{}')
             : studentAnswer || {};
-          
+
           let correctPlacements = 0;
           let totalItems = 0;
           const itemToZoneMapping: { [item: string]: string } = {};
           const placementResults: any[] = [];
-          
+
           if (correctAnswerParsed && correctAnswerParsed.zones) {
             correctAnswerParsed.zones.forEach((zone: any) => {
               if (zone.zone && Array.isArray(zone.items)) {
@@ -3552,7 +3552,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               }
             });
           }
-          
+
           if (studentAnswerParsed && typeof studentAnswerParsed === 'object') {
             if (studentAnswerParsed.zones && Array.isArray(studentAnswerParsed.zones)) {
               studentAnswerParsed.zones.forEach((studentZone: any) => {
@@ -3584,7 +3584,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               });
             }
           }
-          
+
           score = totalItems > 0 ? (correctPlacements / totalItems) * (points || 4) : 0;
           details = { correctPlacements, totalItems, placementResults, itemToZoneMapping };
         } catch (error) {
@@ -3592,7 +3592,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           details = { error: error instanceof Error ? error.message : 'Unknown error' };
         }
       }
-      
+
       res.json({
         questionType,
         points: points || 4,
@@ -3612,16 +3612,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Database backup download route
   app.get('/api/backup/download/:filename', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const user = await storage.getUser(userId);
-      
+
       if (!hasInstructorPrivileges(user)) {
         return res.status(403).json({ message: "Access denied" });
       }
 
       const filename = req.params.filename;
       const filePath = path.join(process.cwd(), 'attached_assets', 'backups', filename);
-      
+
       // Security check - ensure file exists and is a .sql file
       if (!filename.endsWith('.sql') || !fs.existsSync(filePath)) {
         return res.status(404).json({ message: "Backup file not found" });
@@ -3630,7 +3630,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Set headers for file download
       res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
       res.setHeader('Content-Type', 'application/sql');
-      
+
       // Stream the file
       const fileStream = fs.createReadStream(filePath);
       fileStream.pipe(res);
