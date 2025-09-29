@@ -630,17 +630,88 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Admin access required" });
       }
 
-      // Verify it's an admin-created question
+      // Admin can delete ANY question (not just admin-created ones)
       const question = await storage.getQuestionById(questionId);
-      if (!question || !question.createdByAdmin) {
-        return res.status(404).json({ message: "Admin question not found" });
+      if (!question) {
+        return res.status(404).json({ message: "Question not found" });
       }
 
       await storage.deleteQuestion(questionId);
       res.status(204).send();
     } catch (error) {
-      console.error("Error deleting admin question:", error);
-      res.status(500).json({ message: "Failed to delete admin question" });
+      console.error("Error deleting question:", error);
+      res.status(500).json({ message: "Failed to delete question" });
+    }
+  });
+
+  // Admin endpoint to view ALL questions from all instructors
+  app.get('/api/admin/all-questions', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user || user.role !== 'admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const { 
+        subject, 
+        type, 
+        difficulty, 
+        bloomsTaxonomy, 
+        gradeLevel, 
+        search, 
+        category, 
+        createdBy,
+        visibilityType, 
+        page, 
+        limit 
+      } = req.query;
+      
+      const result = await storage.getAllQuestionsForAdmin({
+        subjectId: subject ? parseInt(subject as string) : undefined,
+        questionType: type as string,
+        difficulty: difficulty as string,
+        bloomsTaxonomy: bloomsTaxonomy as string,
+        gradeLevel: gradeLevel as string,
+        search: search as string,
+        category: (category as 'exam' | 'homework'),
+        createdBy: createdBy as string, // 'all', 'admins', 'instructors'
+        visibilityType: visibilityType as 'all_instructors' | 'specific_instructors',
+        page: page ? parseInt(page as string) : 1,
+        limit: limit ? parseInt(limit as string) : 10,
+      });
+      
+      res.json(result);
+    } catch (error) {
+      console.error("Error fetching all questions for admin:", error);
+      res.status(500).json({ message: "Failed to fetch questions" });
+    }
+  });
+
+  // Admin endpoint to update question visibility
+  app.put('/api/admin/questions/:id/visibility', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      const questionId = parseInt(req.params.id);
+      
+      if (!user || user.role !== 'admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const { visibilityType, authorizedInstructorIds } = req.body;
+      
+      const updates = {
+        visibilityType: visibilityType || 'all_instructors',
+        authorizedInstructorIds: visibilityType === 'specific_instructors' ? authorizedInstructorIds : null,
+      };
+      
+      const question = await storage.updateQuestionVisibility(questionId, updates);
+      res.json(question);
+    } catch (error) {
+      console.error("Error updating question visibility:", error);
+      res.status(500).json({ message: "Failed to update question visibility" });
     }
   });
 
@@ -910,6 +981,65 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Add extra time to exam (for emergencies)
+  app.put('/api/exams/:id/add-time', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      const examId = parseInt(req.params.id);
+      
+      if (!hasInstructorPrivileges(user)) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const exam = await storage.getExamById(examId);
+      if (!exam) {
+        return res.status(404).json({ message: "Exam not found" });
+      }
+
+      if (!user) {
+        return res.status(401).json({ message: "User not found" });
+      }
+
+      // Admin can add time to any exam, instructors can only add time to their own exams
+      if (user.role !== 'admin' && exam.instructorId !== userId) {
+        return res.status(403).json({ message: "You can only add time to your own exams" });
+      }
+
+      const { additionalMinutes } = req.body;
+      
+      if (!additionalMinutes || additionalMinutes <= 0 || additionalMinutes > 120) {
+        return res.status(400).json({ 
+          message: "Additional minutes must be between 1 and 120" 
+        });
+      }
+
+      // Update the extra time for the exam
+      const currentExtraTime = exam.extraTimeMinutes || 0;
+      const newExtraTime = currentExtraTime + additionalMinutes;
+      
+      const updatedExam = await storage.updateExam(examId, { 
+        extraTimeMinutes: newExtraTime 
+      });
+      
+      // Log the time addition for audit purposes
+      console.log(`Extra time added: User ${userId} (${user.role}) added ${additionalMinutes} minutes to exam ${examId}. Total extra time: ${newExtraTime} minutes.`);
+      
+      res.json({
+        message: `Successfully added ${additionalMinutes} minutes to the exam`,
+        exam: {
+          ...updatedExam,
+          password: undefined // Never return password hash
+        },
+        totalExtraTime: newExtraTime,
+        addedMinutes: additionalMinutes
+      });
+    } catch (error) {
+      console.error("Error adding extra time to exam:", error);
+      res.status(500).json({ message: "Failed to add extra time to exam" });
+    }
+  });
+
   // Delete exam
   app.delete('/api/exams/:id', isAuthenticated, async (req: any, res) => {
     try {
@@ -1149,8 +1279,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const permutation = (permutationMappings as any)[eq.questionId];
           // Capture original correctAnswers before stripping for allowMultipleAnswers flag
           const originalCorrectAnswers = eq.question.correctAnswers;
-          const allowMultiple = originalCorrectAnswers !== null && originalCorrectAnswers !== undefined;
-          console.log(`[DEBUG] Question ${eq.question.id}: correctAnswers=${JSON.stringify(originalCorrectAnswers)}, allowMultipleAnswers=${allowMultiple}`);
+          const originalCorrectAnswer = eq.question.correctAnswer;
+          
+          // Determine if this question allows multiple answers:
+          // 1. If correctAnswers field exists (new format)
+          // 2. If correctAnswer contains comma-separated values (legacy format)
+          // 3. If correctAnswer is an array (edge case)
+          let allowMultiple = false;
+          
+          if (originalCorrectAnswers !== null && originalCorrectAnswers !== undefined) {
+            allowMultiple = true;
+          } else if (originalCorrectAnswer && typeof originalCorrectAnswer === 'string' && originalCorrectAnswer.includes(',')) {
+            allowMultiple = true;
+          } else if (Array.isArray(originalCorrectAnswer)) {
+            allowMultiple = true;
+          }
+          
+          console.log(`[DEBUG] Question ${eq.question.id}: correctAnswers=${JSON.stringify(originalCorrectAnswers)}, correctAnswer=${JSON.stringify(originalCorrectAnswer)}, allowMultipleAnswers=${allowMultiple}`);
           
           // Generate remapped correct answers for grading if shuffling is applied
           if (permutation && exam.randomizeOptions) {
@@ -2325,7 +2470,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log(`Role update request: User ${userId} updating ${targetUserId} to role ${role}`);
       
-      if (!role || !['instructor', 'student'].includes(role)) {
+      if (!role || !['instructor', 'student', 'admin'].includes(role)) {
         return res.status(400).json({ message: "Invalid role" });
       }
       
@@ -3058,6 +3203,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error saving course grade settings:", error);
       res.status(500).json({ message: "Failed to save course grade settings" });
+    }
+  });
+
+  // Proctoring Logs API - Get all submissions with proctoring data
+  app.get('/api/proctoring-logs', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+
+      if (!hasInstructorPrivileges(user)) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const submissions = await storage.getSubmissions();
+      
+      // Filter submissions to only include those with proctoring data and enrich with student/exam info
+      const proctoringSubmissions = await Promise.all(
+        submissions
+          .filter((sub: any) => sub.proctoringData)
+          .map(async (sub: any) => {
+            const student = await storage.getUser(sub.studentId);
+            const exam = await storage.getExamById(sub.examId);
+            const studentName = student ? `${student.firstName || ''} ${student.lastName || ''}`.trim() : 'Unknown Student';
+            
+            return {
+              id: sub.id,
+              examId: sub.examId,
+              studentId: sub.studentId,
+              studentName: studentName || 'Unknown Student',
+              studentEmail: student?.email || '',
+              examTitle: exam?.title || 'Unknown Exam',
+              gradeLevel: exam?.gradeLevel || null,
+              startedAt: sub.startedAt,
+              submittedAt: sub.submittedAt,
+              timeTaken: sub.timeTaken,
+              totalScore: sub.totalScore,
+              maxScore: sub.maxScore,
+              status: sub.status,
+              proctoringData: typeof sub.proctoringData === 'string' 
+                ? JSON.parse(sub.proctoringData) 
+                : sub.proctoringData,
+            };
+          })
+      );
+
+      res.json(proctoringSubmissions);
+    } catch (error) {
+      console.error("Error fetching proctoring logs:", error);
+      res.status(500).json({ message: "Failed to fetch proctoring logs" });
     }
   });
 

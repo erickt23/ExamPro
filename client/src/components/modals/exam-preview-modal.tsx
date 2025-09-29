@@ -30,6 +30,7 @@ import {
   Lock
 } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
+import { MathField } from "@/components/ui/math-field";
 
 interface ExamPreviewModalProps {
   open: boolean;
@@ -177,7 +178,17 @@ export default function ExamPreviewModal({ open, onOpenChange, examId, onPublish
         </CardHeader>
         <CardContent>
           <div className="mb-4">
-            <p className="text-gray-900 whitespace-pre-wrap">{question.question?.questionText}</p>
+            {question.question?.questionType === 'stem' ? (
+              <MathField
+                value={question.question?.questionText || ''}
+                readonly={true}
+                className="border-none p-0 m-0 bg-transparent"
+                hideToolbar={true}
+                hideVirtualKeyboardToggle={true}
+              />
+            ) : (
+              <p className="text-gray-900 whitespace-pre-wrap">{question.question?.questionText}</p>
+            )}
           </div>
 
           {/* Multiple Choice Options */}

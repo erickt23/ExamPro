@@ -40,7 +40,7 @@ export const users = pgTable("users", {
 });
 
 // Question types enum
-export const questionTypeEnum = pgEnum('question_type', ['multiple_choice', 'short_answer', 'essay', 'fill_blank', 'matching', 'ranking', 'drag_drop']);
+export const questionTypeEnum = pgEnum('question_type', ['multiple_choice', 'short_answer', 'essay', 'fill_blank', 'matching', 'ranking', 'drag_drop', 'stem']);
 export const difficultyEnum = pgEnum('difficulty', ['easy', 'medium', 'hard']);
 export const bloomsTaxonomyEnum = pgEnum('blooms_taxonomy', ['remember', 'understand', 'apply', 'analyze', 'evaluate', 'create']);
 export const questionCategoryEnum = pgEnum('question_category', ['exam', 'homework']);
@@ -155,6 +155,8 @@ export const exams = pgTable("exams", {
   enableProctoring: boolean("enable_proctoring").notNull().default(false),
   proctoringWarningThreshold: integer("proctoring_warning_threshold").notNull().default(2),
   proctoringAutoTerminate: boolean("proctoring_auto_terminate").notNull().default(true),
+  // Extra time management for emergencies
+  extraTimeMinutes: integer("extra_time_minutes").notNull().default(0),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

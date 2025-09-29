@@ -13,10 +13,14 @@ export const en = {
     grading: 'Grading Center',
     submissionsReview: 'Grade Review',
     examResults: 'Exam Results',
+    proctoringLogs: 'Proctoring Logs',
     analytics: 'Analytics',
     students: 'Students',
     homework: 'Homework',
-    grades: 'Grades'
+    grades: 'Grades',
+    adminSection: 'Administration',
+    adminQuestionManagement: 'Question Management',
+    adminPanel: 'Admin Panel'
   },
 
 
@@ -145,7 +149,8 @@ export const en = {
     fillInBlank: 'Fill in Blank',
     matching: 'Matching',
     ranking: 'Ranking/Ordering',
-    dragAndDrop: 'Drag and Drop'
+    dragAndDrop: 'Drag and Drop',
+    stem: 'STEM (Math/Science)'
   },
 
   // Difficulty Levels
@@ -590,6 +595,38 @@ export const en = {
     correct: 'Correct:'
   },
 
+  // Proctoring
+  proctoring: {
+    title: 'Exam Proctoring Warning',
+    subtitle: 'Your exam activity is being monitored for academic integrity.',
+    warningText: 'Warning: Suspicious activity detected during your exam.',
+    violationsDetected: 'Violations detected:',
+    violationsRemaining: 'You have {count} violations remaining before your exam is automatically submitted.',
+    monitoredActivities: 'Monitored activities include:',
+    leavingFullscreen: 'Leaving fullscreen mode',
+    switchingTabs: 'Switching to other tabs or windows',
+    usingDevTools: 'Using developer tools',
+    openingContextMenus: 'Opening context menus',
+    toContinue: 'To continue:',
+    stayFullscreen: 'Stay in fullscreen mode and focus only on your exam. Avoid switching tabs, opening other applications, or leaving this page.',
+    understand: 'I Understand',
+    returnToFullscreen: 'Return to Fullscreen'
+  },
+
+  // Proctoring Logs
+  proctoringLogs: {
+    title: 'Proctoring Logs',
+    description: 'Monitor exam proctoring activities and violations',
+    student: 'Student',
+    exam: 'Exam',
+    violations: 'Violations',
+    timestamp: 'Timestamp',
+    actions: 'Actions',
+    viewDetails: 'View Details',
+    noLogs: 'No proctoring logs found',
+    loading: 'Loading proctoring logs...'
+  },
+
   // Settings
   settings: {
     title: 'Settings',
@@ -651,6 +688,38 @@ export const en = {
     loadingSettings: 'Loading settings...',
     noDescription: 'No description',
     showingXtoYofZ: 'Showing {start} to {end} of {total} subjects'
+  },
+
+  // Extra Credits Management
+  extraCredits: {
+    title: 'Extra Credits Management',
+    description: 'Award bonus points to students across all courses',
+    manageExtraCredits: 'Manage Extra Credits',
+    addExtraCredit: 'Add Extra Credit',
+    allExtraCredits: 'All Extra Credits',
+    student: 'Student',
+    course: 'Course',
+    points: 'Points',
+    reason: 'Reason',
+    grantedBy: 'Granted By',
+    grantedAt: 'Date Granted',
+    actions: 'Actions',
+    delete: 'Delete',
+    selectStudent: 'Select Student',
+    selectCourse: 'Select Course',
+    enterPoints: 'Enter Points',
+    enterReason: 'Enter Reason',
+    addCredit: 'Add Credit',
+    adding: 'Adding...',
+    deleteConfirm: 'Are you sure you want to delete this extra credit?',
+    deleteWarning: 'This will affect the student\'s final grade.',
+    noExtraCredits: 'No extra credits found',
+    noExtraCreditsMessage: 'No extra credits have been awarded yet.',
+    creditAdded: 'Extra credit added successfully',
+    creditDeleted: 'Extra credit deleted successfully',
+    failedToAdd: 'Failed to add extra credit',
+    failedToDelete: 'Failed to delete extra credit',
+    loading: 'Loading extra credits...'
   },
 
   // Import Questions Modal

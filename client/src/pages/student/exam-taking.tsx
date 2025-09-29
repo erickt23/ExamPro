@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import { ObjectUploader } from "@/components/ObjectUploader";
 import { useExamProctoring } from "@/hooks/useExamProctoring";
+import { MathField } from "@/components/ui/math-field";
 import ProctoringWarningModal from "@/components/exam/ProctoringWarningModal";
 import ProctoringTerminationModal from "@/components/exam/ProctoringTerminationModal";
 
@@ -122,6 +123,15 @@ export default function StudentExamTaking() {
     retry: false,
   });
 
+  // Periodically check for exam updates (extra time additions)
+  const { data: updatedExam } = useQuery<any>({
+    queryKey: ["/api/exams", examId, "updates"],
+    queryFn: () => fetch(`/api/exams/${examId}`).then(res => res.json()),
+    enabled: !!examId && examStarted,
+    refetchInterval: 30000, // Check every 30 seconds
+    retry: false,
+  });
+
   // Password validation is handled server-side via session
   // If we reach this page, the server has already validated access
 
@@ -149,7 +159,8 @@ export default function StudentExamTaking() {
             setTimeRemaining(submission.timeRemainingSeconds);
           } else if (exam.duration && submission.startedAt) {
             const elapsed = Math.floor((Date.now() - new Date(submission.startedAt).getTime()) / 1000);
-            const remaining = (exam.duration * 60) - elapsed;
+            const totalDuration = exam.duration + (exam.extraTimeMinutes || 0);
+            const remaining = (totalDuration * 60) - elapsed;
             setTimeRemaining(Math.max(0, remaining));
           }
           
@@ -167,7 +178,8 @@ export default function StudentExamTaking() {
       } else {
         // Initialize new exam session
         if (exam.duration) {
-          setTimeRemaining(exam.duration * 60);
+          const totalDuration = exam.duration + (exam.extraTimeMinutes || 0);
+          setTimeRemaining(totalDuration * 60);
         } else {
           setTimeRemaining(null);
         }
@@ -175,6 +187,39 @@ export default function StudentExamTaking() {
       }
     }
   }, [exam, questions, mySubmissions, examId]);
+
+  // Handle real-time extra time updates
+  useEffect(() => {
+    if (updatedExam && exam && examStarted && updatedExam.extraTimeMinutes !== exam.extraTimeMinutes) {
+      const extraTimeAdded = (updatedExam.extraTimeMinutes || 0) - (exam.extraTimeMinutes || 0);
+      if (extraTimeAdded > 0) {
+        // Add the extra time to current remaining time
+        setTimeRemaining(prev => {
+          if (prev === null) return null;
+          const newTime = prev + (extraTimeAdded * 60);
+          
+          // Show notification to student
+          toast({
+            title: "Extra Time Added",
+            description: `${extraTimeAdded} minutes have been added to your exam time.`,
+            variant: "default",
+          });
+          
+          // Reset warning state if we now have more time
+          if (newTime > 30) {
+            setWarningShown(false);
+          }
+          
+          return newTime;
+        });
+        
+        // Update the exam object to prevent duplicate additions
+        if (exam) {
+          exam.extraTimeMinutes = updatedExam.extraTimeMinutes;
+        }
+      }
+    }
+  }, [updatedExam, exam, examStarted, toast]);
 
   // Start proctoring for exams without passwords
   useEffect(() => {
@@ -1041,6 +1086,27 @@ export default function StudentExamTaking() {
           </div>
         );
 
+      case 'stem':
+        return (
+          <div className="space-y-4">
+            <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg border border-green-200 dark:border-green-800">
+              <p className="text-sm text-green-800 dark:text-green-200 mb-2">
+                <strong>STEM Question:</strong> Use mathematical notation, formulas, and symbols as needed.
+              </p>
+              <p className="text-xs text-green-600 dark:text-green-300">
+                Mathematical expressions and scientific notation are supported.
+              </p>
+            </div>
+            <MathField
+              value={answer || ''}
+              onChange={(value) => handleAnswerChange(question.questionId, value)}
+              placeholder={t('examTaking.enterYourAnswer')}
+              data-testid="input-stem-answer"
+              className="min-h-[100px] w-full"
+            />
+          </div>
+        );
+
       default:
         return (
           <div className="text-center py-8">
@@ -1236,7 +1302,17 @@ export default function StudentExamTaking() {
               </CardHeader>
               <CardContent className="space-y-3 sm:space-y-4 px-3 sm:px-4 pb-3 sm:pb-4">
                 <div className="prose max-w-none">
-                  <p className="text-sm sm:text-base leading-relaxed">{currentQuestion.question.questionText}</p>
+                  {currentQuestion.question.questionType === 'stem' ? (
+                    <MathField
+                      value={currentQuestion.question.questionText}
+                      readonly={true}
+                      className="border-none p-0 m-0 bg-transparent"
+                      hideToolbar={true}
+                      hideVirtualKeyboardToggle={true}
+                    />
+                  ) : (
+                    <p className="text-sm sm:text-base leading-relaxed">{currentQuestion.question.questionText}</p>
+                  )}
                 </div>
 
                 <div className="mt-2 sm:mt-3">

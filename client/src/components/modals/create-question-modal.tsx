@@ -11,6 +11,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
 import {
@@ -29,15 +30,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { Plus, List, PenTool, FileText, Pen, Upload, Paperclip, ArrowUpDown, Link, Move3D } from "lucide-react";
+import { Plus, List, PenTool, FileText, Pen, Upload, Paperclip, ArrowUpDown, Link, Move3D, Calculator } from "lucide-react";
 
 import { ObjectUploader } from "@/components/ObjectUploader";
 import { useTranslation } from "@/hooks/useTranslation";
+import { MathField } from "@/components/ui/math-field";
 
 const createQuestionSchema = z.object({
   title: z.string().min(1, "Title is required").max(200),
   questionText: z.string().min(1, "Question text is required"),
-  questionType: z.enum(['multiple_choice', 'short_answer', 'essay', 'fill_blank', 'matching', 'ranking', 'drag_drop']),
+  questionType: z.enum(['multiple_choice', 'short_answer', 'essay', 'fill_blank', 'matching', 'ranking', 'drag_drop', 'stem']),
   category: z.enum(['exam', 'homework']),
   options: z.union([z.array(z.string()), z.string()]).optional(),
   correctAnswer: z.string().optional(),
@@ -199,6 +201,7 @@ export default function CreateQuestionModal({ open, onOpenChange, questionCatego
     { value: 'matching', label: t('questionTypes.matching'), icon: Link },
     { value: 'ranking', label: t('questionTypes.ranking'), icon: ArrowUpDown },
     { value: 'drag_drop', label: t('questionTypes.dragAndDrop'), icon: Move3D },
+    { value: 'stem', label: t('questionTypes.stem'), icon: Calculator },
   ];
 
   const onSubmit = (data: CreateQuestionForm) => {
@@ -355,6 +358,9 @@ export default function CreateQuestionModal({ open, onOpenChange, questionCatego
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{questionCategory === 'homework' ? t('assignments.createNewHomeworkQuestion') : t('assignments.createNewExamQuestion')}</DialogTitle>
+          <DialogDescription>
+            Create a new question for your {questionCategory}. Choose the question type and fill in the details below.
+          </DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
@@ -407,13 +413,145 @@ export default function CreateQuestionModal({ open, onOpenChange, questionCatego
               name="questionText"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t('assignments.questionText')}</FormLabel>
+                  <FormLabel>
+                    {t('assignments.questionText')}
+                    {form.watch('questionType') === 'stem' && (
+                      <span className="text-sm text-muted-foreground ml-2">
+                        (Mathematical expressions supported)
+                      </span>
+                    )}
+                  </FormLabel>
                   <FormControl>
-                    <Textarea 
-                      rows={4}
-                      placeholder={t('assignments.enterYourQuestionHere')} 
-                      {...field} 
-                    />
+                    {form.watch('questionType') === 'stem' ? (
+                      <div className="relative">
+                        <MathField
+                          value={field.value}
+                          onChange={field.onChange}
+                          placeholder="Activate virtual keyboard to type Math expressions"
+                          data-testid="input-question-text-math"
+                          className="min-h-[200px] border-2 border-blue-200 dark:border-blue-800 bg-blue-50/30 dark:bg-blue-900/10 focus-within:border-blue-400 dark:focus-within:border-blue-600 shadow-sm"
+                          hideToolbar={true}
+                          hideVirtualKeyboardToggle={true}
+                        />
+                        {/* Virtual Keyboard Controls */}
+                        <div className="absolute -right-2 top-1/2 -translate-y-1/2 flex flex-row gap-1">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            className="h-5 w-10 rounded-lg bg-gradient-to-br from-green-500 to-green-600 border-2 border-green-300 hover:from-green-600 hover:to-green-700 shadow-lg hover:shadow-xl transition-all duration-200 group"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              
+                              // Show virtual keyboard using proper MathLive API
+                              if (window.mathVirtualKeyboard) {
+                                try {
+                                  // First focus the math field
+                                  const mathField = document.querySelector('math-field') as any;
+                                  if (mathField) {
+                                    mathField.focus();
+                                  }
+                                  
+                                  // Show the virtual keyboard
+                                  window.mathVirtualKeyboard.show();
+                                  
+                                  // Ensure visibility with DOM manipulation as fallback
+                                  setTimeout(() => {
+                                    const keyboardElement = document.querySelector('math-virtual-keyboard') || 
+                                                          document.querySelector('.ML__virtual-keyboard') ||
+                                                          document.querySelector('.ml__virtual-keyboard');
+                                    if (keyboardElement) {
+                                      (keyboardElement as HTMLElement).style.display = 'block';
+                                      (keyboardElement as HTMLElement).style.visibility = 'visible';
+                                      (keyboardElement as HTMLElement).style.opacity = '1';
+                                      (keyboardElement as HTMLElement).style.zIndex = '9999';
+                                    }
+                                  }, 100);
+                                  
+                                } catch (error) {
+                                  console.warn('Failed to show virtual keyboard:', error);
+                                }
+                              }
+                            }}
+                            title="Focus Math Input (Shows Virtual Keyboard)"
+                          >
+                            <div className="flex flex-col items-center justify-center text-white">
+                              <Calculator className="h-3 w-3 mb-0.5 group-hover:scale-110 transition-transform" />
+                              <span className="text-[8px] font-medium">Show</span>
+                            </div>
+                          </Button>
+                          
+                          <Button
+                            type="button"
+                            variant="outline"
+                            className="h-5 w-10 rounded-lg bg-gradient-to-br from-yellow-500 to-yellow-600 border-2 border-yellow-300 hover:from-yellow-600 hover:to-yellow-700 shadow-lg hover:shadow-xl transition-all duration-200 group"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              
+                              // Hide virtual keyboard using comprehensive approach
+                              try {
+                                // First blur the math field
+                                const mathField = document.querySelector('math-field') as any;
+                                if (mathField) {
+                                  mathField.blur();
+                                }
+                                
+                                // Use the original hide function if available
+                                if ((window.mathVirtualKeyboard as any)?.originalHide) {
+                                  try {
+                                    (window.mathVirtualKeyboard as any).originalHide.call(window.mathVirtualKeyboard);
+                                  } catch (hideError) {
+                                    console.warn('Original hide function failed:', hideError);
+                                  }
+                                }
+                                
+                                // Force hide via DOM manipulation  
+                                const hideKeyboard = () => {
+                                  const selectors = [
+                                    'math-virtual-keyboard',
+                                    '.ML__virtual-keyboard', 
+                                    '.ml__virtual-keyboard',
+                                    '.ML__keyboard'
+                                  ];
+                                  
+                                  selectors.forEach(selector => {
+                                    const elements = document.querySelectorAll(selector);
+                                    elements.forEach((element) => {
+                                      const htmlElement = element as HTMLElement;
+                                      htmlElement.style.display = 'none';
+                                      htmlElement.style.visibility = 'hidden';
+                                      htmlElement.style.opacity = '0';
+                                    });
+                                  });
+                                };
+                                
+                                // Hide immediately and again after a delay
+                                hideKeyboard();
+                                setTimeout(hideKeyboard, 50);
+                                setTimeout(hideKeyboard, 200);
+                                
+                              } catch (error) {
+                                console.warn('Failed to hide virtual keyboard:', error);
+                              }
+                            }}
+                            title="Close Virtual Keyboard"
+                          >
+                            <div className="flex flex-col items-center justify-center text-white">
+                              <div className="h-3 w-3 mb-0.5 group-hover:scale-110 transition-transform text-[10px]">✕</div>
+                              <span className="text-[8px] font-medium">Hide</span>
+                            </div>
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <Textarea 
+                        rows={4}
+                        placeholder={t('assignments.enterYourQuestionHere')} 
+                        {...field} 
+                        data-testid="input-question-text"
+                      />
+                    )}
                   </FormControl>
                   <FormMessage />
                 </FormItem>

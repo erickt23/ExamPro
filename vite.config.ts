@@ -30,8 +30,26 @@ export default defineConfig({
   },
   server: {
     fs: {
-      strict: true,
-      deny: ["**/.*"],
+      strict: false,
+      allow: [
+        // Allow serving files from anywhere in the workspace
+        "..",
+        // Specifically allow serving MathLive fonts
+        "../node_modules/mathlive",
+        "../node_modules/.vite/deps",
+      ],
+      deny: [],
     },
+  },
+  assetsInclude: [
+    "**/*.woff",
+    "**/*.woff2", 
+    "**/*.ttf",
+    "**/*.otf",
+    "**/*.eot"
+  ],
+  optimizeDeps: {
+    include: ["mathlive"],
+    exclude: []
   },
 });

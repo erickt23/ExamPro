@@ -19,7 +19,8 @@ import {
   Menu,
   X,
   ChevronDown,
-  ChevronRight
+  ChevronRight,
+  Shield
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -124,6 +125,11 @@ export default function Sidebar({ className }: SidebarProps) {
           href: "/exam-results",
           icon: BarChart3,
         },
+        {
+          title: t('nav.proctoringLogs'),
+          href: "/proctoring-logs",
+          icon: Shield,
+        },
       ]
     },
     {
@@ -140,6 +146,20 @@ export default function Sidebar({ className }: SidebarProps) {
       title: t('nav.settings'),
       href: "/settings",
       icon: Settings,
+    },
+  ];
+
+  // Admin-specific navigation items
+  const adminNavItems = [
+    {
+      title: t('nav.adminQuestionManagement'),
+      href: "/admin/question-management",
+      icon: BookOpen,
+    },
+    {
+      title: t('nav.adminPanel'),
+      href: "/admin",
+      icon: Shield,
     },
   ];
 
@@ -290,6 +310,48 @@ export default function Sidebar({ className }: SidebarProps) {
                 </button>
               );
             })}
+
+            {/* Admin section for admin users only */}
+            {user?.role === 'admin' && (
+              <div className="border-t border-gray-200 dark:border-gray-700 pt-3 mt-3">
+                <div className="mb-2">
+                  {(!isCollapsed || isMobileOpen) && (
+                    <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider px-3">
+                      {t('nav.adminSection')}
+                    </span>
+                  )}
+                </div>
+                {adminNavItems.map((item) => {
+                  const isActive = location === item.href;
+                  const showText = !isCollapsed || isMobileOpen;
+                  return (
+                    <button
+                      key={item.href}
+                      onClick={() => {
+                        setLocation(item.href);
+                        if (window.innerWidth < 768) {
+                          setIsMobileOpen(false);
+                        }
+                      }}
+                      className={cn(
+                        "w-full flex items-center px-3 py-2 rounded-xl text-left transition-all duration-200 group",
+                        showText ? "space-x-3" : "justify-center",
+                        isActive
+                          ? "text-white bg-gradient-to-r from-purple-500 to-pink-600 shadow-lg transform scale-105"
+                          : "text-gray-700 dark:text-foreground hover:bg-gradient-to-r hover:from-purple-400/20 hover:to-pink-500/20 dark:hover:bg-secondary hover:text-purple-700 dark:hover:text-foreground hover:shadow-md hover:transform hover:scale-105"
+                      )}
+                      title={!showText ? item.title : undefined}
+                    >
+                      <item.icon className={cn(
+                        "h-4 w-4 flex-shrink-0 transition-all duration-200",
+                        isActive ? "text-white drop-shadow-sm" : "text-gray-600 dark:text-muted-foreground group-hover:text-purple-600 dark:group-hover:text-foreground"
+                      )} />
+                      {showText && <span className={cn("truncate font-medium text-sm", isActive ? "text-white" : "text-gray-700 dark:text-foreground group-hover:text-purple-700 dark:group-hover:text-foreground")}>{item.title}</span>}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
 
             {/* Accordion items for instructor */}
             {isInstructor && instructorAccordionItems.map((accordion) => {

@@ -611,7 +611,12 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
                                 )}
                                 <span className="text-xs text-gray-500 flex-shrink-0">{question.points} pts</span>
                               </div>
-                              <p className="text-sm truncate" style={{maxWidth: 'calc(100% - 2rem)'}}>{question.questionText}</p>
+                              <p className="text-sm truncate" style={{maxWidth: 'calc(100% - 2rem)'}}>
+                                {question.questionType === 'stem' ? 
+                                  `Math: ${question.questionText}` : 
+                                  question.questionText
+                                }
+                              </p>
                             </div>
                             <Button
                               type="button"
@@ -677,7 +682,10 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
                                   <span className="text-xs text-gray-500 flex-shrink-0">{question.points} pts</span>
                                 </div>
                                 <p className="text-sm text-gray-900 truncate" style={{maxWidth: 'calc(100% - 2rem)'}}>
-                                  {question.questionText}
+                                  {question.questionType === 'stem' ? 
+                                    `Math: ${question.questionText}` : 
+                                    question.questionText
+                                  }
                                 </p>
                               </div>
                               <Button
@@ -748,7 +756,10 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
                                   <span className="text-xs text-gray-500">{question.points} pts</span>
                                 </div>
                                 <p className="text-sm text-gray-900 truncate">
-                                  {question.questionText}
+                                  {question.questionType === 'stem' ? 
+                                    `Math: ${question.questionText}` : 
+                                    question.questionText
+                                  }
                                 </p>
                               </div>
                             </div>

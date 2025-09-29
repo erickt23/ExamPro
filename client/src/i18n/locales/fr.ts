@@ -13,10 +13,14 @@ export const fr = {
     grading: 'Centre de Notes',
     submissionsReview: 'Révision des Notes',
     examResults: 'Résultats d\'Examens',
+    proctoringLogs: 'Journaux de Surveillance',
     analytics: 'Analytique',
     students: 'Étudiants',
     homework: 'Devoirs',
-    grades: 'Notes'
+    grades: 'Notes',
+    adminSection: 'Administration',
+    adminQuestionManagement: 'Gestion des Questions',
+    adminPanel: 'Panneau d\'Administration'
   },
 
   // Authentication
@@ -142,7 +146,8 @@ export const fr = {
     fillInBlank: 'Remplir les Blancs',
     matching: 'Association',
     ranking: 'Classement/Ordre',
-    dragAndDrop: 'Glisser-Déposer'
+    dragAndDrop: 'Glisser-Déposer',
+    stem: 'STEM (Math/Sciences)'
   },
 
   // Difficulty Levels
@@ -584,6 +589,38 @@ export const fr = {
     correct: 'Correct :'
   },
 
+  // Proctoring
+  proctoring: {
+    title: 'Avertissement de Surveillance d\'Examen',
+    subtitle: 'Votre activité d\'examen est surveillée pour l\'intégrité académique.',
+    warningText: 'Avertissement : Activité suspecte détectée pendant votre examen.',
+    violationsDetected: 'Violations détectées :',
+    violationsRemaining: 'Il vous reste {count} violations avant que votre examen soit automatiquement soumis.',
+    monitoredActivities: 'Les activités surveillées incluent :',
+    leavingFullscreen: 'Quitter le mode plein écran',
+    switchingTabs: 'Changer d\'onglets ou de fenêtres',
+    usingDevTools: 'Utiliser les outils de développement',
+    openingContextMenus: 'Ouvrir les menus contextuels',
+    toContinue: 'Pour continuer :',
+    stayFullscreen: 'Restez en mode plein écran et concentrez-vous uniquement sur votre examen. Évitez de changer d\'onglets, d\'ouvrir d\'autres applications ou de quitter cette page.',
+    understand: 'Je Comprends',
+    returnToFullscreen: 'Retourner en Plein Écran'
+  },
+
+  // Proctoring Logs
+  proctoringLogs: {
+    title: 'Journaux de Surveillance',
+    description: 'Surveiller les activités de surveillance d\'examen et les violations',
+    student: 'Étudiant',
+    exam: 'Examen',
+    violations: 'Violations',
+    timestamp: 'Horodatage',
+    actions: 'Actions',
+    viewDetails: 'Voir les Détails',
+    noLogs: 'Aucun journal de surveillance trouvé',
+    loading: 'Chargement des journaux de surveillance...'
+  },
+
   // Settings
   settings: {
     title: 'Paramètres',
@@ -645,6 +682,38 @@ export const fr = {
     loadingSettings: 'Chargement des paramètres...',
     noDescription: 'Aucune description',
     showingXtoYofZ: 'Affichage de {start} à {end} sur {total} matières'
+  },
+
+  // Extra Credits Management
+  extraCredits: {
+    title: 'Gestion des Crédits Supplémentaires',
+    description: 'Attribuer des points bonus aux étudiants pour tous les cours',
+    manageExtraCredits: 'Gérer Crédits Supplémentaires',
+    addExtraCredit: 'Ajouter Crédit Supplémentaire',
+    allExtraCredits: 'Tous les Crédits Supplémentaires',
+    student: 'Étudiant',
+    course: 'Cours',
+    points: 'Points',
+    reason: 'Raison',
+    grantedBy: 'Accordé Par',
+    grantedAt: 'Date d\'Attribution',
+    actions: 'Actions',
+    delete: 'Supprimer',
+    selectStudent: 'Sélectionner Étudiant',
+    selectCourse: 'Sélectionner Cours',
+    enterPoints: 'Entrer Points',
+    enterReason: 'Entrer Raison',
+    addCredit: 'Ajouter Crédit',
+    adding: 'Ajout en cours...',
+    deleteConfirm: 'Êtes-vous sûr de vouloir supprimer ce crédit supplémentaire ?',
+    deleteWarning: 'Ceci affectera la note finale de l\'étudiant.',
+    noExtraCredits: 'Aucun crédit supplémentaire trouvé',
+    noExtraCreditsMessage: 'Aucun crédit supplémentaire n\'a encore été attribué.',
+    creditAdded: 'Crédit supplémentaire ajouté avec succès',
+    creditDeleted: 'Crédit supplémentaire supprimé avec succès',
+    failedToAdd: 'Échec de l\'ajout du crédit supplémentaire',
+    failedToDelete: 'Échec de la suppression du crédit supplémentaire',
+    loading: 'Chargement des crédits supplémentaires...'
   },
 
   // Import Questions Modal

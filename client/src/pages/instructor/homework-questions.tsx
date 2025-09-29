@@ -32,6 +32,7 @@ import {
   Upload
 } from "lucide-react";
 import { QuestionsPagination } from "@/components/ui/questions-pagination";
+import { MathField } from "@/components/ui/math-field";
 
 export default function InstructorHomeworkQuestions() {
   const { toast } = useToast();
@@ -318,9 +319,19 @@ export default function InstructorHomeworkQuestions() {
                               </Badge>
                             </div>
                             <h4 className="font-medium text-gray-900 mb-2">{question.title || question.questionText.substring(0, 100)}</h4>
-                            <p className="text-sm text-gray-600 mb-3 line-clamp-2">
-                              {question.questionText}
-                            </p>
+                            <div className="text-sm text-gray-600 mb-3 line-clamp-2">
+                              {question.questionType === 'stem' ? (
+                                <MathField
+                                  value={question.questionText}
+                                  readonly={true}
+                                  className="border-none p-0 m-0 bg-transparent text-gray-600"
+                                  hideToolbar={true}
+                                  hideVirtualKeyboardToggle={true}
+                                />
+                              ) : (
+                                <p>{question.questionText}</p>
+                              )}
+                            </div>
                             <div className="flex items-center space-x-4 text-sm text-gray-500">
                               <span className="flex items-center">
                                 <Eye className="h-4 w-4 mr-1" />

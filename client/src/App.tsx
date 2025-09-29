@@ -4,6 +4,8 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/contexts/theme-context";
+// Import MathLive configuration early to fix font loading issues
+import "@/lib/mathlive-config";
 import { useAuth } from "@/hooks/useAuth";
 import NotFound from "@/pages/not-found";
 import Landing from "@/pages/landing";
@@ -13,6 +15,7 @@ import InstructorHomeworkQuestions from "@/pages/instructor/homework-questions";
 import InstructorExams from "@/pages/instructor/exams";
 import InstructorGrading from "@/pages/instructor/grading";
 import InstructorExamResults from "@/pages/instructor/exam-results";
+import InstructorProctoringLogs from "@/pages/instructor/proctoring-logs";
 import InstructorAnalytics from "@/pages/instructor/analytics";
 import InstructorStudents from "@/pages/instructor/students";
 import InstructorHomework from "@/pages/instructor/homework";
@@ -24,6 +27,7 @@ import StudentExams from "@/pages/student/exams";
 import StudentExamTaking from "@/pages/student/exam-taking";
 import StudentGrades from "@/pages/student/grades";
 import AdminPage from "@/pages/admin";
+import AdminQuestionManagement from "@/pages/admin/question-management";
 
 function Router() {
   const { user, isAuthenticated, isLoading } = useAuth();
@@ -63,6 +67,7 @@ function Router() {
           <Route path="/grading/:submissionId" component={InstructorGrading} />
           <Route path="/homework-grading/:submissionId" component={InstructorGrading} />
           <Route path="/exam-results" component={InstructorExamResults} />
+          <Route path="/proctoring-logs" component={InstructorProctoringLogs} />
           <Route path="/analytics" component={InstructorAnalytics} />
           <Route path="/students" component={InstructorStudents} />
           <Route path="/settings" component={InstructorSettings} />
@@ -78,6 +83,7 @@ function Router() {
         </>
       )}
       <Route path="/admin" component={AdminPage} />
+      <Route path="/admin/question-management" component={AdminQuestionManagement} />
       <Route component={NotFound} />
     </Switch>
   );
