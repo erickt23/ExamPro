@@ -1,3 +1,4 @@
+
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { Pool as PgPool } from 'pg';
 import { Pool as NeonPool, neonConfig } from '@neondatabase/serverless';
@@ -17,9 +18,15 @@ if (!process.env.DATABASE_URL) {
 let pool;
 let db;
 
-pool = new PgPool({
-  connectionString: process.env.DATABASE_URL,
-});
-db = drizzle(pool, { schema });
+if (process.env.NODE_ENV === 'production') {
+  neonConfig.webSocketConstructor = ws;
+  pool = new NeonPool({ connectionString: process.env.DATABASE_URL });
+  db = drizzleNeon(pool, { schema });
+} else {
+  pool = new PgPool({
+    connectionString: process.env.DATABASE_URL,
+  });
+  db = drizzle(pool, { schema });
+}
 
 export { pool, db };
