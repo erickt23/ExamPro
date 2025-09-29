@@ -440,79 +440,29 @@ export default function CreateQuestionModal({ open, onOpenChange, questionCatego
                             variant="outline"
                             className="h-12 w-24 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 border-2 border-blue-300 hover:from-blue-600 hover:to-indigo-700 shadow-lg hover:shadow-xl transition-all duration-200 group"
                             onClick={() => {
-                              // Toggle virtual keyboard using MathLive API
+                              // Simple, reliable toggle using MathLive API only
                               if (window.mathVirtualKeyboard) {
                                 try {
-                                  // Use MathLive's built-in visible property for reliable detection
-                                  const isCurrentlyVisible = window.mathVirtualKeyboard.visible;
+                                  console.log('Toggle clicked, current visible state:', window.mathVirtualKeyboard.visible);
                                   
-                                  if (isCurrentlyVisible) {
-                                    // Hide keyboard using MathLive API
+                                  if (window.mathVirtualKeyboard.visible) {
+                                    console.log('Hiding keyboard...');
                                     window.mathVirtualKeyboard.hide();
-                                    
-                                    // Additional DOM-based hiding for stubborn cases
-                                    setTimeout(() => {
-                                      const keyboardElements = [
-                                        document.querySelector('math-virtual-keyboard'),
-                                        document.querySelector('.ML__virtual-keyboard'),
-                                        document.querySelector('.ml__virtual-keyboard'),
-                                        document.querySelector('[role="application"][aria-label*="keyboard"]'),
-                                        document.querySelector('.ML__keyboard')
-                                      ];
-                                      
-                                      keyboardElements.forEach(element => {
-                                        if (element) {
-                                          (element as HTMLElement).style.display = 'none';
-                                          (element as HTMLElement).style.visibility = 'hidden';
-                                          (element as HTMLElement).style.opacity = '0';
-                                          (element as HTMLElement).style.transform = 'translateY(100%)';
-                                        }
-                                      });
-                                    }, 10);
                                   } else {
-                                    // Show keyboard
+                                    console.log('Showing keyboard...');
                                     window.mathVirtualKeyboard.show();
-                                    
-                                    // Ensure visibility
-                                    setTimeout(() => {
-                                      const keyboardElements = [
-                                        document.querySelector('math-virtual-keyboard'),
-                                        document.querySelector('.ML__virtual-keyboard'),
-                                        document.querySelector('.ml__virtual-keyboard'),
-                                        document.querySelector('[role="application"][aria-label*="keyboard"]'),
-                                        document.querySelector('.ML__keyboard')
-                                      ];
-                                      
-                                      keyboardElements.forEach(element => {
-                                        if (element) {
-                                          (element as HTMLElement).style.display = 'block';
-                                          (element as HTMLElement).style.visibility = 'visible';
-                                          (element as HTMLElement).style.opacity = '1';
-                                          (element as HTMLElement).style.transform = 'translateY(0)';
-                                        }
-                                      });
-                                    }, 10);
                                   }
-                                } catch (error) {
-                                  console.error('Error toggling math virtual keyboard:', error);
                                   
-                                  // Fallback: Force hide by finding all possible keyboard elements
-                                  try {
-                                    const keyboardElements = document.querySelectorAll([
-                                      'math-virtual-keyboard',
-                                      '.ML__virtual-keyboard', 
-                                      '.ml__virtual-keyboard',
-                                      '[role="application"][aria-label*="keyboard"]',
-                                      '.ML__keyboard'
-                                    ].join(','));
-                                    
-                                    keyboardElements.forEach(element => {
-                                      (element as HTMLElement).style.display = 'none';
-                                    });
-                                  } catch (fallbackError) {
-                                    console.error('Fallback keyboard hide failed:', fallbackError);
-                                  }
+                                  // Log final state for debugging
+                                  setTimeout(() => {
+                                    console.log('Final visible state after toggle:', window.mathVirtualKeyboard.visible);
+                                  }, 100);
+                                  
+                                } catch (error) {
+                                  console.error('Error in keyboard toggle:', error);
                                 }
+                              } else {
+                                console.log('mathVirtualKeyboard not available');
                               }
                             }}
                             title="Toggle Virtual Keyboard"
