@@ -84,6 +84,7 @@ export default function CreateQuestionModal({ open, onOpenChange, questionCatego
   const [dragDropZones, setDragDropZones] = useState([{ zone: '', items: [] as string[] }]);
   const [dragDropItems, setDragDropItems] = useState(['']);
   const [fillBlankFields, setFillBlankFields] = useState([{ label: 'Blank 1', answer: '' }, { label: 'Blank 2', answer: '' }]);
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
 
   const form = useForm<CreateQuestionForm>({
     resolver: zodResolver(createQuestionSchema),
@@ -440,29 +441,69 @@ export default function CreateQuestionModal({ open, onOpenChange, questionCatego
                             variant="outline"
                             className="h-12 w-24 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 border-2 border-blue-300 hover:from-blue-600 hover:to-indigo-700 shadow-lg hover:shadow-xl transition-all duration-200 group"
                             onClick={() => {
-                              // Simple, reliable toggle using MathLive API only
-                              if (window.mathVirtualKeyboard) {
-                                try {
-                                  console.log('Toggle clicked, current visible state:', window.mathVirtualKeyboard.visible);
-                                  
-                                  if (window.mathVirtualKeyboard.visible) {
-                                    console.log('Hiding keyboard...');
-                                    window.mathVirtualKeyboard.hide();
-                                  } else {
-                                    console.log('Showing keyboard...');
+                              console.log('Virtual Keyboard Button Clicked - Current local state:', keyboardVisible);
+                              
+                              if (!keyboardVisible) {
+                                // SHOW keyboard
+                                console.log('Attempting to SHOW keyboard...');
+                                setKeyboardVisible(true);
+                                
+                                if (window.mathVirtualKeyboard) {
+                                  try {
                                     window.mathVirtualKeyboard.show();
+                                    console.log('MathLive show() called successfully');
+                                  } catch (error) {
+                                    console.error('Error showing keyboard:', error);
                                   }
-                                  
-                                  // Log final state for debugging
-                                  setTimeout(() => {
-                                    console.log('Final visible state after toggle:', window.mathVirtualKeyboard.visible);
-                                  }, 100);
-                                  
-                                } catch (error) {
-                                  console.error('Error in keyboard toggle:', error);
                                 }
                               } else {
-                                console.log('mathVirtualKeyboard not available');
+                                // HIDE keyboard  
+                                console.log('Attempting to HIDE keyboard...');
+                                setKeyboardVisible(false);
+                                
+                                // Multiple methods to ensure keyboard closes
+                                if (window.mathVirtualKeyboard) {
+                                  try {
+                                    // Method 1: Official API
+                                    window.mathVirtualKeyboard.hide();
+                                    console.log('MathLive hide() called');
+                                  } catch (error) {
+                                    console.error('Error hiding keyboard via API:', error);
+                                  }
+                                }
+                                
+                                // Method 2: Force hide via DOM manipulation
+                                setTimeout(() => {
+                                  const allPossibleSelectors = [
+                                    'math-virtual-keyboard',
+                                    '.ML__virtual-keyboard', 
+                                    '.ml__virtual-keyboard',
+                                    '.ML__keyboard',
+                                    '[role="application"][aria-label*="keyboard"]',
+                                    '[role="application"][aria-label*="Virtual"]',
+                                    '.mathlive-keyboard',
+                                    'div[data-ml-keyboard]'
+                                  ];
+                                  
+                                  allPossibleSelectors.forEach(selector => {
+                                    const elements = document.querySelectorAll(selector);
+                                    elements.forEach((element) => {
+                                      if (element) {
+                                        console.log('Force hiding element:', selector);
+                                        const htmlElement = element as HTMLElement;
+                                        htmlElement.style.display = 'none !important';
+                                        htmlElement.style.visibility = 'hidden !important';
+                                        htmlElement.style.opacity = '0 !important';
+                                        htmlElement.style.height = '0px !important';
+                                        htmlElement.style.overflow = 'hidden !important';
+                                        htmlElement.setAttribute('aria-hidden', 'true');
+                                        htmlElement.classList.add('hidden');
+                                      }
+                                    });
+                                  });
+                                  
+                                  console.log('DOM force hide completed');
+                                }, 50);
                               }
                             }}
                             title="Toggle Virtual Keyboard"
