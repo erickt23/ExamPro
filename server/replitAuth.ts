@@ -9,7 +9,7 @@ import connectPg from "connect-pg-simple";
 import MemoryStore from "memorystore";
 import { storage } from "./storage";
 
-if (!process.env.REPLIT_DOMAINS) {
+if (process.env.NODE_ENV === 'production' && !process.env.REPLIT_DOMAINS) {
   throw new Error("Environment variable REPLIT_DOMAINS not provided");
 }
 
@@ -102,62 +102,117 @@ export async function setupAuth(app: Express) {
   app.use(passport.initialize());
   app.use(passport.session());
 
-  const config = await getOidcConfig();
-
-  const verify: VerifyFunction = async (
-    tokens: client.TokenEndpointResponse & client.TokenEndpointResponseHelpers,
-    verified: passport.AuthenticateCallback
-  ) => {
-    const user = {};
-    updateUserSession(user, tokens);
-    await upsertUser(tokens.claims());
-    verified(null, user);
-  };
-
-  for (const domain of process.env
-    .REPLIT_DOMAINS!.split(",")) {
-    const strategy = new Strategy(
-      {
-        name: `replitauth:${domain}`,
-        config,
-        scope: "openid email profile offline_access",
-        callbackURL: `https://${domain}/api/callback`,
-      },
-      verify,
-    );
-    passport.use(strategy);
-  }
-
   passport.serializeUser((user: Express.User, cb) => cb(null, user));
   passport.deserializeUser((user: Express.User, cb) => cb(null, user));
 
-  app.get("/api/login", (req, res, next) => {
-    passport.authenticate(`replitauth:${req.hostname}`, {
-      prompt: "login consent",
-      scope: ["openid", "email", "profile", "offline_access"],
-    })(req, res, next);
-  });
+  if (process.env.NODE_ENV === 'production') {
+    const config = await getOidcConfig();
 
-  app.get("/api/callback", (req, res, next) => {
-    passport.authenticate(`replitauth:${req.hostname}`, {
-      successReturnToOrRedirect: "/",
-      failureRedirect: "/api/login",
-    })(req, res, next);
-  });
+    const verify: VerifyFunction = async (
+      tokens: client.TokenEndpointResponse & client.TokenEndpointResponseHelpers,
+      verified: passport.AuthenticateCallback
+    ) => {
+      const user = {};
+      updateUserSession(user, tokens);
+      await upsertUser(tokens.claims());
+      verified(null, user);
+    };
 
-  app.get("/api/logout", (req, res) => {
-    req.logout(() => {
-      res.redirect(
-        client.buildEndSessionUrl(config, {
-          client_id: process.env.REPL_ID!,
-          post_logout_redirect_uri: `${req.protocol}://${req.hostname}`,
-        }).href
+    for (const domain of process.env
+      .REPLIT_DOMAINS!.split(",")) {
+      const strategy = new Strategy(
+        {
+          name: `replitauth:${domain}`,
+          config,
+          scope: "openid email profile offline_access",
+          callbackURL: `https://${domain}/api/callback`,
+        },
+        verify,
       );
+      passport.use(strategy);
+    }
+
+    app.get("/api/login", (req, res, next) => {
+      passport.authenticate(`replitauth:${req.hostname}`, {
+        prompt: "login consent",
+        scope: ["openid", "email", "profile", "offline_access"],
+      })(req, res, next);
     });
-  });
+
+    app.get("/api/callback", (req, res, next) => {
+      passport.authenticate(`replitauth:${req.hostname}`, {
+        successReturnToOrRedirect: "/",
+        failureRedirect: "/api/login",
+      })(req, res, next);
+    });
+
+    app.get("/api/logout", (req, res) => {
+      req.logout(() => {
+        res.redirect(
+          client.buildEndSessionUrl(config, {
+            client_id: process.env.REPL_ID!,
+            post_logout_redirect_uri: `${req.protocol}://${req.hostname}`,
+          }).href
+        );
+      });
+    });
+  } else {
+    // Local development authentication
+    app.get("/api/login/local", (req, res, next) => {
+      const { role = 'student', id = 'local-user', firstName = 'Local', lastName = 'User' } = req.query;
+      const user = {
+        claims: {
+          sub: id,
+          email: `${id}@example.com`,
+          first_name: firstName,
+          last_name: lastName,
+          profile_image_url: '',
+          role: role,
+        },
+        // expires_at is needed for isAuthenticated
+        expires_at: Math.floor(Date.now() / 1000) + 3600,
+      };
+      
+      req.logIn(user, (err) => {
+        if (err) {
+          return next(err);
+        }
+        upsertUser(user.claims).then(() => {
+          res.redirect("/");
+        }).catch(next);
+      });
+    });
+
+    app.get("/api/logout", (req, res) => {
+      req.logout(() => {
+        res.redirect("/");
+      });
+    });
+
+    // In development, provide a simple page to select a role and log in
+    app.get("/api/login", (req, res) => {
+      res.send(`
+        <h1>Local Development Login</h1>
+        <p>Select a role to log in as:</p>
+        <ul>
+          <li><a href="/api/login/local?role=admin&id=admin-user&firstName=Admin&lastName=User">Login as Admin</a></li>
+          <li><a href="/api/login/local?role=instructor&id=instructor-user&firstName=Instructor&lastName=User">Login as Instructor</a></li>
+          <li><a href="/api/login/local?role=student&id=student-user&firstName=Student&lastName=User">Login as Student</a></li>
+        </ul>
+      `);
+    });
+  }
 }
 
 export const isAuthenticated: RequestHandler = async (req, res, next) => {
+  if (process.env.NODE_ENV !== 'production') {
+    if (req.isAuthenticated()) {
+      return next();
+    }
+    // For local dev, if not authenticated, redirect to login page
+    return res.redirect('/api/login');
+  }
+
   const user = req.user as any;
 
   if (!req.isAuthenticated() || !user.expires_at) {
