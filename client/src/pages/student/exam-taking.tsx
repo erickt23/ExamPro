@@ -1302,7 +1302,17 @@ export default function StudentExamTaking() {
               </CardHeader>
               <CardContent className="space-y-3 sm:space-y-4 px-3 sm:px-4 pb-3 sm:pb-4">
                 <div className="prose max-w-none">
-                  <p className="text-sm sm:text-base leading-relaxed">{currentQuestion.question.questionText}</p>
+                  {currentQuestion.question.questionType === 'stem' ? (
+                    <MathField
+                      value={currentQuestion.question.questionText}
+                      readonly={true}
+                      className="border-none p-0 m-0 bg-transparent"
+                      hideToolbar={true}
+                      hideVirtualKeyboardToggle={true}
+                    />
+                  ) : (
+                    <p className="text-sm sm:text-base leading-relaxed">{currentQuestion.question.questionText}</p>
+                  )}
                 </div>
 
                 <div className="mt-2 sm:mt-3">
