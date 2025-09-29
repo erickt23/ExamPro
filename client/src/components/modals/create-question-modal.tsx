@@ -439,14 +439,38 @@ export default function CreateQuestionModal({ open, onOpenChange, questionCatego
                             type="button"
                             variant="outline"
                             className="h-10 w-20 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 border-2 border-blue-300 hover:from-blue-600 hover:to-indigo-700 shadow-lg hover:shadow-xl transition-all duration-200 group"
-                            onClick={() => {
-                              // Focus the math field to show keyboard
-                              const mathField = document.querySelector('math-field') as any;
-                              if (mathField) {
-                                mathField.focus();
-                                setTimeout(() => {
-                                  mathField.click();
-                                }, 50);
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              
+                              // Show virtual keyboard using proper MathLive API
+                              if (window.mathVirtualKeyboard) {
+                                try {
+                                  // First focus the math field
+                                  const mathField = document.querySelector('math-field') as any;
+                                  if (mathField) {
+                                    mathField.focus();
+                                  }
+                                  
+                                  // Show the virtual keyboard
+                                  window.mathVirtualKeyboard.show();
+                                  
+                                  // Ensure visibility with DOM manipulation as fallback
+                                  setTimeout(() => {
+                                    const keyboardElement = document.querySelector('math-virtual-keyboard') || 
+                                                          document.querySelector('.ML__virtual-keyboard') ||
+                                                          document.querySelector('.ml__virtual-keyboard');
+                                    if (keyboardElement) {
+                                      (keyboardElement as HTMLElement).style.display = 'block';
+                                      (keyboardElement as HTMLElement).style.visibility = 'visible';
+                                      (keyboardElement as HTMLElement).style.opacity = '1';
+                                      (keyboardElement as HTMLElement).style.zIndex = '9999';
+                                    }
+                                  }, 100);
+                                  
+                                } catch (error) {
+                                  console.warn('Failed to show virtual keyboard:', error);
+                                }
                               }
                             }}
                             title="Focus Math Input (Shows Virtual Keyboard)"
@@ -461,41 +485,55 @@ export default function CreateQuestionModal({ open, onOpenChange, questionCatego
                             type="button"
                             variant="outline"
                             className="h-10 w-20 rounded-lg bg-gradient-to-br from-red-500 to-red-600 border-2 border-red-300 hover:from-red-600 hover:to-red-700 shadow-lg hover:shadow-xl transition-all duration-200 group"
-                            onClick={() => {
-                              // Multiple methods to close the keyboard
-                              const mathField = document.querySelector('math-field') as any;
-                              if (mathField) {
-                                mathField.blur(); // Remove focus first
-                              }
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
                               
-                              // Try MathLive API
-                              if (window.mathVirtualKeyboard) {
-                                try {
-                                  window.mathVirtualKeyboard.hide();
-                                } catch (error) {
-                                  console.warn('MathLive hide API failed:', error);
+                              // Hide virtual keyboard using comprehensive approach
+                              try {
+                                // First blur the math field
+                                const mathField = document.querySelector('math-field') as any;
+                                if (mathField) {
+                                  mathField.blur();
                                 }
-                              }
-                              
-                              // Force hide via DOM manipulation
-                              setTimeout(() => {
-                                const selectors = [
-                                  'math-virtual-keyboard',
-                                  '.ML__virtual-keyboard', 
-                                  '.ml__virtual-keyboard',
-                                  '.ML__keyboard'
-                                ];
                                 
-                                selectors.forEach(selector => {
-                                  const elements = document.querySelectorAll(selector);
-                                  elements.forEach((element) => {
-                                    const htmlElement = element as HTMLElement;
-                                    htmlElement.style.display = 'none';
-                                    htmlElement.style.visibility = 'hidden';
-                                    htmlElement.style.opacity = '0';
+                                // Use the original hide function if available
+                                if ((window.mathVirtualKeyboard as any)?.originalHide) {
+                                  try {
+                                    (window.mathVirtualKeyboard as any).originalHide.call(window.mathVirtualKeyboard);
+                                  } catch (hideError) {
+                                    console.warn('Original hide function failed:', hideError);
+                                  }
+                                }
+                                
+                                // Force hide via DOM manipulation  
+                                const hideKeyboard = () => {
+                                  const selectors = [
+                                    'math-virtual-keyboard',
+                                    '.ML__virtual-keyboard', 
+                                    '.ml__virtual-keyboard',
+                                    '.ML__keyboard'
+                                  ];
+                                  
+                                  selectors.forEach(selector => {
+                                    const elements = document.querySelectorAll(selector);
+                                    elements.forEach((element) => {
+                                      const htmlElement = element as HTMLElement;
+                                      htmlElement.style.display = 'none';
+                                      htmlElement.style.visibility = 'hidden';
+                                      htmlElement.style.opacity = '0';
+                                    });
                                   });
-                                });
-                              }, 100);
+                                };
+                                
+                                // Hide immediately and again after a delay
+                                hideKeyboard();
+                                setTimeout(hideKeyboard, 50);
+                                setTimeout(hideKeyboard, 200);
+                                
+                              } catch (error) {
+                                console.warn('Failed to hide virtual keyboard:', error);
+                              }
                             }}
                             title="Close Virtual Keyboard"
                           >
