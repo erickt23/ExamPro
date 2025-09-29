@@ -32,7 +32,75 @@ DialogOverlay.displayName = DialogPrimitive.Overlay.displayName
 const DialogContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
->(({ className, children, ...props }, ref) => (
+>(({ className, children, ...props }, ref) => {
+  const [mathLiveInteracting, setMathLiveInteracting] = React.useState(false);
+  
+  // Function to detect if target is related to MathLive
+  const isMathLiveElement = React.useCallback((target: Element | null): boolean => {
+    if (!target) return false;
+    
+    // Check element and all parents for MathLive classes/attributes
+    let current: Element | null = target;
+    while (current && current !== document.body) {
+      // Check various MathLive selectors
+      if (
+        current.tagName?.toLowerCase() === 'math-virtual-keyboard' ||
+        current.tagName?.toLowerCase() === 'math-field' ||
+        current.closest?.('math-virtual-keyboard') ||
+        current.closest?.('math-field') ||
+        current.closest?.('.ML__virtual-keyboard') ||
+        current.closest?.('.ml__virtual-keyboard') ||
+        current.closest?.('.ML__keyboard') ||
+        current.closest?.('.ML__keycap') ||
+        current.closest?.('.ML__toolbar') ||
+        current.closest?.('.ML__menu') ||
+        current.closest?.('.ML__popup') ||
+        current.closest?.('.ML__popover') ||
+        current.closest?.('.mathfield') ||
+        current.closest?.('.math-toolbar') ||
+        current.closest?.('.math-keyboard') ||
+        current.closest?.('[data-ml]') ||
+        current.hasAttribute?.('data-ml') ||
+        current.id?.includes('mathlive') ||
+        current.className?.includes('ML__') ||
+        current.className?.includes('ml__') ||
+        current.className?.includes('mathfield') ||
+        current.className?.includes('math-')
+      ) {
+        return true;
+      }
+      current = current.parentElement || null;
+    }
+    return false;
+  }, []);
+  
+  // Effect to monitor MathLive interactions globally
+  React.useEffect(() => {
+    const handleDocumentClick = (e: MouseEvent) => {
+      if (isMathLiveElement(e.target as Element)) {
+        setMathLiveInteracting(true);
+        // Reset after a short delay
+        setTimeout(() => setMathLiveInteracting(false), 100);
+      }
+    };
+    
+    const handleDocumentFocus = (e: FocusEvent) => {
+      if (isMathLiveElement(e.target as Element)) {
+        setMathLiveInteracting(true);
+        setTimeout(() => setMathLiveInteracting(false), 100);
+      }
+    };
+    
+    document.addEventListener('click', handleDocumentClick, true);
+    document.addEventListener('focusin', handleDocumentFocus, true);
+    
+    return () => {
+      document.removeEventListener('click', handleDocumentClick, true);
+      document.removeEventListener('focusin', handleDocumentFocus, true);
+    };
+  }, [isMathLiveElement]);
+
+  return (
   <DialogPortal>
     <DialogOverlay />
     <DialogPrimitive.Content
@@ -42,50 +110,26 @@ const DialogContent = React.forwardRef<
         className
       )}
       onPointerDownOutside={(e) => {
-        // Prevent modal from closing when interacting with MathLive virtual keyboard
-        const target = e.target as Element;
-        if (target?.closest('math-virtual-keyboard') || 
-            target?.closest('.ML__virtual-keyboard') ||
-            target?.closest('.ml__virtual-keyboard') ||
-            target?.closest('[data-ml]') ||
-            target?.closest('.ML__') ||
-            target?.closest('.mathfield') ||
-            target?.closest('.math-toolbar') ||
-            target?.closest('.math-keyboard') ||
-            target?.hasAttribute?.('data-ml') ||
-            target?.classList?.contains('ML__keyboard') ||
-            target?.classList?.contains('ML__keycap') ||
-            target?.classList?.contains('ML__virtual-keyboard-toggle') ||
-            target?.id?.includes('mathlive') ||
-            (target as any)?.tagName?.toLowerCase() === 'math-virtual-keyboard' ||
-            (target as any)?.tagName?.toLowerCase() === 'math-field') {
+        // Always prevent modal from closing if MathLive is interacting or element is MathLive-related
+        if (mathLiveInteracting || isMathLiveElement(e.target as Element)) {
           e.preventDefault();
           return;
         }
       }}
       onInteractOutside={(e) => {
-        // Prevent modal from closing when interacting with MathLive virtual keyboard
-        const target = e.target as Element;
-        if (target?.closest('math-virtual-keyboard') || 
-            target?.closest('.ML__virtual-keyboard') ||
-            target?.closest('.ml__virtual-keyboard') ||
-            target?.closest('[data-ml]') ||
-            target?.closest('.ML__') ||
-            target?.closest('.mathfield') ||
-            target?.closest('.math-toolbar') ||
-            target?.closest('.math-keyboard') ||
-            target?.hasAttribute?.('data-ml') ||
-            target?.classList?.contains('ML__keyboard') ||
-            target?.classList?.contains('ML__keycap') ||
-            target?.classList?.contains('ML__virtual-keyboard-toggle') ||
-            target?.id?.includes('mathlive') ||
-            (target as any)?.tagName?.toLowerCase() === 'math-virtual-keyboard' ||
-            (target as any)?.tagName?.toLowerCase() === 'math-field') {
+        // Always prevent modal from closing if MathLive is interacting or element is MathLive-related
+        if (mathLiveInteracting || isMathLiveElement(e.target as Element)) {
           e.preventDefault();
           return;
         }
       }}
       onEscapeKeyDown={(e) => {
+        // Prevent escape from closing modal if MathLive is interacting
+        if (mathLiveInteracting) {
+          e.preventDefault();
+          return;
+        }
+        
         // Check if virtual keyboard is open, if so don't close modal
         const keyboardElement = document.querySelector('math-virtual-keyboard') || 
                               document.querySelector('.ML__virtual-keyboard') ||
@@ -113,7 +157,8 @@ const DialogContent = React.forwardRef<
       </DialogPrimitive.Close>
     </DialogPrimitive.Content>
   </DialogPortal>
-))
+  );
+})
 DialogContent.displayName = DialogPrimitive.Content.displayName
 
 const DialogHeader = ({
