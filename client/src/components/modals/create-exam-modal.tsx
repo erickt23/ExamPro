@@ -38,7 +38,6 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { MathField } from "@/components/ui/math-field";
 import { Plus, Search, X } from "lucide-react";
 import CreateSubjectModal from "./create-subject-modal";
 
@@ -612,19 +611,12 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
                                 )}
                                 <span className="text-xs text-gray-500 flex-shrink-0">{question.points} pts</span>
                               </div>
-                              {question.questionType === 'stem' ? (
-                                <div className="text-sm truncate" style={{maxWidth: 'calc(100% - 2rem)'}}>
-                                  <MathField
-                                    value={question.questionText}
-                                    readonly={true}
-                                    className="border-none p-0 m-0 bg-transparent"
-                                    hideToolbar={true}
-                                    hideVirtualKeyboardToggle={true}
-                                  />
-                                </div>
-                              ) : (
-                                <p className="text-sm truncate" style={{maxWidth: 'calc(100% - 2rem)'}}>{question.questionText}</p>
-                              )}
+                              <p className="text-sm truncate" style={{maxWidth: 'calc(100% - 2rem)'}}>
+                                {question.questionType === 'stem' ? 
+                                  `Math: ${question.questionText}` : 
+                                  question.questionText
+                                }
+                              </p>
                             </div>
                             <Button
                               type="button"
@@ -689,21 +681,12 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
                                   )}
                                   <span className="text-xs text-gray-500 flex-shrink-0">{question.points} pts</span>
                                 </div>
-                                {question.questionType === 'stem' ? (
-                                  <div className="text-sm text-gray-900 truncate" style={{maxWidth: 'calc(100% - 2rem)'}}>
-                                    <MathField
-                                      value={question.questionText}
-                                      readonly={true}
-                                      className="border-none p-0 m-0 bg-transparent"
-                                      hideToolbar={true}
-                                      hideVirtualKeyboardToggle={true}
-                                    />
-                                  </div>
-                                ) : (
-                                  <p className="text-sm text-gray-900 truncate" style={{maxWidth: 'calc(100% - 2rem)'}}>
-                                    {question.questionText}
-                                  </p>
-                                )}
+                                <p className="text-sm text-gray-900 truncate" style={{maxWidth: 'calc(100% - 2rem)'}}>
+                                  {question.questionType === 'stem' ? 
+                                    `Math: ${question.questionText}` : 
+                                    question.questionText
+                                  }
+                                </p>
                               </div>
                               <Button
                                 type="button"
@@ -772,21 +755,12 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
                                   )}
                                   <span className="text-xs text-gray-500">{question.points} pts</span>
                                 </div>
-                                {question.questionType === 'stem' ? (
-                                  <div className="text-sm text-gray-900 truncate">
-                                    <MathField
-                                      value={question.questionText}
-                                      readonly={true}
-                                      className="border-none p-0 m-0 bg-transparent"
-                                      hideToolbar={true}
-                                      hideVirtualKeyboardToggle={true}
-                                    />
-                                  </div>
-                                ) : (
-                                  <p className="text-sm text-gray-900 truncate">
-                                    {question.questionText}
-                                  </p>
-                                )}
+                                <p className="text-sm text-gray-900 truncate">
+                                  {question.questionType === 'stem' ? 
+                                    `Math: ${question.questionText}` : 
+                                    question.questionText
+                                  }
+                                </p>
                               </div>
                             </div>
                           </div>
