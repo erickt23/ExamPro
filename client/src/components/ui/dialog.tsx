@@ -62,10 +62,15 @@ const DialogContent = React.forwardRef<
         current.closest?.('[data-ml]') ||
         current.hasAttribute?.('data-ml') ||
         current.id?.includes('mathlive') ||
-        current.className?.includes('ML__') ||
-        current.className?.includes('ml__') ||
-        current.className?.includes('mathfield') ||
-        current.className?.includes('math-')
+        (current.className && typeof current.className === 'string' && current.className.includes('ML__')) ||
+        (current.className && typeof current.className === 'string' && current.className.includes('ml__')) ||
+        (current.className && typeof current.className === 'string' && current.className.includes('mathfield')) ||
+        (current.className && typeof current.className === 'string' && current.className.includes('math-')) ||
+        current.classList?.contains('ML__keyboard') ||
+        current.classList?.contains('ML__keycap') ||
+        current.classList?.contains('ML__virtual-keyboard-toggle') ||
+        current.classList?.contains('mathfield') ||
+        current.classList?.contains('math-keyboard')
       ) {
         return true;
       }
