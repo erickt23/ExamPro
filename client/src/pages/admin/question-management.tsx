@@ -43,6 +43,7 @@ import {
   Crown
 } from "lucide-react";
 import { QuestionsPagination } from "@/components/ui/questions-pagination";
+import { MathField } from "@/components/ui/math-field";
 
 export default function AdminQuestionManagement() {
   const { toast } = useToast();
@@ -470,9 +471,19 @@ export default function AdminQuestionManagement() {
                               </Badge>
                             </div>
                             
-                            <p className="text-gray-600 dark:text-gray-300 mb-3 line-clamp-2">
-                              {question.questionText}
-                            </p>
+                            <div className="text-gray-600 dark:text-gray-300 mb-3 line-clamp-2">
+                              {question.questionType === 'stem' ? (
+                                <MathField
+                                  value={question.questionText}
+                                  readonly={true}
+                                  className="border-none p-0 m-0 bg-transparent text-gray-600 dark:text-gray-300"
+                                  hideToolbar={true}
+                                  hideVirtualKeyboardToggle={true}
+                                />
+                              ) : (
+                                <p>{question.questionText}</p>
+                              )}
+                            </div>
                             
                             <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
                               <span>Subject: {question.subject?.name || 'Unknown'}</span>
