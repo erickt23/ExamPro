@@ -66,6 +66,28 @@ const MathField = forwardRef<HTMLElement, MathFieldProps>(
       const mathField = mathFieldRef.current;
       if (!mathField) return;
 
+      // Configure MathLive font loading before field initialization
+      if (window.MathfieldElement && typeof window.MathfieldElement.fontsDirectory !== 'undefined') {
+        try {
+          // Set the fonts directory to use the correct Vite path
+          window.MathfieldElement.fontsDirectory = null; // Let MathLive auto-detect
+          console.log('MathLive fonts directory configured');
+        } catch (error) {
+          console.warn('Could not configure MathLive fonts directory:', error);
+        }
+      }
+
+      // Also try global configuration
+      if ((window as any).ml) {
+        try {
+          (window as any).ml.configure({
+            fontsDirectory: null, // Auto-detect
+          });
+        } catch (error) {
+          console.warn('Could not configure MathLive globally:', error);
+        }
+      }
+
       // Wait for MathLive to be fully loaded
       const initializeMathField = () => {
         try {
