@@ -18,6 +18,7 @@ interface MathFieldProps {
 const MathField = forwardRef<HTMLElement, MathFieldProps>(
   ({ value = '', onChange, readonly = false, placeholder = '', className, 'data-testid': testId, onBlur, onFocus }, ref) => {
     const mathFieldRef = useRef<any>(null);
+    const containerRef = useRef<HTMLDivElement>(null);
     const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
 
     const toggleVirtualKeyboard = () => {
@@ -297,6 +298,60 @@ const MathField = forwardRef<HTMLElement, MathFieldProps>(
       };
     }, [value, onChange, readonly, onFocus, onBlur]);
 
+    // Close virtual keyboard when clicking outside the MathField component
+    useEffect(() => {
+      const handleClickOutside = (event: MouseEvent) => {
+        const target = event.target as Element;
+        
+        // Don't close if keyboard is not visible
+        if (!isKeyboardVisible) return;
+        
+        // Check if click is outside the MathField container
+        if (containerRef.current && !containerRef.current.contains(target)) {
+          // Also check if click is not on virtual keyboard itself
+          const isVirtualKeyboardClick = target.closest('math-virtual-keyboard') ||
+                                       target.closest('.ML__virtual-keyboard') ||
+                                       target.closest('.ml__virtual-keyboard') ||
+                                       target.closest('.ML__keyboard') ||
+                                       target.closest('.ML__keycap') ||
+                                       target.closest('.mathfield') ||
+                                       (target.tagName && target.tagName.toLowerCase() === 'math-virtual-keyboard');
+          
+          // Only close if not clicking on virtual keyboard
+          if (!isVirtualKeyboardClick) {
+            // Close the virtual keyboard
+            const keyboardElement = document.querySelector('math-virtual-keyboard') || 
+                                  document.querySelector('.ML__virtual-keyboard') ||
+                                  document.querySelector('.ml__virtual-keyboard');
+            if (keyboardElement) {
+              (keyboardElement as HTMLElement).style.display = 'none';
+              (keyboardElement as HTMLElement).style.visibility = 'hidden';
+              (keyboardElement as HTMLElement).style.opacity = '0';
+            }
+            
+            // Also try the original hide function if available
+            if ((window.mathVirtualKeyboard as any).originalHide) {
+              try {
+                (window.mathVirtualKeyboard as any).originalHide.call(window.mathVirtualKeyboard);
+              } catch (e) {
+                // Silently fail if hide doesn't work
+              }
+            }
+            
+            setIsKeyboardVisible(false);
+          }
+        }
+      };
+
+      // Add event listener
+      document.addEventListener('mousedown', handleClickOutside);
+      
+      // Cleanup
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+      };
+    }, [isKeyboardVisible]);
+
     // Function to insert mathematical expressions
     const insertMath = (latex: string) => {
       if (mathFieldRef.current && !readonly) {
@@ -312,7 +367,7 @@ const MathField = forwardRef<HTMLElement, MathFieldProps>(
     };
 
     return (
-      <div className="relative">
+      <div ref={containerRef} className="relative">
         {/* Mathematical Functions Toolbar - Only show when not readonly */}
         {!readonly && (
           <div className="flex flex-wrap gap-1 mb-2 p-2 bg-muted/50 rounded-md border">
