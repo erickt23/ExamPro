@@ -433,25 +433,48 @@ export default function CreateQuestionModal({ open, onOpenChange, questionCatego
                           hideToolbar={true}
                           hideVirtualKeyboardToggle={true}
                         />
-                        {/* Large Virtual Keyboard Button */}
+                        {/* Virtual Keyboard Button */}
                         <div className="absolute -right-2 top-1/2 -translate-y-1/2">
                           <Button
                             type="button"
                             variant="outline"
-                            className="h-16 w-32 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 border-2 border-blue-300 hover:from-blue-600 hover:to-indigo-700 shadow-lg hover:shadow-xl transition-all duration-200 group"
+                            className="h-12 w-24 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 border-2 border-blue-300 hover:from-blue-600 hover:to-indigo-700 shadow-lg hover:shadow-xl transition-all duration-200 group"
                             onClick={() => {
-                              // Toggle virtual keyboard
+                              // Toggle virtual keyboard with DOM-based detection
                               if (window.mathVirtualKeyboard) {
                                 try {
-                                  // Check current visibility state
-                                  const isVisible = window.mathVirtualKeyboard.visible;
+                                  // Find the keyboard element in DOM
+                                  const keyboardElement = document.querySelector('math-virtual-keyboard') || 
+                                                         document.querySelector('.ML__virtual-keyboard') ||
+                                                         document.querySelector('.ml__virtual-keyboard');
+                                  
+                                  // Check if keyboard is currently visible by examining its computed style
+                                  let isVisible = false;
+                                  if (keyboardElement) {
+                                    const computedStyle = window.getComputedStyle(keyboardElement as HTMLElement);
+                                    isVisible = computedStyle.display !== 'none' && 
+                                               computedStyle.visibility !== 'hidden' && 
+                                               computedStyle.opacity !== '0' &&
+                                               (keyboardElement as HTMLElement).style.display !== 'none';
+                                  }
                                   
                                   if (isVisible) {
-                                    // Hide keyboard
+                                    // Hide keyboard - force it closed
                                     window.mathVirtualKeyboard.hide();
+                                    if (keyboardElement) {
+                                      (keyboardElement as HTMLElement).style.display = 'none';
+                                    }
                                   } else {
                                     // Show keyboard
                                     window.mathVirtualKeyboard.show();
+                                    // Small delay to ensure it's shown
+                                    setTimeout(() => {
+                                      if (keyboardElement) {
+                                        (keyboardElement as HTMLElement).style.display = 'block';
+                                        (keyboardElement as HTMLElement).style.visibility = 'visible';
+                                        (keyboardElement as HTMLElement).style.opacity = '1';
+                                      }
+                                    }, 50);
                                   }
                                 } catch (error) {
                                   console.error('Error toggling math virtual keyboard:', error);
@@ -467,8 +490,8 @@ export default function CreateQuestionModal({ open, onOpenChange, questionCatego
                             title="Toggle Virtual Keyboard"
                           >
                             <div className="flex flex-col items-center justify-center text-white">
-                              <Calculator className="h-5 w-5 mb-1 group-hover:scale-110 transition-transform" />
-                              <span className="text-[10px] font-medium leading-tight">Virtual Keyboard</span>
+                              <Calculator className="h-4 w-4 mb-0.5 group-hover:scale-110 transition-transform" />
+                              <span className="text-[9px] font-medium leading-tight">Virtual Keyboard</span>
                             </div>
                           </Button>
                         </div>
