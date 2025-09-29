@@ -427,7 +427,7 @@ export default function CreateQuestionModal({ open, onOpenChange, questionCatego
                         <MathField
                           value={field.value}
                           onChange={field.onChange}
-                          placeholder={t('assignments.enterYourQuestionHere')}
+                          placeholder="Activate virtual keyboard to type Math expressions"
                           data-testid="input-question-text-math"
                           className="min-h-[200px] border-2 border-blue-200 dark:border-blue-800 bg-blue-50/30 dark:bg-blue-900/10 focus-within:border-blue-400 dark:focus-within:border-blue-600 shadow-sm"
                           hideToolbar={true}

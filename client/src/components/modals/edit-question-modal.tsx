@@ -428,7 +428,7 @@ export default function EditQuestionModal({ open, onOpenChange, questionId }: Ed
                       <MathField
                         value={field.value}
                         onChange={field.onChange}
-                        placeholder="Enter your mathematical question here..."
+                        placeholder="Activate virtual keyboard to type Math expressions"
                         data-testid="input-question-text-math"
                         className="min-h-[200px]"
                       />
