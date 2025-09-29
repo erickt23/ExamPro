@@ -434,11 +434,11 @@ export default function CreateQuestionModal({ open, onOpenChange, questionCatego
                           hideVirtualKeyboardToggle={true}
                         />
                         {/* Virtual Keyboard Controls */}
-                        <div className="absolute -right-2 top-1/2 -translate-y-1/2 flex flex-col gap-2">
+                        <div className="absolute -right-2 top-1/2 -translate-y-1/2 flex flex-row gap-1">
                           <Button
                             type="button"
                             variant="outline"
-                            className="h-10 w-20 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 border-2 border-blue-300 hover:from-blue-600 hover:to-indigo-700 shadow-lg hover:shadow-xl transition-all duration-200 group"
+                            className="h-5 w-10 rounded-lg bg-gradient-to-br from-green-500 to-green-600 border-2 border-green-300 hover:from-green-600 hover:to-green-700 shadow-lg hover:shadow-xl transition-all duration-200 group"
                             onClick={(e) => {
                               e.preventDefault();
                               e.stopPropagation();
@@ -484,7 +484,7 @@ export default function CreateQuestionModal({ open, onOpenChange, questionCatego
                           <Button
                             type="button"
                             variant="outline"
-                            className="h-10 w-20 rounded-lg bg-gradient-to-br from-red-500 to-red-600 border-2 border-red-300 hover:from-red-600 hover:to-red-700 shadow-lg hover:shadow-xl transition-all duration-200 group"
+                            className="h-5 w-10 rounded-lg bg-gradient-to-br from-yellow-500 to-yellow-600 border-2 border-yellow-300 hover:from-yellow-600 hover:to-yellow-700 shadow-lg hover:shadow-xl transition-all duration-200 group"
                             onClick={(e) => {
                               e.preventDefault();
                               e.stopPropagation();
