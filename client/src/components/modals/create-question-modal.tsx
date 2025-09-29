@@ -438,41 +438,37 @@ export default function CreateQuestionModal({ open, onOpenChange, questionCatego
                           <Button
                             type="button"
                             variant="outline"
-                            size="lg"
-                            className="h-16 w-16 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 border-2 border-blue-300 hover:from-blue-600 hover:to-indigo-700 shadow-lg hover:shadow-xl transition-all duration-200 group"
+                            className="h-16 w-32 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 border-2 border-blue-300 hover:from-blue-600 hover:to-indigo-700 shadow-lg hover:shadow-xl transition-all duration-200 group"
                             onClick={() => {
                               // Toggle virtual keyboard
                               if (window.mathVirtualKeyboard) {
-                                const keyboardElement = document.querySelector('math-virtual-keyboard') || 
-                                                      document.querySelector('.ML__virtual-keyboard') ||
-                                                      document.querySelector('.ml__virtual-keyboard');
-                                const isVisible = keyboardElement && 
-                                                keyboardElement.getAttribute('aria-hidden') !== 'true' &&
-                                                (keyboardElement as HTMLElement).style.display !== 'none';
-                                
-                                if (isVisible) {
-                                  // Hide keyboard
-                                  if (keyboardElement) {
-                                    (keyboardElement as HTMLElement).style.display = 'none';
-                                    (keyboardElement as HTMLElement).style.visibility = 'hidden';
-                                    (keyboardElement as HTMLElement).style.opacity = '0';
+                                try {
+                                  // Check current visibility state
+                                  const isVisible = window.mathVirtualKeyboard.visible;
+                                  
+                                  if (isVisible) {
+                                    // Hide keyboard
+                                    window.mathVirtualKeyboard.hide();
+                                  } else {
+                                    // Show keyboard
+                                    window.mathVirtualKeyboard.show();
                                   }
-                                } else {
-                                  // Show keyboard
-                                  window.mathVirtualKeyboard.show();
-                                  if (keyboardElement) {
-                                    (keyboardElement as HTMLElement).style.display = 'block';
-                                    (keyboardElement as HTMLElement).style.visibility = 'visible';
-                                    (keyboardElement as HTMLElement).style.opacity = '1';
+                                } catch (error) {
+                                  console.error('Error toggling math virtual keyboard:', error);
+                                  // Fallback: try to show keyboard
+                                  try {
+                                    window.mathVirtualKeyboard.show();
+                                  } catch (fallbackError) {
+                                    console.error('Fallback keyboard show failed:', fallbackError);
                                   }
                                 }
                               }
                             }}
-                            title="Math Keyboard"
+                            title="Toggle Virtual Keyboard"
                           >
                             <div className="flex flex-col items-center justify-center text-white">
-                              <Calculator className="h-6 w-6 mb-0.5 group-hover:scale-110 transition-transform" />
-                              <span className="text-xs font-medium">Math</span>
+                              <Calculator className="h-5 w-5 mb-1 group-hover:scale-110 transition-transform" />
+                              <span className="text-[10px] font-medium leading-tight">Virtual Keyboard</span>
                             </div>
                           </Button>
                         </div>
