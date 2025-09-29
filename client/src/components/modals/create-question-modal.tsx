@@ -423,13 +423,60 @@ export default function CreateQuestionModal({ open, onOpenChange, questionCatego
                   </FormLabel>
                   <FormControl>
                     {form.watch('questionType') === 'stem' ? (
-                      <MathField
-                        value={field.value}
-                        onChange={field.onChange}
-                        placeholder={t('assignments.enterYourQuestionHere')}
-                        data-testid="input-question-text-math"
-                        className="min-h-[200px]"
-                      />
+                      <div className="relative">
+                        <MathField
+                          value={field.value}
+                          onChange={field.onChange}
+                          placeholder={t('assignments.enterYourQuestionHere')}
+                          data-testid="input-question-text-math"
+                          className="min-h-[200px] border-2 border-blue-200 dark:border-blue-800 bg-blue-50/30 dark:bg-blue-900/10 focus-within:border-blue-400 dark:focus-within:border-blue-600 shadow-sm"
+                          hideToolbar={true}
+                          hideVirtualKeyboardToggle={true}
+                        />
+                        {/* Large Virtual Keyboard Button */}
+                        <div className="absolute -right-2 top-1/2 -translate-y-1/2">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="lg"
+                            className="h-16 w-16 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 border-2 border-blue-300 hover:from-blue-600 hover:to-indigo-700 shadow-lg hover:shadow-xl transition-all duration-200 group"
+                            onClick={() => {
+                              // Toggle virtual keyboard
+                              if (window.mathVirtualKeyboard) {
+                                const keyboardElement = document.querySelector('math-virtual-keyboard') || 
+                                                      document.querySelector('.ML__virtual-keyboard') ||
+                                                      document.querySelector('.ml__virtual-keyboard');
+                                const isVisible = keyboardElement && 
+                                                keyboardElement.getAttribute('aria-hidden') !== 'true' &&
+                                                (keyboardElement as HTMLElement).style.display !== 'none';
+                                
+                                if (isVisible) {
+                                  // Hide keyboard
+                                  if (keyboardElement) {
+                                    (keyboardElement as HTMLElement).style.display = 'none';
+                                    (keyboardElement as HTMLElement).style.visibility = 'hidden';
+                                    (keyboardElement as HTMLElement).style.opacity = '0';
+                                  }
+                                } else {
+                                  // Show keyboard
+                                  window.mathVirtualKeyboard.show();
+                                  if (keyboardElement) {
+                                    (keyboardElement as HTMLElement).style.display = 'block';
+                                    (keyboardElement as HTMLElement).style.visibility = 'visible';
+                                    (keyboardElement as HTMLElement).style.opacity = '1';
+                                  }
+                                }
+                              }
+                            }}
+                            title="Math Keyboard"
+                          >
+                            <div className="flex flex-col items-center justify-center text-white">
+                              <Calculator className="h-6 w-6 mb-0.5 group-hover:scale-110 transition-transform" />
+                              <span className="text-xs font-medium">Math</span>
+                            </div>
+                          </Button>
+                        </div>
+                      </div>
                     ) : (
                       <Textarea 
                         rows={4}

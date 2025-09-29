@@ -13,10 +13,12 @@ interface MathFieldProps {
   'data-testid'?: string;
   onBlur?: () => void;
   onFocus?: () => void;
+  hideToolbar?: boolean;
+  hideVirtualKeyboardToggle?: boolean;
 }
 
 const MathField = forwardRef<HTMLElement, MathFieldProps>(
-  ({ value = '', onChange, readonly = false, placeholder = '', className, 'data-testid': testId, onBlur, onFocus }, ref) => {
+  ({ value = '', onChange, readonly = false, placeholder = '', className, 'data-testid': testId, onBlur, onFocus, hideToolbar = false, hideVirtualKeyboardToggle = false }, ref) => {
     const mathFieldRef = useRef<any>(null);
     const containerRef = useRef<HTMLDivElement>(null);
     const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
@@ -368,8 +370,8 @@ const MathField = forwardRef<HTMLElement, MathFieldProps>(
 
     return (
       <div ref={containerRef} className="relative">
-        {/* Mathematical Functions Toolbar - Only show when not readonly */}
-        {!readonly && (
+        {/* Mathematical Functions Toolbar - Only show when not readonly and not hidden */}
+        {!readonly && !hideToolbar && (
           <div className="flex flex-wrap gap-1 mb-2 p-2 bg-muted/50 rounded-md border">
             <Button
               type="button"
@@ -503,8 +505,8 @@ const MathField = forwardRef<HTMLElement, MathFieldProps>(
           {placeholder && !value ? placeholder : value}
         </math-field>
         
-        {/* Virtual Keyboard Toggle Button - Only show when not readonly */}
-        {!readonly && (
+        {/* Virtual Keyboard Toggle Button - Only show when not readonly and not hidden */}
+        {!readonly && !hideVirtualKeyboardToggle && (
           <Button
             type="button"
             variant="ghost"
