@@ -17,6 +17,46 @@ interface MathFieldProps {
   hideVirtualKeyboardToggle?: boolean;
 }
 
+// Global keyboard cleanup function
+const hideVirtualKeyboardGlobally = () => {
+  const keyboardElement = document.querySelector('math-virtual-keyboard') || 
+                        document.querySelector('.ML__virtual-keyboard') ||
+                        document.querySelector('.ml__virtual-keyboard');
+  if (keyboardElement) {
+    (keyboardElement as HTMLElement).style.display = 'none';
+    (keyboardElement as HTMLElement).style.visibility = 'hidden';
+    (keyboardElement as HTMLElement).style.opacity = '0';
+  }
+  
+  // Also try the original hide function if available
+  if ((window.mathVirtualKeyboard as any)?.originalHide) {
+    try {
+      (window.mathVirtualKeyboard as any).originalHide.call(window.mathVirtualKeyboard);
+    } catch (e) {
+      // Silently fail if hide doesn't work
+    }
+  }
+};
+
+// Set up global page visibility and navigation cleanup - only once
+if (typeof window !== 'undefined' && !(window as any).mathKeyboardCleanupSetup) {
+  // Mark as setup to prevent multiple listeners
+  (window as any).mathKeyboardCleanupSetup = true;
+  
+  // Hide keyboard when page becomes hidden
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      hideVirtualKeyboardGlobally();
+    }
+  });
+  
+  // Hide keyboard before page unload
+  window.addEventListener('beforeunload', hideVirtualKeyboardGlobally);
+  
+  // Hide keyboard on navigation (for SPA)
+  window.addEventListener('popstate', hideVirtualKeyboardGlobally);
+}
+
 const MathField = forwardRef<HTMLElement, MathFieldProps>(
   ({ value = '', onChange, readonly = false, placeholder = '', className, 'data-testid': testId, onBlur, onFocus, hideToolbar = false, hideVirtualKeyboardToggle = false }, ref) => {
     const mathFieldRef = useRef<any>(null);
@@ -297,8 +337,54 @@ const MathField = forwardRef<HTMLElement, MathFieldProps>(
         } catch (error) {
           console.warn('MathField cleanup error:', error);
         }
+        
+        // Auto-hide virtual keyboard when component unmounts
+        if (isKeyboardVisible) {
+          const keyboardElement = document.querySelector('math-virtual-keyboard') || 
+                                document.querySelector('.ML__virtual-keyboard') ||
+                                document.querySelector('.ml__virtual-keyboard');
+          if (keyboardElement) {
+            (keyboardElement as HTMLElement).style.display = 'none';
+            (keyboardElement as HTMLElement).style.visibility = 'hidden';
+            (keyboardElement as HTMLElement).style.opacity = '0';
+          }
+          
+          // Also try the original hide function if available
+          if ((window.mathVirtualKeyboard as any).originalHide) {
+            try {
+              (window.mathVirtualKeyboard as any).originalHide.call(window.mathVirtualKeyboard);
+            } catch (e) {
+              // Silently fail if hide doesn't work
+            }
+          }
+        }
       };
     }, [value, onChange, readonly, onFocus, onBlur]);
+
+    // Auto-hide virtual keyboard when switching to readonly mode
+    useEffect(() => {
+      if (readonly && isKeyboardVisible) {
+        const keyboardElement = document.querySelector('math-virtual-keyboard') || 
+                              document.querySelector('.ML__virtual-keyboard') ||
+                              document.querySelector('.ml__virtual-keyboard');
+        if (keyboardElement) {
+          (keyboardElement as HTMLElement).style.display = 'none';
+          (keyboardElement as HTMLElement).style.visibility = 'hidden';
+          (keyboardElement as HTMLElement).style.opacity = '0';
+        }
+        
+        // Also try the original hide function if available
+        if ((window.mathVirtualKeyboard as any).originalHide) {
+          try {
+            (window.mathVirtualKeyboard as any).originalHide.call(window.mathVirtualKeyboard);
+          } catch (e) {
+            // Silently fail if hide doesn't work
+          }
+        }
+        
+        setIsKeyboardVisible(false);
+      }
+    }, [readonly, isKeyboardVisible]);
 
     // Close virtual keyboard when clicking outside the MathField component
     useEffect(() => {
