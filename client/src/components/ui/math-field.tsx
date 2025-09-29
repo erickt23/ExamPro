@@ -63,7 +63,11 @@ const MathField = forwardRef<HTMLElement, MathFieldProps>(
     const containerRef = useRef<HTMLDivElement>(null);
     const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
 
-    const toggleVirtualKeyboard = () => {
+    const toggleVirtualKeyboard = (event: React.MouseEvent) => {
+      // Prevent event from bubbling up to modal or other elements
+      event.preventDefault();
+      event.stopPropagation();
+      
       if (window.mathVirtualKeyboard) {
         if (!isKeyboardVisible) {
           // Show keyboard
@@ -597,12 +601,17 @@ const MathField = forwardRef<HTMLElement, MathFieldProps>(
             type="button"
             variant="ghost"
             size="sm"
-            className="absolute right-1 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0"
+            className="absolute right-1 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0 z-50 hover:bg-gray-100 dark:hover:bg-gray-800"
             onClick={toggleVirtualKeyboard}
             data-testid="toggle-virtual-keyboard"
+            style={{ 
+              zIndex: 9999,
+              position: 'relative',
+              pointerEvents: 'auto'
+            }}
           >
             <Calculator className={cn(
-              "h-4 w-4", 
+              "h-4 w-4 pointer-events-none", 
               isKeyboardVisible ? "text-blue-600 dark:text-blue-400" : "text-gray-500 dark:text-gray-400"
             )} />
           </Button>
