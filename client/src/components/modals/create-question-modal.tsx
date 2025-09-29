@@ -11,6 +11,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
 import {
@@ -357,6 +358,9 @@ export default function CreateQuestionModal({ open, onOpenChange, questionCatego
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{questionCategory === 'homework' ? t('assignments.createNewHomeworkQuestion') : t('assignments.createNewExamQuestion')}</DialogTitle>
+          <DialogDescription>
+            Create a new question for your {questionCategory}. Choose the question type and fill in the details below.
+          </DialogDescription>
         </DialogHeader>
 
         <Form {...form}>

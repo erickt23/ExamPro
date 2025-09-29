@@ -49,8 +49,16 @@ const DialogContent = React.forwardRef<
             target?.closest('.ml__virtual-keyboard') ||
             target?.closest('[data-ml]') ||
             target?.closest('.ML__') ||
+            target?.closest('.mathfield') ||
+            target?.closest('.math-toolbar') ||
+            target?.closest('.math-keyboard') ||
             target?.hasAttribute?.('data-ml') ||
-            (target as any)?.tagName?.toLowerCase() === 'math-virtual-keyboard') {
+            target?.classList?.contains('ML__keyboard') ||
+            target?.classList?.contains('ML__keycap') ||
+            target?.classList?.contains('ML__virtual-keyboard-toggle') ||
+            target?.id?.includes('mathlive') ||
+            (target as any)?.tagName?.toLowerCase() === 'math-virtual-keyboard' ||
+            (target as any)?.tagName?.toLowerCase() === 'math-field') {
           e.preventDefault();
           return;
         }
@@ -63,8 +71,16 @@ const DialogContent = React.forwardRef<
             target?.closest('.ml__virtual-keyboard') ||
             target?.closest('[data-ml]') ||
             target?.closest('.ML__') ||
+            target?.closest('.mathfield') ||
+            target?.closest('.math-toolbar') ||
+            target?.closest('.math-keyboard') ||
             target?.hasAttribute?.('data-ml') ||
-            (target as any)?.tagName?.toLowerCase() === 'math-virtual-keyboard') {
+            target?.classList?.contains('ML__keyboard') ||
+            target?.classList?.contains('ML__keycap') ||
+            target?.classList?.contains('ML__virtual-keyboard-toggle') ||
+            target?.id?.includes('mathlive') ||
+            (target as any)?.tagName?.toLowerCase() === 'math-virtual-keyboard' ||
+            (target as any)?.tagName?.toLowerCase() === 'math-field') {
           e.preventDefault();
           return;
         }
@@ -73,10 +89,15 @@ const DialogContent = React.forwardRef<
         // Check if virtual keyboard is open, if so don't close modal
         const keyboardElement = document.querySelector('math-virtual-keyboard') || 
                               document.querySelector('.ML__virtual-keyboard') ||
-                              document.querySelector('.ml__virtual-keyboard');
-        if (keyboardElement && keyboardElement.getAttribute('aria-hidden') !== 'true') {
-          const isVisible = (keyboardElement as HTMLElement).style.display !== 'none' &&
-                           (keyboardElement as HTMLElement).style.visibility !== 'hidden';
+                              document.querySelector('.ml__virtual-keyboard') ||
+                              document.querySelector('.mathfield') ||
+                              document.querySelector('.math-keyboard') ||
+                              document.querySelector('.ML__keyboard');
+        if (keyboardElement) {
+          const isVisible = keyboardElement.getAttribute('aria-hidden') !== 'true' &&
+                           (keyboardElement as HTMLElement).style.display !== 'none' &&
+                           (keyboardElement as HTMLElement).style.visibility !== 'hidden' &&
+                           keyboardElement.getBoundingClientRect().height > 0;
           if (isVisible) {
             e.preventDefault();
             return;
