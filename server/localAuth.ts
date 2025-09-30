@@ -11,7 +11,7 @@ const users = new Map([
   ["admin@example.com", { 
     id: "admin-1", 
     email: "admin@example.com", 
-    password: "$2b$12$LQv3c1yqBWVHxkd0LQ4YCOdyy4w5r5w5r5w5r5w5r5w5r5w5r5w5r", // "password123"
+    password: "$2b$12$LQv3c1yqBWVHxkd0LQ4YCO.b9z5Zk4e0yJzKqH4RjGGvQjRGQnZOO", // "password123"
     firstName: "Admin", 
     lastName: "User", 
     role: "admin" 
@@ -19,7 +19,7 @@ const users = new Map([
   ["instructor@example.com", { 
     id: "instructor-1", 
     email: "instructor@example.com", 
-    password: "$2b$12$LQv3c1yqBWVHxkd0LQ4YCOdyy4w5r5w5r5w5r5w5r5w5r5w5r5w5r", // "password123"
+    password: "$2b$12$LQv3c1yqBWVHxkd0LQ4YCO.b9z5Zk4e0yJzKqH4RjGGvQjRGQnZOO", // "password123"
     firstName: "John", 
     lastName: "Instructor", 
     role: "instructor" 
@@ -27,7 +27,7 @@ const users = new Map([
   ["student@example.com", { 
     id: "student-1", 
     email: "student@example.com", 
-    password: "$2b$12$LQv3c1yqBWVHxkd0LQ4YCOdyy4w5r5w5r5w5r5w5r5w5r5w5r5w5r", // "password123"
+    password: "$2b$12$LQv3c1yqBWVHxkd0LQ4YCO.b9z5Zk4e0yJzKqH4RjGGvQjRGQnZOO", // "password123"
     firstName: "Jane", 
     lastName: "Student", 
     role: "student" 
