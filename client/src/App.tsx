@@ -49,6 +49,7 @@ function Router() {
   }
 
   const isInstructor = user?.role === 'instructor' || user?.role === 'admin';
+  const isStudent = user?.role === 'student';
 
   return (
     <Switch>
@@ -68,7 +69,7 @@ function Router() {
           <Route path="/students" component={InstructorStudents} />
           <Route path="/settings" component={InstructorSettings} />
         </>
-      ) : (
+      ) : isStudent ? (
         <>
           <Route path="/" component={StudentDashboard} />
           <Route path="/homework" component={StudentHomework} />
@@ -77,6 +78,15 @@ function Router() {
           <Route path="/exams/:id/take" component={StudentExamTaking} />
           <Route path="/grades" component={StudentGrades} />
         </>
+      ) : (
+        <Route path="/" component={() => (
+          <div className="min-h-screen flex items-center justify-center">
+            <div className="text-center">
+              <h1 className="text-2xl font-bold mb-4">Unknown User Role</h1>
+              <p className="text-muted-foreground">Your account role is not recognized. Please contact an administrator.</p>
+            </div>
+          </div>
+        )} />
       )}
       <Route path="/admin" component={AdminPage} />
       <Route path="/admin/question-management" component={AdminQuestionManagement} />
