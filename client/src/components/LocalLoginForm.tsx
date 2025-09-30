@@ -31,29 +31,8 @@ export function LocalLoginForm() {
       // Invalidate auth queries to refresh user data
       await queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
       
-      // Get user data to determine role-based redirect
-      try {
-        const userResponse = await fetch("/api/auth/user");
-        if (userResponse.ok) {
-          const userData = await userResponse.json();
-          
-          // Redirect based on user role
-          if (userData.role === 'admin' || userData.role === 'instructor') {
-            window.location.href = "/";  // Instructor dashboard
-          } else if (userData.role === 'student') {
-            window.location.href = "/";  // Student dashboard  
-          } else {
-            window.location.href = "/";  // Default fallback
-          }
-        } else {
-          // Fallback to page reload if we can't get user data
-          window.location.reload();
-        }
-      } catch (error) {
-        console.error("Error getting user data for redirect:", error);
-        // Fallback to page reload
-        window.location.reload();
-      }
+      // Simple redirect - let App.tsx handle role-based routing
+      window.location.href = "/";
     },
     onError: (error) => {
       setError("Invalid email or password");
