@@ -27,9 +27,13 @@ export function LocalLoginForm() {
       }
       return res.json();
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
-      toast({ title: "Login successful!" });
+    onSuccess: async () => {
+      // Invalidate auth queries to refresh user data
+      await queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      
+      // Force a page reload to trigger the App.tsx routing logic
+      // This ensures the user is properly redirected to their dashboard
+      window.location.reload();
     },
     onError: (error) => {
       setError("Invalid email or password");
