@@ -7,32 +7,44 @@ import bcrypt from "bcrypt";
 import { storage } from "./storage";
 import MemoryStore from "memorystore";
 
-const users = new Map([
-  ["admin@example.com", { 
-    id: "admin-1", 
-    email: "admin@example.com", 
-    password: "$2b$12$LQv3c1yqBWVHxkd0LQ4YCO.b9z5Zk4e0yJzKqH4RjGGvQjRGQnZOO", // "password123"
-    firstName: "Admin", 
-    lastName: "User", 
-    role: "admin" 
-  }],
-  ["instructor@example.com", { 
-    id: "instructor-1", 
-    email: "instructor@example.com", 
-    password: "$2b$12$LQv3c1yqBWVHxkd0LQ4YCO.b9z5Zk4e0yJzKqH4RjGGvQjRGQnZOO", // "password123"
-    firstName: "John", 
-    lastName: "Instructor", 
-    role: "instructor" 
-  }],
-  ["student@example.com", { 
-    id: "student-1", 
-    email: "student@example.com", 
-    password: "$2b$12$LQv3c1yqBWVHxkd0LQ4YCO.b9z5Zk4e0yJzKqH4RjGGvQjRGQnZOO", // "password123"
-    firstName: "Jane", 
-    lastName: "Student", 
-    role: "student" 
-  }]
-]);
+// Create users map with proper bcrypt hashes for "password123"
+const createUsersMap = async () => {
+  const passwordHash = await bcrypt.hash("password123", 12);
+  console.log("Generated password hash for demo accounts:", passwordHash);
+  
+  return new Map([
+    ["admin@example.com", { 
+      id: "admin-1", 
+      email: "admin@example.com", 
+      password: passwordHash,
+      firstName: "Admin", 
+      lastName: "User", 
+      role: "admin" 
+    }],
+    ["instructor@example.com", { 
+      id: "instructor-1", 
+      email: "instructor@example.com", 
+      password: passwordHash,
+      firstName: "John", 
+      lastName: "Instructor", 
+      role: "instructor" 
+    }],
+    ["student@example.com", { 
+      id: "student-1", 
+      email: "student@example.com", 
+      password: passwordHash,
+      firstName: "Jane", 
+      lastName: "Student", 
+      role: "student" 
+    }]
+  ]);
+};
+
+let users: Map<string, any>;
+createUsersMap().then(usersMap => {
+  users = usersMap;
+  console.log("Demo users initialized with proper password hashes");
+});
 
 export function getSession() {
   const sessionTtl = 7 * 24 * 60 * 60 * 1000; // 1 week
@@ -57,6 +69,11 @@ export function getSession() {
 }
 
 export async function setupAuth(app: Express) {
+  // Ensure users are initialized before setting up auth
+  if (!users) {
+    users = await createUsersMap();
+  }
+  
   app.use(getSession());
   app.use(passport.initialize());
   app.use(passport.session());
@@ -66,15 +83,21 @@ export async function setupAuth(app: Express) {
     { usernameField: 'email' },
     async (email, password, done) => {
       try {
+        console.log(`Login attempt for email: ${email}`);
         const user = users.get(email);
         if (!user) {
+          console.log(`User not found: ${email}`);
           return done(null, false, { message: 'User not found' });
         }
 
+        console.log(`Checking password for user: ${email}`);
         const isValid = await bcrypt.compare(password, user.password);
         if (!isValid) {
+          console.log(`Invalid password for user: ${email}`);
           return done(null, false, { message: 'Invalid password' });
         }
+
+        console.log(`Authentication successful for user: ${email}`);
 
         // Upsert user in database
         await storage.upsertUser({
@@ -86,8 +109,10 @@ export async function setupAuth(app: Express) {
           role: user.role as "instructor" | "student" | "admin",
         });
 
+        console.log(`User upserted in database: ${user.id}`);
         return done(null, user);
       } catch (error) {
+        console.error(`Authentication error for ${email}:`, error);
         return done(error);
       }
     }
@@ -109,8 +134,30 @@ export async function setupAuth(app: Express) {
   });
 
   // Login route
-  app.post("/api/login", passport.authenticate("local"), (req, res) => {
-    res.json({ message: "Login successful", user: req.user });
+  app.post("/api/login", (req, res, next) => {
+    console.log(`Login request received for: ${req.body.email}`);
+    
+    passport.authenticate("local", (err, user, info) => {
+      if (err) {
+        console.error("Login error:", err);
+        return res.status(500).json({ message: "Internal server error" });
+      }
+      
+      if (!user) {
+        console.log("Login failed:", info?.message || "Authentication failed");
+        return res.status(401).json({ message: info?.message || "Invalid credentials" });
+      }
+      
+      req.logIn(user, (err) => {
+        if (err) {
+          console.error("Session creation error:", err);
+          return res.status(500).json({ message: "Failed to create session" });
+        }
+        
+        console.log(`Login successful for user: ${user.email}, session ID: ${req.sessionID}`);
+        res.json({ message: "Login successful", user: req.user });
+      });
+    })(req, res, next);
   });
 
   // Logout route
@@ -150,8 +197,13 @@ export async function setupAuth(app: Express) {
 }
 
 export const isAuthenticated: RequestHandler = async (req, res, next) => {
+  console.log(`Auth check - Session ID: ${req.sessionID}, Authenticated: ${req.isAuthenticated()}, User: ${req.user ? JSON.stringify(req.user) : 'null'}`);
+  
   if (!req.isAuthenticated()) {
+    console.log("Authentication failed - no valid session");
     return res.status(401).json({ message: "Unauthorized" });
   }
+  
+  console.log("Authentication successful");
   next();
 };
