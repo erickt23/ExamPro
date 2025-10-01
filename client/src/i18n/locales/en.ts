@@ -889,10 +889,21 @@ export const en = {
     student: 'Student',
     instructor: 'Instructor',
     subject: 'Subject',
+    searchStudents: 'Search students...',
+    selectAll: 'Select All',
+    deselectAll: 'Deselect All',
+    noStudentsFound: 'No students found',
+    noStudentsAvailable: 'No students available',
+    selected: 'selected',
+    unsavedChanges: 'Unsaved changes',
+    applying: 'Applying...',
+    applyChanges: 'Apply Changes',
     type: 'Type',
     difficulty: 'Difficulty',
     timeLimit: 'Time Limit',
-    bloomsTaxonomy: 'Bloom\'s Taxonomy'
+    bloomsTaxonomy: 'Bloom\'s Taxonomy',
+    success: 'Success',
+    error: 'Error'
   },
 
   // Theme
@@ -901,5 +912,18 @@ export const en = {
     light: 'Light',
     dark: 'Dark',
     system: 'System',
+  },
+
+  // Instructor
+  instructor: {
+    assignStudents: 'Assign Students',
+    searchStudents: 'Search students by name or ID...',
+    assignedStudents: 'students assigned',
+    noStudentsAssigned: 'No students assigned yet',
+    selectStudentsToAssign: 'Select students from the list below to assign them to this exam or homework',
+    assignButton: 'Assign Selected',
+    removeButton: 'Remove Selected',
+    currentlyAssigned: 'Currently Assigned',
+    assigned: 'Assigned'
   }
 };

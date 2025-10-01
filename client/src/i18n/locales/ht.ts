@@ -883,10 +883,21 @@ export const ht = {
     student: 'Elèv',
     instructor: 'Pwofesè',
     subject: 'Matye',
+    searchStudents: 'Chèche elèv yo...',
+    selectAll: 'Chwazi Tout',
+    deselectAll: 'Pa Chwazi Anyen',
+    noStudentsFound: 'Pa gen elèv yo jwenn',
+    noStudentsAvailable: 'Pa gen elèv ki disponib',
+    selected: 'chwazi',
+    unsavedChanges: 'Chanjman ki pa anrejistre',
+    applying: 'Ap aplike...',
+    applyChanges: 'Aplike Chanjman yo',
     type: 'Tip',
     difficulty: 'Difikilte',
     timeLimit: 'Limit Tan',
-    bloomsTaxonomy: 'Taksonomi Bloom'
+    bloomsTaxonomy: 'Taksonomi Bloom',
+    success: 'Siksè',
+    error: 'Erè'
   },
 
   // Theme
@@ -895,5 +906,18 @@ export const ht = {
     light: 'Klè',
     dark: 'Nwa',
     system: 'Sistèm',
+  },
+
+  // Instructor
+  instructor: {
+    assignStudents: 'Asiyen Elèv yo',
+    searchStudents: 'Chèche elèv pa non oswa ID...',
+    assignedStudents: 'elèv asiyen',
+    noStudentsAssigned: 'Poko gen elèv ki asiyen',
+    selectStudentsToAssign: 'Chwazi elèv nan lis ki anba a pou asiyen yo nan egzamen oswa devwa sa a',
+    assignButton: 'Asiyen Sa yo ki Chwazi',
+    removeButton: 'Retire Sa yo ki Chwazi',
+    currentlyAssigned: 'Asiyen Kounye a',
+    assigned: 'Asiyen'
   }
 };

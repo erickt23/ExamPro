@@ -401,14 +401,28 @@ function GradingList() {
                           <Badge variant="secondary">{t('grading.needsReview')}</Badge>
                         </TableCell>
                         <TableCell>
-                          <Button
-                            size="sm"
-                            onClick={() => handleGradeExamSubmission(submission.id)}
-                            className="flex items-center gap-2"
-                          >
-                            <Eye className="h-4 w-4" />
-                            Grade
-                          </Button>
+                          <div className="flex items-center gap-2">
+                            <Button
+                              size="sm"
+                              onClick={() => handleGradeExamSubmission(submission.id)}
+                              className="flex items-center gap-2"
+                            >
+                              <Eye className="h-4 w-4" />
+                              Grade
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => {
+                                window.open(`/api/submissions/${submission.id}/pdf`, '_blank');
+                              }}
+                              className="flex items-center gap-2"
+                              data-testid={`button-download-pdf-${submission.id}`}
+                            >
+                              <Download className="h-4 w-4" />
+                              PDF
+                            </Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))}

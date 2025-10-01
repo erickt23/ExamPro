@@ -33,6 +33,7 @@ import { Label } from "@/components/ui/label";
 import { Plus, Search, X, Minus } from "lucide-react";
 import { useTranslation } from "@/hooks/useTranslation";
 import CreateSubjectModal from "./create-subject-modal";
+import StudentSelector from "@/components/student-selector";
 
 const editExamSchema = z.object({
   title: z.string().min(1, "Title is required").max(200),
@@ -964,6 +965,17 @@ export default function EditExamModal({ open, onOpenChange, examId }: EditExamMo
                   )}
                 </div>
               </div>
+            </div>
+
+            {/* Student Assignment Section */}
+            <div className="mt-6">
+              <StudentSelector
+                assignmentId={examId}
+                assignmentType="exam"
+                onAssignmentsChange={() => {
+                  queryClient.invalidateQueries({ queryKey: ["/api/exams", examId, "assigned-students"] });
+                }}
+              />
             </div>
 
             <DialogFooter>

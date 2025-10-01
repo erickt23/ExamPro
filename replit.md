@@ -77,6 +77,34 @@ Navigation terminology preferences:
   - **Right-side options are randomized** during exam taking to prevent positional matching
   - **Seeded randomization** using question ID ensures consistent order for each question across attempts
   - **Preserved answer integrity** maintains correct grading while providing fair assessment experience
+- **Student Assignment System for Exams and Homework** (October 1, 2025):
+  - **Database Schema Enhancement**: Added `examAssignments` and `homeworkAssignmentStudents` junction tables for many-to-many relationships
+  - **Backend API Implementation**: Complete REST API endpoints for assigning/removing students and checking access permissions
+    - `POST/GET/DELETE /api/exams/:id/assign-students` - Manage exam assignments
+    - `POST/GET/DELETE /api/homework/:id/assign-students` - Manage homework assignments
+  - **StudentSelector Component**: Reusable UI component with real-time search, multi-select checkboxes, and assigned student count display
+  - **Instructor Workflow Integration**: StudentSelector added to exam edit modal and homework edit form for seamless assignment management
+  - **Security and Access Control**: All assignment endpoints require instructor/admin privileges with ownership verification
+  - **Audit Trail**: Assignment records include assignedBy and assignedAt fields for tracking
+- **PDF Report Generation for Exam Submissions** (October 1, 2025):
+  - **Backend PDF Generation**: Implemented using pdfkit library for professional document generation
+  - **API Endpoint**: `GET /api/submissions/:id/pdf` generates printable PDF reports for individual student exam submissions
+  - **Comprehensive Report Content**:
+    - **Student Information**: Full name, student ID, email, and exam date
+    - **Exam Information**: Exam title, subject, total points, time limit, and instructions
+    - **Questions and Answers**: Each question displayed with numbering, point value, full question text, and student's answer
+    - **Multiple Question Type Support**: Properly formats multiple choice options, matching pairs, drag-drop assignments, ranking lists, and essay responses
+    - **Manual Grading Space**: Blank lined sections below each answer for instructor comments and grading notes
+    - **Summary Section**: Overall grading summary with total score, percentage, status, and space for overall comments
+  - **Professional Formatting**:
+    - Letter-size pages with appropriate margins
+    - Page headers with exam title and student name
+    - Page numbers in footer
+    - Clear visual hierarchy with section headings
+    - Separator lines between questions for readability
+  - **Frontend Integration**: PDF download button added to grading interface for easy access to printable reports
+  - **Security**: Only instructors who own the exam can generate PDFs for submissions
+  - **Use Cases**: Print exam reports for manual grading, record keeping, or providing detailed feedback to students
 
 ## System Architecture
 
@@ -127,3 +155,4 @@ The backend is a RESTful API built with Express.js and TypeScript.
 - **shadcn/ui**: Pre-built UI components
 - **lucide-react**: Icon library
 - **class-variance-authority**: Component variant management
+- **pdfkit**: PDF document generation library for creating printable exam reports

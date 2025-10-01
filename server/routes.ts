@@ -10,6 +10,7 @@ import { eq, and, desc, max } from "drizzle-orm";
 import * as path from "path";
 import * as fs from "fs";
 import * as bcrypt from "bcrypt";
+import PDFDocument from "pdfkit";
 import {
   ObjectStorageService,
   ObjectNotFoundError,
@@ -1067,6 +1068,88 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting exam:", error);
       res.status(500).json({ message: "Failed to delete exam" });
+    }
+  });
+
+  // Assign students to exam
+  app.post('/api/exams/:id/assign-students', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const user = await storage.getUser(userId);
+      const examId = parseInt(req.params.id);
+      const { studentIds } = req.body;
+
+      if (!hasInstructorPrivileges(user)) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const exam = await storage.getExamById(examId);
+      if (!exam || exam.instructorId !== userId) {
+        return res.status(404).json({ message: "Exam not found" });
+      }
+
+      if (!Array.isArray(studentIds)) {
+        return res.status(400).json({ message: "studentIds must be an array" });
+      }
+
+      await storage.assignStudentsToExam(examId, studentIds, userId);
+      res.json({ message: "Students assigned successfully" });
+    } catch (error) {
+      console.error("Error assigning students to exam:", error);
+      res.status(500).json({ message: "Failed to assign students to exam" });
+    }
+  });
+
+  // Get assigned students for exam
+  app.get('/api/exams/:id/assigned-students', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const user = await storage.getUser(userId);
+      const examId = parseInt(req.params.id);
+
+      if (!hasInstructorPrivileges(user)) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const exam = await storage.getExamById(examId);
+      if (!exam || exam.instructorId !== userId) {
+        return res.status(404).json({ message: "Exam not found" });
+      }
+
+      const students = await storage.getAssignedStudentsForExam(examId);
+      res.json(students);
+    } catch (error) {
+      console.error("Error getting assigned students for exam:", error);
+      res.status(500).json({ message: "Failed to get assigned students" });
+    }
+  });
+
+  // Remove students from exam
+  app.delete('/api/exams/:id/assigned-students', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const user = await storage.getUser(userId);
+      const examId = parseInt(req.params.id);
+      const { studentIds } = req.body;
+
+      if (!hasInstructorPrivileges(user)) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const exam = await storage.getExamById(examId);
+      if (!exam || exam.instructorId !== userId) {
+        return res.status(404).json({ message: "Exam not found" });
+      }
+
+      if (!Array.isArray(studentIds)) {
+        return res.status(400).json({ message: "studentIds must be an array" });
+      }
+
+      await storage.removeStudentsFromExam(examId, studentIds);
+      res.json({ message: "Students removed successfully" });
+    } catch (error) {
+      console.error("Error removing students from exam:", error);
+      res.status(500).json({ message: "Failed to remove students from exam" });
     }
   });
 
@@ -2226,6 +2309,407 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Generate PDF report for exam submission
+  app.get('/api/submissions/:id/pdf', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const user = await storage.getUser(userId);
+      const submissionId = parseInt(req.params.id);
+
+      if (!hasInstructorPrivileges(user)) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      // Fetch submission data
+      const submission = await storage.getSubmissionById(submissionId);
+      if (!submission) {
+        return res.status(404).json({ message: "Submission not found" });
+      }
+
+      // Fetch related data
+      const exam = await storage.getExamById(submission.examId);
+      if (!exam) {
+        return res.status(404).json({ message: "Exam not found" });
+      }
+
+      // Verify instructor owns the exam
+      if (exam.instructorId !== userId) {
+        return res.status(403).json({ message: "Access denied - you don't own this exam" });
+      }
+
+      const student = await storage.getUser(submission.studentId);
+      if (!student) {
+        return res.status(404).json({ message: "Student not found" });
+      }
+
+      const answers = await storage.getAnswers(submissionId);
+      const questions = await storage.getExamQuestions(submission.examId);
+
+      // Create PDF document
+      const doc = new PDFDocument({ 
+        margin: 50, 
+        size: 'LETTER',
+        bufferPages: true
+      });
+
+      // Set response headers
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename="exam-report-${student.firstName || 'student'}-${student.lastName || submission.studentId}-${exam.title.replace(/[^a-z0-9]/gi, '_')}.pdf"`);
+
+      // Pipe PDF to response
+      doc.pipe(res);
+
+      // Helper function to add page header
+      const addPageHeader = (pageNum: number, totalPages: number) => {
+        doc.fontSize(10)
+           .fillColor('#666666')
+           .text(`${exam.title} | ${student.firstName} ${student.lastName}`, 50, 20, { 
+             width: doc.page.width - 100,
+             align: 'left'
+           })
+           .text(`Page ${pageNum} of ${totalPages}`, 50, 20, {
+             width: doc.page.width - 100,
+             align: 'right'
+           });
+        
+        doc.moveTo(50, 40)
+           .lineTo(doc.page.width - 50, 40)
+           .strokeColor('#cccccc')
+           .stroke();
+      };
+
+      // Title Section
+      doc.fontSize(24)
+         .fillColor('#000000')
+         .font('Helvetica-Bold')
+         .text(exam.title, { align: 'center' });
+      
+      doc.moveDown(0.5);
+      doc.fontSize(12)
+         .fillColor('#666666')
+         .font('Helvetica')
+         .text('EXAM REPORT', { align: 'center' });
+
+      doc.moveDown(2);
+
+      // Student Information Section
+      doc.fontSize(14)
+         .fillColor('#000000')
+         .font('Helvetica-Bold')
+         .text('Student Information');
+      
+      doc.moveDown(0.5);
+      doc.fontSize(11)
+         .font('Helvetica');
+
+      const studentName = `${student.firstName || ''} ${student.lastName || ''}`.trim() || student.email;
+      doc.text(`Name: ${studentName}`);
+      doc.text(`Student ID: ${student.id}`);
+      doc.text(`Email: ${student.email}`);
+      doc.text(`Date of Exam: ${submission.submittedAt ? new Date(submission.submittedAt).toLocaleDateString() : 'N/A'}`);
+
+      doc.moveDown(1.5);
+
+      // Exam Information Section
+      doc.fontSize(14)
+         .font('Helvetica-Bold')
+         .text('Exam Information');
+      
+      doc.moveDown(0.5);
+      doc.fontSize(11)
+         .font('Helvetica');
+
+      doc.text(`Subject ID: ${exam.subjectId}`);
+      doc.text(`Total Points: ${exam.totalPoints || 'N/A'}`);
+      if (exam.duration) {
+        doc.text(`Time Limit: ${exam.duration} minutes`);
+      }
+      if (exam.description) {
+        doc.moveDown(0.5);
+        doc.text(`Instructions: ${exam.description}`, { 
+          width: doc.page.width - 100 
+        });
+      }
+
+      doc.moveDown(2);
+
+      // Questions and Answers Section
+      doc.fontSize(16)
+         .font('Helvetica-Bold')
+         .text('Questions and Student Answers');
+      
+      doc.moveDown(1);
+
+      // Process each question
+      for (let i = 0; i < questions.length; i++) {
+        const examQuestion = questions[i];
+        const question = (examQuestion as any).question;
+        const answer = answers.find(a => a.questionId === question.id);
+
+        // Check if we need a new page
+        if (doc.y > doc.page.height - 200) {
+          doc.addPage();
+        }
+
+        // Question number and points
+        doc.fontSize(12)
+           .font('Helvetica-Bold')
+           .fillColor('#000000')
+           .text(`Question ${i + 1}`, { continued: false });
+        
+        doc.fontSize(10)
+           .fillColor('#666666')
+           .text(`(${examQuestion.points || 0} points)`, { continued: false });
+
+        doc.moveDown(0.3);
+
+        // Question text
+        doc.fontSize(11)
+           .fillColor('#000000')
+           .font('Helvetica')
+           .text(question.questionText, { 
+             width: doc.page.width - 100,
+             align: 'left'
+           });
+
+        doc.moveDown(0.5);
+
+        // Display options for multiple choice
+        if (question.questionType === 'multiple_choice' && question.options) {
+          const options = typeof question.options === 'string' 
+            ? JSON.parse(question.options) 
+            : question.options;
+          
+          doc.fontSize(10)
+             .fillColor('#444444');
+          
+          options.forEach((option: string, idx: number) => {
+            const letter = String.fromCharCode(65 + idx);
+            doc.text(`  ${letter}) ${option}`);
+          });
+          
+          doc.moveDown(0.5);
+        }
+
+        // Display matching pairs
+        if (question.questionType === 'matching' && question.options) {
+          try {
+            const options = typeof question.options === 'string' 
+              ? JSON.parse(question.options) 
+              : question.options;
+            
+            if (options.leftItems && options.rightItems) {
+              doc.fontSize(10)
+                 .fillColor('#444444')
+                 .text('Left Items:');
+              options.leftItems.forEach((item: string, idx: number) => {
+                doc.text(`  ${idx + 1}. ${item}`);
+              });
+              
+              doc.moveDown(0.3);
+              doc.text('Right Items:');
+              options.rightItems.forEach((item: string, idx: number) => {
+                doc.text(`  ${String.fromCharCode(65 + idx)}. ${item}`);
+              });
+              
+              doc.moveDown(0.5);
+            }
+          } catch (e) {
+            console.error("Error parsing matching options:", e);
+          }
+        }
+
+        // Student's Answer Section
+        doc.fontSize(11)
+           .font('Helvetica-Bold')
+           .fillColor('#1a56db')
+           .text('Student Answer:');
+        
+        doc.moveDown(0.3);
+
+        doc.fontSize(10)
+           .font('Helvetica')
+           .fillColor('#000000');
+
+        if (answer && answer.answerText) {
+          let displayAnswer = answer.answerText;
+
+          // Format matching answers
+          if (question.questionType === 'matching') {
+            try {
+              const answerData = typeof answer.answerText === 'string' 
+                ? JSON.parse(answer.answerText) 
+                : answer.answerText;
+              
+              if (typeof answerData === 'object') {
+                const pairs = Object.entries(answerData).map(([left, right]) => {
+                  return `  ${left} → ${right}`;
+                }).join('\n');
+                displayAnswer = pairs || 'No answer provided';
+              }
+            } catch (e) {
+              // Keep original answer text if parsing fails
+            }
+          }
+
+          // Format drag-drop answers
+          if (question.questionType === 'drag_drop') {
+            try {
+              const answerData = typeof answer.answerText === 'string' 
+                ? JSON.parse(answer.answerText) 
+                : answer.answerText;
+              
+              if (typeof answerData === 'object') {
+                const assignments = Object.entries(answerData).map(([zone, item]) => {
+                  return `  ${zone}: ${item}`;
+                }).join('\n');
+                displayAnswer = assignments || 'No answer provided';
+              }
+            } catch (e) {
+              // Keep original answer text if parsing fails
+            }
+          }
+
+          // Format ranking answers
+          if (question.questionType === 'ranking') {
+            try {
+              const answerData = typeof answer.answerText === 'string' 
+                ? JSON.parse(answer.answerText) 
+                : answer.answerText;
+              
+              if (Array.isArray(answerData)) {
+                displayAnswer = answerData.map((item, idx) => `  ${idx + 1}. ${item}`).join('\n');
+              }
+            } catch (e) {
+              // Keep original answer text if parsing fails
+            }
+          }
+
+          doc.text(displayAnswer, { 
+            width: doc.page.width - 100 
+          });
+        } else {
+          doc.fillColor('#999999')
+             .text('No answer provided');
+        }
+
+        doc.moveDown(1);
+
+        // Score display if graded
+        if (answer && answer.score !== null && answer.score !== undefined) {
+          doc.fontSize(10)
+             .font('Helvetica-Bold')
+             .fillColor('#059669')
+             .text(`Score: ${answer.score} / ${answer.maxScore || question.points || 0}`);
+          
+          doc.moveDown(0.5);
+        }
+
+        // Grading section (blank lines for manual grading)
+        doc.fontSize(10)
+           .font('Helvetica-Bold')
+           .fillColor('#666666')
+           .text('Grading Notes / Comments:');
+        
+        doc.moveDown(0.3);
+
+        // Draw lines for comments
+        const lineCount = 3;
+        for (let j = 0; j < lineCount; j++) {
+          const lineY = doc.y + (j * 20);
+          doc.moveTo(50, lineY)
+             .lineTo(doc.page.width - 50, lineY)
+             .strokeColor('#dddddd')
+             .stroke();
+        }
+
+        doc.moveDown(lineCount);
+
+        // Separator line between questions
+        if (i < questions.length - 1) {
+          doc.moveTo(50, doc.y)
+             .lineTo(doc.page.width - 50, doc.y)
+             .strokeColor('#cccccc')
+             .stroke();
+          
+          doc.moveDown(1.5);
+        }
+      }
+
+      // Summary Section
+      doc.addPage();
+      doc.fontSize(16)
+         .font('Helvetica-Bold')
+         .fillColor('#000000')
+         .text('Grading Summary');
+      
+      doc.moveDown(1);
+
+      doc.fontSize(11)
+         .font('Helvetica');
+
+      const totalScore = submission.totalScore || 0;
+      const maxScore = exam.totalPoints || 0;
+      const percentage = maxScore > 0 ? ((parseFloat(totalScore.toString()) / maxScore) * 100).toFixed(2) : 0;
+
+      doc.text(`Total Score: ${totalScore} / ${maxScore}`);
+      doc.text(`Percentage: ${percentage}%`);
+      doc.text(`Status: ${submission.status}`);
+      doc.text(`Submitted: ${submission.submittedAt ? new Date(submission.submittedAt).toLocaleString() : 'N/A'}`);
+
+      doc.moveDown(2);
+
+      // Overall comments section
+      doc.fontSize(12)
+         .font('Helvetica-Bold')
+         .text('Overall Comments:');
+      
+      doc.moveDown(0.5);
+
+      // Draw lines for overall comments
+      const overallLineCount = 8;
+      for (let j = 0; j < overallLineCount; j++) {
+        const lineY = doc.y + (j * 25);
+        doc.moveTo(50, lineY)
+           .lineTo(doc.page.width - 50, lineY)
+           .strokeColor('#dddddd')
+           .stroke();
+      }
+
+      // Add page numbers to all pages
+      const pageCount = doc.bufferedPageRange().count;
+      for (let i = 0; i < pageCount; i++) {
+        doc.switchToPage(i);
+        
+        // Add header to every page except the first
+        if (i > 0) {
+          addPageHeader(i + 1, pageCount);
+        }
+        
+        // Add footer with page number
+        doc.fontSize(9)
+           .fillColor('#999999')
+           .text(`Page ${i + 1} of ${pageCount}`, 
+             50, 
+             doc.page.height - 30, 
+             { 
+               width: doc.page.width - 100, 
+               align: 'center' 
+             }
+           );
+      }
+
+      // Finalize PDF
+      doc.end();
+
+    } catch (error) {
+      console.error("Error generating PDF report:", error);
+      if (!res.headersSent) {
+        res.status(500).json({ message: "Failed to generate PDF report" });
+      }
+    }
+  });
+
   // Extra credit management routes
   app.post('/api/submissions/:id/extra-credit', isAuthenticated, async (req: any, res) => {
     try {
@@ -2680,6 +3164,88 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid homework data", errors: error.errors });
       }
       res.status(500).json({ message: "Failed to update homework" });
+    }
+  });
+
+  // Assign students to homework
+  app.post('/api/homework/:id/assign-students', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const user = await storage.getUser(userId);
+      const homeworkId = parseInt(req.params.id);
+      const { studentIds } = req.body;
+
+      if (!hasInstructorPrivileges(user)) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const homework = await storage.getHomeworkById(homeworkId);
+      if (!homework || homework.instructorId !== userId) {
+        return res.status(404).json({ message: "Homework not found" });
+      }
+
+      if (!Array.isArray(studentIds)) {
+        return res.status(400).json({ message: "studentIds must be an array" });
+      }
+
+      await storage.assignStudentsToHomework(homeworkId, studentIds, userId);
+      res.json({ message: "Students assigned successfully" });
+    } catch (error) {
+      console.error("Error assigning students to homework:", error);
+      res.status(500).json({ message: "Failed to assign students to homework" });
+    }
+  });
+
+  // Get assigned students for homework
+  app.get('/api/homework/:id/assigned-students', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const user = await storage.getUser(userId);
+      const homeworkId = parseInt(req.params.id);
+
+      if (!hasInstructorPrivileges(user)) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const homework = await storage.getHomeworkById(homeworkId);
+      if (!homework || homework.instructorId !== userId) {
+        return res.status(404).json({ message: "Homework not found" });
+      }
+
+      const students = await storage.getAssignedStudentsForHomework(homeworkId);
+      res.json(students);
+    } catch (error) {
+      console.error("Error getting assigned students for homework:", error);
+      res.status(500).json({ message: "Failed to get assigned students" });
+    }
+  });
+
+  // Remove students from homework
+  app.delete('/api/homework/:id/assigned-students', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const user = await storage.getUser(userId);
+      const homeworkId = parseInt(req.params.id);
+      const { studentIds } = req.body;
+
+      if (!hasInstructorPrivileges(user)) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const homework = await storage.getHomeworkById(homeworkId);
+      if (!homework || homework.instructorId !== userId) {
+        return res.status(404).json({ message: "Homework not found" });
+      }
+
+      if (!Array.isArray(studentIds)) {
+        return res.status(400).json({ message: "studentIds must be an array" });
+      }
+
+      await storage.removeStudentsFromHomework(homeworkId, studentIds);
+      res.json({ message: "Students removed successfully" });
+    } catch (error) {
+      console.error("Error removing students from homework:", error);
+      res.status(500).json({ message: "Failed to remove students from homework" });
     }
   });
 
