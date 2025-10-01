@@ -116,9 +116,9 @@ export default function InstructorStudents() {
   });
 
   const getScoreColor = (score: number) => {
-    if (score >= 85) return 'text-green-600';
-    if (score >= 70) return 'text-yellow-600';
-    return 'text-red-600';
+    if (score >= 85) return 'text-green-600 dark:text-green-400';
+    if (score >= 70) return 'text-yellow-600 dark:text-yellow-400';
+    return 'text-red-600 dark:text-red-400';
   };
 
   const formatLastActivity = (date: Date | null) => {
@@ -135,7 +135,7 @@ export default function InstructorStudents() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       <Navbar />
       <div className="flex">
         <Sidebar />
@@ -143,15 +143,15 @@ export default function InstructorStudents() {
           <div className="p-6">
             <div className="mb-6 flex justify-between items-center">
               <div>
-                <h2 className="text-2xl font-bold text-gray-900">Student Management</h2>
-                <p className="text-gray-600 mt-1">Manage enrolled students and track their progress</p>
+                <h2 className="text-2xl font-bold text-foreground">Student Management</h2>
+                <p className="text-muted-foreground mt-1">Manage enrolled students and track their progress</p>
               </div>
               <div className="flex items-center space-x-3">
                 <Button variant="outline">
                   <Download className="h-4 w-4 mr-2" />
                   Export
                 </Button>
-                <Button className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105">
+                <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
                   <UserPlus className="h-4 w-4 mr-2" />
                   Add Student
                 </Button>
@@ -164,8 +164,8 @@ export default function InstructorStudents() {
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-gray-600">Total Students</p>
-                      <p className="text-2xl font-bold text-gray-900">
+                      <p className="text-sm font-medium text-muted-foreground">Total Students</p>
+                      <p className="text-2xl font-bold text-foreground">
                         {instructorStats?.totalStudents || students.length || 0}
                       </p>
                     </div>
@@ -178,8 +178,8 @@ export default function InstructorStudents() {
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-gray-600">Active Students</p>
-                      <p className="text-2xl font-bold text-gray-900">
+                      <p className="text-sm font-medium text-muted-foreground">Active Students</p>
+                      <p className="text-2xl font-bold text-foreground">
                         {students.filter((s: any) => s.status === 'active').length}
                       </p>
                     </div>
@@ -192,16 +192,16 @@ export default function InstructorStudents() {
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-gray-600">Avg. Performance</p>
-                      <p className="text-2xl font-bold text-gray-900">
+                      <p className="text-sm font-medium text-muted-foreground">Avg. Performance</p>
+                      <p className="text-2xl font-bold text-foreground">
                         {students.length > 0 ? 
                           `${Math.round(students.reduce((sum: number, s: any) => sum + s.averageScore, 0) / students.length)}%` : 
                           '0%'
                         }
                       </p>
                     </div>
-                    <div className="h-8 w-8 bg-orange-100 rounded-lg flex items-center justify-center">
-                      <span className="text-orange-600 font-bold">%</span>
+                    <div className="h-8 w-8 bg-orange-100 dark:bg-orange-900/20 rounded-lg flex items-center justify-center">
+                      <span className="text-orange-600 dark:text-orange-400 font-bold">%</span>
                     </div>
                   </div>
                 </CardContent>
@@ -211,8 +211,8 @@ export default function InstructorStudents() {
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-gray-600">Recent Activity</p>
-                      <p className="text-2xl font-bold text-gray-900">
+                      <p className="text-sm font-medium text-muted-foreground">Recent Activity</p>
+                      <p className="text-2xl font-bold text-foreground">
                         {students.filter((s: any) => {
                           if (!s.lastActivity) return false;
                           const dayAgo = new Date();
@@ -234,7 +234,7 @@ export default function InstructorStudents() {
                   <div>
                     <Label htmlFor="search">Search Students</Label>
                     <div className="relative">
-                      <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                      <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                       <Input
                         placeholder="Search students..."
                         value={searchTerm}
@@ -293,7 +293,7 @@ export default function InstructorStudents() {
               <CardHeader>
                 <div className="flex justify-between items-center">
                   <CardTitle>Students ({filteredStudents.length})</CardTitle>
-                  <div className="flex items-center space-x-4 text-sm text-gray-600">
+                  <div className="flex items-center space-x-4 text-sm text-muted-foreground">
                     <span>Active: {filteredStudents.filter((s: any) => s.status === 'active').length}</span>
                     <span>Pending: {filteredStudents.filter((s: any) => s.status === 'pending').length}</span>
                   </div>
@@ -302,16 +302,16 @@ export default function InstructorStudents() {
               <CardContent>
                 {filteredStudents.length === 0 ? (
                   <div className="text-center py-12">
-                    <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <p className="text-gray-500 text-lg mb-2">No students found</p>
-                    <p className="text-gray-400">
+                    <Users className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
+                    <p className="text-muted-foreground text-lg mb-2">No students found</p>
+                    <p className="text-muted-foreground">
                       {searchTerm ? 'Try adjusting your search terms' : 'Add students to get started'}
                     </p>
                   </div>
                 ) : (
-                  <div className="divide-y divide-gray-200">
+                  <div className="divide-y divide-border">
                     {filteredStudents.map((student: any) => (
-                      <div key={student.id} className="p-6 hover:bg-gray-50">
+                      <div key={student.id} className="p-6 hover:bg-muted">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center space-x-4">
                             <Avatar className="h-12 w-12">
@@ -321,28 +321,28 @@ export default function InstructorStudents() {
                               </AvatarFallback>
                             </Avatar>
                             <div>
-                              <h4 className="font-medium text-gray-900">{student.name}</h4>
-                              <p className="text-sm text-gray-600">{student.email}</p>
-                              <p className="text-xs text-gray-500">Student ID: {student.id}</p>
+                              <h4 className="font-medium text-foreground">{student.name}</h4>
+                              <p className="text-sm text-muted-foreground">{student.email}</p>
+                              <p className="text-xs text-muted-foreground">Student ID: {student.id}</p>
                             </div>
                           </div>
                           
                           <div className="flex items-center space-x-8">
                             <div className="text-center">
-                              <p className="text-sm font-medium text-gray-900">Avg. Score</p>
+                              <p className="text-sm font-medium text-foreground">Avg. Score</p>
                               <p className={`text-lg font-bold ${getScoreColor(student.averageScore)}`}>
                                 {student.averageScore.toFixed(1)}%
                               </p>
                             </div>
                             <div className="text-center">
-                              <p className="text-sm font-medium text-gray-900">Exams Taken</p>
-                              <p className="text-lg font-bold text-gray-900">
+                              <p className="text-sm font-medium text-foreground">Exams Taken</p>
+                              <p className="text-lg font-bold text-foreground">
                                 {student.completedExams}/{student.totalExams}
                               </p>
                             </div>
                             <div className="text-center">
-                              <p className="text-sm font-medium text-gray-900">Last Activity</p>
-                              <p className="text-sm text-gray-600">
+                              <p className="text-sm font-medium text-foreground">Last Activity</p>
+                              <p className="text-sm text-muted-foreground">
                                 {formatLastActivity(student.lastActivity)}
                               </p>
                             </div>

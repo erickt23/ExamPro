@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -30,7 +30,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { Plus, List, PenTool, FileText, Pen, Upload, Paperclip, ArrowUpDown, Link, Move3D, Calculator } from "lucide-react";
+import { Plus, List, PenTool, FileText, Pen, Upload, Paperclip, ArrowUpDown, Link, Move3D, Calculator, ChevronDown, Eye, EyeOff, Keyboard } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 import { ObjectUploader } from "@/components/ObjectUploader";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -64,6 +66,7 @@ interface CreateQuestionModalProps {
 export default function CreateQuestionModal({ open, onOpenChange, questionCategory }: CreateQuestionModalProps) {
   const { toast } = useToast();
   const { t } = useTranslation();
+  const mathFieldRef = useRef<any>(null);
 
   
   // Fetch subjects
@@ -365,770 +368,709 @@ export default function CreateQuestionModal({ open, onOpenChange, questionCatego
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            {/* Question Type */}
-            <div>
-              <Label className="text-sm font-medium">{t('assignments.questionType')}</Label>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-2">
-                {questionTypes.map((type) => {
-                  const IconComponent = type.icon;
-                  const isSelected = selectedType === type.value;
-                  return (
-                    <button
-                      key={type.value}
-                      type="button"
-                      onClick={() => {
-                        setSelectedType(type.value);
-                        form.setValue('questionType', type.value as any);
-                      }}
-                      className={`p-3 border-2 rounded-lg text-center hover:bg-gray-50 transition-colors ${
-                        isSelected ? 'border-primary bg-primary/10' : 'border-gray-300'
-                      }`}
-                    >
-                      <IconComponent className={`h-6 w-6 mx-auto mb-2 ${isSelected ? 'text-primary' : 'text-gray-600'}`} />
-                      <p className={`text-sm font-medium ${isSelected ? 'text-primary' : 'text-gray-600'}`}>
-                        {type.label}
-                      </p>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            <FormField
-              control={form.control}
-              name="title"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t('assignments.questionTitle')}</FormLabel>
-                  <FormControl>
-                    <Input placeholder={t('assignments.enterQuestionTitle')} {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="questionText"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>
-                    {t('assignments.questionText')}
-                    {form.watch('questionType') === 'stem' && (
-                      <span className="text-sm text-muted-foreground ml-2">
-                        (Mathematical expressions supported)
-                      </span>
-                    )}
-                  </FormLabel>
-                  <FormControl>
-                    {form.watch('questionType') === 'stem' ? (
-                      <div className="relative">
-                        <MathField
-                          value={field.value}
-                          onChange={field.onChange}
-                          placeholder="Activate virtual keyboard to type Math expressions"
-                          data-testid="input-question-text-math"
-                          className="min-h-[200px] border-2 border-blue-200 dark:border-blue-800 bg-blue-50/30 dark:bg-blue-900/10 focus-within:border-blue-400 dark:focus-within:border-blue-600 shadow-sm"
-                          hideToolbar={true}
-                          hideVirtualKeyboardToggle={true}
-                        />
-                        {/* Virtual Keyboard Controls */}
-                        <div className="absolute -right-2 top-1/2 -translate-y-1/2 flex flex-row gap-1">
-                          <Button
-                            type="button"
-                            variant="outline"
-                            className="h-5 w-10 rounded-lg bg-gradient-to-br from-green-500 to-green-600 border-2 border-green-300 hover:from-green-600 hover:to-green-700 shadow-lg hover:shadow-xl transition-all duration-200 group"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              
-                              // Show virtual keyboard using proper MathLive API
-                              if (window.mathVirtualKeyboard) {
-                                try {
-                                  // First focus the math field
-                                  const mathField = document.querySelector('math-field') as any;
-                                  if (mathField) {
-                                    mathField.focus();
-                                  }
-                                  
-                                  // Show the virtual keyboard
-                                  window.mathVirtualKeyboard.show();
-                                  
-                                  // Ensure visibility with DOM manipulation as fallback
-                                  setTimeout(() => {
-                                    const keyboardElement = document.querySelector('math-virtual-keyboard') || 
-                                                          document.querySelector('.ML__virtual-keyboard') ||
-                                                          document.querySelector('.ml__virtual-keyboard');
-                                    if (keyboardElement) {
-                                      (keyboardElement as HTMLElement).style.display = 'block';
-                                      (keyboardElement as HTMLElement).style.visibility = 'visible';
-                                      (keyboardElement as HTMLElement).style.opacity = '1';
-                                      (keyboardElement as HTMLElement).style.zIndex = '9999';
-                                    }
-                                  }, 100);
-                                  
-                                } catch (error) {
-                                  console.warn('Failed to show virtual keyboard:', error);
-                                }
-                              }
-                            }}
-                            title="Focus Math Input (Shows Virtual Keyboard)"
-                          >
-                            <div className="flex flex-col items-center justify-center text-white">
-                              <Calculator className="h-3 w-3 mb-0.5 group-hover:scale-110 transition-transform" />
-                              <span className="text-[8px] font-medium">Show</span>
-                            </div>
-                          </Button>
-                          
-                          <Button
-                            type="button"
-                            variant="outline"
-                            className="h-5 w-10 rounded-lg bg-gradient-to-br from-yellow-500 to-yellow-600 border-2 border-yellow-300 hover:from-yellow-600 hover:to-yellow-700 shadow-lg hover:shadow-xl transition-all duration-200 group"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              
-                              // Hide virtual keyboard using comprehensive approach
-                              try {
-                                // First blur the math field
-                                const mathField = document.querySelector('math-field') as any;
-                                if (mathField) {
-                                  mathField.blur();
-                                }
-                                
-                                // Use the original hide function if available
-                                if ((window.mathVirtualKeyboard as any)?.originalHide) {
-                                  try {
-                                    (window.mathVirtualKeyboard as any).originalHide.call(window.mathVirtualKeyboard);
-                                  } catch (hideError) {
-                                    console.warn('Original hide function failed:', hideError);
-                                  }
-                                }
-                                
-                                // Force hide via DOM manipulation  
-                                const hideKeyboard = () => {
-                                  const selectors = [
-                                    'math-virtual-keyboard',
-                                    '.ML__virtual-keyboard', 
-                                    '.ml__virtual-keyboard',
-                                    '.ML__keyboard'
-                                  ];
-                                  
-                                  selectors.forEach(selector => {
-                                    const elements = document.querySelectorAll(selector);
-                                    elements.forEach((element) => {
-                                      const htmlElement = element as HTMLElement;
-                                      htmlElement.style.display = 'none';
-                                      htmlElement.style.visibility = 'hidden';
-                                      htmlElement.style.opacity = '0';
-                                    });
-                                  });
-                                };
-                                
-                                // Hide immediately and again after a delay
-                                hideKeyboard();
-                                setTimeout(hideKeyboard, 50);
-                                setTimeout(hideKeyboard, 200);
-                                
-                              } catch (error) {
-                                console.warn('Failed to hide virtual keyboard:', error);
-                              }
-                            }}
-                            title="Close Virtual Keyboard"
-                          >
-                            <div className="flex flex-col items-center justify-center text-white">
-                              <div className="h-3 w-3 mb-0.5 group-hover:scale-110 transition-transform text-[10px]">✕</div>
-                              <span className="text-[8px] font-medium">Hide</span>
-                            </div>
-                          </Button>
-                        </div>
-                      </div>
-                    ) : (
-                      <Textarea 
-                        rows={4}
-                        placeholder={t('assignments.enterYourQuestionHere')} 
-                        {...field} 
-                        data-testid="input-question-text"
-                      />
-                    )}
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* Multiple Choice Options */}
-            {selectedType === 'multiple_choice' && (
-              <div>
-                <Label className="text-sm font-medium">{t('assignments.answerOptions')}</Label>
-                <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg mb-3">
-                  <p className="text-sm text-blue-800 dark:text-blue-200">
-                    {t('questionCreation.multipleCorrectHint')}
-                  </p>
-                </div>
-                <div className="space-y-3 mt-2">
-                  {mcqOptions.map((option, index) => {
-                    const letter = String.fromCharCode(65 + index); // A, B, C, D
-                    return (
-                      <div key={index} className="flex items-center space-x-3">
-                        <Checkbox
-                          checked={correctOptions.includes(letter)}
-                          onCheckedChange={() => toggleCorrectOption(letter)}
-                          id={`correct-${letter}`}
-                          className="mt-0.5"
-                        />
-                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300 min-w-[20px]">{letter}.</span>
-                        <Input
-                          value={option}
-                          onChange={(e) => updateMcqOption(index, e.target.value)}
-                          placeholder={`${t('assignments.enterOption')} ${letter}`}
-                          className="flex-1"
-                        />
-                      </div>
-                    );
-                  })}
-                </div>
-                <Button 
-                  type="button" 
-                  variant="ghost" 
-                  size="sm" 
-                  className="mt-3"
-                  onClick={() => setMcqOptions([...mcqOptions, ''])}
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  {t('assignments.addAnotherOption')}
-                </Button>
-              </div>
-            )}
-
-            {/* Matching Question Options */}
-            {selectedType === 'matching' && (
-              <div>
-                <Label className="text-sm font-medium">{t('assignments.matchingPairs')}</Label>
-                <div className="space-y-3 mt-2">
-                  {matchingPairs.map((pair, index) => (
-                    <div key={index} className="grid grid-cols-2 gap-4 p-3 border rounded-lg">
-                      <div>
-                        <Label className="text-xs text-gray-500">{t('assignments.leftItem')}</Label>
-                        <Input
-                          value={pair.left}
-                          onChange={(e) => updateMatchingPair(index, 'left', e.target.value)}
-                          placeholder={`${t('assignments.item')} ${index + 1}`}
-                        />
-                      </div>
-                      <div>
-                        <Label className="text-xs text-gray-500">{t('assignments.rightItem')}</Label>
-                        <Input
-                          value={pair.right}
-                          onChange={(e) => updateMatchingPair(index, 'right', e.target.value)}
-                          placeholder={`${t('assignments.match')} ${index + 1}`}
-                        />
-                      </div>
-                      {matchingPairs.length > 2 && (
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => removeMatchingPair(index)}
-                          className="col-span-2 mt-2"
-                        >
-                          {t('assignments.removePair')}
-                        </Button>
-                      )}
-                    </div>
-                  ))}
-                </div>
-                <Button 
-                  type="button" 
-                  variant="ghost" 
-                  size="sm" 
-                  className="mt-3"
-                  onClick={addMatchingPair}
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  {t('assignments.addAnotherPair')}
-                </Button>
-              </div>
-            )}
-
-            {/* Ranking Question Options */}
-            {selectedType === 'ranking' && (
-              <div>
-                <Label className="text-sm font-medium">{t('assignments.itemsToRank')}</Label>
-                <div className="space-y-3 mt-2">
-                  {rankingItems.map((item, index) => (
-                    <div key={index} className="flex items-center space-x-3">
-                      <span className="text-sm font-medium text-gray-700 min-w-[30px]">{index + 1}.</span>
-                      <Input
-                        value={item}
-                        onChange={(e) => updateRankingItem(index, e.target.value)}
-                        placeholder={`${t('assignments.rankingItem')} ${index + 1}`}
-                        className="flex-1"
-                      />
-                      {rankingItems.length > 2 && (
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => removeRankingItem(index)}
-                        >
-                          {t('assignments.remove')}
-                        </Button>
-                      )}
-                    </div>
-                  ))}
-                </div>
-                <Button 
-                  type="button" 
-                  variant="ghost" 
-                  size="sm" 
-                  className="mt-3"
-                  onClick={addRankingItem}
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  {t('assignments.addAnotherItem')}
-                </Button>
-              </div>
-            )}
-
-            {/* Fill in the Blank Question Options */}
-            {selectedType === 'fill_blank' && (
-              <div className="space-y-4">
-                <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
-                  <Label className="text-sm font-medium text-blue-700 dark:text-blue-300 mb-2 block">
-                    {t('assignments.instructions')}
-                  </Label>
-                  <p className="text-xs text-blue-600 dark:text-blue-400">
-                    {t('assignments.useUnderscores')}
-                  </p>
-                </div>
-                
+            <Collapsible defaultOpen={true}>
+              <CollapsibleTrigger className="flex justify-between items-center w-full">
+                <h3 className="text-lg font-semibold">Section 1: Question Type</h3>
+                <ChevronDown className="h-5 w-5" />
+              </CollapsibleTrigger>
+              <CollapsibleContent className="space-y-6 pt-4">
+                {/* Question Type */}
                 <div>
-                  <Label className="text-sm font-medium">{t('assignments.answerFields')}</Label>
-                  <p className="text-xs text-gray-600 dark:text-gray-400 mb-3">
-                    {t('assignments.defineCorrectAnswers')}
-                  </p>
-                  <div className="space-y-3">
-                    {fillBlankFields.map((field, index) => (
-                      <div key={index} className="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg border">
-                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300 min-w-[80px]">
-                          {field.label}:
-                        </span>
-                        <Input
-                          value={field.answer}
-                          onChange={(e) => updateFillBlankField(index, 'answer', e.target.value)}
-                          placeholder={`${t('assignments.correctAnswerFor')} ${field.label.toLowerCase()}`}
-                          className="flex-1"
-                        />
-                        {fillBlankFields.length > 1 && (
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => removeFillBlankField(index)}
-                            className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
-                          >
-                            {t('assignments.remove')}
-                          </Button>
-                        )}
-                      </div>
-                    ))}
+                  <Label className="text-sm font-medium">{t('assignments.questionType')}</Label>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-2">
+                    {questionTypes.map((type) => {
+                      const IconComponent = type.icon;
+                      const isSelected = selectedType === type.value;
+                      return (
+                        <button
+                          key={type.value}
+                          type="button"
+                          onClick={() => {
+                            setSelectedType(type.value);
+                            form.setValue('questionType', type.value as any);
+                          }}
+                          className={`p-3 border-2 rounded-lg text-center hover:bg-muted transition-colors ${
+                            isSelected ? 'border-primary bg-primary/10' : 'border-border'
+                          }`}
+                        >
+                          <IconComponent className={`h-6 w-6 mx-auto mb-2 ${isSelected ? 'text-primary' : 'text-muted-foreground'}`} />
+                          <p className={`text-sm font-medium ${isSelected ? 'text-primary' : 'text-muted-foreground'}`}>
+                            {type.label}
+                          </p>
+                        </button>
+                      );
+                    })}
                   </div>
-                  <Button 
-                    type="button" 
-                    variant="ghost" 
-                    size="sm" 
-                    className="mt-3"
-                    onClick={addFillBlankField}
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    {t('assignments.addAnotherBlank')}
-                  </Button>
                 </div>
-                
-                {fillBlankFields.some(field => field.answer.trim()) && (
-                  <div className="border-t pt-4">
-                    <Label className="text-sm font-medium text-green-700 dark:text-green-300">{t('assignments.previewAnswers')}</Label>
-                    <div className="mt-2 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
-                      <p className="text-xs text-green-600 dark:text-green-400 mb-2">
-                        {t('assignments.correctAnswersInOrder')}
-                      </p>
-                      <div className="flex flex-wrap gap-2">
-                        {fillBlankFields.filter(field => field.answer.trim()).map((field, index) => (
-                          <span key={index} className="px-2 py-1 text-xs bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-200 rounded border">
-                            {index + 1}. {field.answer}
+              </CollapsibleContent>
+            </Collapsible>
+
+            <Collapsible>
+              <CollapsibleTrigger className="flex justify-between items-center w-full">
+                <h3 className="text-lg font-semibold">Section 2: Question Content & Answers</h3>
+                <ChevronDown className="h-5 w-5" />
+              </CollapsibleTrigger>
+              <CollapsibleContent className="space-y-6 pt-4">
+                <FormField
+                  control={form.control}
+                  name="title"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t('assignments.questionTitle')}</FormLabel>
+                      <FormControl>
+                        <Input placeholder={t('assignments.enterQuestionTitle')} {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="questionText"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        {t('assignments.questionText')}
+                        {form.watch('questionType') === 'stem' && (
+                          <span className="text-sm text-muted-foreground ml-2">
+                            (Mathematical expressions supported)
                           </span>
-                        ))}
-                      </div>
+                        )}
+                      </FormLabel>
+                      <FormControl>
+                        {form.watch('questionType') === 'stem' ? (
+                          <div className="relative">
+                            <MathField
+                              ref={mathFieldRef}
+                              value={field.value}
+                              onChange={field.onChange}
+                              placeholder="Your math question here..."
+                              data-testid="input-question-text-math"
+                              className="w-full rounded-md border border-input bg-background px-3 py-2 text-base min-h-[120px]"
+                              hideToolbar={true}
+                              hideVirtualKeyboardToggle={true}
+                            />
+                            {/* Virtual Keyboard Controls */}
+                            <div className="absolute right-1 top-1/2 -translate-y-1/2">
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button
+                                      type="button"
+                                      variant="ghost"
+                                      size="icon"
+                                      onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        mathFieldRef.current?.toggleKeyboard();
+                                      }}
+                                    >
+                                      <Keyboard className="h-4 w-4" />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p>Toggle Keyboard</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            </div>
+                          </div>
+                        ) : (
+                          <Textarea 
+                            rows={4}
+                            placeholder={t('assignments.enterYourQuestionHere')} 
+                            {...field} 
+                            data-testid="input-question-text"
+                          />
+                        )}
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Multiple Choice Options */}
+                {selectedType === 'multiple_choice' && (
+                  <div>
+                    <Label className="text-sm font-medium">{t('assignments.answerOptions')}</Label>
+                    <div className="bg-blue-100 dark:bg-blue-900/20 p-3 rounded-lg mb-3">
+                      <p className="text-sm text-blue-800 dark:text-blue-200">
+                        {t('questionCreation.multipleCorrectHint')}
+                      </p>
                     </div>
+                    <div className="space-y-3 mt-2">
+                      {mcqOptions.map((option, index) => {
+                        const letter = String.fromCharCode(65 + index); // A, B, C, D
+                        return (
+                          <div key={index} className="flex items-center space-x-3">
+                            <Checkbox
+                              checked={correctOptions.includes(letter)}
+                              onCheckedChange={() => toggleCorrectOption(letter)}
+                              id={`correct-${letter}`}
+                              className="mt-0.5"
+                            />
+                            <span className="text-sm font-medium text-muted-foreground min-w-[20px]">{letter}.</span>
+                            <Input
+                              value={option}
+                              onChange={(e) => updateMcqOption(index, e.target.value)}
+                              placeholder={`${t('assignments.enterOption')} ${letter}`}
+                              className="flex-1"
+                            />
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <Button 
+                      type="button" 
+                      variant="ghost" 
+                      size="sm" 
+                      className="mt-3"
+                      onClick={() => setMcqOptions([...mcqOptions, ''])}
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      {t('assignments.addAnotherOption')}
+                    </Button>
                   </div>
                 )}
-              </div>
-            )}
 
-            {/* Drag and Drop Question Options */}
-            {selectedType === 'drag_drop' && (
-              <div className="space-y-4">
-                <div>
-                  <Label className="text-sm font-medium">{t('assignments.dropZones')}</Label>
-                  <div className="space-y-3 mt-2">
-                    {dragDropZones.map((zone, index) => (
-                      <div key={index} className="flex items-center space-x-3">
-                        <span className="text-sm font-medium text-gray-700 min-w-[70px]">{t('assignments.zone')} {index + 1}:</span>
-                        <Input
-                          value={zone.zone}
-                          onChange={(e) => updateDragDropZone(index, e.target.value)}
-                          placeholder={`${t('assignments.dropZone')} ${index + 1}`}
-                          className="flex-1"
-                        />
-                        {dragDropZones.length > 1 && (
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => removeDragDropZone(index)}
-                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                          >
-                            Remove
-                          </Button>
-                        )}
-                      </div>
-                    ))}
+                {/* Matching Question Options */}
+                {selectedType === 'matching' && (
+                  <div>
+                    <Label className="text-sm font-medium">{t('assignments.matchingPairs')}</Label>
+                    <div className="space-y-3 mt-2">
+                      {matchingPairs.map((pair, index) => (
+                        <div key={index} className="grid grid-cols-2 gap-4 p-3 border rounded-lg">
+                          <div>
+                            <Label className="text-xs text-muted-foreground">{t('assignments.leftItem')}</Label>
+                            <Input
+                              value={pair.left}
+                              onChange={(e) => updateMatchingPair(index, 'left', e.target.value)}
+                              placeholder={`${t('assignments.item')} ${index + 1}`}
+                            />
+                          </div>
+                          <div>
+                            <Label className="text-xs text-muted-foreground">{t('assignments.rightItem')}</Label>
+                            <Input
+                              value={pair.right}
+                              onChange={(e) => updateMatchingPair(index, 'right', e.target.value)}
+                              placeholder={`${t('assignments.match')} ${index + 1}`}
+                            />
+                          </div>
+                          {matchingPairs.length > 2 && (
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => removeMatchingPair(index)}
+                              className="col-span-2 mt-2"
+                            >
+                              {t('assignments.removePair')}
+                            </Button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                    <Button 
+                      type="button" 
+                      variant="ghost" 
+                      size="sm" 
+                      className="mt-3"
+                      onClick={addMatchingPair}
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      {t('assignments.addAnotherPair')}
+                    </Button>
                   </div>
-                  <Button 
-                    type="button" 
-                    variant="ghost" 
-                    size="sm" 
-                    className="mt-3"
-                    onClick={addDragDropZone}
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    {t('assignments.addDropZone')}
-                  </Button>
-                </div>
+                )}
 
-                <div>
-                  <Label className="text-sm font-medium">{t('assignments.draggableItems')}</Label>
-                  <div className="space-y-3 mt-2">
-                    {dragDropItems.map((item, index) => (
-                      <div key={index} className="flex items-center space-x-3">
-                        <span className="text-sm font-medium text-gray-700 min-w-[70px]">{t('assignments.item')} {index + 1}:</span>
-                        <Input
-                          value={item}
-                          onChange={(e) => updateDragDropItem(index, e.target.value)}
-                          placeholder={`${t('assignments.draggableItem')} ${index + 1}`}
-                          className="flex-1"
-                        />
-                        {dragDropItems.length > 1 && (
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => removeDragDropItem(index)}
-                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                          >
-                            Remove
-                          </Button>
-                        )}
-                      </div>
-                    ))}
+                {/* Ranking Question Options */}
+                {selectedType === 'ranking' && (
+                  <div>
+                    <Label className="text-sm font-medium">{t('assignments.itemsToRank')}</Label>
+                    <div className="space-y-3 mt-2">
+                      {rankingItems.map((item, index) => (
+                        <div key={index} className="flex items-center space-x-3">
+                          <span className="text-sm font-medium text-muted-foreground min-w-[30px]">{index + 1}.</span>
+                          <Input
+                            value={item}
+                            onChange={(e) => updateRankingItem(index, e.target.value)}
+                            placeholder={`${t('assignments.rankingItem')} ${index + 1}`}
+                            className="flex-1"
+                          />
+                          {rankingItems.length > 2 && (
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => removeRankingItem(index)}
+                            >
+                              {t('assignments.remove')}
+                            </Button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                    <Button 
+                      type="button" 
+                      variant="ghost" 
+                      size="sm" 
+                      className="mt-3"
+                      onClick={addRankingItem}
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      {t('assignments.addAnotherItem')}
+                    </Button>
                   </div>
-                  <Button 
-                    type="button" 
-                    variant="ghost" 
-                    size="sm" 
-                    className="mt-3"
-                    onClick={addDragDropItem}
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    {t('assignments.addDraggableItem')}
-                  </Button>
-                </div>
+                )}
 
-                {/* Correct Answer Configuration for Drag-Drop */}
-                {dragDropZones.length > 0 && dragDropItems.length > 0 && (
-                  <div className="border-t pt-4">
-                    <Label className="text-sm font-medium text-blue-700">{t('assignments.correctAnswerConfiguration')}</Label>
-                    <p className="text-xs text-gray-600 mb-3">{t('assignments.assignEachItem')}</p>
-                    {dragDropZones.some(zone => zone.zone.trim()) && dragDropItems.some(item => item.trim()) ? (
+                {/* Fill in the Blank Question Options */}
+                {selectedType === 'fill_blank' && (
+                  <div className="space-y-4">
+                    <div className="bg-blue-100 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
+                      <Label className="text-sm font-medium text-blue-700 dark:text-blue-300 mb-2 block">
+                        {t('assignments.instructions')}
+                      </Label>
+                      <p className="text-xs text-blue-600 dark:text-blue-400">
+                        {t('assignments.useUnderscores')}
+                      </p>
+                    </div>
+                    
+                    <div>
+                      <Label className="text-sm font-medium">{t('assignments.answerFields')}</Label>
+                      <p className="text-xs text-muted-foreground mb-3">
+                        {t('assignments.defineCorrectAnswers')}
+                      </p>
                       <div className="space-y-3">
-                        {dragDropZones.map((zone, zoneIndex) => (
-                          <div key={zoneIndex} className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-                            <Label className="text-sm font-medium text-blue-800 dark:text-blue-200 mb-2 block">
-                              {zone.zone || `Zone ${zoneIndex + 1}`}
-                            </Label>
-                            <div className="flex flex-wrap gap-2">
-                              {dragDropItems.filter(item => item.trim()).map((item, itemIndex) => {
-                                const isSelected = zone.items?.includes(item) || false;
-                                return (
-                                  <button
-                                    key={itemIndex}
-                                    type="button"
-                                    onClick={() => toggleItemInZone(zoneIndex, item)}
-                                    className={`px-3 py-1 text-xs rounded-md border transition-colors ${
-                                      isSelected
-                                        ? 'bg-blue-500 text-white border-blue-500'
-                                        : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-blue-100 dark:hover:bg-blue-900/30'
-                                    }`}
-                                  >
-                                    {item}
-                                  </button>
-                                );
-                              })}
-                            </div>
+                        {fillBlankFields.map((field, index) => (
+                          <div key={index} className="flex items-center space-x-3 p-3 bg-muted/50 rounded-lg border">
+                            <span className="text-sm font-medium text-foreground min-w-[80px]">
+                              {field.label}:
+                            </span>
+                            <Input
+                              value={field.answer}
+                              onChange={(e) => updateFillBlankField(index, 'answer', e.target.value)}
+                              placeholder={`${t('assignments.correctAnswerFor')} ${field.label.toLowerCase()}`}
+                              className="flex-1"
+                            />
+                            {fillBlankFields.length > 1 && (
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => removeFillBlankField(index)}
+                                className="text-destructive hover:text-destructive-foreground hover:bg-destructive/10"
+                              >
+                                {t('assignments.remove')}
+                              </Button>
+                            )}
                           </div>
                         ))}
                       </div>
-                    ) : (
-                      <div className="p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
-                        <p className="text-sm text-amber-700 dark:text-amber-300">
-                          {t('assignments.fillInAtLeastOneZone')}
-                        </p>
+                      <Button 
+                        type="button" 
+                        variant="ghost" 
+                        size="sm" 
+                        className="mt-3"
+                        onClick={addFillBlankField}
+                      >
+                        <Plus className="h-4 w-4 mr-2" />
+                        {t('assignments.addAnotherBlank')}
+                      </Button>
+                    </div>
+                    
+                    {fillBlankFields.some(field => field.answer.trim()) && (
+                      <div className="border-t pt-4">
+                        <Label className="text-sm font-medium text-green-700 dark:text-green-300">{t('assignments.previewAnswers')}</Label>
+                        <div className="mt-2 p-3 bg-green-100 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                          <p className="text-xs text-green-600 dark:text-green-400 mb-2">
+                            {t('assignments.correctAnswersInOrder')}
+                          </p>
+                          <div className="flex flex-wrap gap-2">
+                            {fillBlankFields.filter(field => field.answer.trim()).map((field, index) => (
+                              <span key={index} className="px-2 py-1 text-xs bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-200 rounded border">
+                                {index + 1}. {field.answer}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
                       </div>
                     )}
                   </div>
                 )}
-              </div>
-            )}
 
-            {/* Tagging and Categorization */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="subjectId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t('common.subject')}</FormLabel>
-                    <Select onValueChange={(value) => field.onChange(parseInt(value))} value={field.value?.toString()}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder={t('assignments.chooseASubject')} />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {subjects.map((subject: any) => (
-                          <SelectItem key={subject.id} value={subject.id.toString()}>{subject.name}</SelectItem>
+                {/* Drag and Drop Question Options */}
+                {selectedType === 'drag_drop' && (
+                  <div className="space-y-4">
+                    <div>
+                      <Label className="text-sm font-medium">{t('assignments.dropZones')}</Label>
+                      <div className="space-y-3 mt-2">
+                        {dragDropZones.map((zone, index) => (
+                          <div key={index} className="flex items-center space-x-3">
+                            <span className="text-sm font-medium text-muted-foreground min-w-[70px]">{t('assignments.zone')} {index + 1}:</span>
+                            <Input
+                              value={zone.zone}
+                              onChange={(e) => updateDragDropZone(index, e.target.value)}
+                              placeholder={`${t('assignments.dropZone')} ${index + 1}`}
+                              className="flex-1"
+                            />
+                            {dragDropZones.length > 1 && (
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => removeDragDropZone(index)}
+                                className="text-destructive hover:text-destructive-foreground hover:bg-destructive/10"
+                              >
+                                Remove
+                              </Button>
+                            )}
+                          </div>
                         ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
+                      </div>
+                      <Button 
+                        type="button" 
+                        variant="ghost" 
+                        size="sm" 
+                        className="mt-3"
+                        onClick={addDragDropZone}
+                      >
+                        <Plus className="h-4 w-4 mr-2" />
+                        {t('assignments.addDropZone')}
+                      </Button>
+                    </div>
+
+                    <div>
+                      <Label className="text-sm font-medium">{t('assignments.draggableItems')}</Label>
+                      <div className="space-y-3 mt-2">
+                        {dragDropItems.map((item, index) => (
+                          <div key={index} className="flex items-center space-x-3">
+                            <span className="text-sm font-medium text-muted-foreground min-w-[70px]">{t('assignments.item')} {index + 1}:</span>
+                            <Input
+                              value={item}
+                              onChange={(e) => updateDragDropItem(index, e.target.value)}
+                              placeholder={`${t('assignments.draggableItem')} ${index + 1}`}
+                              className="flex-1"
+                            />
+                            {dragDropItems.length > 1 && (
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => removeDragDropItem(index)}
+                                className="text-destructive hover:text-destructive-foreground hover:bg-destructive/10"
+                              >
+                                Remove
+                              </Button>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                      <Button 
+                        type="button" 
+                        variant="ghost" 
+                        size="sm" 
+                        className="mt-3"
+                        onClick={addDragDropItem}
+                      >
+                        <Plus className="h-4 w-4 mr-2" />
+                        {t('assignments.addDraggableItem')}
+                      </Button>
+                    </div>
+
+                    {/* Correct Answer Configuration for Drag-Drop */}
+                    {dragDropZones.length > 0 && dragDropItems.length > 0 && (
+                      <div className="border-t pt-4">
+                        <Label className="text-sm font-medium text-blue-700 dark:text-blue-300">{t('assignments.correctAnswerConfiguration')}</Label>
+                        <p className="text-xs text-muted-foreground mb-3">{t('assignments.assignEachItem')}</p>
+                        {dragDropZones.some(zone => zone.zone.trim()) && dragDropItems.some(item => item.trim()) ? (
+                          <div className="space-y-3">
+                            {dragDropZones.map((zone, zoneIndex) => (
+                              <div key={zoneIndex} className="p-3 bg-blue-100 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                                <Label className="text-sm font-medium text-blue-800 dark:text-blue-200 mb-2 block">
+                                  {zone.zone || `Zone ${zoneIndex + 1}`}
+                                </Label>
+                                <div className="flex flex-wrap gap-2">
+                                  {dragDropItems.filter(item => item.trim()).map((item, itemIndex) => {
+                                    const isSelected = zone.items?.includes(item) || false;
+                                    return (
+                                      <button
+                                        key={itemIndex}
+                                        type="button"
+                                        onClick={() => toggleItemInZone(zoneIndex, item)}
+                                        className={`px-3 py-1 text-xs rounded-md border transition-colors ${
+                                          isSelected
+                                            ? 'bg-blue-500 text-white border-blue-500'
+                                            : 'bg-card text-card-foreground border-border hover:bg-muted'
+                                        }`}
+                                      >
+                                        {item}
+                                      </button>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="p-4 bg-amber-100 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+                            <p className="text-sm text-amber-700 dark:text-amber-300">
+                              {t('assignments.fillInAtLeastOneZone')}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 )}
-              />
+              </CollapsibleContent>
+            </Collapsible>
 
-              <FormField
-                control={form.control}
-                name="difficulty"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t('common.difficulty')}</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder={t('assignments.chooseDifficultyLevel')} />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="easy">{t('difficulty.easy')}</SelectItem>
-                        <SelectItem value="medium">{t('difficulty.medium')}</SelectItem>
-                        <SelectItem value="hard">{t('difficulty.hard')}</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+            <Collapsible>
+              <CollapsibleTrigger className="flex justify-between items-center w-full">
+                <h3 className="text-lg font-semibold">Section 3: Additional Details</h3>
+                <ChevronDown className="h-5 w-5" />
+              </CollapsibleTrigger>
+              <CollapsibleContent className="space-y-6 pt-4">
+                {/* Tagging and Categorization */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="subjectId"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t('common.subject')}</FormLabel>
+                        <Select onValueChange={(value) => field.onChange(parseInt(value))} value={field.value?.toString()}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder={t('assignments.chooseASubject')} />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {subjects.map((subject: any) => (
+                              <SelectItem key={subject.id} value={subject.id.toString()}>{subject.name}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-              <FormField
-                control={form.control}
-                name="bloomsTaxonomy"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t('common.bloomsTaxonomy')}</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder={t('assignments.selectTaxonomy')} />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="remember">{t('blooms.remember')}</SelectItem>
-                        <SelectItem value="understand">{t('blooms.understand')}</SelectItem>
-                        <SelectItem value="apply">{t('blooms.apply')}</SelectItem>
-                        <SelectItem value="analyze">{t('blooms.analyze')}</SelectItem>
-                        <SelectItem value="evaluate">{t('blooms.evaluate')}</SelectItem>
-                        <SelectItem value="create">{t('blooms.create')}</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                  <FormField
+                    control={form.control}
+                    name="difficulty"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t('common.difficulty')}</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder={t('assignments.chooseDifficultyLevel')} />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="easy">{t('difficulty.easy')}</SelectItem>
+                            <SelectItem value="medium">{t('difficulty.medium')}</SelectItem>
+                            <SelectItem value="hard">{t('difficulty.hard')}</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-              <FormField
-                control={form.control}
-                name="gradeLevel"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Grade Level</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select grade level" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="pre_k">Pre-K</SelectItem>
-                        <SelectItem value="kindergarten">Kindergarten</SelectItem>
-                        <SelectItem value="1st">1st Grade</SelectItem>
-                        <SelectItem value="2nd">2nd Grade</SelectItem>
-                        <SelectItem value="3rd">3rd Grade</SelectItem>
-                        <SelectItem value="4th">4th Grade</SelectItem>
-                        <SelectItem value="5th">5th Grade</SelectItem>
-                        <SelectItem value="6th">6th Grade</SelectItem>
-                        <SelectItem value="7th">7th Grade</SelectItem>
-                        <SelectItem value="8th">8th Grade</SelectItem>
-                        <SelectItem value="9th">9th Grade</SelectItem>
-                        <SelectItem value="10th">10th Grade</SelectItem>
-                        <SelectItem value="11th">11th Grade</SelectItem>
-                        <SelectItem value="12th">12th Grade</SelectItem>
-                        <SelectItem value="undergraduate">Undergraduate</SelectItem>
-                        <SelectItem value="graduate">Graduate</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+                  <FormField
+                    control={form.control}
+                    name="bloomsTaxonomy"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t('common.bloomsTaxonomy')}</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder={t('assignments.selectTaxonomy')} />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="remember">{t('blooms.remember')}</SelectItem>
+                            <SelectItem value="understand">{t('blooms.understand')}</SelectItem>
+                            <SelectItem value="apply">{t('blooms.apply')}</SelectItem>
+                            <SelectItem value="analyze">{t('blooms.analyze')}</SelectItem>
+                            <SelectItem value="evaluate">{t('blooms.evaluate')}</SelectItem>
+                            <SelectItem value="create">{t('blooms.create')}</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-            {/* Additional Settings */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="points"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t('common.points')}</FormLabel>
-                    <FormControl>
-                      <Input 
-                        type="number" 
-                        min="1" 
-                        {...field} 
-                        onChange={(e) => field.onChange(parseInt(e.target.value))}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="timeLimit"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t('common.timeLimit')} ({t('questionCreation.minutes')})</FormLabel>
-                    <FormControl>
-                      <Input 
-                        type="number" 
-                        min="1" 
-                        placeholder={t('assignments.optional')}
-                        {...field}
-                        onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)}
-                      />
-                    </FormControl>
-                    <FormDescription>{t('assignments.leaveEmptyForNoTimeLimit')}</FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <FormField
-              control={form.control}
-              name="explanation"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t('questionCreation.explanation')} ({t('assignments.optional')})</FormLabel>
-                  <FormControl>
-                    <Textarea 
-                      rows={3}
-                      placeholder={t('questionCreation.provideExplanation')} 
-                      {...field} 
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* File Attachment Section */}
-            <div>
-              <Label className="text-sm font-medium">{t('questionCreation.questionAttachment')} ({t('assignments.optional')})</Label>
-              <p className="text-xs text-gray-600 mb-3">{t('questionCreation.uploadFileDescription')}</p>
-              
-              {attachmentFile ? (
-                <div className="flex items-center gap-2 p-3 border rounded-lg bg-gray-50">
-                  <Paperclip className="h-4 w-4 text-gray-600" />
-                  <span className="text-sm font-medium truncate">
-                    {attachmentFile.name}
-                  </span>
-                  <Button 
-                    variant="ghost" 
-                    size="sm"
-                    onClick={() => {
-                      setAttachmentFile(null);
-                      setAttachmentUrl('');
-                    }}
-                  >
-                    {t('assignments.remove')}
-                  </Button>
+                  <FormField
+                    control={form.control}
+                    name="gradeLevel"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Grade Level</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select grade level" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="pre_k">Pre-K</SelectItem>
+                            <SelectItem value="kindergarten">Kindergarten</SelectItem>
+                            <SelectItem value="1st">1st Grade</SelectItem>
+                            <SelectItem value="2nd">2nd Grade</SelectItem>
+                            <SelectItem value="3rd">3rd Grade</SelectItem>
+                            <SelectItem value="4th">4th Grade</SelectItem>
+                            <SelectItem value="5th">5th Grade</SelectItem>
+                            <SelectItem value="6th">6th Grade</SelectItem>
+                            <SelectItem value="7th">7th Grade</SelectItem>
+                            <SelectItem value="8th">8th Grade</SelectItem>
+                            <SelectItem value="9th">9th Grade</SelectItem>
+                            <SelectItem value="10th">10th Grade</SelectItem>
+                            <SelectItem value="11th">11th Grade</SelectItem>
+                            <SelectItem value="12th">12th Grade</SelectItem>
+                            <SelectItem value="undergraduate">Undergraduate</SelectItem>
+                            <SelectItem value="graduate">Graduate</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </div>
-              ) : (
-                <ObjectUploader
-                  maxNumberOfFiles={1}
-                  maxFileSize={25 * 1024 * 1024} // 25MB
-                  onGetUploadParameters={async () => {
-                    const response = await fetch('/api/objects/upload', {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' }
-                    });
-                    const data = await response.json();
-                    return {
-                      method: 'PUT' as const,
-                      url: data.uploadURL
-                    };
-                  }}
-                  onComplete={async (result) => {
-                    if (result.successful && result.successful.length > 0) {
-                      const file = result.successful[0];
-                      setAttachmentFile(file.meta);
-                      
-                      // Convert upload URL to normalized object path
-                      const uploadUrl = file.uploadURL || '';
-                      try {
-                        const response = await fetch('/api/objects/normalize-path', {
+
+                {/* Additional Settings */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="points"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t('common.points')}</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="number" 
+                            min="1" 
+                            {...field} 
+                            onChange={(e) => field.onChange(parseInt(e.target.value))}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="timeLimit"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t('common.timeLimit')} ({t('questionCreation.minutes')})</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="number" 
+                            min="1" 
+                            placeholder={t('assignments.optional')}
+                            {...field}
+                            onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)}
+                          />
+                        </FormControl>
+                        <FormDescription>{t('assignments.leaveEmptyForNoTimeLimit')}</FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <FormField
+                  control={form.control}
+                  name="explanation"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t('questionCreation.explanation')} ({t('assignments.optional')})</FormLabel>
+                      <FormControl>
+                        <Textarea 
+                          rows={3}
+                          placeholder={t('questionCreation.provideExplanation')} 
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* File Attachment Section */}
+                <div>
+                  <Label className="text-sm font-medium">{t('questionCreation.questionAttachment')} ({t('assignments.optional')})</Label>
+                  <p className="text-xs text-muted-foreground mb-3">{t('questionCreation.uploadFileDescription')}</p>
+                  
+                  {attachmentFile ? (
+                    <div className="flex items-center gap-2 p-3 border rounded-lg bg-muted/50">
+                      <Paperclip className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm font-medium truncate">
+                        {attachmentFile.name}
+                      </span>
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => {
+                          setAttachmentFile(null);
+                          setAttachmentUrl('');
+                        }}
+                      >
+                        {t('assignments.remove')}
+                      </Button>
+                    </div>
+                  ) : (
+                    <ObjectUploader
+                      maxNumberOfFiles={1}
+                      maxFileSize={25 * 1024 * 1024} // 25MB
+                      onGetUploadParameters={async () => {
+                        const response = await fetch('/api/objects/upload', {
                           method: 'POST',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({ path: uploadUrl })
+                          headers: { 'Content-Type': 'application/json' }
                         });
                         const data = await response.json();
-                        setAttachmentUrl(data.normalizedPath || uploadUrl);
-                      } catch (error) {
-                        console.error('Error normalizing path:', error);
-                        setAttachmentUrl(uploadUrl);
-                      }
-                    }
-                  }}
-                  buttonClassName="w-full"
-                >
-                  <Upload className="h-4 w-4 mr-2" />
-                  {t('questionCreation.uploadAttachment')}
-                </ObjectUploader>
-              )}
-            </div>
+                        return {
+                          method: 'PUT' as const,
+                          url: data.uploadURL
+                        };
+                      }}
+                      onComplete={async (result) => {
+                        if (result.successful && result.successful.length > 0) {
+                          const file = result.successful[0];
+                          setAttachmentFile(file.meta);
+                          
+                          // Convert upload URL to normalized object path
+                          const uploadUrl = file.uploadURL || '';
+                          try {
+                            const response = await fetch('/api/objects/normalize-path', {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({ path: uploadUrl })
+                            });
+                            const data = await response.json();
+                            setAttachmentUrl(data.normalizedPath || uploadUrl);
+                          } catch (error) {
+                            console.error('Error normalizing path:', error);
+                            setAttachmentUrl(uploadUrl);
+                          }
+                        }
+                      }}
+                      buttonClassName="w-full"
+                    >
+                      <Upload className="h-4 w-4 mr-2" />
+                      {t('questionCreation.uploadAttachment')}
+                    </ObjectUploader>
+                  )}
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
 
             <DialogFooter className="space-x-3">
               <Button 
@@ -1142,14 +1084,12 @@ export default function CreateQuestionModal({ open, onOpenChange, questionCatego
                 type="button" 
                 variant="secondary"
                 disabled={createQuestionMutation.isPending}
-                className="bg-gradient-to-r from-slate-50 via-blue-50 to-indigo-50 text-indigo-700 hover:bg-gradient-to-r hover:from-blue-400/20 hover:to-indigo-500/20 hover:text-indigo-800 shadow-md hover:shadow-lg transition-all duration-200 transform hover:scale-105"
               >
                 {t('questionCreation.saveAsDraft')}
               </Button>
               <Button 
                 type="submit"
                 disabled={createQuestionMutation.isPending}
-                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
               >
                 {createQuestionMutation.isPending ? t('questionCreation.creating') : t('assignments.createQuestion')}
               </Button>

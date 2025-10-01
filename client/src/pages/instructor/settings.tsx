@@ -495,7 +495,7 @@ export default function SettingsPage() {
 
   if (authLoading || settingsLoading || subjectsLoading) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-background">
         <Navbar />
         <div className="flex">
           <Sidebar />
@@ -510,15 +510,15 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       <Navbar />
       <div className="flex">
         <Sidebar />
         <main className="flex-1 overflow-y-auto ml-0 transition-all duration-300">
           <div className="p-3 md:p-6">
             <div className="mb-4 md:mb-6">
-              <h1 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-gray-100">{t('settings.systemSettings')}</h1>
-              <p className="text-gray-600 dark:text-gray-400 text-sm md:text-base">{t('settings.systemSettingsDescription')}</p>
+              <h1 className="text-xl md:text-2xl font-bold text-foreground">{t('settings.systemSettings')}</h1>
+              <p className="text-muted-foreground text-sm md:text-base">{t('settings.systemSettingsDescription')}</p>
             </div>
 
             <Tabs defaultValue="subjects" className="w-full">
@@ -550,13 +550,13 @@ export default function SettingsPage() {
                           <BookOpen className="h-5 w-5" />
                           {t('settings.subjects')}
                         </CardTitle>
-                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                        <p className="text-sm text-muted-foreground mt-1">
                           {t('settings.subjectsCardDescription')}
                         </p>
                       </div>
                       <Button
                         onClick={() => setShowCreateSubjectModal(true)}
-                        className="flex items-center gap-2 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+                        className="flex items-center gap-2 bg-primary text-primary-foreground hover:bg-primary/90"
                       >
                         <Plus className="h-4 w-4" />
                         {t('settings.addSubject')}
@@ -565,13 +565,13 @@ export default function SettingsPage() {
                   </CardHeader>
                   <CardContent>
                     {!subjects || !Array.isArray(subjects) || subjects.length === 0 ? (
-                      <div className="text-center py-12 text-gray-500">
-                        <BookOpen className="h-16 w-16 mx-auto mb-4 text-gray-300" />
+                      <div className="text-center py-12 text-muted-foreground">
+                        <BookOpen className="h-16 w-16 mx-auto mb-4 text-muted-foreground/50" />
                         <h3 className="text-lg font-medium mb-2">{t('settings.noSubjectsYet')}</h3>
                         <p className="text-sm mb-4">{t('settings.createFirstSubjectDescription')}</p>
                         <Button
                           onClick={() => setShowCreateSubjectModal(true)}
-                          className="flex items-center gap-2 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+                          className="flex items-center gap-2 bg-primary text-primary-foreground hover:bg-primary/90"
                         >
                           <Plus className="h-4 w-4" />
                           {t('settings.createFirstSubjectButton')}
@@ -600,14 +600,14 @@ export default function SettingsPage() {
                               {paginatedSubjects.map((subject: any, index: number) => (
                                 <TableRow 
                                   key={subject.id}
-                                  className={index % 2 === 0 ? "bg-white" : "bg-gray-50"}
+                                  className="hover:bg-muted"
                                 >
                                   <TableCell>
                                     <div className="font-medium">{subject.name}</div>
                                   </TableCell>
                                   <TableCell>
-                                    <div className="text-sm text-gray-600 max-w-md">
-                                      {subject.description || <span className="italic text-gray-400">{t('settings.noDescription')}</span>}
+                                    <div className="text-sm text-muted-foreground max-w-md">
+                                      {subject.description || <span className="italic text-muted-foreground/80">{t('settings.noDescription')}</span>}
                                     </div>
                                   </TableCell>
                                   <TableCell className="text-right">
@@ -621,9 +621,8 @@ export default function SettingsPage() {
                                       </Button>
                                       <Button
                                         size="sm"
-                                        variant="outline"
+                                        variant="destructive"
                                         onClick={() => handleDeleteSubject(subject.id)}
-                                        className="text-red-600 hover:text-red-800"
                                       >
                                         <Trash2 className="h-3 w-3" />
                                       </Button>
@@ -636,7 +635,7 @@ export default function SettingsPage() {
                           
                           {/* Pagination Controls */}
                           <div className="flex items-center justify-between px-2">
-                            <div className="text-sm text-gray-700">
+                            <div className="text-sm text-muted-foreground">
                               {t('settings.showingXtoYofZ', { start: startIndex + 1, end: Math.min(endIndex, totalItems), total: totalItems })}
                             </div>
                             <div className="flex items-center gap-2">
@@ -687,7 +686,7 @@ export default function SettingsPage() {
                       <Calculator className="h-5 w-5" />
                       {t('settings.globalGradeCalculationSettings')}
                     </CardTitle>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                    <p className="text-sm text-muted-foreground">
                       {t('settings.globalGradeDescription')}
                     </p>
                   </CardHeader>
@@ -714,7 +713,7 @@ export default function SettingsPage() {
                           onChange={(e) => handleGlobalSettingsChange('assignmentCoefficient', e.target.value)}
                           placeholder="0.40"
                         />
-                        <p className="text-sm text-gray-500">
+                        <p className="text-sm text-muted-foreground">
                           {t('settings.weightForAssignments', { percent: (globalSettings.assignmentCoefficient * 100).toFixed(0) })}
                         </p>
                       </div>
@@ -731,14 +730,14 @@ export default function SettingsPage() {
                           onChange={(e) => handleGlobalSettingsChange('examCoefficient', e.target.value)}
                           placeholder="0.60"
                         />
-                        <p className="text-sm text-gray-500">
+                        <p className="text-sm text-muted-foreground">
                           {t('settings.weightForExams', { percent: (globalSettings.examCoefficient * 100).toFixed(0) })}
                         </p>
                       </div>
                     </div>
 
                     <div className="flex items-center justify-between pt-4 border-t">
-                      <div className="text-sm text-gray-500">
+                      <div className="text-sm text-muted-foreground">
                         {t('settings.sum', { value: (globalSettings.assignmentCoefficient + globalSettings.examCoefficient).toFixed(2) })}
                         {(globalSettings.assignmentCoefficient + globalSettings.examCoefficient) !== 1 && (
                           <span className="text-red-500 ml-2">{t('settings.mustEqual')}</span>
@@ -764,14 +763,14 @@ export default function SettingsPage() {
                       <BookOpen className="h-5 w-5" />
                       {t('settings.courseSpecificGradeSettings')}
                     </CardTitle>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                    <p className="text-sm text-muted-foreground">
                       {t('settings.courseSpecificDescription')}
                     </p>
                   </CardHeader>
                   <CardContent>
                     {!subjects || !Array.isArray(subjects) || subjects.length === 0 ? (
-                      <div className="text-center py-8 text-gray-500">
-                        <BookOpen className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                      <div className="text-center py-8 text-muted-foreground">
+                        <BookOpen className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
                         <p>{t('settings.noCoursesAvailable')}</p>
                         <p className="text-sm mt-2">{t('settings.createCoursesToConfigure')}</p>
                       </div>
@@ -797,7 +796,7 @@ export default function SettingsPage() {
                                 <TableCell>
                                   <div>
                                     <div className="font-medium">{subject.name}</div>
-                                    <div className="text-sm text-gray-500">{subject.description}</div>
+                                    <div className="text-sm text-muted-foreground">{subject.description}</div>
                                   </div>
                                 </TableCell>
                                 <TableCell>
@@ -811,7 +810,7 @@ export default function SettingsPage() {
                                       onChange={(e) => handleCourseSettingsChange(subject.id, 'assignmentCoefficient', e.target.value)}
                                       className="w-24"
                                     />
-                                    <p className="text-xs text-gray-500">
+                                    <p className="text-xs text-muted-foreground">
                                       {(settings.assignmentCoefficient * 100).toFixed(0)}%
                                     </p>
                                   </div>
@@ -827,7 +826,7 @@ export default function SettingsPage() {
                                       onChange={(e) => handleCourseSettingsChange(subject.id, 'examCoefficient', e.target.value)}
                                       className="w-24"
                                     />
-                                    <p className="text-xs text-gray-500">
+                                    <p className="text-xs text-muted-foreground">
                                       {(settings.examCoefficient * 100).toFixed(0)}%
                                     </p>
                                   </div>
@@ -860,26 +859,26 @@ export default function SettingsPage() {
                       <Settings2 className="h-5 w-5" />
                       {t('settings.proctoringSettings')}
                     </CardTitle>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                    <p className="text-sm text-muted-foreground">
                       {t('settings.proctoringDescription')}
                     </p>
                   </CardHeader>
                   <CardContent className="space-y-6">
                     {proctoringSettingsLoading ? (
-                      <div className="text-center py-8 text-gray-500">
-                        <Settings2 className="h-8 w-8 mx-auto mb-4 animate-spin text-gray-300" />
+                      <div className="text-center py-8 text-muted-foreground">
+                        <Settings2 className="h-8 w-8 mx-auto mb-4 animate-spin text-muted-foreground/50" />
                         <p>Loading proctoring settings...</p>
                       </div>
                     ) : (
                       <>
                         {/* Global Proctoring Toggle */}
                         <div className="space-y-4">
-                          <div className="flex items-center justify-between p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                          <div className="flex items-center justify-between p-4 bg-blue-100 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
                             <div className="flex items-center gap-3">
                               <Shield className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                               <div>
                                 <Label className="text-base font-medium">Enable Proctoring by Default</Label>
-                                <p className="text-sm text-gray-600 dark:text-gray-400">
+                                <p className="text-sm text-muted-foreground">
                                   Automatically enable proctoring for all new exams
                                 </p>
                               </div>
@@ -908,7 +907,7 @@ export default function SettingsPage() {
                               className="w-24"
                               data-testid="input-warning-threshold"
                             />
-                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                            <p className="text-sm text-muted-foreground">
                               Number of warnings before action (1-10)
                             </p>
                           </div>
@@ -920,7 +919,7 @@ export default function SettingsPage() {
                             <AlertCircle className="h-5 w-5 text-red-500" />
                             <div>
                               <Label>Auto-terminate Exam</Label>
-                              <p className="text-sm text-gray-600 dark:text-gray-400">
+                              <p className="text-sm text-muted-foreground">
                                 Automatically end exam when warning threshold is reached
                               </p>
                             </div>
@@ -939,10 +938,10 @@ export default function SettingsPage() {
                             Proctoring Features
                           </h4>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                            <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                               <div>
                                 <Label>Fullscreen Mode</Label>
-                                <p className="text-xs text-gray-600 dark:text-gray-400">Require fullscreen during exam</p>
+                                <p className="text-xs text-muted-foreground">Require fullscreen during exam</p>
                               </div>
                               <Switch
                                 checked={proctoringSettings.enableFullscreenMode}
@@ -951,10 +950,10 @@ export default function SettingsPage() {
                               />
                             </div>
 
-                            <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                            <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                               <div>
                                 <Label>Tab Detection</Label>
-                                <p className="text-xs text-gray-600 dark:text-gray-400">Detect when students switch tabs</p>
+                                <p className="text-xs text-muted-foreground">Detect when students switch tabs</p>
                               </div>
                               <Switch
                                 checked={proctoringSettings.enableTabDetection}
@@ -963,10 +962,10 @@ export default function SettingsPage() {
                               />
                             </div>
 
-                            <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                            <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                               <div>
                                 <Label>Context Menu Block</Label>
-                                <p className="text-xs text-gray-600 dark:text-gray-400">Disable right-click context menu</p>
+                                <p className="text-xs text-muted-foreground">Disable right-click context menu</p>
                               </div>
                               <Switch
                                 checked={proctoringSettings.enableContextMenuBlock}
@@ -975,10 +974,10 @@ export default function SettingsPage() {
                               />
                             </div>
 
-                            <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                            <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                               <div>
                                 <Label>DevTools Detection</Label>
-                                <p className="text-xs text-gray-600 dark:text-gray-400">Detect when DevTools are opened</p>
+                                <p className="text-xs text-muted-foreground">Detect when DevTools are opened</p>
                               </div>
                               <Switch
                                 checked={proctoringSettings.enableDevToolsDetection}
@@ -987,10 +986,10 @@ export default function SettingsPage() {
                               />
                             </div>
 
-                            <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                            <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                               <div>
                                 <Label>Copy/Paste Block</Label>
-                                <p className="text-xs text-gray-600 dark:text-gray-400">Disable copy and paste functions</p>
+                                <p className="text-xs text-muted-foreground">Disable copy and paste functions</p>
                               </div>
                               <Switch
                                 checked={proctoringSettings.enableCopyPasteBlock}
@@ -999,10 +998,10 @@ export default function SettingsPage() {
                               />
                             </div>
 
-                            <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                            <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                               <div>
                                 <Label>Instructor Override</Label>
-                                <p className="text-xs text-gray-600 dark:text-gray-400">Allow instructors to modify settings per exam</p>
+                                <p className="text-xs text-muted-foreground">Allow instructors to modify settings per exam</p>
                               </div>
                               <Switch
                                 checked={proctoringSettings.allowInstructorOverride}
@@ -1018,7 +1017,7 @@ export default function SettingsPage() {
                           <Button
                             onClick={handleSaveProctoringSettings}
                             disabled={saveProctoringSettingsMutation.isPending}
-                            className="flex items-center gap-2 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+                            className="flex items-center gap-2 bg-primary text-primary-foreground hover:bg-primary/90"
                             data-testid="button-save-proctoring-settings"
                           >
                             <Save className="h-4 w-4" />

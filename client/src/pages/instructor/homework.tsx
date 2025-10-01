@@ -37,6 +37,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { BookOpen, Plus, Search, Clock, Users, Eye, Edit, CheckCircle, X, Filter, ChevronDown, ChevronRight, ChevronLeft, MoreVertical, FileText, Archive, Trash2 } from "lucide-react";
 import { QuestionsPagination } from "@/components/ui/questions-pagination";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 interface HomeworkAssignment {
   id: number;
@@ -446,20 +447,20 @@ export default function InstructorHomeworkPage() {
 
   const getQuestionTypeColor = (type: string) => {
     switch (type) {
-      case 'multiple_choice': return 'bg-blue-100 text-blue-800';
-      case 'short_answer': return 'bg-green-100 text-green-800';
-      case 'essay': return 'bg-orange-100 text-orange-800';
-      case 'fill_blank': return 'bg-purple-100 text-purple-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'multiple_choice': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
+      case 'short_answer': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+      case 'essay': return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200';
+      case 'fill_blank': return 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200';
+      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200';
     }
   };
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
-      case 'easy': return 'bg-green-100 text-green-800';
-      case 'medium': return 'bg-yellow-100 text-yellow-800';
-      case 'hard': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'easy': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+      case 'medium': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
+      case 'hard': return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
+      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200';
     }
   };
 
@@ -482,897 +483,913 @@ export default function InstructorHomeworkPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       <Navbar />
       <div className="flex">
         <Sidebar />
         <main className="flex-1 overflow-y-auto ml-0 transition-all duration-300">
           <div className="p-3 md:p-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl md:text-3xl font-bold flex items-center gap-2">
-            <BookOpen className="h-8 w-8" />
-{t('nav.assignments')}
-          </h1>
-          <p className="text-gray-600 mt-1">
-            {t('assignments.description')}
-          </p>
-        </div>
-        
-        <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              {t('assignments.createAssignment')}
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>{t('assignments.createNewHomeworkAssignment')}</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-6">
+            <div className="flex items-center justify-between">
               <div>
-                <Label htmlFor="title">{t('assignments.title')} *</Label>
-                <Input
-                  id="title"
-                  value={newHomework.title}
-                  onChange={(e) => setNewHomework({ ...newHomework, title: e.target.value })}
-                  placeholder={t('assignments.homeworkTitlePlaceholder')}
-                />
+                <h1 className="text-xl md:text-3xl font-bold flex items-center gap-2 text-foreground">
+                  <BookOpen className="h-8 w-8" />
+                  {t('nav.assignments')}
+                </h1>
+                <p className="text-muted-foreground mt-1">
+                  {t('assignments.description')}
+                </p>
               </div>
               
-              <div>
-                <Label htmlFor="description">{t('assignments.assignmentDescription')}</Label>
-                <Textarea
-                  id="description"
-                  value={newHomework.description}
-                  onChange={(e) => setNewHomework({ ...newHomework, description: e.target.value })}
-                  placeholder={t('assignments.homeworkDescriptionPlaceholder')}
-                  rows={3}
-                />
-              </div>
-              
-              <div>
-                <Label htmlFor="subject">{t('assignments.subject')} *</Label>
-                <Select value={newHomework.subjectId} onValueChange={(value) => setNewHomework({ ...newHomework, subjectId: value })}>
-                  <SelectTrigger>
-                    <SelectValue placeholder={t('assignments.selectSubject')} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {subjects.map((subject) => (
-                      <SelectItem key={subject.id} value={subject.id.toString()}>
-                        {subject.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <Label htmlFor="dueDate">{t('assignments.dueDate')}</Label>
-                  <Input
-                    id="dueDate"
-                    type="datetime-local"
-                    value={newHomework.dueDate}
-                    onChange={(e) => setNewHomework({ ...newHomework, dueDate: e.target.value })}
-                  />
-                </div>
-                
-                <div>
-                  <Label htmlFor="attemptsAllowed">{t('assignments.attemptsAllowed')}</Label>
-                  <Input
-                    id="attemptsAllowed"
-                    type="number"
-                    min="1"
-                    max="10"
-                    value={newHomework.attemptsAllowed}
-                    onChange={(e) => setNewHomework({ ...newHomework, attemptsAllowed: parseInt(e.target.value) || 1 })}
-                    placeholder="1"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">
-                    {t('assignments.defaultOneAttempt')}
-                  </p>
-                </div>
-                
-                <div>
-                  <Label htmlFor="totalPoints">{t('assignments.totalPoints')}</Label>
-                  <div className="relative">
-                    <Input
-                      id="totalPoints"
-                      type="number"
-                      min="0"
-                      value={newHomework.totalPoints}
-                      readOnly
-                      className="bg-gray-50 dark:bg-gray-800"
-                      placeholder={t('assignments.automaticallyCalculated')}
-                    />
-                    <div className="absolute inset-y-0 right-0 flex items-center pr-3">
-                      <Badge variant="secondary" className="text-xs">
-                        {t('assignments.auto')}
-                      </Badge>
-                    </div>
-                  </div>
-                  <p className="text-xs text-gray-500 mt-1">
-                    {t('assignments.automaticallyCalculated')}
-                  </p>
-                </div>
-              </div>
-              
-              {/* Question Selection Section */}
-              <div className="border-t pt-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold">{t('assignments.selectHomeworkQuestions')}</h3>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setShowQuestionFilters(!showQuestionFilters)}
-                  >
-                    <Filter className="h-4 w-4 mr-2" />
-                    {t('assignments.filters')}
+              <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
+                <DialogTrigger asChild>
+                  <Button>
+                    <Plus className="h-4 w-4 mr-2" />
+                    {t('assignments.createAssignment')}
                   </Button>
-                </div>
-                
-                {/* Search and Filters */}
-                <div className="space-y-4 mb-4">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                    <Input
-                      placeholder={t('assignments.searchHomeworkAssignments')}
-                      value={questionSearch}
-                      onChange={(e) => setQuestionSearch(e.target.value)}
-                      className="pl-9"
-                    />
-                  </div>
-                  
-                  {showQuestionFilters && (
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-gray-50 rounded-lg">
-                      <div>
-                        <Label>Subject</Label>
-                        <Select value={questionFilters.subjectId} onValueChange={(value) => setQuestionFilters(prev => ({...prev, subjectId: value}))}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="All Subjects" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="all">All Subjects</SelectItem>
-                            {subjects.map((subject) => (
-                              <SelectItem key={subject.id} value={subject.id.toString()}>{subject.name}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div>
-                        <Label>Question Type</Label>
-                        <Select value={questionFilters.questionType} onValueChange={(value) => setQuestionFilters(prev => ({...prev, questionType: value}))}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="All Types" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="all">All Types</SelectItem>
-                            <SelectItem value="multiple_choice">Multiple Choice</SelectItem>
-                            <SelectItem value="short_answer">Short Answer</SelectItem>
-                            <SelectItem value="essay">Essay</SelectItem>
-                            <SelectItem value="fill_blank">Fill in the Blank</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div>
-                        <Label>Difficulty</Label>
-                        <Select value={questionFilters.difficulty} onValueChange={(value) => setQuestionFilters(prev => ({...prev, difficulty: value}))}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="All Levels" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="all">All Levels</SelectItem>
-                            <SelectItem value="easy">Easy</SelectItem>
-                            <SelectItem value="medium">Medium</SelectItem>
-                            <SelectItem value="hard">Hard</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                  )}
-                </div>
-                
-                {/* Selected Questions Summary */}
-                {selectedQuestions.length > 0 && (
-                  <div className="mb-4">
-                    <div className="flex items-center justify-between mb-3">
-                      <h4 className="font-medium">{t('assignments.selectedQuestions')} ({selectedQuestions.length})</h4>
-                      <div className="flex items-center gap-2">
-                        <Badge variant="outline" className="text-sm">
-                          Total: {newHomework.totalPoints} points
-                        </Badge>
-                      </div>
-                    </div>
-                    <div className="space-y-2 max-h-40 overflow-y-auto">
-                      {selectedQuestions.map((question) => (
-                        <div key={question.id} className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-1">
-                              <Badge className={getQuestionTypeColor(question.questionType)}>
-                                {formatQuestionType(question.questionType)}
-                              </Badge>
-                              <Badge className={getDifficultyColor(question.difficulty)}>
-                                {question.difficulty}
-                              </Badge>
-                              <Badge variant="outline">{question.points} pts</Badge>
-                            </div>
-                            <p className="text-sm text-gray-700 dark:text-gray-300 truncate">
-                              {question.title || question.questionText}
-                            </p>
-                          </div>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => removeQuestion(question.id)}
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                  <DialogHeader>
+                    <DialogTitle>{t('assignments.createNewHomeworkAssignment')}</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-6">
+                    <Collapsible defaultOpen={true}>
+                      <CollapsibleTrigger className="flex justify-between items-center w-full">
+                        <h3 className="text-lg font-semibold">Section 1: Assignment Details</h3>
+                        <ChevronDown className="h-5 w-5" />
+                      </CollapsibleTrigger>
+                      <CollapsibleContent className="space-y-6 pt-4">
+                        <div>
+                          <Label htmlFor="title">{t('assignments.title')} *</Label>
+                          <Input
+                            id="title"
+                            value={newHomework.title}
+                            onChange={(e) => setNewHomework({ ...newHomework, title: e.target.value })}
+                            placeholder={t('assignments.homeworkTitlePlaceholder')}
+                          />
                         </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                
-                {/* Available Questions */}
-                <div>
-                  <h4 className="font-medium mb-2">{t('assignments.availableHomeworkQuestions')}</h4>
-                  <div className="border rounded-lg max-h-60 overflow-y-auto">
-                    {homeworkQuestions.length === 0 ? (
-                      <div className="p-4 text-center text-gray-500">
-                        No homework questions found. Create homework questions first in the Homework Questions section.
-                      </div>
-                    ) : (
-                      <div className="divide-y">
-                        {homeworkQuestions
-                          .filter((q: any) => !selectedQuestions.find(sq => sq.id === q.id))
-                          .map((question: any) => (
-                          <div key={question.id} className="p-3 hover:bg-gray-50">
-                            <div className="flex items-center justify-between">
-                              <div className="flex-1">
-                                <div className="flex items-center gap-2 mb-1">
-                                  <Badge className={getQuestionTypeColor(question.questionType)}>
-                                    {formatQuestionType(question.questionType)}
-                                  </Badge>
-                                  <Badge variant="outline">
-                                    {getSubjectName(question.subjectId)}
-                                  </Badge>
-                                  <Badge className={getDifficultyColor(question.difficulty)}>
-                                    {question.difficulty}
-                                  </Badge>
-                                  <Badge variant="outline">{question.points} pts</Badge>
-                                </div>
-                                <p className="text-sm text-gray-700 line-clamp-2">
-                                  {question.title || question.questionText}
-                                </p>
-                              </div>
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                onClick={() => addQuestion(question)}
-                              >
-                                <Plus className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-              
-              <div className="flex justify-end gap-2">
-                <Button variant="outline" onClick={() => setShowCreateModal(false)}>
-                  {t('assignments.cancel')}
-                </Button>
-                <Button 
-                  onClick={handleCreateHomework}
-                  disabled={createHomeworkMutation.isPending}
-                >
-                  {createHomeworkMutation.isPending ? t('common.creating') : t('assignments.createHomework')}
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
-
-        {/* Edit Homework Modal */}
-        <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>{t('assignments.editHomeworkAssignment')}</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-6">
-              <div>
-                <Label htmlFor="edit-title">{t('assignments.title')} *</Label>
-                <Input
-                  id="edit-title"
-                  value={newHomework.title}
-                  onChange={(e) => setNewHomework({ ...newHomework, title: e.target.value })}
-                  placeholder={t('assignments.homeworkTitlePlaceholder')}
-                />
-              </div>
-              
-              <div>
-                <Label htmlFor="edit-description">{t('assignments.assignmentDescription')}</Label>
-                <Textarea
-                  id="edit-description"
-                  value={newHomework.description}
-                  onChange={(e) => setNewHomework({ ...newHomework, description: e.target.value })}
-                  placeholder={t('assignments.homeworkDescriptionPlaceholder')}
-                  rows={3}
-                />
-              </div>
-              
-              <div>
-                <Label htmlFor="edit-subject">{t('assignments.subject')} *</Label>
-                <Select value={newHomework.subjectId} onValueChange={(value) => setNewHomework({ ...newHomework, subjectId: value })}>
-                  <SelectTrigger>
-                    <SelectValue placeholder={t('assignments.selectSubject')} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {subjects.map((subject) => (
-                      <SelectItem key={subject.id} value={subject.id.toString()}>
-                        {subject.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <Label htmlFor="edit-dueDate">{t('assignments.dueDate')}</Label>
-                  <Input
-                    id="edit-dueDate"
-                    type="datetime-local"
-                    value={newHomework.dueDate}
-                    onChange={(e) => setNewHomework({ ...newHomework, dueDate: e.target.value })}
-                  />
-                </div>
-                
-                <div>
-                  <Label htmlFor="edit-attemptsAllowed">{t('assignments.attemptsAllowed')}</Label>
-                  <Input
-                    id="edit-attemptsAllowed"
-                    type="number"
-                    min="1"
-                    max="10"
-                    value={newHomework.attemptsAllowed}
-                    onChange={(e) => setNewHomework({ ...newHomework, attemptsAllowed: parseInt(e.target.value) || 1 })}
-                    placeholder="1"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">
-                    {t('assignments.defaultOneAttempt')}
-                  </p>
-                </div>
-                
-                <div>
-                  <Label htmlFor="edit-totalPoints">{t('assignments.totalPoints')}</Label>
-                  <div className="relative">
-                    <Input
-                      id="edit-totalPoints"
-                      type="number"
-                      min="0"
-                      value={newHomework.totalPoints}
-                      readOnly
-                      className="bg-gray-50 dark:bg-gray-800"
-                      placeholder={t('assignments.automaticallyCalculated')}
-                    />
-                    <div className="absolute inset-y-0 right-0 flex items-center pr-3">
-                      <Badge variant="secondary" className="text-xs">
-                        {t('assignments.auto')}
-                      </Badge>
-                    </div>
-                  </div>
-                  <p className="text-xs text-gray-500 mt-1">
-                    {t('assignments.automaticallyCalculated')}
-                  </p>
-                </div>
-              </div>
-              
-              {/* Question Selection Section */}
-              <div className="border-t pt-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold">{t('assignments.selectHomeworkQuestions')}</h3>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setShowQuestionFilters(!showQuestionFilters)}
-                  >
-                    <Filter className="h-4 w-4 mr-2" />
-                    {t('assignments.filters')}
-                  </Button>
-                </div>
-                
-                {/* Search and Filters */}
-                <div className="space-y-4 mb-4">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                    <Input
-                      placeholder={t('assignments.searchHomeworkAssignments')}
-                      value={questionSearch}
-                      onChange={(e) => setQuestionSearch(e.target.value)}
-                      className="pl-9"
-                    />
-                  </div>
-                  
-                  {showQuestionFilters && (
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-gray-50 rounded-lg">
-                      <div>
-                        <Label>Subject</Label>
-                        <Select value={questionFilters.subjectId} onValueChange={(value) => setQuestionFilters(prev => ({...prev, subjectId: value}))}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="All Subjects" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="all">All Subjects</SelectItem>
-                            {subjects.map((subject) => (
-                              <SelectItem key={subject.id} value={subject.id.toString()}>{subject.name}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div>
-                        <Label>Question Type</Label>
-                        <Select value={questionFilters.questionType} onValueChange={(value) => setQuestionFilters(prev => ({...prev, questionType: value}))}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="All Types" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="all">All Types</SelectItem>
-                            <SelectItem value="multiple_choice">Multiple Choice</SelectItem>
-                            <SelectItem value="short_answer">Short Answer</SelectItem>
-                            <SelectItem value="essay">Essay</SelectItem>
-                            <SelectItem value="fill_blank">Fill in the Blank</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div>
-                        <Label>Difficulty</Label>
-                        <Select value={questionFilters.difficulty} onValueChange={(value) => setQuestionFilters(prev => ({...prev, difficulty: value}))}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="All Levels" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="all">All Levels</SelectItem>
-                            <SelectItem value="easy">Easy</SelectItem>
-                            <SelectItem value="medium">Medium</SelectItem>
-                            <SelectItem value="hard">Hard</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                  )}
-                </div>
-                
-                {/* Selected Questions Summary */}
-                {selectedQuestions.length > 0 && (
-                  <div className="mb-4">
-                    <div className="flex items-center justify-between mb-3">
-                      <h4 className="font-medium">{t('assignments.selectedQuestions')} ({selectedQuestions.length})</h4>
-                      <div className="flex items-center gap-2">
-                        <Badge variant="outline" className="text-sm">
-                          Total: {newHomework.totalPoints} points
-                        </Badge>
-                      </div>
-                    </div>
-                    <div className="space-y-2 max-h-40 overflow-y-auto">
-                      {selectedQuestions.map((question) => (
-                        <div key={question.id} className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-1">
-                              <Badge className={getQuestionTypeColor(question.questionType)}>
-                                {formatQuestionType(question.questionType)}
-                              </Badge>
-                              <Badge className={getDifficultyColor(question.difficulty)}>
-                                {question.difficulty}
-                              </Badge>
-                              <Badge variant="outline">{question.points} pts</Badge>
-                            </div>
-                            <p className="text-sm text-gray-700 dark:text-gray-300 truncate">
-                              {question.title || question.questionText}
-                            </p>
-                          </div>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => removeQuestion(question.id)}
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
+                        
+                        <div>
+                          <Label htmlFor="description">{t('assignments.assignmentDescription')}</Label>
+                          <Textarea
+                            id="description"
+                            value={newHomework.description}
+                            onChange={(e) => setNewHomework({ ...newHomework, description: e.target.value })}
+                            placeholder={t('assignments.homeworkDescriptionPlaceholder')}
+                            rows={3}
+                          />
                         </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                
-                {/* Available Questions */}
-                <div>
-                  <h4 className="font-medium mb-2">{t('assignments.availableHomeworkQuestions')}</h4>
-                  <div className="border rounded-lg max-h-60 overflow-y-auto">
-                    {homeworkQuestions.length === 0 ? (
-                      <div className="p-4 text-center text-gray-500">
-                        No homework questions found. Create homework questions first in the Homework Questions section.
-                      </div>
-                    ) : (
-                      <div className="divide-y">
-                        {homeworkQuestions
-                          .filter((q: any) => !selectedQuestions.find(sq => sq.id === q.id))
-                          .map((question: any) => (
-                          <div key={question.id} className="p-3 hover:bg-gray-50">
-                            <div className="flex items-center justify-between">
-                              <div className="flex-1">
-                                <div className="flex items-center gap-2 mb-1">
-                                  <Badge className={getQuestionTypeColor(question.questionType)}>
-                                    {formatQuestionType(question.questionType)}
-                                  </Badge>
-                                  <Badge variant="outline">
-                                    {getSubjectName(question.subjectId)}
-                                  </Badge>
-                                  <Badge className={getDifficultyColor(question.difficulty)}>
-                                    {question.difficulty}
-                                  </Badge>
-                                  <Badge variant="outline">{question.points} pts</Badge>
-                                </div>
-                                <p className="text-sm text-gray-700 line-clamp-2">
-                                  {question.title || question.questionText}
-                                </p>
-                              </div>
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                onClick={() => addQuestion(question)}
-                              >
-                                <Plus className="h-4 w-4" />
-                              </Button>
-                            </div>
+                        
+                        <div>
+                          <Label htmlFor="subject">{t('assignments.subject')} *</Label>
+                          <Select value={newHomework.subjectId} onValueChange={(value) => setNewHomework({ ...newHomework, subjectId: value })}>
+                            <SelectTrigger>
+                              <SelectValue placeholder={t('assignments.selectSubject')} />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {subjects.map((subject) => (
+                                <SelectItem key={subject.id} value={subject.id.toString()}>
+                                  {subject.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          <div>
+                            <Label htmlFor="dueDate">{t('assignments.dueDate')}</Label>
+                            <Input
+                              id="dueDate"
+                              type="datetime-local"
+                              value={newHomework.dueDate}
+                              onChange={(e) => setNewHomework({ ...newHomework, dueDate: e.target.value })}
+                            />
                           </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-              
-              <div className="flex justify-end gap-2 pt-4 border-t">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setShowEditModal(false)}
-                >
-                  {t('assignments.cancel')}
-                </Button>
-                <Button
-                  onClick={handleEditHomework}
-                  disabled={updateHomeworkMutation.isPending}
-                >
-                  {updateHomeworkMutation.isPending ? "Saving..." : "Save Changes"}
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
-
-        {/* View Details Modal */}
-        <Dialog open={showDetailsModal} onOpenChange={setShowDetailsModal}>
-          <DialogContent className="max-w-2xl">
-            <DialogHeader>
-              <DialogTitle>Homework Details</DialogTitle>
-            </DialogHeader>
-            {selectedHomework && (
-              <div className="space-y-6">
-                <div>
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-xl font-semibold">{selectedHomework.title}</h3>
-                    {getStatusBadge(selectedHomework.status)}
-                  </div>
-                  <div className="p-4 bg-gray-50 rounded-lg text-gray-800 text-justify leading-relaxed">
-                    {selectedHomework.description || 'No description provided for this assignment.'}
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label className="text-sm font-medium text-gray-500">Subject</Label>
-                    <p className="mt-1">{subjects.find((s: any) => s.id === selectedHomework.subjectId)?.name || t('studentExams.unknownSubject')}</p>
-                  </div>
-                  
-                  <div>
-                    <Label className="text-sm font-medium text-gray-500">Status</Label>
-                    <p className="mt-1 capitalize">{selectedHomework.status}</p>
-                  </div>
-                  
-                  {selectedHomework.dueDate && (
-                    <div>
-                      <Label className="text-sm font-medium text-gray-500">Due Date</Label>
-                      <p className="mt-1">{new Date(selectedHomework.dueDate).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })}</p>
-                    </div>
-                  )}
-                  
-                  <div>
-                    <Label className="text-sm font-medium text-gray-500">Created</Label>
-                    <p className="mt-1">{new Date(selectedHomework.createdAt).toLocaleDateString('en-US', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric'
-                    })}</p>
-                  </div>
-                </div>
-                
-                <div className="flex justify-end gap-2">
-                  <Button variant="outline" onClick={() => setShowDetailsModal(false)}>
-                    Close
-                  </Button>
-                  <Button onClick={() => {
-                    setShowDetailsModal(false);
-                    handleEditClick(selectedHomework);
-                  }}>
-                    <Edit className="h-4 w-4 mr-2" />
-                    Edit Homework
-                  </Button>
-                </div>
-              </div>
-            )}
-          </DialogContent>
-        </Dialog>
-      </div>
-
-      {/* Search and Filter Controls */}
-      <div className="flex gap-4 items-center">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-          <Input
-            placeholder={t('assignments.searchHomeworkAssignments')}
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
-          />
-        </div>
-        
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-40">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">{t('assignments.allStatus')}</SelectItem>
-            <SelectItem value="draft">Draft</SelectItem>
-            <SelectItem value="active">Active</SelectItem>
-            <SelectItem value="archived">Archived</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      {/* Homework Assignments List */}
-      {homeworkLoading ? (
-        <div className="flex justify-center items-center h-32">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-        </div>
-      ) : (
-        homework.length === 0 ? (
-          <div className="text-center py-12">
-            <BookOpen className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-500 text-lg mb-2">No homework assignments found</p>
-            <p className="text-gray-400">
-              {searchTerm || statusFilter !== "all" 
-                ? "Try adjusting your search or filter criteria"
-                : "Create your first homework assignment to get started"
-              }
-            </p>
-            {!searchTerm && statusFilter === "all" && (
-              <Button onClick={() => setShowCreateModal(true)} className="mt-4">
-                <Plus className="h-4 w-4 mr-2" />
-                Create First Homework
-              </Button>
-            )}
-          </div>
-        ) : (() => {
-          // Display homework (sorting and pagination handled server-side)
-          const paginatedHomework = homework;
-
-          return (
-            <div className="space-y-4">
-              <div className="bg-white rounded-lg border">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-[50px]"></TableHead>
-                      <TableHead>{t('homeworkTitle')}</TableHead>
-                      <TableHead>{t('subject')}</TableHead>
-                      <TableHead>{t('dueDate')}</TableHead>
-                      <TableHead>{t('status')}</TableHead>
-                      <TableHead className="text-right">{t('actions')}</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {paginatedHomework.map((hw: any, index: number) => {
-                      const isExpanded = expandedHomeworkIds.has(hw.id);
-                      const toggleExpanded = () => {
-                        const newExpanded = new Set(expandedHomeworkIds);
-                        if (isExpanded) {
-                          newExpanded.delete(hw.id);
-                        } else {
-                          newExpanded.add(hw.id);
-                        }
-                        setExpandedHomeworkIds(newExpanded);
-                      };
-
-                      return (
-                        <>
-                          <TableRow 
-                            key={hw.id} 
-                            className={`cursor-pointer hover:bg-gray-100 ${index % 2 === 0 ? "bg-white" : "bg-gray-50"}`}
-                            onClick={toggleExpanded}
-                          >
-                            <TableCell>
-                              <div className="flex items-center justify-center">
-                                {isExpanded ? (
-                                  <ChevronDown className="h-4 w-4 text-gray-500" />
-                                ) : (
-                                  <ChevronRight className="h-4 w-4 text-gray-500" />
-                                )}
-                              </div>
-                            </TableCell>
-                            <TableCell className="font-medium">
-                              <div className="font-semibold truncate max-w-xs" title={hw.title}>
-                                {hw.title}
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              {subjects.find((s: any) => s.id === hw.subjectId)?.name || t('studentExams.unknownSubject')}
-                            </TableCell>
-                            <TableCell>
-                              {hw.dueDate ? new Date(hw.dueDate).toLocaleDateString('en-US', {
-                                year: 'numeric',
-                                month: 'short',
-                                day: 'numeric',
-                                hour: '2-digit',
-                                minute: '2-digit'
-                              }) : 'No due date'}
-                            </TableCell>
-                            <TableCell>
-                              {getStatusBadge(hw.status)}
-                            </TableCell>
-                            <TableCell className="text-right">
-                              <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
-                                <Button 
-                                  variant="ghost" 
-                                  size="sm"
-                                  onClick={() => handleViewDetails(hw)}
-                                  title="View details"
-                                >
-                                  <Eye className="h-4 w-4" />
-                                </Button>
-                                <DropdownMenu>
-                                  <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="sm" title="More actions">
-                                      <MoreVertical className="h-4 w-4" />
-                                    </Button>
-                                  </DropdownMenuTrigger>
-                                  <DropdownMenuContent align="end">
-                                    <DropdownMenuItem onClick={() => handleEditClick(hw)}>
-                                      <Edit className="h-4 w-4 mr-2" />
-                                      Edit Homework
-                                    </DropdownMenuItem>
-                                    {hw.status === 'draft' && (
-                                      <DropdownMenuItem 
-                                        onClick={() => handlePublish(hw.id)}
-                                        disabled={publishHomeworkMutation.isPending}
-                                      >
-                                        <CheckCircle className="h-4 w-4 mr-2" />
-                                        Publish
-                                      </DropdownMenuItem>
-                                    )}
-                                    {(hw.status === 'active' || hw.status === 'completed') && (
-                                      <DropdownMenuItem onClick={() => console.log('Archive', hw.id)}>
-                                        <Archive className="h-4 w-4 mr-2" />
-                                        Archive Homework
-                                      </DropdownMenuItem>
-                                    )}
-                                    <DropdownMenuItem 
-                                      onClick={() => console.log('Delete', hw.id)}
-                                      className="text-red-600 focus:text-red-600"
-                                    >
-                                      <Trash2 className="h-4 w-4 mr-2" />
-                                      Delete Homework
-                                    </DropdownMenuItem>
-                                  </DropdownMenuContent>
-                                </DropdownMenu>
-                              </div>
-                            </TableCell>
-                          </TableRow>
                           
-                          {/* Expanded Details Row */}
-                          {isExpanded && (
-                            <TableRow className={`${index % 2 === 0 ? "bg-gray-50" : "bg-gray-100"}`}>
-                              <TableCell colSpan={6}>
-                                <div className="p-4 space-y-4">
-                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div className="space-y-3">
-                                      <h4 className="font-medium text-gray-900 flex items-center gap-2">
-                                        <BookOpen className="h-4 w-4" />
-                                        {t('assignmentDetails')}
-                                      </h4>
-                                      <div className="space-y-3 text-sm">
-                                        <div>
-                                          <span className="text-gray-600 font-medium">{t('descriptionLabel')}</span>
-                                          <div className="mt-2 p-3 bg-gray-50 rounded-lg text-gray-800 text-justify leading-relaxed">
-                                            {hw.description || t('noDescriptionProvided')}
+                          <div>
+                            <Label htmlFor="attemptsAllowed">{t('assignments.attemptsAllowed')}</Label>
+                            <Input
+                              id="attemptsAllowed"
+                              type="number"
+                              min="1"
+                              max="10"
+                              value={newHomework.attemptsAllowed}
+                              onChange={(e) => setNewHomework({ ...newHomework, attemptsAllowed: parseInt(e.target.value) || 1 })}
+                              placeholder="1"
+                            />
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {t('assignments.defaultOneAttempt')}
+                            </p>
+                          </div>
+                          
+                          <div>
+                            <Label htmlFor="totalPoints">{t('assignments.totalPoints')}</Label>
+                            <div className="relative">
+                              <Input
+                                id="totalPoints"
+                                type="number"
+                                min="0"
+                                value={newHomework.totalPoints}
+                                readOnly
+                                className="bg-muted/50"
+                                placeholder={t('assignments.automaticallyCalculated')}
+                              />
+                              <div className="absolute inset-y-0 right-0 flex items-center pr-3">
+                                <Badge variant="secondary" className="text-xs">
+                                  {t('assignments.auto')}
+                                </Badge>
+                              </div>
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {t('assignments.automaticallyCalculated')}
+                            </p>
+                          </div>
+                        </div>
+                      </CollapsibleContent>
+                    </Collapsible>
+                    
+                    <Collapsible>
+                      <CollapsibleTrigger className="flex justify-between items-center w-full">
+                        <h3 className="text-lg font-semibold">Section 2: Select Homework Questions</h3>
+                        <ChevronDown className="h-5 w-5" />
+                      </CollapsibleTrigger>
+                      <CollapsibleContent className="space-y-6 pt-4">
+                        {/* Question Selection Section */}
+                        <div className="border-t pt-6">
+                          <div className="flex items-center justify-between mb-4">
+                            <h3 className="text-lg font-semibold">{t('assignments.selectHomeworkQuestions')}</h3>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setShowQuestionFilters(!showQuestionFilters)}
+                            >
+                              <Filter className="h-4 w-4 mr-2" />
+                              {t('assignments.filters')}
+                            </Button>
+                          </div>
+                          
+                          {/* Search and Filters */}
+                          <div className="space-y-4 mb-4">
+                            <div className="relative">
+                              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                              <Input
+                                placeholder={t('assignments.searchHomeworkAssignments')}
+                                value={questionSearch}
+                                onChange={(e) => setQuestionSearch(e.target.value)}
+                                className="pl-9"
+                              />
+                            </div>
+                            
+                            {showQuestionFilters && (
+                              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-muted/50 rounded-lg">
+                                <div>
+                                  <Label>Subject</Label>
+                                  <Select value={questionFilters.subjectId} onValueChange={(value) => setQuestionFilters(prev => ({...prev, subjectId: value}))}>
+                                    <SelectTrigger>
+                                      <SelectValue placeholder="All Subjects" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="all">All Subjects</SelectItem>
+                                      {subjects.map((subject) => (
+                                        <SelectItem key={subject.id} value={subject.id.toString()}>{subject.name}</SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+                                <div>
+                                  <Label>Question Type</Label>
+                                  <Select value={questionFilters.questionType} onValueChange={(value) => setQuestionFilters(prev => ({...prev, questionType: value}))}>
+                                    <SelectTrigger>
+                                      <SelectValue placeholder="All Types" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="all">All Types</SelectItem>
+                                      <SelectItem value="multiple_choice">Multiple Choice</SelectItem>
+                                      <SelectItem value="short_answer">Short Answer</SelectItem>
+                                      <SelectItem value="essay">Essay</SelectItem>
+                                      <SelectItem value="fill_blank">Fill in the Blank</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+                                <div>
+                                  <Label>Difficulty</Label>
+                                  <Select value={questionFilters.difficulty} onValueChange={(value) => setQuestionFilters(prev => ({...prev, difficulty: value}))}>
+                                    <SelectTrigger>
+                                      <SelectValue placeholder="All Levels" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="all">All Levels</SelectItem>
+                                      <SelectItem value="easy">Easy</SelectItem>
+                                      <SelectItem value="medium">Medium</SelectItem>
+                                      <SelectItem value="hard">Hard</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                          
+                          {/* Selected Questions Summary */}
+                          {selectedQuestions.length > 0 && (
+                            <div className="mb-4">
+                              <div className="flex items-center justify-between mb-3">
+                                <h4 className="font-medium">{t('assignments.selectedQuestions')} ({selectedQuestions.length})</h4>
+                                <div className="flex items-center gap-2">
+                                  <Badge variant="outline" className="text-sm">
+                                    Total: {newHomework.totalPoints} points
+                                  </Badge>
+                                </div>
+                              </div>
+                              <div className="space-y-2 max-h-40 overflow-y-auto">
+                                {selectedQuestions.map((question) => (
+                                  <div key={question.id} className="flex items-center justify-between p-3 bg-green-100 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                                    <div className="flex-1">
+                                      <div className="flex items-center gap-2 mb-1">
+                                        <Badge className={getQuestionTypeColor(question.questionType)}>
+                                          {formatQuestionType(question.questionType)}
+                                        </Badge>
+                                        <Badge className={getDifficultyColor(question.difficulty)}>
+                                          {question.difficulty}
+                                        </Badge>
+                                        <Badge variant="outline">{question.points} pts</Badge>
+                                      </div>
+                                      <p className="text-sm text-foreground truncate">
+                                        {question.title || question.questionText}
+                                      </p>
+                                    </div>
+                                    <Button
+                                      type="button"
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => removeQuestion(question.id)}
+                                    >
+                                      <X className="h-4 w-4" />
+                                    </Button>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          
+                          {/* Available Questions */}
+                          <div>
+                            <h4 className="font-medium mb-2">{t('assignments.availableHomeworkQuestions')}</h4>
+                            <div className="border rounded-lg max-h-60 overflow-y-auto">
+                              {homeworkQuestions.length === 0 ? (
+                                <div className="p-4 text-center text-muted-foreground">
+                                  No homework questions found. Create homework questions first in the Homework Questions section.
+                                </div>
+                              ) : (
+                                <div className="divide-y">
+                                  {homeworkQuestions
+                                    .filter((q: any) => !selectedQuestions.find(sq => sq.id === q.id))
+                                    .map((question: any) => (
+                                    <div key={question.id} className="p-3 hover:bg-muted">
+                                      <div className="flex items-center justify-between">
+                                        <div className="flex-1">
+                                          <div className="flex items-center gap-2 mb-1">
+                                            <Badge className={getQuestionTypeColor(question.questionType)}>
+                                              {formatQuestionType(question.questionType)}
+                                            </Badge>
+                                            <Badge variant="outline">
+                                              {getSubjectName(question.subjectId)}
+                                            </Badge>
+                                            <Badge className={getDifficultyColor(question.difficulty)}>
+                                              {question.difficulty}
+                                            </Badge>
+                                            <Badge variant="outline">{question.points} pts</Badge>
                                           </div>
+                                          <p className="text-sm text-muted-foreground line-clamp-2">
+                                            {question.title || question.questionText}
+                                          </p>
                                         </div>
-                                        <div className="flex justify-between">
-                                          <span className="text-gray-600">Created:</span>
-                                          <span className="font-medium">
-                                            {new Date(hw.createdAt).toLocaleDateString('en-US', {
-                                              year: 'numeric',
-                                              month: 'short',
-                                              day: 'numeric'
-                                            })}
-                                          </span>
-                                        </div>
+                                        <Button
+                                          type="button"
+                                          variant="outline"
+                                          size="sm"
+                                          onClick={() => addQuestion(question)}
+                                        >
+                                          <Plus className="h-4 w-4" />
+                                        </Button>
                                       </div>
                                     </div>
-                                    
-                                    <div className="space-y-3">
-                                      <h4 className="font-medium text-gray-900 flex items-center gap-2">
-                                        <Users className="h-4 w-4" />
-                                        {t('statistics')}
-                                      </h4>
-                                      <div className="space-y-2 text-sm">
-                                        <div className="flex justify-between">
-                                          <span className="text-gray-600">{t('questions')}</span>
-                                          <span className="font-medium">0</span>
-                                        </div>
-                                        <div className="flex justify-between">
-                                          <span className="text-gray-600">Submissions:</span>
-                                          <span className="font-medium">0</span>
-                                        </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </CollapsibleContent>
+                    </Collapsible>
+                    
+                    <div className="flex justify-end gap-2">
+                      <Button variant="outline" onClick={() => setShowCreateModal(false)}>
+                        {t('assignments.cancel')}
+                      </Button>
+                      <Button 
+                        onClick={handleCreateHomework}
+                        disabled={createHomeworkMutation.isPending}
+                      >
+                        {createHomeworkMutation.isPending ? t('common.creating') : t('assignments.createHomework')}
+                      </Button>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
+
+              {/* Edit Homework Modal */}
+              <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
+                <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                  <DialogHeader>
+                    <DialogTitle>{t('assignments.editHomeworkAssignment')}</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-6">
+                    <div>
+                      <Label htmlFor="edit-title">{t('assignments.title')} *</Label>
+                      <Input
+                        id="edit-title"
+                        value={newHomework.title}
+                        onChange={(e) => setNewHomework({ ...newHomework, title: e.target.value })}
+                        placeholder={t('assignments.homeworkTitlePlaceholder')}
+                      />
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor="edit-description">{t('assignments.assignmentDescription')}</Label>
+                      <Textarea
+                        id="edit-description"
+                        value={newHomework.description}
+                        onChange={(e) => setNewHomework({ ...newHomework, description: e.target.value })}
+                        placeholder={t('assignments.homeworkDescriptionPlaceholder')}
+                        rows={3}
+                      />
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor="edit-subject">{t('assignments.subject')} *</Label>
+                      <Select value={newHomework.subjectId} onValueChange={(value) => setNewHomework({ ...newHomework, subjectId: value })}>
+                        <SelectTrigger>
+                          <SelectValue placeholder={t('assignments.selectSubject')} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {subjects.map((subject) => (
+                            <SelectItem key={subject.id} value={subject.id.toString()}>
+                              {subject.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div>
+                        <Label htmlFor="edit-dueDate">{t('assignments.dueDate')}</Label>
+                        <Input
+                          id="edit-dueDate"
+                          type="datetime-local"
+                          value={newHomework.dueDate}
+                          onChange={(e) => setNewHomework({ ...newHomework, dueDate: e.target.value })}
+                        />
+                      </div>
+                      
+                      <div>
+                        <Label htmlFor="edit-attemptsAllowed">{t('assignments.attemptsAllowed')}</Label>
+                        <Input
+                          id="edit-attemptsAllowed"
+                          type="number"
+                          min="1"
+                          max="10"
+                          value={newHomework.attemptsAllowed}
+                          onChange={(e) => setNewHomework({ ...newHomework, attemptsAllowed: parseInt(e.target.value) || 1 })}
+                          placeholder="1"
+                        />
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {t('assignments.defaultOneAttempt')}
+                        </p>
+                      </div>
+                      
+                      <div>
+                        <Label htmlFor="edit-totalPoints">{t('assignments.totalPoints')}</Label>
+                        <div className="relative">
+                          <Input
+                            id="edit-totalPoints"
+                            type="number"
+                            min="0"
+                            value={newHomework.totalPoints}
+                            readOnly
+                            className="bg-muted/50"
+                            placeholder={t('assignments.automaticallyCalculated')}
+                          />
+                          <div className="absolute inset-y-0 right-0 flex items-center pr-3">
+                            <Badge variant="secondary" className="text-xs">
+                              {t('assignments.auto')}
+                            </Badge>
+                          </div>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {t('assignments.automaticallyCalculated')}
+                        </p>
+                      </div>
+                    </div>
+                    
+                    {/* Question Selection Section */}
+                    <div className="border-t pt-6">
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-lg font-semibold">{t('assignments.selectHomeworkQuestions')}</h3>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setShowQuestionFilters(!showQuestionFilters)}
+                        >
+                          <Filter className="h-4 w-4 mr-2" />
+                          {t('assignments.filters')}
+                        </Button>
+                      </div>
+                      
+                      {/* Search and Filters */}
+                      <div className="space-y-4 mb-4">
+                        <div className="relative">
+                          <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                          <Input
+                            placeholder={t('assignments.searchHomeworkAssignments')}
+                            value={questionSearch}
+                            onChange={(e) => setQuestionSearch(e.target.value)}
+                            className="pl-9"
+                          />
+                        </div>
+                        
+                        {showQuestionFilters && (
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-muted/50 rounded-lg">
+                            <div>
+                              <Label>Subject</Label>
+                              <Select value={questionFilters.subjectId} onValueChange={(value) => setQuestionFilters(prev => ({...prev, subjectId: value}))}>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="All Subjects" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="all">All Subjects</SelectItem>
+                                  {subjects.map((subject) => (
+                                    <SelectItem key={subject.id} value={subject.id.toString()}>{subject.name}</SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div>
+                              <Label>Question Type</Label>
+                              <Select value={questionFilters.questionType} onValueChange={(value) => setQuestionFilters(prev => ({...prev, questionType: value}))}>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="All Types" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="all">All Types</SelectItem>
+                                  <SelectItem value="multiple_choice">Multiple Choice</SelectItem>
+                                  <SelectItem value="short_answer">Short Answer</SelectItem>
+                                  <SelectItem value="essay">Essay</SelectItem>
+                                  <SelectItem value="fill_blank">Fill in the Blank</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div>
+                              <Label>Difficulty</Label>
+                              <Select value={questionFilters.difficulty} onValueChange={(value) => setQuestionFilters(prev => ({...prev, difficulty: value}))}>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="All Levels" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="all">All Levels</SelectItem>
+                                  <SelectItem value="easy">Easy</SelectItem>
+                                  <SelectItem value="medium">Medium</SelectItem>
+                                  <SelectItem value="hard">Hard</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      
+                      {/* Selected Questions Summary */}
+                      {selectedQuestions.length > 0 && (
+                        <div className="mb-4">
+                          <div className="flex items-center justify-between mb-3">
+                            <h4 className="font-medium">{t('assignments.selectedQuestions')} ({selectedQuestions.length})</h4>
+                            <div className="flex items-center gap-2">
+                              <Badge variant="outline" className="text-sm">
+                                Total: {newHomework.totalPoints} points
+                              </Badge>
+                            </div>
+                          </div>
+                          <div className="space-y-2 max-h-40 overflow-y-auto">
+                            {selectedQuestions.map((question) => (
+                              <div key={question.id} className="flex items-center justify-between p-3 bg-green-100 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                                <div className="flex-1">
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <Badge className={getQuestionTypeColor(question.questionType)}>
+                                      {formatQuestionType(question.questionType)}
+                                    </Badge>
+                                    <Badge className={getDifficultyColor(question.difficulty)}>
+                                      {question.difficulty}
+                                    </Badge>
+                                    <Badge variant="outline">{question.points} pts</Badge>
+                                  </div>
+                                  <p className="text-sm text-foreground truncate">
+                                    {question.title || question.questionText}
+                                  </p>
+                                </div>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => removeQuestion(question.id)}
+                                >
+                                  <X className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      
+                      {/* Available Questions */}
+                      <div>
+                        <h4 className="font-medium mb-2">{t('assignments.availableHomeworkQuestions')}</h4>
+                        <div className="border rounded-lg max-h-60 overflow-y-auto">
+                          {homeworkQuestions.length === 0 ? (
+                            <div className="p-4 text-center text-muted-foreground">
+                              No homework questions found. Create homework questions first in the Homework Questions section.
+                            </div>
+                          ) : (
+                            <div className="divide-y">
+                              {homeworkQuestions
+                                .filter((q: any) => !selectedQuestions.find(sq => sq.id === q.id))
+                                .map((question: any) => (
+                                <div key={question.id} className="p-3 hover:bg-muted">
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex-1">
+                                      <div className="flex items-center gap-2 mb-1">
+                                        <Badge className={getQuestionTypeColor(question.questionType)}>
+                                          {formatQuestionType(question.questionType)}
+                                        </Badge>
+                                        <Badge variant="outline">
+                                          {getSubjectName(question.subjectId)}
+                                        </Badge>
+                                        <Badge className={getDifficultyColor(question.difficulty)}>
+                                          {question.difficulty}
+                                        </Badge>
+                                        <Badge variant="outline">{question.points} pts</Badge>
                                       </div>
+                                      <p className="text-sm text-muted-foreground line-clamp-2">
+                                        {question.title || question.questionText}
+                                      </p>
                                     </div>
+                                    <Button
+                                      type="button"
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => addQuestion(question)}
+                                    >
+                                      <Plus className="h-4 w-4" />
+                                    </Button>
                                   </div>
                                 </div>
-                              </TableCell>
-                            </TableRow>
+                              ))}
+                            </div>
                           )}
-                        </>
-                      );
-                    })}
-                  </TableBody>
-                </Table>
-              </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="flex justify-end gap-2 pt-4 border-t">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setShowEditModal(false)}
+                      >
+                        {t('assignments.cancel')}
+                      </Button>
+                      <Button
+                        onClick={handleEditHomework}
+                        disabled={updateHomeworkMutation.isPending}
+                      >
+                        {updateHomeworkMutation.isPending ? "Saving..." : "Save Changes"}
+                      </Button>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
 
-              {/* Pagination Controls */}
-              {homework.length > 0 && (
-                <QuestionsPagination 
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  total={totalHomework}
-                  pageSize={pageSize}
-                  onPageChange={setCurrentPage}
-                  onPageSizeChange={(newPageSize) => {
-                    setPageSize(newPageSize);
-                    setCurrentPage(1);
-                  }}
-                />
-              )}
+              {/* View Details Modal */}
+              <Dialog open={showDetailsModal} onOpenChange={setShowDetailsModal}>
+                <DialogContent className="max-w-2xl">
+                  <DialogHeader>
+                    <DialogTitle>Homework Details</DialogTitle>
+                  </DialogHeader>
+                  {selectedHomework && (
+                    <div className="space-y-6">
+                      <div>
+                        <div className="flex items-center justify-between mb-4">
+                          <h3 className="text-xl font-semibold">{selectedHomework.title}</h3>
+                          {getStatusBadge(selectedHomework.status)}
+                        </div>
+                        <div className="p-4 bg-muted/50 rounded-lg text-foreground text-justify leading-relaxed">
+                          {selectedHomework.description || 'No description provided for this assignment.'}
+                        </div>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label className="text-sm font-medium text-muted-foreground">Subject</Label>
+                          <p className="mt-1">{subjects.find((s: any) => s.id === selectedHomework.subjectId)?.name || t('studentExams.unknownSubject')}</p>
+                        </div>
+                        
+                        <div>
+                          <Label className="text-sm font-medium text-muted-foreground">Status</Label>
+                          <p className="mt-1 capitalize">{selectedHomework.status}</p>
+                        </div>
+                        
+                        {selectedHomework.dueDate && (
+                          <div>
+                            <Label className="text-sm font-medium text-muted-foreground">Due Date</Label>
+                            <p className="mt-1">{new Date(selectedHomework.dueDate).toLocaleDateString('en-US', {
+                              year: 'numeric',
+                              month: 'long',
+                              day: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}</p>
+                          </div>
+                        )}
+                        
+                        <div>
+                          <Label className="text-sm font-medium text-muted-foreground">Created</Label>
+                          <p className="mt-1">{new Date(selectedHomework.createdAt).toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                          })}</p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex justify-end gap-2">
+                        <Button variant="outline" onClick={() => setShowDetailsModal(false)}>
+                          Close
+                        </Button>
+                        <Button onClick={() => {
+                          setShowDetailsModal(false);
+                          handleEditClick(selectedHomework);
+                        }}>
+                          <Edit className="h-4 w-4 mr-2" />
+                          Edit Homework
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </DialogContent>
+              </Dialog>
             </div>
-          );
-        })()
-      )}
+
+            {/* Search and Filter Controls */}
+            <div className="flex gap-4 items-center">
+              <div className="relative flex-1 max-w-md">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                <Input
+                  placeholder={t('assignments.searchHomeworkAssignments')}
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+              
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-40">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t('assignments.allStatus')}</SelectItem>
+                  <SelectItem value="draft">Draft</SelectItem>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="archived">Archived</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Homework Assignments List */}
+            {homeworkLoading ? (
+              <div className="flex justify-center items-center h-32">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+              </div>
+            ) : (
+              homework.length === 0 ? (
+                <div className="text-center py-12">
+                  <BookOpen className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
+                  <p className="text-muted-foreground text-lg mb-2">No homework assignments found</p>
+                  <p className="text-muted-foreground">
+                    {searchTerm || statusFilter !== "all" 
+                      ? "Try adjusting your search or filter criteria"
+                      : "Create your first homework assignment to get started"
+                    }
+                  </p>
+                  {!searchTerm && statusFilter === "all" && (
+                    <Button onClick={() => setShowCreateModal(true)} className="mt-4">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Create First Homework
+                    </Button>
+                  )}
+                </div>
+              ) : (() => {
+                // Display homework (sorting and pagination handled server-side)
+                const paginatedHomework = homework;
+
+                return (
+                  <div className="space-y-4">
+                    <div className="bg-card rounded-lg border">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead className="w-[50px]"></TableHead>
+                            <TableHead>{t('homeworkTitle')}</TableHead>
+                            <TableHead>{t('subject')}</TableHead>
+                            <TableHead>{t('dueDate')}</TableHead>
+                            <TableHead>{t('status')}</TableHead>
+                            <TableHead className="text-right">{t('actions')}</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {paginatedHomework.map((hw: any, index: number) => {
+                            const isExpanded = expandedHomeworkIds.has(hw.id);
+                            const toggleExpanded = () => {
+                              const newExpanded = new Set(expandedHomeworkIds);
+                              if (isExpanded) {
+                                newExpanded.delete(hw.id);
+                              } else {
+                                newExpanded.add(hw.id);
+                              }
+                              setExpandedHomeworkIds(newExpanded);
+                            };
+
+                            return (
+                              <>
+                                <TableRow 
+                                  key={hw.id} 
+                                  className={`cursor-pointer hover:bg-muted`}
+                                  onClick={toggleExpanded}
+                                >
+                                  <TableCell>
+                                    <div className="flex items-center justify-center">
+                                      {isExpanded ? (
+                                        <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                                      ) : (
+                                        <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                                      )}
+                                    </div>
+                                  </TableCell>
+                                  <TableCell className="font-medium">
+                                    <div className="font-semibold truncate max-w-xs text-foreground" title={hw.title}>
+                                      {hw.title}
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    {subjects.find((s: any) => s.id === hw.subjectId)?.name || t('studentExams.unknownSubject')}
+                                  </TableCell>
+                                  <TableCell>
+                                    {hw.dueDate ? new Date(hw.dueDate).toLocaleDateString('en-US', {
+                                      year: 'numeric',
+                                      month: 'short',
+                                      day: 'numeric',
+                                      hour: '2-digit',
+                                      minute: '2-digit'
+                                    }) : 'No due date'}
+                                  </TableCell>
+                                  <TableCell>
+                                    {getStatusBadge(hw.status)}
+                                  </TableCell>
+                                  <TableCell className="text-right">
+                                    <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
+                                      <Button 
+                                        variant="ghost" 
+                                        size="sm"
+                                        onClick={() => handleViewDetails(hw)}
+                                        title="View details"
+                                      >
+                                        <Eye className="h-4 w-4" />
+                                      </Button>
+                                      <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                          <Button variant="ghost" size="sm" title="More actions">
+                                            <MoreVertical className="h-4 w-4" />
+                                          </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end">
+                                          <DropdownMenuItem onClick={() => handleEditClick(hw)}>
+                                            <Edit className="h-4 w-4 mr-2" />
+                                            Edit Homework
+                                          </DropdownMenuItem>
+                                          {hw.status === 'draft' && (
+                                            <DropdownMenuItem 
+                                              onClick={() => handlePublish(hw.id)}
+                                              disabled={publishHomeworkMutation.isPending}
+                                            >
+                                              <CheckCircle className="h-4 w-4 mr-2" />
+                                              Publish
+                                            </DropdownMenuItem>
+                                          )}
+                                          {(hw.status === 'active' || hw.status === 'completed') && (
+                                            <DropdownMenuItem onClick={() => console.log('Archive', hw.id)}>
+                                              <Archive className="h-4 w-4 mr-2" />
+                                              Archive Homework
+                                            </DropdownMenuItem>
+                                          )}
+                                          <DropdownMenuItem 
+                                            onClick={() => console.log('Delete', hw.id)}
+                                            className="text-destructive focus:text-destructive-foreground"
+                                          >
+                                            <Trash2 className="h-4 w-4 mr-2" />
+                                            Delete Homework
+                                          </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                      </DropdownMenu>
+                                    </div>
+                                  </TableCell>
+                                </TableRow>
+                                
+                                {/* Expanded Details Row */}
+                                {isExpanded && (
+                                  <TableRow className="bg-muted/50">
+                                    <TableCell colSpan={6}>
+                                      <div className="p-4 space-y-4">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                          <div className="space-y-3">
+                                            <h4 className="font-medium text-foreground flex items-center gap-2">
+                                              <BookOpen className="h-4 w-4" />
+                                              {t('assignmentDetails')}
+                                            </h4>
+                                            <div className="space-y-3 text-sm">
+                                              <div>
+                                                <span className="text-muted-foreground font-medium">{t('descriptionLabel')}</span>
+                                                <div className="mt-2 p-3 bg-muted/50 rounded-lg text-foreground text-justify leading-relaxed">
+                                                  {hw.description || t('noDescriptionProvided')}
+                                                </div>
+                                              </div>
+                                              <div className="flex justify-between">
+                                                <span className="text-muted-foreground">Created:</span>
+                                                <span className="font-medium">
+                                                  {new Date(hw.createdAt).toLocaleDateString('en-US', {
+                                                    year: 'numeric',
+                                                    month: 'short',
+                                                    day: 'numeric'
+                                                  })}
+                                                </span>
+                                              </div>
+                                            </div>
+                                          </div>
+                                          
+                                          <div className="space-y-3">
+                                            <h4 className="font-medium text-foreground flex items-center gap-2">
+                                              <Users className="h-4 w-4" />
+                                              {t('statistics')}
+                                            </h4>
+                                            <div className="space-y-2 text-sm">
+                                              <div className="flex justify-between">
+                                                <span className="text-muted-foreground">{t('questions')}</span>
+                                                <span className="font-medium">0</span>
+                                              </div>
+                                              <div className="flex justify-between">
+                                                <span className="text-muted-foreground">Submissions:</span>
+                                                <span className="font-medium">0</span>
+                                              </div>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </TableCell>
+                                  </TableRow>
+                                )}
+                              </>
+                            );
+                          })}
+                        </TableBody>
+                      </Table>
+                    </div>
+
+                    {/* Pagination Controls */}
+                    {homework.length > 0 && (
+                      <QuestionsPagination 
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        total={totalHomework}
+                        pageSize={pageSize}
+                        onPageChange={setCurrentPage}
+                        onPageSizeChange={(newPageSize) => {
+                          setPageSize(newPageSize);
+                          setCurrentPage(1);
+                        }}
+                      />
+                    )}
+                  </div>
+                );
+              })()
+            )}
 
           </div>
         </main>

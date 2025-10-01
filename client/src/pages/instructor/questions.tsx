@@ -143,24 +143,24 @@ export default function InstructorQuestions() {
 
   const getQuestionTypeColor = (type: string) => {
     switch (type) {
-      case 'multiple_choice': return 'bg-blue-100 text-blue-800';
-      case 'short_answer': return 'bg-green-100 text-green-800';
-      case 'essay': return 'bg-orange-100 text-orange-800';
-      case 'fill_blank': return 'bg-purple-100 text-purple-800';
-      case 'stem': return 'bg-indigo-100 text-indigo-800';
-      case 'matching': return 'bg-teal-100 text-teal-800';
-      case 'ranking': return 'bg-pink-100 text-pink-800';
-      case 'drag_drop': return 'bg-cyan-100 text-cyan-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'multiple_choice': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
+      case 'short_answer': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+      case 'essay': return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200';
+      case 'fill_blank': return 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200';
+      case 'stem': return 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200';
+      case 'matching': return 'bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-200';
+      case 'ranking': return 'bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-200';
+      case 'drag_drop': return 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900 dark:text-cyan-200';
+      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200';
     }
   };
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
-      case 'easy': return 'bg-green-100 text-green-800';
-      case 'medium': return 'bg-yellow-100 text-yellow-800';
-      case 'hard': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'easy': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+      case 'medium': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
+      case 'hard': return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
+      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200';
     }
   };
 
@@ -172,7 +172,7 @@ export default function InstructorQuestions() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       <Navbar />
       <div className="flex">
         <Sidebar />
@@ -180,21 +180,21 @@ export default function InstructorQuestions() {
           <div className="p-3 md:p-6">
             <div className="mb-4 md:mb-6 flex flex-col md:flex-row md:justify-between md:items-center gap-4">
               <div>
-                <h2 className="text-xl md:text-2xl font-bold text-gray-900">{t('nav.questionBank')}</h2>
-                <p className="text-gray-600 mt-1 text-sm md:text-base">{t('questions.description')}</p>
+                <h2 className="text-xl md:text-2xl font-bold text-foreground">{t('nav.questionBank')}</h2>
+                <p className="text-muted-foreground mt-1 text-sm md:text-base">{t('questions.description')}</p>
               </div>
               <div className="flex gap-2 flex-wrap">
                 <Button 
                   onClick={() => setShowImportModal(true)} 
                   variant="outline"
-                  className="border-primary text-primary hover:bg-primary hover:text-white"
+                  className="border-primary text-primary hover:bg-primary hover:text-primary-foreground"
                 >
                   <Upload className="h-4 w-4 mr-2" />
                   {t('questions.importFromExcel')}
                 </Button>
                 <Button 
                   onClick={() => setShowCreateModal(true)}
-                  className="bg-primary hover:bg-primary/90"
+                  className="bg-primary text-primary-foreground hover:bg-primary/90"
                 >
                   <Plus className="h-4 w-4 mr-2" />
                   {t('questions.createQuestion')}
@@ -256,7 +256,7 @@ export default function InstructorQuestions() {
                   <div>
                     <Label htmlFor="search">{t('questions.search')}</Label>
                     <div className="relative">
-                      <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                      <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                       <Input
                         placeholder={t('questions.searchPlaceholder')}
                         value={filters.search}
@@ -284,23 +284,23 @@ export default function InstructorQuestions() {
                 {questionsLoading ? (
                   <div className="space-y-4">
                     {[...Array(3)].map((_, i) => (
-                      <div key={i} className="animate-pulse p-6 border border-gray-200 rounded-lg">
-                        <div className="h-4 bg-gray-200 rounded mb-4 w-3/4"></div>
-                        <div className="h-3 bg-gray-200 rounded mb-2 w-1/2"></div>
-                        <div className="h-3 bg-gray-200 rounded w-1/4"></div>
+                      <div key={i} className="animate-pulse p-6 border border-border rounded-lg">
+                        <div className="h-4 bg-muted rounded mb-4 w-3/4"></div>
+                        <div className="h-3 bg-muted rounded mb-2 w-1/2"></div>
+                        <div className="h-3 bg-muted rounded w-1/4"></div>
                       </div>
                     ))}
                   </div>
                 ) : questions.length === 0 ? (
                   <div className="text-center py-12">
-                    <BookOpen className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <p className="text-gray-500 text-lg mb-2">{t('questions.noQuestions')}</p>
-                    <p className="text-gray-400">{t('questions.createFirst')}</p>
+                    <BookOpen className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <p className="text-muted-foreground text-lg mb-2">{t('questions.noQuestions')}</p>
+                    <p className="text-muted-foreground">{t('questions.createFirst')}</p>
                   </div>
                 ) : (
-                  <div className="divide-y divide-gray-200">
+                  <div className="divide-y divide-border">
                     {questions.map((question: any) => (
-                      <div key={question.id} className="p-6 hover:bg-gray-50">
+                      <div key={question.id} className="p-6 hover:bg-muted">
                         <div className="flex justify-between items-start">
                           <div className="flex-1">
                             <div className="flex items-center space-x-3 mb-2">
@@ -314,17 +314,17 @@ export default function InstructorQuestions() {
                                 {question.difficulty}
                               </Badge>
                               {question.bloomsTaxonomy && (
-                                <Badge variant="outline" className="capitalize bg-indigo-100 text-indigo-800">
+                                <Badge variant="outline" className="capitalize bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200">
                                   {question.bloomsTaxonomy}
                                 </Badge>
                               )}
-                              <Badge variant="outline" className="bg-amber-100 text-amber-800">
+                              <Badge variant="outline" className="bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200">
                                 {question.points} pts
                               </Badge>
                             </div>
-                            <h4 className="font-medium text-gray-900 mb-2">{question.title || question.questionText.substring(0, 100)}</h4>
+                            <h4 className="font-medium text-foreground mb-2">{question.title || question.questionText.substring(0, 100)}</h4>
                             {question.questionType === 'stem' ? (
-                              <div className="text-sm text-gray-600 mb-3 line-clamp-2">
+                              <div className="text-sm text-muted-foreground mb-3 line-clamp-2">
                                 <MathField
                                   value={question.questionText}
                                   readonly={true}
@@ -332,11 +332,11 @@ export default function InstructorQuestions() {
                                 />
                               </div>
                             ) : (
-                              <p className="text-sm text-gray-600 mb-3 line-clamp-2">
+                              <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
                                 {question.questionText}
                               </p>
                             )}
-                            <div className="flex items-center space-x-4 text-sm text-gray-500">
+                            <div className="flex items-center space-x-4 text-sm text-muted-foreground">
                               <span className="flex items-center">
                                 <Eye className="h-4 w-4 mr-1" />
                                 Used {question.usageCount} times

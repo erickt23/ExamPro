@@ -252,7 +252,7 @@ export default function Sidebar({ className }: SidebarProps) {
 
       <aside 
         className={cn(
-          "bg-white dark:bg-background shadow-lg border-r border-indigo-200/30 dark:border-secondary transition-all duration-300 z-40",
+          "bg-white dark:bg-sidebar shadow-lg border-r border-indigo-200/30 dark:border-secondary transition-all duration-300 z-40",
           // On mobile, always show full width when open, on desktop respect collapsed state
           isMobileOpen ? "w-64 overflow-y-auto" : (
             isCollapsed && window.innerWidth >= 768 ? "w-16 overflow-visible" : "w-64 overflow-y-auto"
