@@ -77,6 +77,15 @@ Navigation terminology preferences:
   - **Right-side options are randomized** during exam taking to prevent positional matching
   - **Seeded randomization** using question ID ensures consistent order for each question across attempts
   - **Preserved answer integrity** maintains correct grading while providing fair assessment experience
+- **Student Assignment System for Exams and Homework** (October 1, 2025):
+  - **Database Schema Enhancement**: Added `examAssignments` and `homeworkAssignmentStudents` junction tables for many-to-many relationships
+  - **Backend API Implementation**: Complete REST API endpoints for assigning/removing students and checking access permissions
+    - `POST/GET/DELETE /api/exams/:id/assign-students` - Manage exam assignments
+    - `POST/GET/DELETE /api/homework/:id/assign-students` - Manage homework assignments
+  - **StudentSelector Component**: Reusable UI component with real-time search, multi-select checkboxes, and assigned student count display
+  - **Instructor Workflow Integration**: StudentSelector added to exam edit modal and homework edit form for seamless assignment management
+  - **Security and Access Control**: All assignment endpoints require instructor/admin privileges with ownership verification
+  - **Audit Trail**: Assignment records include assignedBy and assignedAt fields for tracking
 
 ## System Architecture
 
