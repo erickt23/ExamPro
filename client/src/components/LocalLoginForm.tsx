@@ -89,10 +89,31 @@ export function LocalLoginForm() {
           
           <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
             <h3 className="font-medium text-blue-900 dark:text-blue-100 mb-2">Demo Accounts:</h3>
-            <div className="text-sm space-y-1 text-blue-800 dark:text-blue-200">
-              <div><strong>Admin:</strong> admin@example.com / password123</div>
-              <div><strong>Instructor:</strong> instructor@example.com / password123</div>
-              <div><strong>Student:</strong> student@example.com / password123</div>
+            <div className="text-sm space-y-2 text-blue-800 dark:text-blue-200">
+              <div>
+                <strong>Admin Users:</strong>
+                <div className="ml-2 space-y-1">
+                  <div>admin1@example.com / password123 (Admin One)</div>
+                  <div>admin2@example.com / password123 (Admin Two)</div>
+                  <div>admin3@example.com / password123 (Admin Three)</div>
+                </div>
+              </div>
+              <div>
+                <strong>Instructor Users:</strong>
+                <div className="ml-2 space-y-1">
+                  <div>instructor1@example.com / password123 (John Smith)</div>
+                  <div>instructor2@example.com / password123 (Sarah Johnson)</div>
+                  <div>instructor3@example.com / password123 (Michael Brown)</div>
+                </div>
+              </div>
+              <div>
+                <strong>Student Users:</strong>
+                <div className="ml-2 space-y-1">
+                  <div>student1@example.com / password123 (Jane Doe)</div>
+                  <div>student2@example.com / password123 (Alex Wilson)</div>
+                  <div>student3@example.com / password123 (Emily Davis)</div>
+                </div>
+              </div>
             </div>
           </div>
         </CardContent>
