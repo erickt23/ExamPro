@@ -13,28 +13,81 @@ const createUsersMap = async () => {
   console.log("Generated password hash for demo accounts:", passwordHash);
   
   return new Map([
-    ["admin@example.com", { 
+    // Admin users
+    ["admin1@example.com", { 
       id: "admin-1", 
-      email: "admin@example.com", 
+      email: "admin1@example.com", 
       password: passwordHash,
       firstName: "Admin", 
-      lastName: "User", 
+      lastName: "One", 
       role: "admin" 
     }],
-    ["instructor@example.com", { 
+    ["admin2@example.com", { 
+      id: "admin-2", 
+      email: "admin2@example.com", 
+      password: passwordHash,
+      firstName: "Admin", 
+      lastName: "Two", 
+      role: "admin" 
+    }],
+    ["admin3@example.com", { 
+      id: "admin-3", 
+      email: "admin3@example.com", 
+      password: passwordHash,
+      firstName: "Admin", 
+      lastName: "Three", 
+      role: "admin" 
+    }],
+    
+    // Instructor users
+    ["instructor1@example.com", { 
       id: "instructor-1", 
-      email: "instructor@example.com", 
+      email: "instructor1@example.com", 
       password: passwordHash,
       firstName: "John", 
-      lastName: "Instructor", 
+      lastName: "Smith", 
       role: "instructor" 
     }],
-    ["student@example.com", { 
+    ["instructor2@example.com", { 
+      id: "instructor-2", 
+      email: "instructor2@example.com", 
+      password: passwordHash,
+      firstName: "Sarah", 
+      lastName: "Johnson", 
+      role: "instructor" 
+    }],
+    ["instructor3@example.com", { 
+      id: "instructor-3", 
+      email: "instructor3@example.com", 
+      password: passwordHash,
+      firstName: "Michael", 
+      lastName: "Brown", 
+      role: "instructor" 
+    }],
+    
+    // Student users
+    ["student1@example.com", { 
       id: "student-1", 
-      email: "student@example.com", 
+      email: "student1@example.com", 
       password: passwordHash,
       firstName: "Jane", 
-      lastName: "Student", 
+      lastName: "Doe", 
+      role: "student" 
+    }],
+    ["student2@example.com", { 
+      id: "student-2", 
+      email: "student2@example.com", 
+      password: passwordHash,
+      firstName: "Alex", 
+      lastName: "Wilson", 
+      role: "student" 
+    }],
+    ["student3@example.com", { 
+      id: "student-3", 
+      email: "student3@example.com", 
+      password: passwordHash,
+      firstName: "Emily", 
+      lastName: "Davis", 
       role: "student" 
     }]
   ]);
