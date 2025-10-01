@@ -883,6 +883,7 @@ export const fr = {
     student: 'Étudiant',
     instructor: 'Instructeur',
     subject: 'Matière',
+    searchStudents: 'Rechercher des étudiants...',
     type: 'Type',
     difficulty: 'Difficulté',
     timeLimit: 'Limite de Temps',
@@ -895,5 +896,17 @@ export const fr = {
     light: 'Clair',
     dark: 'Sombre',
     system: 'Système',
+  },
+
+  // Instructor
+  instructor: {
+    assignStudents: 'Assigner des Étudiants',
+    searchStudents: 'Rechercher des étudiants par nom ou ID...',
+    assignedStudents: 'étudiants assignés',
+    noStudentsAssigned: 'Aucun étudiant assigné pour le moment',
+    selectStudentsToAssign: 'Sélectionnez des étudiants dans la liste ci-dessous pour les assigner à cet examen ou devoir',
+    assignButton: 'Assigner la Sélection',
+    removeButton: 'Retirer la Sélection',
+    currentlyAssigned: 'Actuellement Assignés'
   }
 };

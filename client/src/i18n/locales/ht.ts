@@ -883,6 +883,7 @@ export const ht = {
     student: 'Elèv',
     instructor: 'Pwofesè',
     subject: 'Matye',
+    searchStudents: 'Chèche elèv yo...',
     type: 'Tip',
     difficulty: 'Difikilte',
     timeLimit: 'Limit Tan',
@@ -895,5 +896,17 @@ export const ht = {
     light: 'Klè',
     dark: 'Nwa',
     system: 'Sistèm',
+  },
+
+  // Instructor
+  instructor: {
+    assignStudents: 'Asiyen Elèv yo',
+    searchStudents: 'Chèche elèv pa non oswa ID...',
+    assignedStudents: 'elèv asiyen',
+    noStudentsAssigned: 'Poko gen elèv ki asiyen',
+    selectStudentsToAssign: 'Chwazi elèv nan lis ki anba a pou asiyen yo nan egzamen oswa devwa sa a',
+    assignButton: 'Asiyen Sa yo ki Chwazi',
+    removeButton: 'Retire Sa yo ki Chwazi',
+    currentlyAssigned: 'Asiyen Kounye a'
   }
 };
