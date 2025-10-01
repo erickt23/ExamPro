@@ -448,7 +448,7 @@ export default function ExamResults() {
                     month: 'short', day: 'numeric', year: 'numeric'
                   }) + ', ' + new Date(submission.submittedAt).toLocaleTimeString('en-US', {
                     hour: 'numeric', minute: '2-digit', hour12: true
-                  }) : 'Not submitted'}
+                  }) : t('examResults.notSubmitted')}
                 </span>
                 <span>{t('assignments.timeTaken')}: {submission.timeTaken ? formatTime(submission.timeTaken) : '0m'}</span>
                 <span>
@@ -456,13 +456,13 @@ export default function ExamResults() {
                     month: 'short', day: 'numeric', year: 'numeric'
                   }) + ', ' + new Date(submission.startedAt).toLocaleTimeString('en-US', {
                     hour: 'numeric', minute: '2-digit', hour12: true
-                  }) : 'N/A'}
+                  }) : t('examResults.notAvailable')}
                 </span>
                 <span className="font-medium">
                   {t('common.score')}: <span className="text-green-600 dark:text-green-400">
                     {submission.totalScore !== undefined && submission.maxScore
                       ? `${submission.totalScore}/${submission.maxScore}(${Math.round((submission.totalScore / submission.maxScore) * 100)}%)`
-                      : 'N/A'}
+                      : t('examResults.notAvailable')}
                   </span>
                 </span>
               </div>
@@ -528,7 +528,7 @@ export default function ExamResults() {
                       <div className="space-y-3">
                         <div>
                           <div className="text-sm font-medium text-gray-600 dark:text-muted-foreground mb-2">
-                            Student's Answer:
+                            {t('examResults.studentAnswer')}
                           </div>
                           <div className="space-y-1">
                             {formatAnswer(answer.answerText || answer.answer || answer.studentAnswer, answer.question?.questionType)}
@@ -538,7 +538,7 @@ export default function ExamResults() {
                         {answer.question?.correctAnswer && (
                           <div>
                             <div className="text-sm font-medium text-gray-600 dark:text-muted-foreground mb-2">
-                              Correct Answer:
+                              {t('examResults.correctAnswer')}
                             </div>
                             <div className="space-y-1 text-green-700 dark:text-green-300">
                               {formatAnswer(answer.question.correctAnswer, answer.question?.questionType)}
@@ -549,7 +549,7 @@ export default function ExamResults() {
                         {submission.status === 'graded' && answer.feedback && (
                           <div>
                             <div className="text-sm font-medium text-gray-600 dark:text-muted-foreground mb-2">
-                              Feedback:
+                              {t('examResults.feedback')}
                             </div>
                             <div className="p-2 bg-blue-50 dark:bg-blue-800/10 text-blue-800 dark:text-blue-300 rounded text-sm">
                               {answer.feedback}
@@ -562,7 +562,7 @@ export default function ExamResults() {
                   
                   {(!submissionDetails.answers || submissionDetails.answers.length === 0) && (
                     <p className="text-sm text-gray-600 dark:text-muted-foreground text-center py-4">
-                      No answers found for this submission.
+                      {t('examResults.noAnswers')}
                     </p>
                   )}
                 </div>
@@ -579,7 +579,7 @@ export default function ExamResults() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading...</p>
+          <p className="text-muted-foreground">{t('examResults.loading')}</p>
         </div>
       </div>
     );
@@ -601,7 +601,7 @@ export default function ExamResults() {
                 {t('nav.examResults')}
               </h1>
               <p className="text-gray-600 dark:text-muted-foreground">
-                View detailed exam analytics and student performance
+                {t('examResults.description')}
               </p>
             </div>
           </div>
@@ -661,7 +661,7 @@ export default function ExamResults() {
                     <Card>
                       <CardContent className="p-8 text-center">
                         <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                        <p className="text-gray-500 dark:text-muted-foreground">No submissions found for this exam.</p>
+                        <p className="text-gray-500 dark:text-muted-foreground">{t('examResults.noSubmissions')}</p>
                       </CardContent>
                     </Card>
                   )}
@@ -690,7 +690,7 @@ export default function ExamResults() {
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm font-medium text-gray-600 dark:text-muted-foreground">Average Score</p>
+                        <p className="text-sm font-medium text-gray-600 dark:text-muted-foreground">{t('examResults.avgScore')}</p>
                         <p className="text-2xl font-bold text-gray-900 dark:text-foreground">
                           {analytics?.averageScore ? `${Math.round(analytics.averageScore)}%` : "0%"}
                         </p>
@@ -706,7 +706,7 @@ export default function ExamResults() {
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm font-medium text-gray-600 dark:text-muted-foreground">Completion Rate</p>
+                        <p className="text-sm font-medium text-gray-600 dark:text-muted-foreground">{t('examResults.completionRate')}</p>
                         <p className="text-2xl font-bold text-gray-900 dark:text-foreground">
                           {analytics?.completionRate ? `${Math.round(analytics.completionRate)}%` : "0%"}
                         </p>
@@ -722,7 +722,7 @@ export default function ExamResults() {
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm font-medium text-gray-600 dark:text-muted-foreground">Avg. Time</p>
+                        <p className="text-sm font-medium text-gray-600 dark:text-muted-foreground">{t('examResults.avgTime')}</p>
                         <p className="text-2xl font-bold text-gray-900 dark:text-foreground">
                           {analytics?.averageTime ? formatTime(analytics.averageTime) : "0m"}
                         </p>
@@ -741,7 +741,7 @@ export default function ExamResults() {
                       <CardHeader>
                         <CardTitle className="flex items-center gap-2">
                           <Shield className="h-5 w-5 text-blue-600" />
-                          Proctoring Analytics
+                          {t('examResults.proctoringAnalytics')}
                         </CardTitle>
                       </CardHeader>
                       <CardContent>
@@ -793,7 +793,7 @@ export default function ExamResults() {
                                   <CardContent className="p-3">
                                     <div className="flex items-center justify-between">
                                       <div>
-                                        <p className="text-xs font-medium text-gray-600 dark:text-muted-foreground">Total Violations</p>
+                                        <p className="text-xs font-medium text-gray-600 dark:text-muted-foreground">{t('examResults.totalViolations')}</p>
                                         <p className="text-lg font-bold text-gray-900 dark:text-foreground" data-testid="analytics-total-violations">
                                           {proctoringStats.totalViolations}
                                         </p>
@@ -809,7 +809,7 @@ export default function ExamResults() {
                                   <CardContent className="p-3">
                                     <div className="flex items-center justify-between">
                                       <div>
-                                        <p className="text-xs font-medium text-gray-600 dark:text-muted-foreground">Clean Submissions</p>
+                                        <p className="text-xs font-medium text-gray-600 dark:text-muted-foreground">{t('examResults.cleanSubmissions')}</p>
                                         <p className="text-lg font-bold text-gray-900 dark:text-foreground" data-testid="analytics-clean-submissions">
                                           {proctoringStats.cleanSubmissions}
                                         </p>
@@ -825,7 +825,7 @@ export default function ExamResults() {
                                   <CardContent className="p-3">
                                     <div className="flex items-center justify-between">
                                       <div>
-                                        <p className="text-xs font-medium text-gray-600 dark:text-muted-foreground">Auto-terminated</p>
+                                        <p className="text-xs font-medium text-gray-600 dark:text-muted-foreground">{t('examResults.autoTerminated')}</p>
                                         <p className="text-lg font-bold text-gray-900 dark:text-foreground" data-testid="analytics-terminated-submissions">
                                           {proctoringStats.terminatedSubmissions}
                                         </p>
@@ -841,7 +841,7 @@ export default function ExamResults() {
                                   <CardContent className="p-3">
                                     <div className="flex items-center justify-between">
                                       <div>
-                                        <p className="text-xs font-medium text-gray-600 dark:text-muted-foreground">Violation Rate</p>
+                                        <p className="text-xs font-medium text-gray-600 dark:text-muted-foreground">{t('examResults.violationRate')}</p>
                                         <p className="text-lg font-bold text-gray-900 dark:text-foreground" data-testid="analytics-violation-rate">
                                           {proctoringStats.totalSubmissions > 0 ? 
                                             `${Math.round((proctoringStats.submissionsWithViolations / proctoringStats.totalSubmissions) * 100)}%` : 
@@ -860,7 +860,7 @@ export default function ExamResults() {
                               {/* Violation Breakdown */}
                               {Object.keys(proctoringStats.violationTypes).length > 0 && (
                                 <div>
-                                  <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Violation Breakdown</h4>
+                                  <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">{t('examResults.violationBreakdown')}</h4>
                                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                                     {Object.entries(proctoringStats.violationTypes).map(([type, count]) => (
                                       <div key={type} className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800/50 rounded-lg" data-testid={`analytics-violation-${type}`}>
@@ -885,28 +885,28 @@ export default function ExamResults() {
                   {/* Exam Info */}
                   <Card>
                     <CardHeader>
-                      <CardTitle>Exam Information</CardTitle>
+                      <CardTitle>{t('examResults.examInfo')}</CardTitle>
                     </CardHeader>
                     <CardContent>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div>
-                      <span className="text-sm font-medium text-gray-500 dark:text-muted-foreground">Total Points</span>
+                      <span className="text-sm font-medium text-gray-500 dark:text-muted-foreground">{t('examResults.totalPoints')}</span>
                       <p className="text-lg font-semibold text-gray-900 dark:text-foreground">{examData.totalPoints}</p>
                     </div>
                     <div>
-                      <span className="text-sm font-medium text-gray-500 dark:text-muted-foreground">Time Limit</span>
+                      <span className="text-sm font-medium text-gray-500 dark:text-muted-foreground">{t('examResults.timeLimit')}</span>
                       <p className="text-lg font-semibold text-gray-900 dark:text-foreground">
-                        {examData.timeLimit ? formatTime(examData.timeLimit) : 'No limit'}
+                        {examData.timeLimit ? formatTime(examData.timeLimit) : t('examResults.noLimit')}
                       </p>
                     </div>
                     <div>
-                      <span className="text-sm font-medium text-gray-500 dark:text-muted-foreground">Questions</span>
+                      <span className="text-sm font-medium text-gray-500 dark:text-muted-foreground">{t('examResults.questions')}</span>
                       <p className="text-lg font-semibold text-gray-900 dark:text-foreground">{examData.questionIds?.length || 0}</p>
                     </div>
                     <div>
-                      <span className="text-sm font-medium text-gray-500 dark:text-muted-foreground">Max Attempts</span>
+                      <span className="text-sm font-medium text-gray-500 dark:text-muted-foreground">{t('examResults.maxAttempts')}</span>
                       <p className="text-lg font-semibold text-gray-900 dark:text-foreground">
-                        {examData.maxAttempts || 'Unlimited'}
+                        {examData.maxAttempts || t('examResults.unlimited')}
                       </p>
                     </div>
                     </div>
@@ -924,26 +924,26 @@ export default function ExamResults() {
                     <CardContent>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-4">
-                          <h4 className="font-semibold text-gray-900 dark:text-foreground">Score Distribution</h4>
+                          <h4 className="font-semibold text-gray-900 dark:text-foreground">{t('examResults.scoreDistribution')}</h4>
                           <div className="space-y-2">
                             {analytics && (
                               <>
                                 <div className="flex justify-between text-sm">
-                                  <span className="text-gray-600 dark:text-muted-foreground">Highest Score:</span>
+                                  <span className="text-gray-600 dark:text-muted-foreground">{t('examResults.highestScore')}</span>
                                   <span className="font-semibold text-gray-900 dark:text-foreground">
-                                    {analytics.highestScore ? `${analytics.highestScore}%` : 'N/A'}
+                                    {analytics.highestScore ? `${analytics.highestScore}%` : t('examResults.notAvailable')}
                                   </span>
                                 </div>
                                 <div className="flex justify-between text-sm">
-                                  <span className="text-gray-600 dark:text-muted-foreground">Lowest Score:</span>
+                                  <span className="text-gray-600 dark:text-muted-foreground">{t('examResults.lowestScore')}</span>
                                   <span className="font-semibold text-gray-900 dark:text-foreground">
-                                    {analytics.lowestScore ? `${analytics.lowestScore}%` : 'N/A'}
+                                    {analytics.lowestScore ? `${analytics.lowestScore}%` : t('examResults.notAvailable')}
                                   </span>
                                 </div>
                                 <div className="flex justify-between text-sm">
-                                  <span className="text-gray-600 dark:text-muted-foreground">Average Score:</span>
+                                  <span className="text-gray-600 dark:text-muted-foreground">{t('examResults.averageScore')}</span>
                                   <span className="font-semibold text-gray-900 dark:text-foreground">
-                                    {analytics.averageScore ? `${Math.round(analytics.averageScore)}%` : 'N/A'}
+                                    {analytics.averageScore ? `${Math.round(analytics.averageScore)}%` : t('examResults.notAvailable')}
                                   </span>
                                 </div>
                               </>
@@ -952,20 +952,20 @@ export default function ExamResults() {
                         </div>
 
                         <div className="space-y-4">
-                          <h4 className="font-semibold text-gray-900 dark:text-foreground">Time Analysis</h4>
+                          <h4 className="font-semibold text-gray-900 dark:text-foreground">{t('examResults.timeAnalysis')}</h4>
                           <div className="space-y-2">
                             {analytics && (
                               <>
                                 <div className="flex justify-between text-sm">
-                                  <span className="text-gray-600 dark:text-muted-foreground">Average Time:</span>
+                                  <span className="text-gray-600 dark:text-muted-foreground">{t('examResults.averageTime')}</span>
                                   <span className="font-semibold text-gray-900 dark:text-foreground">
-                                    {analytics.averageTime ? formatTime(analytics.averageTime) : 'N/A'}
+                                    {analytics.averageTime ? formatTime(analytics.averageTime) : t('examResults.notAvailable')}
                                   </span>
                                 </div>
                                 <div className="flex justify-between text-sm">
-                                  <span className="text-gray-600 dark:text-muted-foreground">Completion Rate:</span>
+                                  <span className="text-gray-600 dark:text-muted-foreground">{t('examResults.completionRate')}</span>
                                   <span className="font-semibold text-gray-900 dark:text-foreground">
-                                    {analytics.completionRate ? `${Math.round(analytics.completionRate)}%` : 'N/A'}
+                                    {analytics.completionRate ? `${Math.round(analytics.completionRate)}%` : t('examResults.notAvailable')}
                                   </span>
                                 </div>
                               </>
@@ -985,7 +985,7 @@ export default function ExamResults() {
             <Card>
               <CardContent className="p-8 text-center">
                 <BarChart3 className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-500 dark:text-muted-foreground">Select an exam above to view detailed results and analytics.</p>
+                <p className="text-gray-500 dark:text-muted-foreground">{t('examResults.selectExam')}</p>
               </CardContent>
             </Card>
           )}

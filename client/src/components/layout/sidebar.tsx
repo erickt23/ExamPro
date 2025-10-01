@@ -337,16 +337,16 @@ export default function Sidebar({ className }: SidebarProps) {
                         "w-full flex items-center px-3 py-2 rounded-xl text-left transition-all duration-200 group",
                         showText ? "space-x-3" : "justify-center",
                         isActive
-                          ? "text-white bg-gradient-to-r from-purple-500 to-pink-600 shadow-lg transform scale-105"
-                          : "text-gray-700 dark:text-foreground hover:bg-gradient-to-r hover:from-purple-400/20 hover:to-pink-500/20 dark:hover:bg-secondary hover:text-purple-700 dark:hover:text-foreground hover:shadow-md hover:transform hover:scale-105"
+                          ? "text-white bg-gradient-to-r from-blue-500 to-indigo-600 shadow-lg transform scale-105"
+                          : "text-gray-700 dark:text-foreground hover:bg-gradient-to-r hover:from-blue-400/20 hover:to-indigo-500/20 dark:hover:bg-secondary hover:text-indigo-700 dark:hover:text-foreground hover:shadow-md hover:transform hover:scale-105"
                       )}
                       title={!showText ? item.title : undefined}
                     >
                       <item.icon className={cn(
                         "h-4 w-4 flex-shrink-0 transition-all duration-200",
-                        isActive ? "text-white drop-shadow-sm" : "text-gray-600 dark:text-muted-foreground group-hover:text-purple-600 dark:group-hover:text-foreground"
+                        isActive ? "text-white drop-shadow-sm" : "text-gray-600 dark:text-muted-foreground group-hover:text-indigo-600 dark:group-hover:text-foreground"
                       )} />
-                      {showText && <span className={cn("truncate font-medium text-sm", isActive ? "text-white" : "text-gray-700 dark:text-foreground group-hover:text-purple-700 dark:group-hover:text-foreground")}>{item.title}</span>}
+                      {showText && <span className={cn("truncate font-medium text-sm", isActive ? "text-white" : "text-gray-700 dark:text-foreground group-hover:text-indigo-700 dark:group-hover:text-foreground")}>{item.title}</span>}
                     </button>
                   );
                 })}

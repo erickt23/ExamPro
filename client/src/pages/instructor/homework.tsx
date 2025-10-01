@@ -515,7 +515,7 @@ export default function InstructorHomeworkPage() {
                   <div className="space-y-6">
                     <Collapsible defaultOpen={true}>
                       <CollapsibleTrigger className="flex justify-between items-center w-full">
-                        <h3 className="text-lg font-semibold">Section 1: Assignment Details</h3>
+                        <h3 className="text-lg font-semibold">{t('assignments.section1')}</h3>
                         <ChevronDown className="h-5 w-5" />
                       </CollapsibleTrigger>
                       <CollapsibleContent className="space-y-6 pt-4">
@@ -611,7 +611,7 @@ export default function InstructorHomeworkPage() {
                     
                     <Collapsible>
                       <CollapsibleTrigger className="flex justify-between items-center w-full">
-                        <h3 className="text-lg font-semibold">Section 2: Select Homework Questions</h3>
+                        <h3 className="text-lg font-semibold">{t('assignments.section2')}</h3>
                         <ChevronDown className="h-5 w-5" />
                       </CollapsibleTrigger>
                       <CollapsibleContent className="space-y-6 pt-4">
@@ -645,13 +645,13 @@ export default function InstructorHomeworkPage() {
                             {showQuestionFilters && (
                               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-muted/50 rounded-lg">
                                 <div>
-                                  <Label>Subject</Label>
+                                  <Label>{t('assignments.subject')}</Label>
                                   <Select value={questionFilters.subjectId} onValueChange={(value) => setQuestionFilters(prev => ({...prev, subjectId: value}))}>
                                     <SelectTrigger>
-                                      <SelectValue placeholder="All Subjects" />
+                                      <SelectValue placeholder={t('assignments.allSubjects')} />
                                     </SelectTrigger>
                                     <SelectContent>
-                                      <SelectItem value="all">All Subjects</SelectItem>
+                                      <SelectItem value="all">{t('assignments.allSubjects')}</SelectItem>
                                       {subjects.map((subject) => (
                                         <SelectItem key={subject.id} value={subject.id.toString()}>{subject.name}</SelectItem>
                                       ))}
@@ -659,31 +659,31 @@ export default function InstructorHomeworkPage() {
                                   </Select>
                                 </div>
                                 <div>
-                                  <Label>Question Type</Label>
+                                  <Label>{t('assignments.questionType')}</Label>
                                   <Select value={questionFilters.questionType} onValueChange={(value) => setQuestionFilters(prev => ({...prev, questionType: value}))}>
                                     <SelectTrigger>
-                                      <SelectValue placeholder="All Types" />
+                                      <SelectValue placeholder={t('assignments.allTypes')} />
                                     </SelectTrigger>
                                     <SelectContent>
-                                      <SelectItem value="all">All Types</SelectItem>
-                                      <SelectItem value="multiple_choice">Multiple Choice</SelectItem>
-                                      <SelectItem value="short_answer">Short Answer</SelectItem>
-                                      <SelectItem value="essay">Essay</SelectItem>
-                                      <SelectItem value="fill_blank">Fill in the Blank</SelectItem>
+                                      <SelectItem value="all">{t('assignments.allTypes')}</SelectItem>
+                                      <SelectItem value="multiple_choice">{t('assignments.multipleChoice')}</SelectItem>
+                                      <SelectItem value="short_answer">{t('assignments.shortAnswer')}</SelectItem>
+                                      <SelectItem value="essay">{t('assignments.essay')}</SelectItem>
+                                      <SelectItem value="fill_blank">{t('assignments.fillInTheBlank')}</SelectItem>
                                     </SelectContent>
                                   </Select>
                                 </div>
                                 <div>
-                                  <Label>Difficulty</Label>
+                                  <Label>{t('assignments.difficulty')}</Label>
                                   <Select value={questionFilters.difficulty} onValueChange={(value) => setQuestionFilters(prev => ({...prev, difficulty: value}))}>
                                     <SelectTrigger>
-                                      <SelectValue placeholder="All Levels" />
+                                      <SelectValue placeholder={t('assignments.allLevels')} />
                                     </SelectTrigger>
                                     <SelectContent>
-                                      <SelectItem value="all">All Levels</SelectItem>
-                                      <SelectItem value="easy">Easy</SelectItem>
-                                      <SelectItem value="medium">Medium</SelectItem>
-                                      <SelectItem value="hard">Hard</SelectItem>
+                                      <SelectItem value="all">{t('assignments.allLevels')}</SelectItem>
+                                      <SelectItem value="easy">{t('assignments.easy')}</SelectItem>
+                                      <SelectItem value="medium">{t('assignments.medium')}</SelectItem>
+                                      <SelectItem value="hard">{t('assignments.hard')}</SelectItem>
                                     </SelectContent>
                                   </Select>
                                 </div>
@@ -698,7 +698,7 @@ export default function InstructorHomeworkPage() {
                                 <h4 className="font-medium">{t('assignments.selectedQuestions')} ({selectedQuestions.length})</h4>
                                 <div className="flex items-center gap-2">
                                   <Badge variant="outline" className="text-sm">
-                                    Total: {newHomework.totalPoints} points
+                                    {t('assignments.totalPointsSummary', [newHomework.totalPoints])}
                                   </Badge>
                                 </div>
                               </div>
@@ -739,7 +739,7 @@ export default function InstructorHomeworkPage() {
                             <div className="border rounded-lg max-h-60 overflow-y-auto">
                               {homeworkQuestions.length === 0 ? (
                                 <div className="p-4 text-center text-muted-foreground">
-                                  No homework questions found. Create homework questions first in the Homework Questions section.
+                                  {t('assignments.noHomeworkQuestions')}
                                 </div>
                               ) : (
                                 <div className="divide-y">
@@ -924,13 +924,13 @@ export default function InstructorHomeworkPage() {
                         {showQuestionFilters && (
                           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-muted/50 rounded-lg">
                             <div>
-                              <Label>Subject</Label>
+                              <Label>{t('assignments.subject')}</Label>
                               <Select value={questionFilters.subjectId} onValueChange={(value) => setQuestionFilters(prev => ({...prev, subjectId: value}))}>
                                 <SelectTrigger>
-                                  <SelectValue placeholder="All Subjects" />
+                                  <SelectValue placeholder={t('assignments.allSubjects')} />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  <SelectItem value="all">All Subjects</SelectItem>
+                                  <SelectItem value="all">{t('assignments.allSubjects')}</SelectItem>
                                   {subjects.map((subject) => (
                                     <SelectItem key={subject.id} value={subject.id.toString()}>{subject.name}</SelectItem>
                                   ))}
@@ -938,31 +938,31 @@ export default function InstructorHomeworkPage() {
                               </Select>
                             </div>
                             <div>
-                              <Label>Question Type</Label>
+                              <Label>{t('assignments.questionType')}</Label>
                               <Select value={questionFilters.questionType} onValueChange={(value) => setQuestionFilters(prev => ({...prev, questionType: value}))}>
                                 <SelectTrigger>
-                                  <SelectValue placeholder="All Types" />
+                                  <SelectValue placeholder={t('assignments.allTypes')} />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  <SelectItem value="all">All Types</SelectItem>
-                                  <SelectItem value="multiple_choice">Multiple Choice</SelectItem>
-                                  <SelectItem value="short_answer">Short Answer</SelectItem>
-                                  <SelectItem value="essay">Essay</SelectItem>
-                                  <SelectItem value="fill_blank">Fill in the Blank</SelectItem>
+                                  <SelectItem value="all">{t('assignments.allTypes')}</SelectItem>
+                                  <SelectItem value="multiple_choice">{t('assignments.multipleChoice')}</SelectItem>
+                                  <SelectItem value="short_answer">{t('assignments.shortAnswer')}</SelectItem>
+                                  <SelectItem value="essay">{t('assignments.essay')}</SelectItem>
+                                  <SelectItem value="fill_blank">{t('assignments.fillInTheBlank')}</SelectItem>
                                 </SelectContent>
                               </Select>
                             </div>
                             <div>
-                              <Label>Difficulty</Label>
+                              <Label>{t('assignments.difficulty')}</Label>
                               <Select value={questionFilters.difficulty} onValueChange={(value) => setQuestionFilters(prev => ({...prev, difficulty: value}))}>
                                 <SelectTrigger>
-                                  <SelectValue placeholder="All Levels" />
+                                  <SelectValue placeholder={t('assignments.allLevels')} />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  <SelectItem value="all">All Levels</SelectItem>
-                                  <SelectItem value="easy">Easy</SelectItem>
-                                  <SelectItem value="medium">Medium</SelectItem>
-                                  <SelectItem value="hard">Hard</SelectItem>
+                                  <SelectItem value="all">{t('assignments.allLevels')}</SelectItem>
+                                  <SelectItem value="easy">{t('assignments.easy')}</SelectItem>
+                                  <SelectItem value="medium">{t('assignments.medium')}</SelectItem>
+                                  <SelectItem value="hard">{t('assignments.hard')}</SelectItem>
                                 </SelectContent>
                               </Select>
                             </div>
@@ -977,7 +977,7 @@ export default function InstructorHomeworkPage() {
                             <h4 className="font-medium">{t('assignments.selectedQuestions')} ({selectedQuestions.length})</h4>
                             <div className="flex items-center gap-2">
                               <Badge variant="outline" className="text-sm">
-                                Total: {newHomework.totalPoints} points
+                                {t('assignments.totalPointsSummary', [newHomework.totalPoints])}
                               </Badge>
                             </div>
                           </div>
@@ -1018,7 +1018,7 @@ export default function InstructorHomeworkPage() {
                         <div className="border rounded-lg max-h-60 overflow-y-auto">
                           {homeworkQuestions.length === 0 ? (
                             <div className="p-4 text-center text-muted-foreground">
-                              No homework questions found. Create homework questions first in the Homework Questions section.
+                              {t('assignments.noHomeworkQuestions')}
                             </div>
                           ) : (
                             <div className="divide-y">
@@ -1084,7 +1084,7 @@ export default function InstructorHomeworkPage() {
                         onClick={handleEditHomework}
                         disabled={updateHomeworkMutation.isPending}
                       >
-                        {updateHomeworkMutation.isPending ? "Saving..." : "Save Changes"}
+                        {updateHomeworkMutation.isPending ? t('assignments.saving') : t('assignments.saveChanges')}
                       </Button>
                     </div>
                   </div>
@@ -1095,7 +1095,7 @@ export default function InstructorHomeworkPage() {
               <Dialog open={showDetailsModal} onOpenChange={setShowDetailsModal}>
                 <DialogContent className="max-w-2xl">
                   <DialogHeader>
-                    <DialogTitle>Homework Details</DialogTitle>
+                    <DialogTitle>{t('assignments.homeworkDetails')}</DialogTitle>
                   </DialogHeader>
                   {selectedHomework && (
                     <div className="space-y-6">
@@ -1105,24 +1105,24 @@ export default function InstructorHomeworkPage() {
                           {getStatusBadge(selectedHomework.status)}
                         </div>
                         <div className="p-4 bg-muted/50 rounded-lg text-foreground text-justify leading-relaxed">
-                          {selectedHomework.description || 'No description provided for this assignment.'}
+                          {selectedHomework.description || t('assignments.noDescription')}
                         </div>
                       </div>
                       
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <Label className="text-sm font-medium text-muted-foreground">Subject</Label>
+                          <Label className="text-sm font-medium text-muted-foreground">{t('assignments.subject')}</Label>
                           <p className="mt-1">{subjects.find((s: any) => s.id === selectedHomework.subjectId)?.name || t('studentExams.unknownSubject')}</p>
                         </div>
                         
                         <div>
-                          <Label className="text-sm font-medium text-muted-foreground">Status</Label>
+                          <Label className="text-sm font-medium text-muted-foreground">{t('assignments.statusLabel')}</Label>
                           <p className="mt-1 capitalize">{selectedHomework.status}</p>
                         </div>
                         
                         {selectedHomework.dueDate && (
                           <div>
-                            <Label className="text-sm font-medium text-muted-foreground">Due Date</Label>
+                            <Label className="text-sm font-medium text-muted-foreground">{t('assignments.dueDateLabel')}</Label>
                             <p className="mt-1">{new Date(selectedHomework.dueDate).toLocaleDateString('en-US', {
                               year: 'numeric',
                               month: 'long',
@@ -1134,7 +1134,7 @@ export default function InstructorHomeworkPage() {
                         )}
                         
                         <div>
-                          <Label className="text-sm font-medium text-muted-foreground">Created</Label>
+                          <Label className="text-sm font-medium text-muted-foreground">{t('assignments.createdLabel')}</Label>
                           <p className="mt-1">{new Date(selectedHomework.createdAt).toLocaleDateString('en-US', {
                             year: 'numeric',
                             month: 'long',
@@ -1145,14 +1145,14 @@ export default function InstructorHomeworkPage() {
                       
                       <div className="flex justify-end gap-2">
                         <Button variant="outline" onClick={() => setShowDetailsModal(false)}>
-                          Close
+                          {t('assignments.close')}
                         </Button>
                         <Button onClick={() => {
                           setShowDetailsModal(false);
                           handleEditClick(selectedHomework);
                         }}>
                           <Edit className="h-4 w-4 mr-2" />
-                          Edit Homework
+                          {t('assignments.editHomework')}
                         </Button>
                       </div>
                     </div>
@@ -1179,9 +1179,9 @@ export default function InstructorHomeworkPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">{t('assignments.allStatus')}</SelectItem>
-                  <SelectItem value="draft">Draft</SelectItem>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="archived">Archived</SelectItem>
+                  <SelectItem value="draft">{t('assignments.draft')}</SelectItem>
+                  <SelectItem value="active">{t('assignments.active')}</SelectItem>
+                  <SelectItem value="archived">{t('assignments.archived')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -1195,17 +1195,17 @@ export default function InstructorHomeworkPage() {
               homework.length === 0 ? (
                 <div className="text-center py-12">
                   <BookOpen className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
-                  <p className="text-muted-foreground text-lg mb-2">No homework assignments found</p>
+                  <p className="text-muted-foreground text-lg mb-2">{t('assignments.noHomeworkFound')}</p>
                   <p className="text-muted-foreground">
                     {searchTerm || statusFilter !== "all" 
-                      ? "Try adjusting your search or filter criteria"
-                      : "Create your first homework assignment to get started"
+                      ? t('assignments.adjustSearch')
+                      : t('assignments.createFirst')
                     }
                   </p>
                   {!searchTerm && statusFilter === "all" && (
                     <Button onClick={() => setShowCreateModal(true)} className="mt-4">
                       <Plus className="h-4 w-4 mr-2" />
-                      Create First Homework
+                      {t('assignments.createFirstButton')}
                     </Button>
                   )}
                 </div>
@@ -1220,11 +1220,11 @@ export default function InstructorHomeworkPage() {
                         <TableHeader>
                           <TableRow>
                             <TableHead className="w-[50px]"></TableHead>
-                            <TableHead>{t('homeworkTitle')}</TableHead>
-                            <TableHead>{t('subject')}</TableHead>
-                            <TableHead>{t('dueDate')}</TableHead>
-                            <TableHead>{t('status')}</TableHead>
-                            <TableHead className="text-right">{t('actions')}</TableHead>
+                            <TableHead>{t('assignments.homeworkTitle')}</TableHead>
+                            <TableHead>{t('assignments.subject')}</TableHead>
+                            <TableHead>{t('assignments.dueDate')}</TableHead>
+                            <TableHead>{t('assignments.status')}</TableHead>
+                            <TableHead className="text-right">{t('assignments.actions')}</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -1271,7 +1271,7 @@ export default function InstructorHomeworkPage() {
                                       day: 'numeric',
                                       hour: '2-digit',
                                       minute: '2-digit'
-                                    }) : 'No due date'}
+                                    }) : t('assignments.noDueDate')}
                                   </TableCell>
                                   <TableCell>
                                     {getStatusBadge(hw.status)}
@@ -1282,20 +1282,20 @@ export default function InstructorHomeworkPage() {
                                         variant="ghost" 
                                         size="sm"
                                         onClick={() => handleViewDetails(hw)}
-                                        title="View details"
+                                        title={t('assignments.viewDetails')}
                                       >
                                         <Eye className="h-4 w-4" />
                                       </Button>
                                       <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
-                                          <Button variant="ghost" size="sm" title="More actions">
+                                          <Button variant="ghost" size="sm" title={t('assignments.moreActions')}>
                                             <MoreVertical className="h-4 w-4" />
                                           </Button>
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent align="end">
                                           <DropdownMenuItem onClick={() => handleEditClick(hw)}>
                                             <Edit className="h-4 w-4 mr-2" />
-                                            Edit Homework
+                                            {t('assignments.editHomework')}
                                           </DropdownMenuItem>
                                           {hw.status === 'draft' && (
                                             <DropdownMenuItem 
@@ -1303,13 +1303,13 @@ export default function InstructorHomeworkPage() {
                                               disabled={publishHomeworkMutation.isPending}
                                             >
                                               <CheckCircle className="h-4 w-4 mr-2" />
-                                              Publish
+                                              {t('assignments.publish')}
                                             </DropdownMenuItem>
                                           )}
                                           {(hw.status === 'active' || hw.status === 'completed') && (
                                             <DropdownMenuItem onClick={() => console.log('Archive', hw.id)}>
                                               <Archive className="h-4 w-4 mr-2" />
-                                              Archive Homework
+                                              {t('assignments.archive')}
                                             </DropdownMenuItem>
                                           )}
                                           <DropdownMenuItem 
@@ -1317,7 +1317,7 @@ export default function InstructorHomeworkPage() {
                                             className="text-destructive focus:text-destructive-foreground"
                                           >
                                             <Trash2 className="h-4 w-4 mr-2" />
-                                            Delete Homework
+                                            {t('assignments.delete')}
                                           </DropdownMenuItem>
                                         </DropdownMenuContent>
                                       </DropdownMenu>
@@ -1334,17 +1334,17 @@ export default function InstructorHomeworkPage() {
                                           <div className="space-y-3">
                                             <h4 className="font-medium text-foreground flex items-center gap-2">
                                               <BookOpen className="h-4 w-4" />
-                                              {t('assignmentDetails')}
+                                              {t('assignments.assignmentDetails')}
                                             </h4>
                                             <div className="space-y-3 text-sm">
                                               <div>
-                                                <span className="text-muted-foreground font-medium">{t('descriptionLabel')}</span>
+                                                <span className="text-muted-foreground font-medium">{t('assignments.description')}</span>
                                                 <div className="mt-2 p-3 bg-muted/50 rounded-lg text-foreground text-justify leading-relaxed">
-                                                  {hw.description || t('noDescriptionProvided')}
+                                                  {hw.description || t('assignments.noDescriptionProvided')}
                                                 </div>
                                               </div>
                                               <div className="flex justify-between">
-                                                <span className="text-muted-foreground">Created:</span>
+                                                <span className="text-muted-foreground">{t('assignments.created')}</span>
                                                 <span className="font-medium">
                                                   {new Date(hw.createdAt).toLocaleDateString('en-US', {
                                                     year: 'numeric',
@@ -1359,15 +1359,15 @@ export default function InstructorHomeworkPage() {
                                           <div className="space-y-3">
                                             <h4 className="font-medium text-foreground flex items-center gap-2">
                                               <Users className="h-4 w-4" />
-                                              {t('statistics')}
+                                              {t('assignments.statistics')}
                                             </h4>
                                             <div className="space-y-2 text-sm">
                                               <div className="flex justify-between">
-                                                <span className="text-muted-foreground">{t('questions')}</span>
+                                                <span className="text-muted-foreground">{t('assignments.questions')}</span>
                                                 <span className="font-medium">0</span>
                                               </div>
                                               <div className="flex justify-between">
-                                                <span className="text-muted-foreground">Submissions:</span>
+                                                <span className="text-muted-foreground">{t('assignments.submissions')}</span>
                                                 <span className="font-medium">0</span>
                                               </div>
                                             </div>

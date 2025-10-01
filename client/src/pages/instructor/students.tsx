@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "@/hooks/useTranslation";
 import { formatSubmissionTime } from "@/lib/dateUtils";
 import Navbar from "@/components/layout/navbar";
 import Sidebar from "@/components/layout/sidebar";
@@ -24,6 +25,7 @@ import {
 } from "lucide-react";
 
 export default function InstructorStudents() {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const { isAuthenticated, isLoading } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
@@ -35,8 +37,8 @@ export default function InstructorStudents() {
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       toast({
-        title: "Unauthorized",
-        description: "You are logged out. Logging in again...",
+        title: t('auth.unauthorized'),
+        description: t('auth.loggedOut'),
         variant: "destructive",
       });
       setTimeout(() => {
@@ -44,7 +46,7 @@ export default function InstructorStudents() {
       }, 500);
       return;
     }
-  }, [isAuthenticated, isLoading, toast]);
+  }, [isAuthenticated, isLoading, toast, t]);
 
   const { data: submissions } = useQuery({
     queryKey: ["/api/submissions"],
@@ -61,7 +63,7 @@ export default function InstructorStudents() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading...</p>
+          <p className="text-muted-foreground">{t('common.loading')}</p>
         </div>
       </div>
     );
@@ -75,7 +77,7 @@ export default function InstructorStudents() {
         if (!acc[studentId]) {
           acc[studentId] = {
             id: studentId,
-            name: `Student ${studentId}`,
+            name: `${t('common.student')} ${studentId}`,
             email: `student${studentId}@university.edu`,
             submissions: [],
             totalExams: 0,
@@ -122,15 +124,15 @@ export default function InstructorStudents() {
   };
 
   const formatLastActivity = (date: Date | null) => {
-    if (!date) return 'Never';
+    if (!date) return t('students.never');
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
     const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
     const diffDays = Math.floor(diffHours / 24);
     
-    if (diffHours < 1) return 'Just now';
-    if (diffHours < 24) return `${diffHours}h ago`;
-    if (diffDays < 7) return `${diffDays}d ago`;
+    if (diffHours < 1) return t('students.justNow');
+    if (diffHours < 24) return t('students.hoursAgo', { count: diffHours });
+    if (diffDays < 7) return t('students.daysAgo', { count: diffDays });
     return formatSubmissionTime(date);
   };
 
@@ -143,17 +145,17 @@ export default function InstructorStudents() {
           <div className="p-6">
             <div className="mb-6 flex justify-between items-center">
               <div>
-                <h2 className="text-2xl font-bold text-foreground">Student Management</h2>
-                <p className="text-muted-foreground mt-1">Manage enrolled students and track their progress</p>
+                <h2 className="text-2xl font-bold text-foreground">{t('students.title')}</h2>
+                <p className="text-muted-foreground mt-1">{t('students.description')}</p>
               </div>
               <div className="flex items-center space-x-3">
                 <Button variant="outline">
                   <Download className="h-4 w-4 mr-2" />
-                  Export
+                  {t('students.export')}
                 </Button>
                 <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
                   <UserPlus className="h-4 w-4 mr-2" />
-                  Add Student
+                  {t('students.addStudent')}
                 </Button>
               </div>
             </div>
@@ -164,7 +166,7 @@ export default function InstructorStudents() {
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-muted-foreground">Total Students</p>
+                      <p className="text-sm font-medium text-muted-foreground">{t('students.totalStudents')}</p>
                       <p className="text-2xl font-bold text-foreground">
                         {instructorStats?.totalStudents || students.length || 0}
                       </p>
@@ -178,7 +180,7 @@ export default function InstructorStudents() {
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-muted-foreground">Active Students</p>
+                      <p className="text-sm font-medium text-muted-foreground">{t('students.activeStudents')}</p>
                       <p className="text-2xl font-bold text-foreground">
                         {students.filter((s: any) => s.status === 'active').length}
                       </p>
@@ -192,7 +194,7 @@ export default function InstructorStudents() {
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-muted-foreground">Avg. Performance</p>
+                      <p className="text-sm font-medium text-muted-foreground">{t('students.avgPerformance')}</p>
                       <p className="text-2xl font-bold text-foreground">
                         {students.length > 0 ? 
                           `${Math.round(students.reduce((sum: number, s: any) => sum + s.averageScore, 0) / students.length)}%` : 
@@ -211,7 +213,7 @@ export default function InstructorStudents() {
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-muted-foreground">Recent Activity</p>
+                      <p className="text-sm font-medium text-muted-foreground">{t('students.recentActivity')}</p>
                       <p className="text-2xl font-bold text-foreground">
                         {students.filter((s: any) => {
                           if (!s.lastActivity) return false;
@@ -232,11 +234,11 @@ export default function InstructorStudents() {
               <CardContent className="p-6">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                   <div>
-                    <Label htmlFor="search">Search Students</Label>
+                    <Label htmlFor="search">{t('students.searchStudents')}</Label>
                     <div className="relative">
                       <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                       <Input
-                        placeholder="Search students..."
+                        placeholder={t('students.searchPlaceholder')}
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         className="pl-9"
@@ -244,43 +246,43 @@ export default function InstructorStudents() {
                     </div>
                   </div>
                   <div>
-                    <Label htmlFor="class">Class</Label>
+                    <Label htmlFor="class">{t('students.class')}</Label>
                     <Select value={classFilter} onValueChange={setClassFilter}>
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="all">All Classes</SelectItem>
-                        <SelectItem value="math101">Mathematics 101</SelectItem>
-                        <SelectItem value="phys201">Physics 201</SelectItem>
-                        <SelectItem value="chem301">Chemistry 301</SelectItem>
+                        <SelectItem value="all">{t('students.allClasses')}</SelectItem>
+                        <SelectItem value="math101">{t('students.math101')}</SelectItem>
+                        <SelectItem value="phys201">{t('students.phys201')}</SelectItem>
+                        <SelectItem value="chem301">{t('students.chem301')}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   <div>
-                    <Label htmlFor="status">Status</Label>
+                    <Label htmlFor="status">{t('students.status')}</Label>
                     <Select value={statusFilter} onValueChange={setStatusFilter}>
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="all">All Status</SelectItem>
-                        <SelectItem value="active">Active</SelectItem>
-                        <SelectItem value="inactive">Inactive</SelectItem>
-                        <SelectItem value="pending">Pending</SelectItem>
+                        <SelectItem value="all">{t('students.allStatuses')}</SelectItem>
+                        <SelectItem value="active">{t('students.active')}</SelectItem>
+                        <SelectItem value="inactive">{t('students.inactive')}</SelectItem>
+                        <SelectItem value="pending">{t('students.pending')}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   <div>
-                    <Label htmlFor="sort">Sort By</Label>
+                    <Label htmlFor="sort">{t('students.sortBy')}</Label>
                     <Select value={sortBy} onValueChange={setSortBy}>
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="name">Name</SelectItem>
-                        <SelectItem value="grade">Grade</SelectItem>
-                        <SelectItem value="activity">Last Activity</SelectItem>
+                        <SelectItem value="name">{t('students.name')}</SelectItem>
+                        <SelectItem value="grade">{t('students.grade')}</SelectItem>
+                        <SelectItem value="activity">{t('students.lastActivity')}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -292,10 +294,10 @@ export default function InstructorStudents() {
             <Card>
               <CardHeader>
                 <div className="flex justify-between items-center">
-                  <CardTitle>Students ({filteredStudents.length})</CardTitle>
+                  <CardTitle>{t('students.students')} ({filteredStudents.length})</CardTitle>
                   <div className="flex items-center space-x-4 text-sm text-muted-foreground">
-                    <span>Active: {filteredStudents.filter((s: any) => s.status === 'active').length}</span>
-                    <span>Pending: {filteredStudents.filter((s: any) => s.status === 'pending').length}</span>
+                    <span>{t('students.activeCount', { count: filteredStudents.filter((s: any) => s.status === 'active').length })}</span>
+                    <span>{t('students.pendingCount', { count: filteredStudents.filter((s: any) => s.status === 'pending').length })}</span>
                   </div>
                 </div>
               </CardHeader>
@@ -303,9 +305,9 @@ export default function InstructorStudents() {
                 {filteredStudents.length === 0 ? (
                   <div className="text-center py-12">
                     <Users className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
-                    <p className="text-muted-foreground text-lg mb-2">No students found</p>
+                    <p className="text-muted-foreground text-lg mb-2">{t('students.noStudentsFound')}</p>
                     <p className="text-muted-foreground">
-                      {searchTerm ? 'Try adjusting your search terms' : 'Add students to get started'}
+                      {searchTerm ? t('students.adjustSearch') : t('students.addFirstStudent')}
                     </p>
                   </div>
                 ) : (
@@ -323,25 +325,25 @@ export default function InstructorStudents() {
                             <div>
                               <h4 className="font-medium text-foreground">{student.name}</h4>
                               <p className="text-sm text-muted-foreground">{student.email}</p>
-                              <p className="text-xs text-muted-foreground">Student ID: {student.id}</p>
+                              <p className="text-xs text-muted-foreground">{t('students.studentId', { id: student.id })}</p>
                             </div>
                           </div>
                           
                           <div className="flex items-center space-x-8">
                             <div className="text-center">
-                              <p className="text-sm font-medium text-foreground">Avg. Score</p>
+                              <p className="text-sm font-medium text-foreground">{t('students.avgScore')}</p>
                               <p className={`text-lg font-bold ${getScoreColor(student.averageScore)}`}>
                                 {student.averageScore.toFixed(1)}%
                               </p>
                             </div>
                             <div className="text-center">
-                              <p className="text-sm font-medium text-foreground">Exams Taken</p>
+                              <p className="text-sm font-medium text-foreground">{t('students.examsTaken')}</p>
                               <p className="text-lg font-bold text-foreground">
                                 {student.completedExams}/{student.totalExams}
                               </p>
                             </div>
                             <div className="text-center">
-                              <p className="text-sm font-medium text-foreground">Last Activity</p>
+                              <p className="text-sm font-medium text-foreground">{t('students.lastActivity')}</p>
                               <p className="text-sm text-muted-foreground">
                                 {formatLastActivity(student.lastActivity)}
                               </p>

@@ -867,7 +867,7 @@ export default function SettingsPage() {
                     {proctoringSettingsLoading ? (
                       <div className="text-center py-8 text-muted-foreground">
                         <Settings2 className="h-8 w-8 mx-auto mb-4 animate-spin text-muted-foreground/50" />
-                        <p>Loading proctoring settings...</p>
+                        <p>{t('settings.proctoring.loading')}</p>
                       </div>
                     ) : (
                       <>
@@ -877,9 +877,9 @@ export default function SettingsPage() {
                             <div className="flex items-center gap-3">
                               <Shield className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                               <div>
-                                <Label className="text-base font-medium">Enable Proctoring by Default</Label>
+                                <Label className="text-base font-medium">{t('settings.proctoring.enableByDefault')}</Label>
                                 <p className="text-sm text-muted-foreground">
-                                  Automatically enable proctoring for all new exams
+                                  {t('settings.proctoring.enableByDefaultDescription')}
                                 </p>
                               </div>
                             </div>
@@ -895,7 +895,7 @@ export default function SettingsPage() {
                         <div className="space-y-2">
                           <Label className="flex items-center gap-2">
                             <AlertCircle className="h-4 w-4" />
-                            Default Warning Threshold
+                            {t('settings.proctoring.warningThreshold')}
                           </Label>
                           <div className="flex items-center gap-4">
                             <Input
@@ -908,7 +908,7 @@ export default function SettingsPage() {
                               data-testid="input-warning-threshold"
                             />
                             <p className="text-sm text-muted-foreground">
-                              Number of warnings before action (1-10)
+                              {t('settings.proctoring.warningThresholdDescription')}
                             </p>
                           </div>
                         </div>
@@ -918,9 +918,9 @@ export default function SettingsPage() {
                           <div className="flex items-center gap-3">
                             <AlertCircle className="h-5 w-5 text-red-500" />
                             <div>
-                              <Label>Auto-terminate Exam</Label>
+                              <Label>{t('settings.proctoring.autoTerminate')}</Label>
                               <p className="text-sm text-muted-foreground">
-                                Automatically end exam when warning threshold is reached
+                                {t('settings.proctoring.autoTerminateDescription')}
                               </p>
                             </div>
                           </div>
@@ -935,13 +935,13 @@ export default function SettingsPage() {
                         <div className="space-y-4">
                           <h4 className="font-medium flex items-center gap-2">
                             <Monitor className="h-4 w-4" />
-                            Proctoring Features
+                            {t('settings.proctoring.features')}
                           </h4>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                               <div>
-                                <Label>Fullscreen Mode</Label>
-                                <p className="text-xs text-muted-foreground">Require fullscreen during exam</p>
+                                <Label>{t('settings.proctoring.fullscreenMode')}</Label>
+                                <p className="text-xs text-muted-foreground">{t('settings.proctoring.fullscreenModeDescription')}</p>
                               </div>
                               <Switch
                                 checked={proctoringSettings.enableFullscreenMode}
@@ -952,8 +952,8 @@ export default function SettingsPage() {
 
                             <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                               <div>
-                                <Label>Tab Detection</Label>
-                                <p className="text-xs text-muted-foreground">Detect when students switch tabs</p>
+                                <Label>{t('settings.proctoring.tabDetection')}</Label>
+                                <p className="text-xs text-muted-foreground">{t('settings.proctoring.tabDetectionDescription')}</p>
                               </div>
                               <Switch
                                 checked={proctoringSettings.enableTabDetection}
@@ -964,8 +964,8 @@ export default function SettingsPage() {
 
                             <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                               <div>
-                                <Label>Context Menu Block</Label>
-                                <p className="text-xs text-muted-foreground">Disable right-click context menu</p>
+                                <Label>{t('settings.proctoring.contextMenuBlock')}</Label>
+                                <p className="text-xs text-muted-foreground">{t('settings.proctoring.contextMenuBlockDescription')}</p>
                               </div>
                               <Switch
                                 checked={proctoringSettings.enableContextMenuBlock}
@@ -976,8 +976,8 @@ export default function SettingsPage() {
 
                             <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                               <div>
-                                <Label>DevTools Detection</Label>
-                                <p className="text-xs text-muted-foreground">Detect when DevTools are opened</p>
+                                <Label>{t('settings.proctoring.devToolsDetection')}</Label>
+                                <p className="text-xs text-muted-foreground">{t('settings.proctoring.devToolsDetectionDescription')}</p>
                               </div>
                               <Switch
                                 checked={proctoringSettings.enableDevToolsDetection}
@@ -988,8 +988,8 @@ export default function SettingsPage() {
 
                             <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                               <div>
-                                <Label>Copy/Paste Block</Label>
-                                <p className="text-xs text-muted-foreground">Disable copy and paste functions</p>
+                                <Label>{t('settings.proctoring.copyPasteBlock')}</Label>
+                                <p className="text-xs text-muted-foreground">{t('settings.proctoring.copyPasteBlockDescription')}</p>
                               </div>
                               <Switch
                                 checked={proctoringSettings.enableCopyPasteBlock}
@@ -1000,8 +1000,8 @@ export default function SettingsPage() {
 
                             <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                               <div>
-                                <Label>Instructor Override</Label>
-                                <p className="text-xs text-muted-foreground">Allow instructors to modify settings per exam</p>
+                                <Label>{t('settings.proctoring.instructorOverride')}</Label>
+                                <p className="text-xs text-muted-foreground">{t('settings.proctoring.instructorOverrideDescription')}</p>
                               </div>
                               <Switch
                                 checked={proctoringSettings.allowInstructorOverride}
@@ -1021,7 +1021,7 @@ export default function SettingsPage() {
                             data-testid="button-save-proctoring-settings"
                           >
                             <Save className="h-4 w-4" />
-                            {saveProctoringSettingsMutation.isPending ? 'Saving...' : 'Save Proctoring Settings'}
+                            {saveProctoringSettingsMutation.isPending ? t('settings.proctoring.saving') : t('settings.proctoring.saveSettings')}
                           </Button>
                         </div>
 
@@ -1029,7 +1029,7 @@ export default function SettingsPage() {
                         <Alert>
                           <AlertCircle className="h-4 w-4" />
                           <AlertDescription>
-                            These settings apply to all exams by default. Individual instructors can override these settings for specific exams if "Instructor Override" is enabled.
+                            {t('settings.proctoring.info')}
                           </AlertDescription>
                         </Alert>
                       </>
