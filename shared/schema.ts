@@ -285,6 +285,32 @@ export const extraCredits = pgTable("extra_credits", {
   index("idx_extra_credits_student").on(table.studentId),
 ]);
 
+// Exam Assignments table - tracks which students can access which exams
+export const examAssignments = pgTable("exam_assignments", {
+  id: serial("id").primaryKey(),
+  examId: integer("exam_id").notNull().references(() => exams.id, { onDelete: "cascade" }),
+  studentId: varchar("student_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  assignedBy: varchar("assigned_by").notNull().references(() => users.id),
+  assignedAt: timestamp("assigned_at").defaultNow(),
+}, (table) => [
+  unique().on(table.examId, table.studentId), // Prevent duplicate assignments
+  index("idx_exam_assignments_exam").on(table.examId),
+  index("idx_exam_assignments_student").on(table.studentId),
+]);
+
+// Homework Assignment Students table - tracks which students can access which homework
+export const homeworkAssignmentStudents = pgTable("homework_assignment_students", {
+  id: serial("id").primaryKey(),
+  homeworkId: integer("homework_id").notNull().references(() => homeworkAssignments.id, { onDelete: "cascade" }),
+  studentId: varchar("student_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  assignedBy: varchar("assigned_by").notNull().references(() => users.id),
+  assignedAt: timestamp("assigned_at").defaultNow(),
+}, (table) => [
+  unique().on(table.homeworkId, table.studentId), // Prevent duplicate assignments
+  index("idx_homework_assignment_students_homework").on(table.homeworkId),
+  index("idx_homework_assignment_students_student").on(table.studentId),
+]);
+
 // Relations
 export const subjectsRelations = relations(subjects, ({ many }) => ({
   questions: many(questions),
@@ -326,6 +352,7 @@ export const examsRelations = relations(exams, ({ one, many }) => ({
   }),
   examQuestions: many(examQuestions),
   submissions: many(submissions),
+  examAssignments: many(examAssignments),
 }));
 
 export const examQuestionsRelations = relations(examQuestions, ({ one }) => ({
@@ -379,6 +406,7 @@ export const homeworkAssignmentsRelations = relations(homeworkAssignments, ({ on
   }),
   homeworkQuestions: many(homeworkQuestions),
   homeworkSubmissions: many(homeworkSubmissions),
+  homeworkAssignmentStudents: many(homeworkAssignmentStudents),
 }));
 
 export const homeworkQuestionsRelations = relations(homeworkQuestions, ({ one }) => ({
@@ -463,6 +491,38 @@ export const finalizedGradesRelations = relations(finalizedGrades, ({ one }) => 
   }),
 }));
 
+// Exam Assignment Relations
+export const examAssignmentsRelations = relations(examAssignments, ({ one }) => ({
+  exam: one(exams, {
+    fields: [examAssignments.examId],
+    references: [exams.id],
+  }),
+  student: one(users, {
+    fields: [examAssignments.studentId],
+    references: [users.id],
+  }),
+  assigner: one(users, {
+    fields: [examAssignments.assignedBy],
+    references: [users.id],
+  }),
+}));
+
+// Homework Assignment Student Relations
+export const homeworkAssignmentStudentsRelations = relations(homeworkAssignmentStudents, ({ one }) => ({
+  homework: one(homeworkAssignments, {
+    fields: [homeworkAssignmentStudents.homeworkId],
+    references: [homeworkAssignments.id],
+  }),
+  student: one(users, {
+    fields: [homeworkAssignmentStudents.studentId],
+    references: [users.id],
+  }),
+  assigner: one(users, {
+    fields: [homeworkAssignmentStudents.assignedBy],
+    references: [users.id],
+  }),
+}));
+
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({
   createdAt: true,
@@ -542,6 +602,16 @@ export const insertExtraCreditSchema = createInsertSchema(extraCredits).omit({
   points: z.number().nonnegative().transform((val) => val.toString()),
 });
 
+export const insertExamAssignmentSchema = createInsertSchema(examAssignments).omit({
+  id: true,
+  assignedAt: true,
+});
+
+export const insertHomeworkAssignmentStudentSchema = createInsertSchema(homeworkAssignmentStudents).omit({
+  id: true,
+  assignedAt: true,
+});
+
 // Types
 export type UpsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
@@ -567,3 +637,7 @@ export type InsertFinalizedGrade = z.infer<typeof insertFinalizedGradeSchema>;
 export type FinalizedGrade = typeof finalizedGrades.$inferSelect;
 export type InsertExtraCredit = z.infer<typeof insertExtraCreditSchema>;
 export type ExtraCredit = typeof extraCredits.$inferSelect;
+export type InsertExamAssignment = z.infer<typeof insertExamAssignmentSchema>;
+export type ExamAssignment = typeof examAssignments.$inferSelect;
+export type InsertHomeworkAssignmentStudent = z.infer<typeof insertHomeworkAssignmentStudentSchema>;
+export type HomeworkAssignmentStudent = typeof homeworkAssignmentStudents.$inferSelect;
