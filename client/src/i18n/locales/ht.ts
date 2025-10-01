@@ -884,19 +884,18 @@ export const ht = {
     instructor: 'Pwofesè',
     subject: 'Matye',
     searchStudents: 'Chèche elèv yo...',
+    selectAll: 'Chwazi Tout',
+    deselectAll: 'Pa Chwazi Anyen',
+    noStudentsFound: 'Pa gen elèv yo jwenn',
+    noStudentsAvailable: 'Pa gen elèv ki disponib',
+    selected: 'chwazi',
+    unsavedChanges: 'Chanjman ki pa anrejistre',
+    applying: 'Ap aplike...',
+    applyChanges: 'Aplike Chanjman yo',
     type: 'Tip',
     difficulty: 'Difikilte',
     timeLimit: 'Limit Tan',
     bloomsTaxonomy: 'Taksonomi Bloom',
-    selectAll: 'Chwazi Tout',
-    deselectAll: 'Pa Chwazi Okenn',
-    selected: 'chwazi',
-    applying: 'Y ap aplike...',
-    applyChanges: 'Aplike Chanjman yo',
-    unsavedChanges: 'Chanjman ki pa sove',
-    noStudentsFound: 'Pa gen elèv yo jwenn',
-    noStudentsAvailable: 'Pa gen elèv ki disponib',
-    assigned: 'Asiyen',
     success: 'Siksè',
     error: 'Erè'
   },
@@ -918,6 +917,7 @@ export const ht = {
     selectStudentsToAssign: 'Chwazi elèv nan lis ki anba a pou asiyen yo nan egzamen oswa devwa sa a',
     assignButton: 'Asiyen Sa yo ki Chwazi',
     removeButton: 'Retire Sa yo ki Chwazi',
-    currentlyAssigned: 'Asiyen Kounye a'
+    currentlyAssigned: 'Asiyen Kounye a',
+    assigned: 'Asiyen'
   }
 };

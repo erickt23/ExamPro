@@ -884,19 +884,18 @@ export const fr = {
     instructor: 'Instructeur',
     subject: 'Matière',
     searchStudents: 'Rechercher des étudiants...',
+    selectAll: 'Tout Sélectionner',
+    deselectAll: 'Tout Désélectionner',
+    noStudentsFound: 'Aucun étudiant trouvé',
+    noStudentsAvailable: 'Aucun étudiant disponible',
+    selected: 'sélectionné(s)',
+    unsavedChanges: 'Modifications non enregistrées',
+    applying: 'Application...',
+    applyChanges: 'Appliquer les Modifications',
     type: 'Type',
     difficulty: 'Difficulté',
     timeLimit: 'Limite de Temps',
     bloomsTaxonomy: 'Taxonomie de Bloom',
-    selectAll: 'Tout Sélectionner',
-    deselectAll: 'Tout Désélectionner',
-    selected: 'sélectionnés',
-    applying: 'Application...',
-    applyChanges: 'Appliquer les Changements',
-    unsavedChanges: 'Changements non sauvegardés',
-    noStudentsFound: 'Aucun étudiant trouvé',
-    noStudentsAvailable: 'Aucun étudiant disponible',
-    assigned: 'Assigné',
     success: 'Succès',
     error: 'Erreur'
   },
@@ -918,6 +917,7 @@ export const fr = {
     selectStudentsToAssign: 'Sélectionnez des étudiants dans la liste ci-dessous pour les assigner à cet examen ou devoir',
     assignButton: 'Assigner la Sélection',
     removeButton: 'Retirer la Sélection',
-    currentlyAssigned: 'Actuellement Assignés'
+    currentlyAssigned: 'Actuellement Assignés',
+    assigned: 'Assigné'
   }
 };

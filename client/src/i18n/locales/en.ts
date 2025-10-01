@@ -890,19 +890,18 @@ export const en = {
     instructor: 'Instructor',
     subject: 'Subject',
     searchStudents: 'Search students...',
+    selectAll: 'Select All',
+    deselectAll: 'Deselect All',
+    noStudentsFound: 'No students found',
+    noStudentsAvailable: 'No students available',
+    selected: 'selected',
+    unsavedChanges: 'Unsaved changes',
+    applying: 'Applying...',
+    applyChanges: 'Apply Changes',
     type: 'Type',
     difficulty: 'Difficulty',
     timeLimit: 'Time Limit',
     bloomsTaxonomy: 'Bloom\'s Taxonomy',
-    selectAll: 'Select All',
-    deselectAll: 'Deselect All',
-    selected: 'selected',
-    applying: 'Applying...',
-    applyChanges: 'Apply Changes',
-    unsavedChanges: 'Unsaved changes',
-    noStudentsFound: 'No students found',
-    noStudentsAvailable: 'No students available',
-    assigned: 'Assigned',
     success: 'Success',
     error: 'Error'
   },
@@ -924,6 +923,7 @@ export const en = {
     selectStudentsToAssign: 'Select students from the list below to assign them to this exam or homework',
     assignButton: 'Assign Selected',
     removeButton: 'Remove Selected',
-    currentlyAssigned: 'Currently Assigned'
+    currentlyAssigned: 'Currently Assigned',
+    assigned: 'Assigned'
   }
 };
