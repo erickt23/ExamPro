@@ -14,6 +14,8 @@ import {
   proctoringSettings,
   finalizedGrades,
   extraCredits,
+  examAssignments,
+  homeworkAssignmentStudents,
   type User,
   type UpsertUser,
   type InsertSubject,
@@ -38,6 +40,10 @@ import {
   type FinalizedGrade,
   type InsertExtraCredit,
   type ExtraCredit,
+  type InsertExamAssignment,
+  type ExamAssignment,
+  type InsertHomeworkAssignmentStudent,
+  type HomeworkAssignmentStudent,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, asc, and, or, count, avg, sum, like, ilike, inArray, sql, ne, isNull } from "drizzle-orm";
@@ -224,6 +230,20 @@ export interface IStorage {
   deleteExtraCredit(creditId: number): Promise<void>;
   getExtraCreditTotalsForSubmissions(submissionIds: number[]): Promise<Record<number, number>>;
   getExtraCreditTotalsForHomeworkSubmissions(homeworkSubmissionIds: number[]): Promise<Record<number, number>>;
+  
+  // Exam assignment operations
+  assignStudentsToExam(examId: number, studentIds: string[], assignedBy: string): Promise<void>;
+  removeStudentsFromExam(examId: number, studentIds: string[]): Promise<void>;
+  getAssignedStudentsForExam(examId: number): Promise<User[]>;
+  isStudentAssignedToExam(examId: number, studentId: string): Promise<boolean>;
+  getAssignedExamsForStudent(studentId: string): Promise<number[]>;
+  
+  // Homework assignment operations
+  assignStudentsToHomework(homeworkId: number, studentIds: string[], assignedBy: string): Promise<void>;
+  removeStudentsFromHomework(homeworkId: number, studentIds: string[]): Promise<void>;
+  getAssignedStudentsForHomework(homeworkId: number): Promise<User[]>;
+  isStudentAssignedToHomework(homeworkId: number, studentId: string): Promise<boolean>;
+  getAssignedHomeworkForStudent(studentId: string): Promise<number[]>;
 }
 
 // In-memory fallback storage for when database is unavailable
@@ -2203,6 +2223,130 @@ export class DatabaseStorage implements IStorage {
       }
     }
     return totals;
+  }
+
+  async assignStudentsToExam(examId: number, studentIds: string[], assignedBy: string): Promise<void> {
+    if (studentIds.length === 0) return;
+
+    const assignments = studentIds.map(studentId => ({
+      examId,
+      studentId,
+      assignedBy,
+    }));
+
+    await db.insert(examAssignments).values(assignments).onConflictDoNothing();
+  }
+
+  async removeStudentsFromExam(examId: number, studentIds: string[]): Promise<void> {
+    if (studentIds.length === 0) return;
+
+    await db
+      .delete(examAssignments)
+      .where(
+        and(
+          eq(examAssignments.examId, examId),
+          inArray(examAssignments.studentId, studentIds)
+        )
+      );
+  }
+
+  async getAssignedStudentsForExam(examId: number): Promise<User[]> {
+    const result = await db
+      .select({
+        user: users,
+      })
+      .from(examAssignments)
+      .innerJoin(users, eq(examAssignments.studentId, users.id))
+      .where(eq(examAssignments.examId, examId))
+      .orderBy(asc(users.lastName), asc(users.firstName));
+
+    return result.map(r => r.user);
+  }
+
+  async isStudentAssignedToExam(examId: number, studentId: string): Promise<boolean> {
+    const result = await db
+      .select()
+      .from(examAssignments)
+      .where(
+        and(
+          eq(examAssignments.examId, examId),
+          eq(examAssignments.studentId, studentId)
+        )
+      )
+      .limit(1);
+
+    return result.length > 0;
+  }
+
+  async getAssignedExamsForStudent(studentId: string): Promise<number[]> {
+    const result = await db
+      .select({ examId: examAssignments.examId })
+      .from(examAssignments)
+      .where(eq(examAssignments.studentId, studentId));
+
+    return result.map(r => r.examId);
+  }
+
+  async assignStudentsToHomework(homeworkId: number, studentIds: string[], assignedBy: string): Promise<void> {
+    if (studentIds.length === 0) return;
+
+    const assignments = studentIds.map(studentId => ({
+      homeworkId,
+      studentId,
+      assignedBy,
+    }));
+
+    await db.insert(homeworkAssignmentStudents).values(assignments).onConflictDoNothing();
+  }
+
+  async removeStudentsFromHomework(homeworkId: number, studentIds: string[]): Promise<void> {
+    if (studentIds.length === 0) return;
+
+    await db
+      .delete(homeworkAssignmentStudents)
+      .where(
+        and(
+          eq(homeworkAssignmentStudents.homeworkId, homeworkId),
+          inArray(homeworkAssignmentStudents.studentId, studentIds)
+        )
+      );
+  }
+
+  async getAssignedStudentsForHomework(homeworkId: number): Promise<User[]> {
+    const result = await db
+      .select({
+        user: users,
+      })
+      .from(homeworkAssignmentStudents)
+      .innerJoin(users, eq(homeworkAssignmentStudents.studentId, users.id))
+      .where(eq(homeworkAssignmentStudents.homeworkId, homeworkId))
+      .orderBy(asc(users.lastName), asc(users.firstName));
+
+    return result.map(r => r.user);
+  }
+
+  async isStudentAssignedToHomework(homeworkId: number, studentId: string): Promise<boolean> {
+    const result = await db
+      .select()
+      .from(homeworkAssignmentStudents)
+      .where(
+        and(
+          eq(homeworkAssignmentStudents.homeworkId, homeworkId),
+          eq(homeworkAssignmentStudents.studentId, studentId)
+        )
+      )
+      .limit(1);
+
+    return result.length > 0;
+  }
+
+  async getAssignedHomeworkForStudent(studentId: string): Promise<number[]> {
+    const result = await db
+      .select({ homeworkId: homeworkAssignmentStudents.homeworkId })
+      .from(homeworkAssignmentStudents)
+      .where(eq(homeworkAssignmentStudents.studentId, studentId));
+
+    return result.map(r => r.homeworkId);
   }
 }
 

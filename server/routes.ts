@@ -1070,6 +1070,88 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Assign students to exam
+  app.post('/api/exams/:id/assign-students', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const user = await storage.getUser(userId);
+      const examId = parseInt(req.params.id);
+      const { studentIds } = req.body;
+
+      if (!hasInstructorPrivileges(user)) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const exam = await storage.getExamById(examId);
+      if (!exam || exam.instructorId !== userId) {
+        return res.status(404).json({ message: "Exam not found" });
+      }
+
+      if (!Array.isArray(studentIds)) {
+        return res.status(400).json({ message: "studentIds must be an array" });
+      }
+
+      await storage.assignStudentsToExam(examId, studentIds, userId);
+      res.json({ message: "Students assigned successfully" });
+    } catch (error) {
+      console.error("Error assigning students to exam:", error);
+      res.status(500).json({ message: "Failed to assign students to exam" });
+    }
+  });
+
+  // Get assigned students for exam
+  app.get('/api/exams/:id/assigned-students', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const user = await storage.getUser(userId);
+      const examId = parseInt(req.params.id);
+
+      if (!hasInstructorPrivileges(user)) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const exam = await storage.getExamById(examId);
+      if (!exam || exam.instructorId !== userId) {
+        return res.status(404).json({ message: "Exam not found" });
+      }
+
+      const students = await storage.getAssignedStudentsForExam(examId);
+      res.json(students);
+    } catch (error) {
+      console.error("Error getting assigned students for exam:", error);
+      res.status(500).json({ message: "Failed to get assigned students" });
+    }
+  });
+
+  // Remove students from exam
+  app.delete('/api/exams/:id/assigned-students', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const user = await storage.getUser(userId);
+      const examId = parseInt(req.params.id);
+      const { studentIds } = req.body;
+
+      if (!hasInstructorPrivileges(user)) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const exam = await storage.getExamById(examId);
+      if (!exam || exam.instructorId !== userId) {
+        return res.status(404).json({ message: "Exam not found" });
+      }
+
+      if (!Array.isArray(studentIds)) {
+        return res.status(400).json({ message: "studentIds must be an array" });
+      }
+
+      await storage.removeStudentsFromExam(examId, studentIds);
+      res.json({ message: "Students removed successfully" });
+    } catch (error) {
+      console.error("Error removing students from exam:", error);
+      res.status(500).json({ message: "Failed to remove students from exam" });
+    }
+  });
+
   // Password validation endpoint for exams
   app.post('/api/exams/:id/validate-password', isAuthenticated, async (req: any, res) => {
     try {
@@ -2680,6 +2762,88 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid homework data", errors: error.errors });
       }
       res.status(500).json({ message: "Failed to update homework" });
+    }
+  });
+
+  // Assign students to homework
+  app.post('/api/homework/:id/assign-students', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const user = await storage.getUser(userId);
+      const homeworkId = parseInt(req.params.id);
+      const { studentIds } = req.body;
+
+      if (!hasInstructorPrivileges(user)) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const homework = await storage.getHomeworkById(homeworkId);
+      if (!homework || homework.instructorId !== userId) {
+        return res.status(404).json({ message: "Homework not found" });
+      }
+
+      if (!Array.isArray(studentIds)) {
+        return res.status(400).json({ message: "studentIds must be an array" });
+      }
+
+      await storage.assignStudentsToHomework(homeworkId, studentIds, userId);
+      res.json({ message: "Students assigned successfully" });
+    } catch (error) {
+      console.error("Error assigning students to homework:", error);
+      res.status(500).json({ message: "Failed to assign students to homework" });
+    }
+  });
+
+  // Get assigned students for homework
+  app.get('/api/homework/:id/assigned-students', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const user = await storage.getUser(userId);
+      const homeworkId = parseInt(req.params.id);
+
+      if (!hasInstructorPrivileges(user)) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const homework = await storage.getHomeworkById(homeworkId);
+      if (!homework || homework.instructorId !== userId) {
+        return res.status(404).json({ message: "Homework not found" });
+      }
+
+      const students = await storage.getAssignedStudentsForHomework(homeworkId);
+      res.json(students);
+    } catch (error) {
+      console.error("Error getting assigned students for homework:", error);
+      res.status(500).json({ message: "Failed to get assigned students" });
+    }
+  });
+
+  // Remove students from homework
+  app.delete('/api/homework/:id/assigned-students', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const user = await storage.getUser(userId);
+      const homeworkId = parseInt(req.params.id);
+      const { studentIds } = req.body;
+
+      if (!hasInstructorPrivileges(user)) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const homework = await storage.getHomeworkById(homeworkId);
+      if (!homework || homework.instructorId !== userId) {
+        return res.status(404).json({ message: "Homework not found" });
+      }
+
+      if (!Array.isArray(studentIds)) {
+        return res.status(400).json({ message: "studentIds must be an array" });
+      }
+
+      await storage.removeStudentsFromHomework(homeworkId, studentIds);
+      res.json({ message: "Students removed successfully" });
+    } catch (error) {
+      console.error("Error removing students from homework:", error);
+      res.status(500).json({ message: "Failed to remove students from homework" });
     }
   });
 
