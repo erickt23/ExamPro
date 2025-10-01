@@ -71,21 +71,21 @@ export default function InstructorAnalytics() {
   };
 
   const getPerformanceTextColor = (rate: number) => {
-    if (rate >= 80) return "text-green-600";
-    if (rate >= 60) return "text-yellow-600";
-    return "text-red-600";
+    if (rate >= 80) return "text-green-600 dark:text-green-400";
+    if (rate >= 60) return "text-yellow-600 dark:text-yellow-400";
+    return "text-red-600 dark:text-red-400";
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       <Navbar />
       <div className="flex">
         <Sidebar />
         <main className="flex-1 overflow-y-auto ml-0 transition-all duration-300">
           <div className="p-3 md:p-6">
             <div className="mb-4 md:mb-6">
-              <h2 className="text-xl md:text-2xl font-bold text-gray-900">Analytics & Reports</h2>
-              <p className="text-gray-600 mt-1 text-sm md:text-base">Insights into student performance and exam effectiveness</p>
+              <h2 className="text-xl md:text-2xl font-bold text-foreground">Analytics & Reports</h2>
+              <p className="text-muted-foreground mt-1 text-sm md:text-base">Insights into student performance and exam effectiveness</p>
             </div>
 
             {/* Analytics Cards */}
@@ -93,46 +93,46 @@ export default function InstructorAnalytics() {
               <Card>
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-sm font-medium text-gray-600">Average Score</h3>
+                    <h3 className="text-sm font-medium text-muted-foreground">Average Score</h3>
                     <TrendingUp className="h-5 w-5 text-green-500" />
                   </div>
-                  <p className="text-3xl font-bold text-gray-900">84.2%</p>
-                  <p className="text-sm text-green-600 mt-2">↗ 3.2% from last exam</p>
+                  <p className="text-3xl font-bold text-foreground">84.2%</p>
+                  <p className="text-sm text-green-600 dark:text-green-400 mt-2">↗ 3.2% from last exam</p>
                 </CardContent>
               </Card>
 
               <Card>
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-sm font-medium text-gray-600">Completion Rate</h3>
+                    <h3 className="text-sm font-medium text-muted-foreground">Completion Rate</h3>
                     <CheckCircle className="h-5 w-5 text-primary" />
                   </div>
-                  <p className="text-3xl font-bold text-gray-900">96.8%</p>
-                  <p className="text-sm text-green-600 mt-2">↗ 1.5% improvement</p>
+                  <p className="text-3xl font-bold text-foreground">96.8%</p>
+                  <p className="text-sm text-green-600 dark:text-green-400 mt-2">↗ 1.5% improvement</p>
                 </CardContent>
               </Card>
 
               <Card>
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-sm font-medium text-gray-600">Avg. Time</h3>
+                    <h3 className="text-sm font-medium text-muted-foreground">Avg. Time</h3>
                     <Clock className="h-5 w-5 text-orange-500" />
                   </div>
-                  <p className="text-3xl font-bold text-gray-900">76m</p>
-                  <p className="text-sm text-gray-500 mt-2">Out of 90m allowed</p>
+                  <p className="text-3xl font-bold text-foreground">76m</p>
+                  <p className="text-sm text-muted-foreground mt-2">Out of 90m allowed</p>
                 </CardContent>
               </Card>
 
               <Card>
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-sm font-medium text-gray-600">Question Bank</h3>
-                    <FileText className="h-5 w-5 text-gray-500" />
+                    <h3 className="text-sm font-medium text-muted-foreground">Question Bank</h3>
+                    <FileText className="h-5 w-5 text-muted-foreground" />
                   </div>
-                  <p className="text-3xl font-bold text-gray-900">
+                  <p className="text-3xl font-bold text-foreground">
                     {statsLoading ? "..." : (instructorStats as any)?.totalQuestions || 0}
                   </p>
-                  <p className="text-sm text-green-600 mt-2">+42 this month</p>
+                  <p className="text-sm text-green-600 dark:text-green-400 mt-2">+42 this month</p>
                 </CardContent>
               </Card>
             </div>
@@ -144,11 +144,11 @@ export default function InstructorAnalytics() {
                   <CardTitle>Score Distribution</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="h-64 bg-gray-50 rounded-lg flex items-center justify-center">
+                  <div className="h-64 bg-muted/50 rounded-lg flex items-center justify-center">
                     <div className="text-center">
-                      <BarChart3 className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                      <p className="text-gray-500">Score distribution chart</p>
-                      <p className="text-sm text-gray-400">Chart visualization would appear here</p>
+                      <BarChart3 className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
+                      <p className="text-muted-foreground">Score distribution chart</p>
+                      <p className="text-sm text-muted-foreground/80">Chart visualization would appear here</p>
                     </div>
                   </div>
                 </CardContent>
@@ -163,8 +163,8 @@ export default function InstructorAnalytics() {
                     {questionPerformance.map((item, index) => (
                       <div key={index} className="flex justify-between items-center">
                         <div className="flex-1">
-                          <p className="text-sm text-gray-900 font-medium">{item.question}</p>
-                          <p className="text-xs text-gray-500 capitalize">Difficulty: {item.difficulty}</p>
+                          <p className="text-sm text-foreground font-medium">{item.question}</p>
+                          <p className="text-xs text-muted-foreground capitalize">Difficulty: {item.difficulty}</p>
                         </div>
                         <div className="flex items-center space-x-3 ml-4">
                           <div className="w-20">
@@ -195,9 +195,9 @@ export default function InstructorAnalytics() {
                     {questionPerformance
                       .filter(q => q.correctRate >= 80)
                       .map((item, index) => (
-                        <div key={index} className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
-                          <span className="text-sm text-gray-900">{item.question.split(':')[1]}</span>
-                          <span className="text-sm font-medium text-green-600">{item.correctRate}%</span>
+                        <div key={index} className="flex items-center justify-between p-3 bg-green-100 dark:bg-green-900/20 rounded-lg">
+                          <span className="text-sm text-green-800 dark:text-green-200">{item.question.split(':')[1]}</span>
+                          <span className="text-sm font-medium text-green-600 dark:text-green-400">{item.correctRate}%</span>
                         </div>
                       ))}
                   </div>
@@ -213,9 +213,9 @@ export default function InstructorAnalytics() {
                     {questionPerformance
                       .filter(q => q.correctRate < 60)
                       .map((item, index) => (
-                        <div key={index} className="flex items-center justify-between p-3 bg-red-50 rounded-lg">
-                          <span className="text-sm text-gray-900">{item.question.split(':')[1]}</span>
-                          <span className="text-sm font-medium text-red-600">{item.correctRate}%</span>
+                        <div key={index} className="flex items-center justify-between p-3 bg-red-100 dark:bg-red-900/20 rounded-lg">
+                          <span className="text-sm text-red-800 dark:text-red-200">{item.question.split(':')[1]}</span>
+                          <span className="text-sm font-medium text-red-600 dark:text-red-400">{item.correctRate}%</span>
                         </div>
                       ))}
                   </div>
@@ -228,25 +228,25 @@ export default function InstructorAnalytics() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
-                    <div className="flex items-center space-x-3 p-3 bg-blue-50 rounded-lg">
+                    <div className="flex items-center space-x-3 p-3 bg-blue-100 dark:bg-blue-900/20 rounded-lg">
                       <Users className="h-5 w-5 text-blue-600" />
                       <div>
-                        <p className="text-sm font-medium text-gray-900">5 new submissions</p>
-                        <p className="text-xs text-gray-500">Calculus Midterm</p>
+                        <p className="text-sm font-medium text-blue-800 dark:text-blue-200">5 new submissions</p>
+                        <p className="text-xs text-muted-foreground">Calculus Midterm</p>
                       </div>
                     </div>
-                    <div className="flex items-center space-x-3 p-3 bg-orange-50 rounded-lg">
+                    <div className="flex items-center space-x-3 p-3 bg-orange-100 dark:bg-orange-900/20 rounded-lg">
                       <Clock className="h-5 w-5 text-orange-600" />
                       <div>
-                        <p className="text-sm font-medium text-gray-900">3 pending reviews</p>
-                        <p className="text-xs text-gray-500">Physics Quiz</p>
+                        <p className="text-sm font-medium text-orange-800 dark:text-orange-200">3 pending reviews</p>
+                        <p className="text-xs text-muted-foreground">Physics Quiz</p>
                       </div>
                     </div>
-                    <div className="flex items-center space-x-3 p-3 bg-green-50 rounded-lg">
+                    <div className="flex items-center space-x-3 p-3 bg-green-100 dark:bg-green-900/20 rounded-lg">
                       <CheckCircle className="h-5 w-5 text-green-600" />
                       <div>
-                        <p className="text-sm font-medium text-gray-900">12 exams graded</p>
-                        <p className="text-xs text-gray-500">Today</p>
+                        <p className="text-sm font-medium text-green-800 dark:text-green-200">12 exams graded</p>
+                        <p className="text-xs text-muted-foreground">Today</p>
                       </div>
                     </div>
                   </div>

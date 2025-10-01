@@ -269,12 +269,12 @@ export default function InstructorExams() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'active': return 'bg-green-100 text-green-800';
-      case 'draft': return 'bg-orange-100 text-orange-800';
-      case 'completed': return 'bg-blue-100 text-blue-800';
-      case 'scheduled': return 'bg-purple-100 text-purple-800';
-      case 'archived': return 'bg-gray-100 text-gray-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'active': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+      case 'draft': return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200';
+      case 'completed': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
+      case 'scheduled': return 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200';
+      case 'archived': return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200';
+      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200';
     }
   };
 
@@ -287,7 +287,7 @@ export default function InstructorExams() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       <Navbar />
       <div className="flex">
         <Sidebar />
@@ -296,12 +296,12 @@ export default function InstructorExams() {
             <div className="mb-6">
               <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-4">
                 <div>
-                  <h2 className="text-xl md:text-2xl font-bold text-gray-900">{t('nav.exams')}</h2>
-                  <p className="text-gray-600 mt-1">{t('exams.description')}</p>
+                  <h2 className="text-xl md:text-2xl font-bold text-foreground">{t('nav.exams')}</h2>
+                  <p className="text-muted-foreground mt-1">{t('exams.description')}</p>
                 </div>
                 <Button 
                   onClick={() => setShowCreateModal(true)}
-                  className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+                  className="bg-primary text-primary-foreground hover:bg-primary/90"
                 >
                   <Plus className="h-4 w-4 mr-2" />
                   {t('exams.createExam')}
@@ -310,7 +310,7 @@ export default function InstructorExams() {
               
               {/* Search Bar */}
               <div className="relative max-w-md">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
                 <Input
                   placeholder={t('exams.searchExams')}
                   value={searchTerm}
@@ -337,18 +337,18 @@ export default function InstructorExams() {
                     {[...Array(6)].map((_, i) => (
                       <Card key={i} className="animate-pulse">
                         <CardContent className="p-6">
-                          <div className="h-4 bg-gray-200 rounded mb-4"></div>
-                          <div className="h-3 bg-gray-200 rounded mb-2"></div>
-                          <div className="h-3 bg-gray-200 rounded w-3/4"></div>
+                          <div className="h-4 bg-muted rounded mb-4"></div>
+                          <div className="h-3 bg-muted rounded mb-2"></div>
+                          <div className="h-3 bg-muted rounded w-3/4"></div>
                         </CardContent>
                       </Card>
                     ))}
                   </div>
                 ) : exams?.length === 0 ? (
                   <div className="text-center py-12">
-                    <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <p className="text-gray-500 text-lg mb-2">{t('exams.noExams')}</p>
-                    <p className="text-gray-400">{t('exams.createFirstExam')}</p>
+                    <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <p className="text-muted-foreground text-lg mb-2">{t('exams.noExams')}</p>
+                    <p className="text-muted-foreground">{t('exams.createFirstExam')}</p>
                   </div>
                 ) : (() => {
                   // Sort and paginate exams
@@ -368,7 +368,7 @@ export default function InstructorExams() {
 
                   return (
                     <div className="space-y-4">
-                      <div className="bg-white rounded-lg border">
+                      <div className="bg-card rounded-lg border">
                         <Table>
                           <TableHeader>
                             <TableRow>
@@ -398,7 +398,7 @@ export default function InstructorExams() {
                             <>
                               <TableRow 
                                 key={exam.id} 
-                                className={`cursor-pointer hover:bg-gray-100 ${index % 2 === 0 ? "bg-white" : "bg-gray-50"}`}
+                                className={`cursor-pointer hover:bg-muted`}
                                 onClick={toggleExpanded}
                               >
                                 <TableCell>
@@ -411,8 +411,8 @@ export default function InstructorExams() {
                                   </Button>
                                 </TableCell>
                                 <TableCell>
-                                  <div className="font-medium">{exam.title}</div>
-                                  <div className="text-sm text-gray-600">
+                                  <div className="font-medium text-foreground">{exam.title}</div>
+                                  <div className="text-sm text-muted-foreground">
                                     {(subjects as any[]).find((s: any) => s.id === exam.subjectId)?.name || t('studentExams.unknownSubject')} • {exam.totalPoints} points
                                   </div>
                                 </TableCell>
@@ -481,7 +481,7 @@ export default function InstructorExams() {
                                         )}
                                         <DropdownMenuItem 
                                           onClick={() => setDeletingExamId(exam.id)}
-                                          className="text-red-600 focus:text-red-600"
+                                          className="text-destructive focus:text-destructive-foreground"
                                         >
                                           <Trash2 className="h-4 w-4 mr-2" />
                                           Delete Exam
@@ -494,24 +494,24 @@ export default function InstructorExams() {
                               
                               {/* Expanded Details Row */}
                               {isExpanded && (
-                                <TableRow className={`${index % 2 === 0 ? "bg-gray-50" : "bg-gray-100"}`}>
+                                <TableRow className="bg-muted/50">
                                   <TableCell colSpan={7}>
                                     <div className="p-4 space-y-4">
                                       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                         <div className="space-y-3">
-                                          <h4 className="font-medium text-gray-900 flex items-center gap-2">
+                                          <h4 className="font-medium text-foreground flex items-center gap-2">
                                             <Calendar className="h-4 w-4" />
                                             Schedule
                                           </h4>
                                           <div className="space-y-2 text-sm">
                                             <div className="flex justify-between">
-                                              <span className="text-gray-600">Available From:</span>
+                                              <span className="text-muted-foreground">Available From:</span>
                                               <span className="font-medium">
                                                 {exam.availableFrom ? formatEasternTime(exam.availableFrom) : 'Not set'}
                                               </span>
                                             </div>
                                             <div className="flex justify-between">
-                                              <span className="text-gray-600">Available Until:</span>
+                                              <span className="text-muted-foreground">Available Until:</span>
                                               <span className="font-medium">
                                                 {exam.availableUntil ? formatEasternTime(exam.availableUntil) : 'Not set'}
                                               </span>
@@ -520,25 +520,25 @@ export default function InstructorExams() {
                                         </div>
                                         
                                         <div className="space-y-3">
-                                          <h4 className="font-medium text-gray-900 flex items-center gap-2">
+                                          <h4 className="font-medium text-foreground flex items-center gap-2">
                                             <Clock className="h-4 w-4" />
                                             Configuration
                                           </h4>
                                           <div className="space-y-2 text-sm">
                                             <div className="flex justify-between">
-                                              <span className="text-gray-600">Attempts:</span>
+                                              <span className="text-muted-foreground">Attempts:</span>
                                               <span className="font-medium">
                                                 {exam.attemptsAllowed === -1 ? 'Unlimited' : exam.attemptsAllowed}
                                               </span>
                                             </div>
                                             <div className="flex justify-between">
-                                              <span className="text-gray-600">Password:</span>
+                                              <span className="text-muted-foreground">Password:</span>
                                               <span className="font-medium">
                                                 {exam.password ? 'Protected' : 'None'}
                                               </span>
                                             </div>
                                             <div className="flex justify-between">
-                                              <span className="text-gray-600">Random Order:</span>
+                                              <span className="text-muted-foreground">Random Order:</span>
                                               <span className="font-medium">
                                                 {exam.randomizeQuestions ? 'Yes' : 'No'}
                                               </span>
@@ -547,17 +547,17 @@ export default function InstructorExams() {
                                         </div>
                                         
                                         <div className="space-y-3">
-                                          <h4 className="font-medium text-gray-900 flex items-center gap-2">
+                                          <h4 className="font-medium text-foreground flex items-center gap-2">
                                             <Users className="h-4 w-4" />
                                             Statistics
                                           </h4>
                                           <div className="space-y-2 text-sm">
                                             <div className="flex justify-between">
-                                              <span className="text-gray-600">Questions:</span>
+                                              <span className="text-muted-foreground">Questions:</span>
                                               <span className="font-medium">{exam.questionCount || 0}</span>
                                             </div>
                                             <div className="flex justify-between">
-                                              <span className="text-gray-600">Submissions:</span>
+                                              <span className="text-muted-foreground">Submissions:</span>
                                               <span className="font-medium">{exam.submissionCount || 0}</span>
                                             </div>
                                           </div>
@@ -578,7 +578,7 @@ export default function InstructorExams() {
 
                       {/* Pagination Controls */}
                       <div className="flex items-center justify-between px-2">
-                        <div className="text-sm text-gray-700">
+                        <div className="text-sm text-muted-foreground">
                           Showing {startIndex + 1} to {Math.min(endIndex, totalItems)} of {totalItems} exams
                         </div>
                         <div className="flex items-center gap-2">

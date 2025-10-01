@@ -1,4 +1,4 @@
-import { useEffect, useRef, forwardRef, useState } from 'react';
+import { useEffect, useRef, forwardRef, useState, useImperativeHandle } from 'react';
 import 'mathlive';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -57,56 +57,66 @@ if (typeof window !== 'undefined' && !(window as any).mathKeyboardCleanupSetup) 
   window.addEventListener('popstate', hideVirtualKeyboardGlobally);
 }
 
-const MathField = forwardRef<HTMLElement, MathFieldProps>(
+const MathField = forwardRef<any, MathFieldProps>(
   ({ value = '', onChange, readonly = false, placeholder = '', className, 'data-testid': testId, onBlur, onFocus, hideToolbar = false, hideVirtualKeyboardToggle = false }, ref) => {
     const mathFieldRef = useRef<any>(null);
     const containerRef = useRef<HTMLDivElement>(null);
     const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
 
+    const showKeyboard = () => {
+      if (window.mathVirtualKeyboard) {
+        window.mathVirtualKeyboard.show();
+        const keyboardElement = document.querySelector('math-virtual-keyboard') || 
+                              document.querySelector('.ML__virtual-keyboard') ||
+                              document.querySelector('.ml__virtual-keyboard');
+        if (keyboardElement) {
+          (keyboardElement as HTMLElement).style.display = 'block';
+          (keyboardElement as HTMLElement).style.visibility = 'visible';
+          (keyboardElement as HTMLElement).style.opacity = '1';
+        }
+        setIsKeyboardVisible(true);
+      }
+    };
+
+    const hideKeyboard = () => {
+      if (window.mathVirtualKeyboard) {
+        const keyboardElement = document.querySelector('math-virtual-keyboard') || 
+                              document.querySelector('.ML__virtual-keyboard') ||
+                              document.querySelector('.ml__virtual-keyboard');
+        if (keyboardElement) {
+          (keyboardElement as HTMLElement).style.display = 'none';
+          (keyboardElement as HTMLElement).style.visibility = 'hidden';
+          (keyboardElement as HTMLElement).style.opacity = '0';
+        }
+        if ((window.mathVirtualKeyboard as any).originalHide) {
+          try {
+            (window.mathVirtualKeyboard as any).originalHide.call(window.mathVirtualKeyboard);
+          } catch (e) {
+            // Silently fail
+          }
+        }
+        setIsKeyboardVisible(false);
+      }
+    };
+
+    const toggleKeyboard = () => {
+      if (isKeyboardVisible) {
+        hideKeyboard();
+      } else {
+        showKeyboard();
+      }
+    };
+
+    useImperativeHandle(ref, () => ({
+      showKeyboard,
+      hideKeyboard,
+      toggleKeyboard,
+    }));
+
     const toggleVirtualKeyboard = (event: React.MouseEvent) => {
-      // Prevent event from bubbling up to modal or other elements
       event.preventDefault();
       event.stopPropagation();
-      
-      if (window.mathVirtualKeyboard) {
-        if (!isKeyboardVisible) {
-          // Show keyboard
-          window.mathVirtualKeyboard.show();
-          
-          // Ensure it's visible after showing
-          const keyboardElement = document.querySelector('math-virtual-keyboard') || 
-                                document.querySelector('.ML__virtual-keyboard') ||
-                                document.querySelector('.ml__virtual-keyboard');
-          if (keyboardElement) {
-            (keyboardElement as HTMLElement).style.display = 'block';
-            (keyboardElement as HTMLElement).style.visibility = 'visible';
-            (keyboardElement as HTMLElement).style.opacity = '1';
-          }
-          
-          setIsKeyboardVisible(true);
-        } else {
-          // Hide keyboard
-          const keyboardElement = document.querySelector('math-virtual-keyboard') || 
-                                document.querySelector('.ML__virtual-keyboard') ||
-                                document.querySelector('.ml__virtual-keyboard');
-          if (keyboardElement) {
-            (keyboardElement as HTMLElement).style.display = 'none';
-            (keyboardElement as HTMLElement).style.visibility = 'hidden';
-            (keyboardElement as HTMLElement).style.opacity = '0';
-          }
-          
-          // Also try the original hide function if available
-          if ((window.mathVirtualKeyboard as any).originalHide) {
-            try {
-              (window.mathVirtualKeyboard as any).originalHide.call(window.mathVirtualKeyboard);
-            } catch (e) {
-              // Silently fail if hide doesn't work
-            }
-          }
-          
-          setIsKeyboardVisible(false);
-        }
-      }
+      toggleKeyboard();
     };
 
     useEffect(() => {
@@ -467,7 +477,7 @@ const MathField = forwardRef<HTMLElement, MathFieldProps>(
               type="button"
               variant="outline"
               size="sm"
-              onClick={() => insertMath('\\frac{\\placeholder{numerator}}{\\placeholder{denominator}}')}
+              onClick={() => insertMath('\\frac{\\\\placeholder{numerator}}{\\\\placeholder{denominator}}')}
               title="Insert Fraction"
               className="h-8 px-2"
             >
@@ -477,7 +487,7 @@ const MathField = forwardRef<HTMLElement, MathFieldProps>(
               type="button"
               variant="outline"
               size="sm"
-              onClick={() => insertMath('\\sqrt{\\placeholder{}}')}
+              onClick={() => insertMath('\\sqrt{\\\\placeholder{}}')}
               title="Insert Square Root"
               className="h-8 px-2"
             >
@@ -487,7 +497,7 @@ const MathField = forwardRef<HTMLElement, MathFieldProps>(
               type="button"
               variant="outline"
               size="sm"
-              onClick={() => insertMath('^{\\placeholder{}}')}
+              onClick={() => insertMath('^{\\\\placeholder{}}')}
               title="Insert Superscript"
               className="h-8 px-2"
             >
@@ -497,7 +507,7 @@ const MathField = forwardRef<HTMLElement, MathFieldProps>(
               type="button"
               variant="outline"
               size="sm"
-              onClick={() => insertMath('_{\\placeholder{}}')}
+              onClick={() => insertMath('_{\\\\placeholder{}}')}
               title="Insert Subscript"
               className="h-8 px-2"
             >
@@ -507,7 +517,7 @@ const MathField = forwardRef<HTMLElement, MathFieldProps>(
               type="button"
               variant="outline"
               size="sm"
-              onClick={() => insertMath('\\int_{\\placeholder{a}}^{\\placeholder{b}} \\placeholder{f(x)} \\, dx')}
+              onClick={() => insertMath('\\int_{\\\\placeholder{a}}^{\\\\placeholder{b}} \\\\placeholder{f(x)} \\, dx')}
               title="Insert Integral"
               className="h-8 px-2"
             >
@@ -517,7 +527,7 @@ const MathField = forwardRef<HTMLElement, MathFieldProps>(
               type="button"
               variant="outline"
               size="sm"
-              onClick={() => insertMath('\\sum_{\\placeholder{n=1}}^{\\placeholder{\\infty}} \\placeholder{}')}
+              onClick={() => insertMath('\\sum_{\\\\placeholder{n=1}}^{\\\\placeholder{\\infty}} \\\\placeholder{}')}
               title="Insert Sum"
               className="h-8 px-2"
             >
@@ -527,7 +537,7 @@ const MathField = forwardRef<HTMLElement, MathFieldProps>(
               type="button"
               variant="outline"
               size="sm"
-              onClick={() => insertMath('\\log_{\\placeholder{}} \\placeholder{}')}
+              onClick={() => insertMath('\\log_{\\\\placeholder{}} \\\\placeholder{}')}
               title="Insert Logarithm"
               className="h-8 px-2"
             >
@@ -537,7 +547,7 @@ const MathField = forwardRef<HTMLElement, MathFieldProps>(
               type="button"
               variant="outline"
               size="sm"
-              onClick={() => insertMath('\\sin \\placeholder{}')}
+              onClick={() => insertMath('\\sin \\\\placeholder{}')}
               title="Insert Sine"
               className="h-8 px-2"
             >
@@ -547,7 +557,7 @@ const MathField = forwardRef<HTMLElement, MathFieldProps>(
               type="button"
               variant="outline"
               size="sm"
-              onClick={() => insertMath('\\cos \\placeholder{}')}
+              onClick={() => insertMath('\\cos \\\\placeholder{}')}
               title="Insert Cosine"
               className="h-8 px-2"
             >
@@ -557,7 +567,7 @@ const MathField = forwardRef<HTMLElement, MathFieldProps>(
               type="button"
               variant="outline"
               size="sm"
-              onClick={() => insertMath('\\begin{pmatrix} \\placeholder{} & \\placeholder{} \\\\ \\placeholder{} & \\placeholder{} \\end{pmatrix}')}
+              onClick={() => insertMath('\\begin{pmatrix} \\\\placeholder{} & \\\\placeholder{} \\\\ \\\\placeholder{} & \\\\placeholder{} \end{pmatrix}')}
               title="Insert 2×2 Matrix"
               className="h-8 px-2"
             >
@@ -604,7 +614,7 @@ const MathField = forwardRef<HTMLElement, MathFieldProps>(
             className="absolute right-1 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0 z-50 hover:bg-gray-100 dark:hover:bg-gray-800"
             onClick={toggleVirtualKeyboard}
             data-testid="toggle-virtual-keyboard"
-            style={{ 
+            style={{
               zIndex: 9999,
               position: 'relative',
               pointerEvents: 'auto'

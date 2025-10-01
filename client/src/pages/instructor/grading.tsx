@@ -80,19 +80,19 @@ function SubjectGradesCard({
   const examCoeff = subjectSettings ? Number(subjectSettings.examCoefficient) : 0.6;
 
   return (
-    <Card className={`mb-6 ${isFinalized ? 'border-blue-200 bg-blue-50' : ''}`}>
+    <Card className={`mb-6 ${isFinalized ? 'border-blue-200 bg-blue-50 dark:border-blue-900 dark:bg-blue-900/20' : ''}`}>
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
             <CardTitle className="flex items-center gap-2">
               {subject.subjectName}
               {isFinalized && (
-                <Badge variant="outline" className="bg-blue-100 text-blue-800">
+                <Badge variant="outline" className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
                   Finalized
                 </Badge>
               )}
             </CardTitle>
-            <p className="text-sm text-gray-600 mt-1">
+            <p className="text-sm text-muted-foreground mt-1">
               Formula: {(assignmentCoeff * 100).toFixed(0)}% Assignments + {(examCoeff * 100).toFixed(0)}% Exams
               {isFinalized && " (locked coefficients)"}
             </p>
@@ -160,18 +160,18 @@ function SubjectGradesCard({
                     <div className="text-sm">
                       {grade.totalAssignmentScore}/{grade.totalAssignmentMaxScore}
                       <br />
-                      <span className="text-gray-500">({assignmentPercentage}%)</span>
+                      <span className="text-muted-foreground">({assignmentPercentage}%)</span>
                     </div>
                   </TableCell>
                   <TableCell>
                     <div className="text-sm">
                       {grade.totalExamScore}/{grade.totalExamMaxScore}
                       <br />
-                      <span className="text-gray-500">({examPercentage}%)</span>
+                      <span className="text-muted-foreground">({examPercentage}%)</span>
                     </div>
                   </TableCell>
                   <TableCell>
-                    <div className={`font-bold text-lg ${isFinalized ? 'text-blue-700' : ''}`}>
+                    <div className={`font-bold text-lg ${isFinalized ? 'text-blue-600 dark:text-blue-400' : ''}`}>
                       {finalGrade.toFixed(1)}%
                     </div>
                   </TableCell>
@@ -333,8 +333,8 @@ function GradingList() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl md:text-2xl font-bold">{t('grading.title')}</h1>
-        <p className="text-gray-600 text-sm md:text-base">{t('grading.description')}</p>
+        <h1 className="text-xl md:text-2xl font-bold text-foreground">{t('grading.title')}</h1>
+        <p className="text-muted-foreground text-sm md:text-base">{t('grading.description')}</p>
       </div>
 
       <Tabs defaultValue="exams" className="w-full">
@@ -364,8 +364,8 @@ function GradingList() {
             </CardHeader>
             <CardContent>
               {!examSubmissions || examSubmissions.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
-                  <FileText className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                <div className="text-center py-8 text-muted-foreground">
+                  <FileText className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
                   <p>{t('grading.noExamSubmissions')}</p>
                 </div>
               ) : (
@@ -426,8 +426,8 @@ function GradingList() {
             </CardHeader>
             <CardContent>
               {!homeworkSubmissions || homeworkSubmissions.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
-                  <Notebook className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                <div className="text-center py-8 text-muted-foreground">
+                  <Notebook className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
                   <p>{t('grading.noHomeworkSubmissions')}</p>
                 </div>
               ) : (
@@ -484,16 +484,16 @@ function GradingList() {
         <TabsContent value="final-grades">
           <div className="space-y-4">
             <div>
-              <h2 className="text-xl font-semibold">{t('grading.finalGradesByCourse')}</h2>
-              <p className="text-sm text-gray-600 mt-1">
+              <h2 className="text-xl font-semibold text-foreground">{t('grading.finalGradesByCourse')}</h2>
+              <p className="text-sm text-muted-foreground mt-1">
 {t('grading.finalizeGradesMessage')}
               </p>
             </div>
             
             {!studentGrades || studentGrades.length === 0 ? (
               <Card>
-                <CardContent className="text-center py-8 text-gray-500">
-                  <Calculator className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                <CardContent className="text-center py-8 text-muted-foreground">
+                  <Calculator className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
                   <p>No student grades available</p>
                   <p className="text-sm mt-2">Students need to complete and receive graded assignments and exams to see final grades</p>
                 </CardContent>
@@ -853,11 +853,11 @@ function SubmissionGrading({ submissionId, isHomeworkGrading }: { submissionId: 
 
   const getQuestionTypeColor = (type: string | undefined) => {
     switch (type) {
-      case 'multiple_choice': return 'bg-blue-100 text-blue-800';
-      case 'short_answer': return 'bg-green-100 text-green-800';
-      case 'essay': return 'bg-orange-100 text-orange-800';
-      case 'fill_blank': return 'bg-purple-100 text-purple-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'multiple_choice': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
+      case 'short_answer': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+      case 'essay': return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200';
+      case 'fill_blank': return 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200';
+      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200';
     }
   };
 
@@ -895,10 +895,10 @@ function SubmissionGrading({ submissionId, isHomeworkGrading }: { submissionId: 
           Back to Grading Center
         </Button>
         <div className="flex-1">
-          <h1 className="text-2xl font-bold">Manual Grading</h1>
-          <p className="text-gray-600">Review and grade student {isHomeworkGrading ? 'homework' : 'submission'}</p>
+          <h1 className="text-2xl font-bold text-foreground">Manual Grading</h1>
+          <p className="text-muted-foreground">Review and grade student {isHomeworkGrading ? 'homework' : 'submission'}</p>
         </div>
-        <Badge variant="outline" className="bg-yellow-50 text-yellow-800">
+        <Badge variant="outline" className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
           Pending Review
         </Badge>
       </div>
@@ -914,18 +914,18 @@ function SubmissionGrading({ submissionId, isHomeworkGrading }: { submissionId: 
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
             <div className="flex justify-between">
-              <span className="text-gray-600">Student:</span>
+              <span className="text-muted-foreground">Student:</span>
               <span className="font-medium flex items-center gap-1">
                 <User className="h-4 w-4" />
                 {student.firstName} {student.lastName}
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-600">{isHomeworkGrading ? 'Homework:' : 'Exam:'}</span>
+              <span className="text-muted-foreground">{isHomeworkGrading ? 'Homework:' : 'Exam:'}</span>
               <span className="font-medium">{assignmentData.title}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-600">Submitted:</span>
+              <span className="text-muted-foreground">Submitted:</span>
               <span className="font-medium flex items-center gap-1">
                 <Clock className="h-4 w-4" />
                 {formatDetailedSubmissionTime(submission.submittedAt)}
@@ -939,14 +939,14 @@ function SubmissionGrading({ submissionId, isHomeworkGrading }: { submissionId: 
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Award className="h-4 w-4 text-yellow-600" />
-                  <span className="text-sm font-medium text-gray-700">Extra Credit Applied:</span>
+                  <span className="text-sm font-medium text-foreground">Extra Credit Applied:</span>
                 </div>
-                <Badge variant="secondary" className="bg-yellow-50 text-yellow-800" data-testid="text-extra-credit-total">
+                <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200" data-testid="text-extra-credit-total">
                   <Award className="h-3 w-3 mr-1" />
                   +{totalExtraCredits.toFixed(1)} points
                 </Badge>
               </div>
-              <div className="mt-2 text-xs text-gray-600">
+              <div className="mt-2 text-xs text-muted-foreground">
                 <span data-testid="text-base-score">Base Score: {submission.totalScore || '0'}</span>
                 <span className="mx-2">•</span>
                 <span data-testid="text-final-score">
@@ -961,7 +961,7 @@ function SubmissionGrading({ submissionId, isHomeworkGrading }: { submissionId: 
             <div className="mt-4 pt-4 border-t">
               <div className="flex items-center gap-2 mb-3">
                 <Shield className="h-4 w-4 text-blue-600" />
-                <span className="text-sm font-medium text-gray-700">Proctoring Information</span>
+                <span className="text-sm font-medium text-foreground">Proctoring Information</span>
               </div>
               
               {(() => {
@@ -978,7 +978,7 @@ function SubmissionGrading({ submissionId, isHomeworkGrading }: { submissionId: 
                     {/* Summary */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
                       <div className="flex justify-between">
-                        <span className="text-gray-600">Total Violations:</span>
+                        <span className="text-muted-foreground">Total Violations:</span>
                         <Badge 
                           variant={totalViolations === 0 ? "secondary" : totalViolations >= 3 ? "destructive" : "outline"}
                           className="text-xs"
@@ -988,7 +988,7 @@ function SubmissionGrading({ submissionId, isHomeworkGrading }: { submissionId: 
                         </Badge>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-gray-600">Auto-terminated:</span>
+                        <span className="text-muted-foreground">Auto-terminated:</span>
                         <Badge 
                           variant={wasTerminated ? "destructive" : "secondary"}
                           className="text-xs"
@@ -998,7 +998,7 @@ function SubmissionGrading({ submissionId, isHomeworkGrading }: { submissionId: 
                         </Badge>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-gray-600">Status:</span>
+                        <span className="text-muted-foreground">Status:</span>
                         <Badge 
                           variant={totalViolations === 0 ? "default" : totalViolations >= 3 ? "destructive" : "outline"}
                           className="text-xs"
@@ -1012,21 +1012,21 @@ function SubmissionGrading({ submissionId, isHomeworkGrading }: { submissionId: 
                     {/* Violation Details */}
                     {violations.length > 0 && (
                       <div className="mt-3">
-                        <h4 className="text-xs font-medium text-gray-700 mb-2">Violation Details:</h4>
+                        <h4 className="text-xs font-medium text-foreground mb-2">Violation Details:</h4>
                         <div className="space-y-2 max-h-32 overflow-y-auto">
                           {violations.map((violation: any, index: number) => (
                             <div 
                               key={index}
-                              className="flex items-center justify-between text-xs p-2 bg-gray-50 dark:bg-gray-800/50 rounded"
+                              className="flex items-center justify-between text-xs p-2 bg-muted/50 rounded"
                               data-testid={`proctoring-violation-${index}`}
                             >
                               <div className="flex items-center gap-2">
                                 <Badge variant="outline" className="text-xs">
                                   {violation.type?.replace('_', ' ').toUpperCase()}
                                 </Badge>
-                                <span className="text-gray-600">{violation.description}</span>
+                                <span className="text-muted-foreground">{violation.description}</span>
                               </div>
-                              <span className="text-gray-500">
+                              <span className="text-muted-foreground">
                                 {new Date(violation.timestamp).toLocaleTimeString()}
                               </span>
                             </div>
@@ -1037,7 +1037,7 @@ function SubmissionGrading({ submissionId, isHomeworkGrading }: { submissionId: 
 
                     {/* Termination Notice */}
                     {wasTerminated && (
-                      <div className="mt-3 p-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded">
+                      <div className="mt-3 p-2 bg-red-100 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded">
                         <div className="flex items-center gap-2">
                           <AlertTriangle className="h-4 w-4 text-red-600" />
                           <span className="text-xs font-medium text-red-800 dark:text-red-200">
@@ -1073,7 +1073,7 @@ function SubmissionGrading({ submissionId, isHomeworkGrading }: { submissionId: 
                         <Badge className={getQuestionTypeColor(answer.question.questionType)}>
                           {formatQuestionType(answer.question.questionType)}
                         </Badge>
-                        <span className="text-sm text-gray-600">
+                        <span className="text-sm text-muted-foreground">
                           {parseFloat(answer.score || '0')} / {parseFloat(answer.maxScore || '0')} points
                         </span>
                       </div>
@@ -1083,9 +1083,9 @@ function SubmissionGrading({ submissionId, isHomeworkGrading }: { submissionId: 
                   <div className="text-sm">
                     {answer.question.questionType === 'multiple_choice' ? (
                       <>
-                        <span className="text-gray-600">Selected: </span>
+                        <span className="text-muted-foreground">Selected: </span>
                         <span className="font-medium">{answer.selectedOption}</span>
-                        <span className="text-gray-600"> | Correct: </span>
+                        <span className="text-muted-foreground"> | Correct: </span>
                         <span className="font-medium">{answer.question.correctAnswer}</span>
                       </>
                     ) : answer.question.questionType === 'matching' ? (
@@ -1120,7 +1120,7 @@ function SubmissionGrading({ submissionId, isHomeworkGrading }: { submissionId: 
                                     {studentSelection}
                                   </span>
                                   {studentSelection !== pair.right && (
-                                    <span className="text-gray-500">
+                                    <span className="text-muted-foreground">
                                       (✓ {pair.right})
                                     </span>
                                   )}
@@ -1133,7 +1133,7 @@ function SubmissionGrading({ submissionId, isHomeworkGrading }: { submissionId: 
                         })()}
                       </div>
                     ) : (
-                      <span className="text-gray-600">Auto-graded</span>
+                      <span className="text-muted-foreground">Auto-graded</span>
                     )}
                   </div>
                 </div>
@@ -1161,7 +1161,7 @@ function SubmissionGrading({ submissionId, isHomeworkGrading }: { submissionId: 
                       <Badge className={getQuestionTypeColor(answer.question.questionType)}>
                         {formatQuestionType(answer.question.questionType)}
                       </Badge>
-                      <span className="text-sm text-gray-600">
+                      <span className="text-sm text-muted-foreground">
                         Max: {parseFloat(answer.maxScore || '0')} points
                       </span>
                     </div>
@@ -1171,11 +1171,11 @@ function SubmissionGrading({ submissionId, isHomeworkGrading }: { submissionId: 
 
                 {/* Student Answer */}
                 <div className="mb-4">
-                  <h5 className="font-medium text-gray-700 mb-2">Student Answer:</h5>
+                  <h5 className="font-medium text-foreground mb-2">Student Answer:</h5>
                   
                   {/* Text Answer */}
                   {answer.answerText && (
-                    <div className="bg-gray-50 p-3 rounded border mb-3">
+                    <div className="bg-muted/50 p-3 rounded border mb-3">
                       {answer.question.questionType === 'matching' ? (
                         <div className="space-y-2">
                           {(() => {
@@ -1201,14 +1201,14 @@ function SubmissionGrading({ submissionId, isHomeworkGrading }: { submissionId: 
                               return questionPairs.map((pair: any, index: number) => {
                                 const studentSelection = studentAnswer[index] || 'No answer';
                                 return (
-                                  <div key={index} className="flex items-center justify-between p-2 bg-white rounded border">
+                                  <div key={index} className="flex items-center justify-between p-2 bg-card rounded border">
                                     <span className="font-medium">{pair.left}</span>
-                                    <span className="text-gray-600">→</span>
+                                    <span className="text-muted-foreground">→</span>
                                     <span className={`font-medium ${studentSelection === pair.right ? 'text-green-600' : 'text-red-600'}`}>
                                       {studentSelection}
                                     </span>
                                     {studentSelection !== pair.right && (
-                                      <span className="text-sm text-gray-500">
+                                      <span className="text-sm text-muted-foreground">
                                         (Correct: {pair.right})
                                       </span>
                                     )}
@@ -1230,7 +1230,7 @@ function SubmissionGrading({ submissionId, isHomeworkGrading }: { submissionId: 
                           {(() => {
                             try {
                               if (!answer.answerText) {
-                                return <span className="text-gray-500">No answer provided</span>;
+                                return <span className="text-muted-foreground">No answer provided</span>;
                               }
                               
                               const studentAnswer = typeof answer.answerText === 'string' 
@@ -1285,10 +1285,10 @@ function SubmissionGrading({ submissionId, isHomeworkGrading }: { submissionId: 
                   
                   {/* File Attachment */}
                   {answer.attachmentUrl && (
-                    <div className="bg-blue-50 p-3 rounded border mb-3">
+                    <div className="bg-blue-100 dark:bg-blue-900/20 p-3 rounded border mb-3">
                       <div className="flex items-center gap-2">
                         <Paperclip className="h-4 w-4 text-blue-600" />
-                        <span className="text-sm font-medium text-blue-900">File Attachment:</span>
+                        <span className="text-sm font-medium text-blue-800 dark:text-blue-200">File Attachment:</span>
                       </div>
                       <div className="mt-2">
                         <Button
@@ -1313,10 +1313,10 @@ function SubmissionGrading({ submissionId, isHomeworkGrading }: { submissionId: 
 
                 {/* Grading Section */}
                 <div className="border-t pt-4">
-                  <h5 className="font-medium text-gray-700 mb-3">Grade This Answer:</h5>
+                  <h5 className="font-medium text-foreground mb-3">Grade This Answer:</h5>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-foreground mb-1">
                         Score (out of {parseFloat(answer.maxScore || '0')})
                       </label>
                       <Input
@@ -1330,7 +1330,7 @@ function SubmissionGrading({ submissionId, isHomeworkGrading }: { submissionId: 
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm font-medium text-foreground mb-1">
                         Feedback
                       </label>
                       <Textarea
@@ -1393,7 +1393,7 @@ function SubmissionGrading({ submissionId, isHomeworkGrading }: { submissionId: 
           <div className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-foreground mb-1">
                   Points
                 </label>
                 <Input
@@ -1407,7 +1407,7 @@ function SubmissionGrading({ submissionId, isHomeworkGrading }: { submissionId: 
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-foreground mb-1">
                   Reason
                 </label>
                 <Input
@@ -1442,12 +1442,12 @@ function SubmissionGrading({ submissionId, isHomeworkGrading }: { submissionId: 
             {/* Existing Extra Credits List */}
             {extraCredits && extraCredits.length > 0 && (
               <div className="mt-6">
-                <h4 className="text-sm font-medium text-gray-700 mb-3">Existing Extra Credits</h4>
+                <h4 className="text-sm font-medium text-foreground mb-3">Existing Extra Credits</h4>
                 <div className="space-y-2">
                   {extraCredits.map((credit: any) => (
                     <div 
                       key={credit.id} 
-                      className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg border"
+                      className="flex items-center justify-between p-3 bg-yellow-100 dark:bg-yellow-900/20 rounded-lg border"
                       data-testid={`row-ec-${credit.id}`}
                     >
                       <div className="flex-1">
@@ -1455,8 +1455,8 @@ function SubmissionGrading({ submissionId, isHomeworkGrading }: { submissionId: 
                           <Award className="h-4 w-4 text-yellow-600" />
                           <span className="font-medium">+{parseFloat(credit.points).toFixed(1)} points</span>
                         </div>
-                        <p className="text-sm text-gray-600 mt-1">{credit.reason}</p>
-                        <p className="text-xs text-gray-500 mt-1">
+                        <p className="text-sm text-muted-foreground mt-1">{credit.reason}</p>
+                        <p className="text-xs text-muted-foreground mt-1">
                           Added by {credit.grantedBy} on {new Date(credit.grantedAt).toLocaleDateString()}
                         </p>
                       </div>
@@ -1465,7 +1465,7 @@ function SubmissionGrading({ submissionId, isHomeworkGrading }: { submissionId: 
                         size="sm"
                         onClick={() => deleteExtraCreditMutation.mutate(credit.id)}
                         disabled={deleteExtraCreditMutation.isPending}
-                        className="text-red-600 hover:text-red-700"
+                        className="text-destructive hover:text-destructive-foreground"
                         data-testid={`button-delete-ec-${credit.id}`}
                       >
                         Remove
@@ -1485,14 +1485,14 @@ function SubmissionGrading({ submissionId, isHomeworkGrading }: { submissionId: 
           <div className="flex justify-between items-center">
             <div>
               <h3 className="font-medium">Ready to finalize?</h3>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-muted-foreground">
                 Once finalized, grades will be published to the student and cannot be changed.
               </p>
             </div>
             <Button
               onClick={finalizeSubmission}
               disabled={finalizeSubmissionMutation.isPending}
-              className="bg-green-600 hover:bg-green-700"
+              className="bg-green-600 hover:bg-green-700 text-white"
             >
               <Award className="h-4 w-4 mr-2" />
               Finalize Grades
@@ -1658,8 +1658,8 @@ function ExtraCreditsManagement() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-semibold">{t('extraCredits.title')}</h2>
-        <p className="text-sm text-gray-600 mt-1">{t('extraCredits.description')}</p>
+        <h2 className="text-xl font-semibold text-foreground">{t('extraCredits.title')}</h2>
+        <p className="text-sm text-muted-foreground mt-1">{t('extraCredits.description')}</p>
       </div>
 
       {/* Add Extra Credit Form */}
@@ -1753,8 +1753,8 @@ function ExtraCreditsManagement() {
               <p>{t('extraCredits.loading')}</p>
             </div>
           ) : !allExtraCredits || allExtraCredits.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
-              <Star className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+            <div className="text-center py-8 text-muted-foreground">
+              <Star className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
               <p>{t('extraCredits.noExtraCredits')}</p>
               <p className="text-sm mt-2">{t('extraCredits.noExtraCreditsMessage')}</p>
             </div>
@@ -1784,7 +1784,7 @@ function ExtraCreditsManagement() {
                       <div className="font-medium">{credit.subjectName || credit.subject?.name}</div>
                     </TableCell>
                     <TableCell>
-                      <Badge variant="secondary" className="bg-green-100 text-green-800">
+                      <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
                         +{credit.points}
                       </Badge>
                     </TableCell>
@@ -1794,10 +1794,10 @@ function ExtraCreditsManagement() {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <div className="text-sm text-gray-600">{credit.grantedByName || credit.granter?.firstName}</div>
+                      <div className="text-sm text-muted-foreground">{credit.grantedByName || credit.granter?.firstName}</div>
                     </TableCell>
                     <TableCell>
-                      <div className="text-sm text-gray-600">
+                      <div className="text-sm text-muted-foreground">
                         {credit.grantedAt ? new Date(credit.grantedAt).toLocaleDateString() : ''}
                       </div>
                     </TableCell>
@@ -1830,7 +1830,7 @@ function ExtraCreditsManagement() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete} className="bg-red-600 hover:bg-red-700">
+            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
               {t('extraCredits.delete')}
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -1878,7 +1878,7 @@ export default function GradingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       <Navbar />
       <div className="flex">
         <Sidebar />
