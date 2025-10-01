@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "@/hooks/useTranslation";
 import { apiRequest } from "@/lib/queryClient";
 import { Users, Shield, HelpCircle, Plus, Edit, Trash2, Eye, EyeOff } from "lucide-react";
 import CreateAdminQuestionModal from "@/components/modals/create-admin-question-modal";
@@ -14,6 +15,7 @@ import Navbar from "@/components/layout/navbar";
 import Sidebar from "@/components/layout/sidebar";
 
 export default function AdminPage() {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState("users");
@@ -37,7 +39,7 @@ export default function AdminPage() {
       if (questionFilters.visibilityType !== 'all') params.append('visibilityType', questionFilters.visibilityType);
       
       const response = await fetch(`/api/admin/questions?${params}`);
-      if (!response.ok) throw new Error('Failed to fetch admin questions');
+      if (!response.ok) throw new Error(t('admin.fetchQuestionsError'));
       return response.json();
     },
   });
@@ -50,15 +52,15 @@ export default function AdminPage() {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
       toast({
-        title: "Success",
-        description: "User role updated successfully",
+        title: t('common.success'),
+        description: t('admin.roleUpdateSuccess'),
       });
     },
     onError: (error) => {
       console.error("Error updating role:", error);
       toast({
-        title: "Error",
-        description: "Failed to update user role",
+        title: t('common.error'),
+        description: t('admin.roleUpdateError'),
         variant: "destructive",
       });
     },
@@ -71,15 +73,15 @@ export default function AdminPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/questions"] });
       toast({
-        title: "Success",
-        description: "Question deleted successfully",
+        title: t('common.success'),
+        description: t('admin.questionDeleteSuccess'),
       });
     },
     onError: (error) => {
       console.error("Error deleting question:", error);
       toast({
-        title: "Error",
-        description: "Failed to delete question",
+        title: t('common.error'),
+        description: t('admin.questionDeleteError'),
         variant: "destructive",
       });
     },
@@ -90,16 +92,16 @@ export default function AdminPage() {
   };
 
   const handleDeleteQuestion = (questionId: number) => {
-    if (confirm("Are you sure you want to delete this question?")) {
+    if (confirm(t('admin.deleteConfirmation'))) {
       deleteQuestionMutation.mutate(questionId);
     }
   };
 
   const getVisibilityBadge = (question: any) => {
     if (question.visibilityType === 'all_instructors') {
-      return <Badge variant="default" className="bg-green-100 text-green-800"><Eye className="w-3 h-3 mr-1" />All Instructors</Badge>;
+      return <Badge variant="default" className="bg-green-100 text-green-800"><Eye className="w-3 h-3 mr-1" />{t('admin.allInstructors')}</Badge>;
     } else {
-      return <Badge variant="secondary" className="bg-orange-100 text-orange-800"><EyeOff className="w-3 h-3 mr-1" />Specific Only</Badge>;
+      return <Badge variant="secondary" className="bg-orange-100 text-orange-800"><EyeOff className="w-3 h-3 mr-1" />{t('admin.specificOnly')}</Badge>;
     }
   };
 
@@ -128,10 +130,10 @@ export default function AdminPage() {
             <div className="mb-8">
               <div className="flex items-center gap-3 mb-2">
                 <Shield className="h-6 w-6 text-blue-600" />
-                <h1 className="text-2xl font-bold text-gray-900">Admin Panel</h1>
+                <h1 className="text-2xl font-bold text-gray-900">{t('admin.panelTitle')}</h1>
               </div>
               <p className="text-gray-600">
-                Manage user roles and create questions with visibility controls
+                {t('admin.panelDescription')}
               </p>
             </div>
 
@@ -139,11 +141,11 @@ export default function AdminPage() {
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="users" className="flex items-center gap-2">
                   <Users className="w-4 h-4" />
-                  User Management
+                  {t('admin.userManagement')}
                 </TabsTrigger>
                 <TabsTrigger value="questions" className="flex items-center gap-2">
                   <HelpCircle className="w-4 h-4" />
-                  Question Management
+                  {t('admin.questionManagement')}
                 </TabsTrigger>
               </TabsList>
 
@@ -153,10 +155,10 @@ export default function AdminPage() {
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <Users className="h-5 w-5" />
-                      All Users
+                      {t('admin.allUsers')}
                     </CardTitle>
                     <CardDescription>
-                      Manage user roles to test different access levels in the application
+                      {t('admin.userManagementDescription')}
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
@@ -177,7 +179,7 @@ export default function AdminPage() {
                                 <p className="font-medium text-gray-900">
                                   {user.firstName && user.lastName
                                     ? `${user.firstName} ${user.lastName}`
-                                    : user.email || `User ${user.id}`}
+                                    : user.email || t('admin.user', [user.id])}
                                 </p>
                                 <Badge 
                                   variant={
@@ -189,13 +191,13 @@ export default function AdminPage() {
                                     user.role === "admin" ? "bg-purple-100 text-purple-800" : ""
                                   }
                                 >
-                                  {user.role === "instructor" ? "Instructeur" : 
-                                   user.role === "admin" ? "Admin" : 
+                                  {user.role === "instructor" ? t('admin.instructorRole') : 
+                                   user.role === "admin" ? t('admin.adminRole') : 
                                    user.role}
                                 </Badge>
                               </div>
                               <p className="text-sm text-gray-500">{user.email}</p>
-                              <p className="text-xs text-gray-400">ID: {user.id}</p>
+                              <p className="text-xs text-gray-400">{t('admin.userId', [user.id])}</p>
                             </div>
                           </div>
                           <div className="flex items-center gap-3">
@@ -208,9 +210,9 @@ export default function AdminPage() {
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="student">Student</SelectItem>
-                                <SelectItem value="instructor">Instructeur</SelectItem>
-                                <SelectItem value="admin">Admin</SelectItem>
+                                <SelectItem value="student">{t('admin.studentRole')}</SelectItem>
+                                <SelectItem value="instructor">{t('admin.instructorRole')}</SelectItem>
+                                <SelectItem value="admin">{t('admin.adminRole')}</SelectItem>
                               </SelectContent>
                             </Select>
                           </div>
@@ -220,7 +222,7 @@ export default function AdminPage() {
                       {users.length === 0 && (
                         <div className="text-center py-8 text-gray-500">
                           <Users className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                          <p>No users found. Users will appear here after they log in.</p>
+                          <p>{t('admin.noUsersFound')}</p>
                         </div>
                       )}
                     </div>
@@ -229,40 +231,40 @@ export default function AdminPage() {
 
                 <Card className="mt-6">
                   <CardHeader>
-                    <CardTitle>Testing Instructions</CardTitle>
+                    <CardTitle>{t('admin.testingInstructions')}</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="bg-blue-50 p-4 rounded-lg">
-                      <h3 className="font-medium text-blue-900 mb-2">How to Test Different Roles:</h3>
+                      <h3 className="font-medium text-blue-900 mb-2">{t('admin.howToTest')}</h3>
                       <ol className="list-decimal list-inside space-y-2 text-sm text-blue-800">
-                        <li>Log in with your Replit account (you'll appear in the user list above)</li>
-                        <li>Use this page to change your role to "instructor" or "student"</li>
-                        <li>Navigate back to the home page to see the role-specific interface</li>
-                        <li>Test instructor features: create questions, exams, and view analytics</li>
-                        <li>Test student features: take exams and view grades</li>
+                        <li>{t('admin.loginInstruction')}</li>
+                        <li>{t('admin.changeRoleInstruction')}</li>
+                        <li>{t('admin.navigateInstruction')}</li>
+                        <li>{t('admin.testInstructorFeatures')}</li>
+                        <li>{t('admin.testStudentFeatures')}</li>
                       </ol>
                     </div>
                     
                     <div className="bg-green-50 p-4 rounded-lg">
-                      <h3 className="font-medium text-green-900 mb-2">Role Differences:</h3>
+                      <h3 className="font-medium text-green-900 mb-2">{t('admin.roleDifferences')}</h3>
                       <div className="grid md:grid-cols-2 gap-4 text-sm">
                         <div>
-                          <h4 className="font-medium text-green-800 mb-1">Instructor Role:</h4>
+                          <h4 className="font-medium text-green-800 mb-1">{t('admin.instructorRoleLabel')}</h4>
                           <ul className="list-disc list-inside text-green-700 space-y-1">
-                            <li>Question bank management</li>
-                            <li>Exam creation and settings</li>
-                            <li>Grading interface</li>
-                            <li>Analytics and reports</li>
-                            <li>Student management</li>
+                            <li>{t('admin.questionBankManagement')}</li>
+                            <li>{t('admin.examCreation')}</li>
+                            <li>{t('admin.gradingInterface')}</li>
+                            <li>{t('admin.analyticsReports')}</li>
+                            <li>{t('admin.studentManagement')}</li>
                           </ul>
                         </div>
                         <div>
-                          <h4 className="font-medium text-green-800 mb-1">Student Role:</h4>
+                          <h4 className="font-medium text-green-800 mb-1">{t('admin.studentRoleLabel')}</h4>
                           <ul className="list-disc list-inside text-green-700 space-y-1">
-                            <li>View available exams</li>
-                            <li>Take exams with timer</li>
-                            <li>View grades and feedback</li>
-                            <li>Assignment tracking</li>
+                            <li>{t('admin.viewExams')}</li>
+                            <li>{t('admin.takeExams')}</li>
+                            <li>{t('admin.viewGrades')}</li>
+                            <li>{t('admin.assignmentTracking')}</li>
                           </ul>
                         </div>
                       </div>
@@ -277,10 +279,10 @@ export default function AdminPage() {
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <HelpCircle className="h-5 w-5" />
-                      Admin Questions
+                      {t('admin.adminQuestions')}
                     </CardTitle>
                     <CardDescription>
-                      Create and manage questions with visibility controls for instructors
+                      {t('admin.adminQuestionsDescription')}
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
@@ -288,7 +290,7 @@ export default function AdminPage() {
                       <div className="flex justify-between items-center">
                         <div className="flex gap-4 items-center">
                           <Input
-                            placeholder="Search questions..."
+                            placeholder={t('admin.searchQuestions')}
                             value={questionFilters.search}
                             onChange={(e) => setQuestionFilters(prev => ({ ...prev, search: e.target.value }))}
                             className="w-64"
@@ -302,9 +304,9 @@ export default function AdminPage() {
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="all">All Categories</SelectItem>
-                              <SelectItem value="exam">Exam Questions</SelectItem>
-                              <SelectItem value="homework">Homework Questions</SelectItem>
+                              <SelectItem value="all">{t('admin.allCategories')}</SelectItem>
+                              <SelectItem value="exam">{t('admin.examQuestions')}</SelectItem>
+                              <SelectItem value="homework">{t('admin.homeworkQuestions')}</SelectItem>
                             </SelectContent>
                           </Select>
                           <Select
@@ -315,9 +317,9 @@ export default function AdminPage() {
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="all">All Visibility</SelectItem>
-                              <SelectItem value="all_instructors">All Instructors</SelectItem>
-                              <SelectItem value="specific_instructors">Specific Only</SelectItem>
+                              <SelectItem value="all">{t('admin.allVisibility')}</SelectItem>
+                              <SelectItem value="all_instructors">{t('admin.allInstructors')}</SelectItem>
+                              <SelectItem value="specific_instructors">{t('admin.specificOnly')}</SelectItem>
                             </SelectContent>
                           </Select>
                         </div>
@@ -327,7 +329,7 @@ export default function AdminPage() {
                           data-testid="button-create-admin-question"
                         >
                           <Plus className="w-4 h-4 mr-2" />
-                          Create Question
+                          {t('admin.createQuestion')}
                         </Button>
                       </div>
 
@@ -348,7 +350,7 @@ export default function AdminPage() {
                                 <div className="flex-1">
                                   <div className="flex items-center gap-2 mb-2">
                                     <h3 className="font-medium text-gray-900">
-                                      {question.title || `Question ${question.id}`}
+                                      {question.title || t('admin.questionId', [question.id])}
                                     </h3>
                                     <Badge variant="outline">{question.category}</Badge>
                                     {getVisibilityBadge(question)}
@@ -358,11 +360,11 @@ export default function AdminPage() {
                                     {question.questionText}
                                   </p>
                                   <div className="flex items-center gap-4 text-xs text-gray-500">
-                                    <span>Difficulty: {question.difficulty}</span>
-                                    <span>Points: {question.points}</span>
-                                    <span>Usage: {question.usageCount} times</span>
+                                    <span>{t('admin.difficultyLabel', [question.difficulty])}</span>
+                                    <span>{t('admin.pointsLabel', [question.points])}</span>
+                                    <span>{t('admin.usageLabel', [question.usageCount])}</span>
                                     {question.visibilityType === 'specific_instructors' && question.authorizedInstructorIds && (
-                                      <span>Authorized: {question.authorizedInstructorIds.length} instructor(s)</span>
+                                      <span>{t('admin.authorizedLabel', [question.authorizedInstructorIds.length])}</span>
                                     )}
                                   </div>
                                 </div>
@@ -384,7 +386,7 @@ export default function AdminPage() {
                           {adminQuestions.questions.length === 0 && (
                             <div className="text-center py-8 text-gray-500">
                               <HelpCircle className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                              <p>No admin questions found. Create your first question to get started.</p>
+                              <p>{t('admin.noAdminQuestions')}</p>
                             </div>
                           )}
                         </div>

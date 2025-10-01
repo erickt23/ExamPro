@@ -62,6 +62,7 @@ function SubjectGradesCard({
   finalizeLoading, 
   unfinalizeLoading 
 }: any) {
+  const { t } = useTranslation();
   const { data: finalizationStatus, isLoading: statusLoading } = useQuery({
     queryKey: [`/api/finalize-grades/${subject.subjectId}/status`],
     queryFn: async () => {
@@ -88,13 +89,13 @@ function SubjectGradesCard({
               {subject.subjectName}
               {isFinalized && (
                 <Badge variant="outline" className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                  Finalized
+                  {t('grading.finalized')}
                 </Badge>
               )}
             </CardTitle>
             <p className="text-sm text-muted-foreground mt-1">
-              Formula: {(assignmentCoeff * 100).toFixed(0)}% Assignments + {(examCoeff * 100).toFixed(0)}% Exams
-              {isFinalized && " (locked coefficients)"}
+              {t('grading.formula', [(assignmentCoeff * 100).toFixed(0), (examCoeff * 100).toFixed(0)])}
+              {isFinalized && t('grading.lockedCoefficients')}
             </p>
           </div>
           <div className="flex gap-2">
@@ -105,7 +106,7 @@ function SubjectGradesCard({
                 onClick={() => onUnfinalize(subject.subjectId)}
                 disabled={unfinalizeLoading}
               >
-                {unfinalizeLoading ? "Unfinalizing..." : "Unfinalize Grades"}
+                {unfinalizeLoading ? t('grading.unfinalizing') : t('grading.unfinalizeGrades')}
               </Button>
             ) : (
               <Button
@@ -113,7 +114,7 @@ function SubjectGradesCard({
                 onClick={() => onFinalize(subject.subjectId)}
                 disabled={finalizeLoading}
               >
-                {finalizeLoading ? "Finalizing..." : "Finalize Grades"}
+                {finalizeLoading ? t('grading.finalizing') : t('grading.finalizeGrades')}
               </Button>
             )}
           </div>
@@ -123,10 +124,10 @@ function SubjectGradesCard({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Student</TableHead>
-              <TableHead>Assignment Score</TableHead>
-              <TableHead>Exam Score</TableHead>
-              <TableHead>Final Grade</TableHead>
+              <TableHead>{t('grading.student')}</TableHead>
+              <TableHead>{t('grading.assignmentScore')}</TableHead>
+              <TableHead>{t('grading.examScore')}</TableHead>
+              <TableHead>{t('grading.finalGrade')}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -142,11 +143,11 @@ function SubjectGradesCard({
               
               const assignmentPercentage = grade.totalAssignmentMaxScore > 0 
                 ? ((grade.totalAssignmentScore / grade.totalAssignmentMaxScore) * 100).toFixed(1)
-                : "N/A";
+                : t('grading.notAvailable');
               
               const examPercentage = grade.totalExamMaxScore > 0 
                 ? ((grade.totalExamScore / grade.totalExamMaxScore) * 100).toFixed(1)
-                : "N/A";
+                : t('grading.notAvailable');
 
               return (
                 <TableRow key={`${grade.studentId}-${grade.subjectId}-${index}`}>
@@ -249,16 +250,16 @@ function GradingList() {
     },
     onSuccess: () => {
       toast({
-        title: "Grades Finalized",
-        description: "Course grades have been finalized and are now immune to coefficient changes.",
+        title: t('grading.finalizeGrades'),
+        description: t('grading.finalizeWarning'),
       });
       queryClient.invalidateQueries({ queryKey: ["/api/instructor-student-grades"] });
     },
     onError: (error) => {
       if (isUnauthorizedError(error)) {
         toast({
-          title: "Unauthorized",
-          description: "You are logged out. Logging in again...",
+          title: t('auth.unauthorized'),
+          description: t('auth.loggedOut'),
           variant: "destructive",
         });
         setTimeout(() => {
@@ -267,8 +268,8 @@ function GradingList() {
         return;
       }
       toast({
-        title: "Error",
-        description: "Failed to finalize grades.",
+        title: t('common.error'),
+        description: t('grading.failedToFinalize'),
         variant: "destructive",
       });
     },
@@ -280,16 +281,16 @@ function GradingList() {
     },
     onSuccess: () => {
       toast({
-        title: "Grades Unfinalized",
-        description: "Course grades are now editable and will reflect coefficient changes.",
+        title: t('grading.unfinalizeGrades'),
+        description: t('grading.unfinalizeWarning'),
       });
       queryClient.invalidateQueries({ queryKey: ["/api/instructor-student-grades"] });
     },
     onError: (error) => {
       if (isUnauthorizedError(error)) {
         toast({
-          title: "Unauthorized",
-          description: "You are logged out. Logging in again...",
+          title: t('auth.unauthorized'),
+          description: t('auth.loggedOut'),
           variant: "destructive",
         });
         setTimeout(() => {
@@ -298,8 +299,8 @@ function GradingList() {
         return;
       }
       toast({
-        title: "Error",
-        description: "Failed to unfinalize grades.",
+        title: t('common.error'),
+        description: t('grading.failedToUnfinalize'),
         variant: "destructive",
       });
     },
@@ -325,7 +326,7 @@ function GradingList() {
   if (examLoading || homeworkLoading || gradesLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-lg">Loading submissions and grades...</div>
+        <div className="text-lg">{t('grading.loadingSubmissions')}</div>
       </div>
     );
   }
@@ -408,7 +409,7 @@ function GradingList() {
                               className="flex items-center gap-2"
                             >
                               <Eye className="h-4 w-4" />
-                              Grade
+                              {t('grading.grade')}
                             </Button>
                             <Button
                               size="sm"
@@ -420,7 +421,7 @@ function GradingList() {
                               data-testid={`button-download-pdf-${submission.id}`}
                             >
                               <Download className="h-4 w-4" />
-                              PDF
+                              {t('grading.pdf')}
                             </Button>
                           </div>
                         </TableCell>
@@ -508,8 +509,8 @@ function GradingList() {
               <Card>
                 <CardContent className="text-center py-8 text-muted-foreground">
                   <Calculator className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
-                  <p>No student grades available</p>
-                  <p className="text-sm mt-2">Students need to complete and receive graded assignments and exams to see final grades</p>
+                  <p>{t('grading.noStudentGrades')}</p>
+                  <p className="text-sm mt-2">{t('grading.noStudentGradesDescription')}</p>
                 </CardContent>
               </Card>
             ) : (
@@ -627,8 +628,8 @@ function SubmissionGrading({ submissionId, isHomeworkGrading }: { submissionId: 
       
       if (!isAutoSave) {
         toast({
-          title: "Success",
-          description: "Grade saved successfully",
+          title: t('common.success'),
+          description: t('grading.saveGradeSuccess'),
         });
       }
       
@@ -642,8 +643,8 @@ function SubmissionGrading({ submissionId, isHomeworkGrading }: { submissionId: 
       
       if (isUnauthorizedError(error)) {
         toast({
-          title: "Unauthorized",
-          description: "You are logged out. Logging in again...",
+          title: t('auth.unauthorized'),
+          description: t('auth.loggedOut'),
           variant: "destructive",
         });
         setTimeout(() => {
@@ -652,8 +653,8 @@ function SubmissionGrading({ submissionId, isHomeworkGrading }: { submissionId: 
         return;
       }
       toast({
-        title: "Error",
-        description: "Failed to save grade",
+        title: t('common.error'),
+        description: t('grading.saveGradeError'),
         variant: "destructive",
       });
       
@@ -676,16 +677,16 @@ function SubmissionGrading({ submissionId, isHomeworkGrading }: { submissionId: 
       const queryKey = isHomeworkGrading ? ["/api/homework"] : ["/api/submissions"];
       queryClient.invalidateQueries({ queryKey });
       toast({
-        title: "Success",
-        description: `${isHomeworkGrading ? 'Homework' : 'Submission'} graded successfully!`,
+        title: t('common.success'),
+        description: `${isHomeworkGrading ? t('grading.homework') : t('grading.submission')} ${t('grading.gradedSuccess')}`,
       });
       navigate("/grading");
     },
     onError: (error: Error) => {
       if (isUnauthorizedError(error)) {
         toast({
-          title: "Unauthorized",
-          description: "You are logged out. Logging in again...",
+          title: t('auth.unauthorized'),
+          description: t('auth.loggedOut'),
           variant: "destructive",
         });
         setTimeout(() => {
@@ -694,8 +695,8 @@ function SubmissionGrading({ submissionId, isHomeworkGrading }: { submissionId: 
         return;
       }
       toast({
-        title: "Error",
-        description: "Failed to finalize submission",
+        title: t('common.error'),
+        description: t('grading.finalizeError'),
         variant: "destructive",
       });
     },
@@ -715,15 +716,15 @@ function SubmissionGrading({ submissionId, isHomeworkGrading }: { submissionId: 
       const submissionQueryKey = [isHomeworkGrading ? "/api/homework-submissions" : "/api/submissions", submissionId, "grade"];
       queryClient.invalidateQueries({ queryKey: submissionQueryKey });
       toast({
-        title: "Success",
-        description: "Extra credit added successfully",
+        title: t('common.success'),
+        description: t('extraCredits.creditAdded'),
       });
     },
     onError: (error: Error) => {
       if (isUnauthorizedError(error)) {
         toast({
-          title: "Unauthorized",
-          description: "You are logged out. Logging in again...",
+          title: t('auth.unauthorized'),
+          description: t('auth.loggedOut'),
           variant: "destructive",
         });
         setTimeout(() => {
@@ -732,8 +733,8 @@ function SubmissionGrading({ submissionId, isHomeworkGrading }: { submissionId: 
         return;
       }
       toast({
-        title: "Error",
-        description: "Failed to add extra credit",
+        title: t('common.error'),
+        description: t('extraCredits.failedToAdd'),
         variant: "destructive",
       });
     },
@@ -749,15 +750,15 @@ function SubmissionGrading({ submissionId, isHomeworkGrading }: { submissionId: 
       const submissionQueryKey = [isHomeworkGrading ? "/api/homework-submissions" : "/api/submissions", submissionId, "grade"];
       queryClient.invalidateQueries({ queryKey: submissionQueryKey });
       toast({
-        title: "Success",
-        description: "Extra credit removed successfully",
+        title: t('common.success'),
+        description: t('extraCredits.creditDeleted'),
       });
     },
     onError: (error: Error) => {
       if (isUnauthorizedError(error)) {
         toast({
-          title: "Unauthorized",
-          description: "You are logged out. Logging in again...",
+          title: t('auth.unauthorized'),
+          description: t('auth.loggedOut'),
           variant: "destructive",
         });
         setTimeout(() => {
@@ -766,8 +767,8 @@ function SubmissionGrading({ submissionId, isHomeworkGrading }: { submissionId: 
         return;
       }
       toast({
-        title: "Error",
-        description: "Failed to remove extra credit",
+        title: t('common.error'),
+        description: t('extraCredits.failedToDelete'),
         variant: "destructive",
       });
     },
@@ -878,7 +879,7 @@ function SubmissionGrading({ submissionId, isHomeworkGrading }: { submissionId: 
   if (submissionLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-lg">Loading submission details...</div>
+        <div className="text-lg">{t('grading.loadingSubmissionDetails')}</div>
       </div>
     );
   }
@@ -886,7 +887,7 @@ function SubmissionGrading({ submissionId, isHomeworkGrading }: { submissionId: 
   if (!submissionDetails) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-lg text-red-600">Submission not found</div>
+        <div className="text-lg text-red-600">{t('grading.submissionNotFound')}</div>
       </div>
     );
   }
@@ -906,14 +907,14 @@ function SubmissionGrading({ submissionId, isHomeworkGrading }: { submissionId: 
       <div className="flex items-center gap-4">
         <Button variant="ghost" onClick={() => navigate("/grading")}>
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Grading Center
+          {t('grading.backToGradingCenter')}
         </Button>
         <div className="flex-1">
-          <h1 className="text-2xl font-bold text-foreground">Manual Grading</h1>
-          <p className="text-muted-foreground">Review and grade student {isHomeworkGrading ? 'homework' : 'submission'}</p>
+          <h1 className="text-2xl font-bold text-foreground">{t('grading.manualGrading')}</h1>
+          <p className="text-muted-foreground">{t('grading.reviewSubmission', [isHomeworkGrading ? t('grading.homework') : t('grading.submission')])}</p>
         </div>
         <Badge variant="outline" className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
-          Pending Review
+          {t('grading.pendingReview')}
         </Badge>
       </div>
 
@@ -922,24 +923,24 @@ function SubmissionGrading({ submissionId, isHomeworkGrading }: { submissionId: 
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <FileText className="h-5 w-5" />
-            Submission Details
+            {t('grading.submissionDetails')}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Student:</span>
+              <span className="text-muted-foreground">{t('grading.studentLabel')}</span>
               <span className="font-medium flex items-center gap-1">
                 <User className="h-4 w-4" />
                 {student.firstName} {student.lastName}
               </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">{isHomeworkGrading ? 'Homework:' : 'Exam:'}</span>
+              <span className="text-muted-foreground">{isHomeworkGrading ? t('grading.homeworkLabel') : t('grading.examLabel')}</span>
               <span className="font-medium">{assignmentData.title}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Submitted:</span>
+              <span className="text-muted-foreground">{t('grading.submittedLabel')}</span>
               <span className="font-medium flex items-center gap-1">
                 <Clock className="h-4 w-4" />
                 {formatDetailedSubmissionTime(submission.submittedAt)}
@@ -953,18 +954,18 @@ function SubmissionGrading({ submissionId, isHomeworkGrading }: { submissionId: 
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Award className="h-4 w-4 text-yellow-600" />
-                  <span className="text-sm font-medium text-foreground">Extra Credit Applied:</span>
+                  <span className="text-sm font-medium text-foreground">{t('grading.extraCreditApplied')}</span>
                 </div>
                 <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200" data-testid="text-extra-credit-total">
                   <Award className="h-3 w-3 mr-1" />
-                  +{totalExtraCredits.toFixed(1)} points
+                  {t('grading.extraCreditPoints', [totalExtraCredits.toFixed(1)])}
                 </Badge>
               </div>
               <div className="mt-2 text-xs text-muted-foreground">
-                <span data-testid="text-base-score">Base Score: {submission.totalScore || '0'}</span>
+                <span data-testid="text-base-score">{t('grading.baseScore', [submission.totalScore || '0'])}</span>
                 <span className="mx-2">•</span>
                 <span data-testid="text-final-score">
-                  Final Score: {((parseFloat(submission.totalScore || '0')) + totalExtraCredits).toFixed(1)}
+                  {t('grading.finalScore', [((parseFloat(submission.totalScore || '0')) + totalExtraCredits).toFixed(1)])}
                 </span>
               </div>
             </div>
@@ -975,7 +976,7 @@ function SubmissionGrading({ submissionId, isHomeworkGrading }: { submissionId: 
             <div className="mt-4 pt-4 border-t">
               <div className="flex items-center gap-2 mb-3">
                 <Shield className="h-4 w-4 text-blue-600" />
-                <span className="text-sm font-medium text-foreground">Proctoring Information</span>
+                <span className="text-sm font-medium text-foreground">{t('grading.proctoringInfo')}</span>
               </div>
               
               {(() => {
@@ -992,7 +993,7 @@ function SubmissionGrading({ submissionId, isHomeworkGrading }: { submissionId: 
                     {/* Summary */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
                       <div className="flex justify-between">
-                        <span className="text-muted-foreground">Total Violations:</span>
+                        <span className="text-muted-foreground">{t('grading.totalViolations')}</span>
                         <Badge 
                           variant={totalViolations === 0 ? "secondary" : totalViolations >= 3 ? "destructive" : "outline"}
                           className="text-xs"
@@ -1002,23 +1003,23 @@ function SubmissionGrading({ submissionId, isHomeworkGrading }: { submissionId: 
                         </Badge>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-muted-foreground">Auto-terminated:</span>
+                        <span className="text-muted-foreground">{t('grading.autoTerminated')}</span>
                         <Badge 
                           variant={wasTerminated ? "destructive" : "secondary"}
                           className="text-xs"
                           data-testid="proctoring-terminated-status"
                         >
-                          {wasTerminated ? "Yes" : "No"}
+                          {wasTerminated ? t('grading.yes') : t('grading.no')}
                         </Badge>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-muted-foreground">Status:</span>
+                        <span className="text-muted-foreground">{t('grading.statusLabel')}</span>
                         <Badge 
                           variant={totalViolations === 0 ? "default" : totalViolations >= 3 ? "destructive" : "outline"}
                           className="text-xs"
                           data-testid="proctoring-overall-status"
                         >
-                          {totalViolations === 0 ? "Clean" : totalViolations >= 3 ? "High Risk" : "Low Risk"}
+                          {totalViolations === 0 ? t('grading.clean') : totalViolations >= 3 ? t('grading.highRisk') : t('grading.lowRisk')}
                         </Badge>
                       </div>
                     </div>
@@ -1026,7 +1027,7 @@ function SubmissionGrading({ submissionId, isHomeworkGrading }: { submissionId: 
                     {/* Violation Details */}
                     {violations.length > 0 && (
                       <div className="mt-3">
-                        <h4 className="text-xs font-medium text-foreground mb-2">Violation Details:</h4>
+                        <h4 className="text-xs font-medium text-foreground mb-2">{t('grading.violationDetails')}</h4>
                         <div className="space-y-2 max-h-32 overflow-y-auto">
                           {violations.map((violation: any, index: number) => (
                             <div 
@@ -1055,7 +1056,7 @@ function SubmissionGrading({ submissionId, isHomeworkGrading }: { submissionId: 
                         <div className="flex items-center gap-2">
                           <AlertTriangle className="h-4 w-4 text-red-600" />
                           <span className="text-xs font-medium text-red-800 dark:text-red-200">
-                            This exam was automatically terminated due to excessive proctoring violations.
+                            {t('grading.terminatedMessage')}
                           </span>
                         </div>
                       </div>
@@ -1074,7 +1075,7 @@ function SubmissionGrading({ submissionId, isHomeworkGrading }: { submissionId: 
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <CheckCircle className="h-5 w-5 text-green-600" />
-              Auto-graded Questions ({objectiveAnswers.length})
+              {t('grading.autoGradedQuestions', [objectiveAnswers.length])}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -1088,7 +1089,7 @@ function SubmissionGrading({ submissionId, isHomeworkGrading }: { submissionId: 
                           {formatQuestionType(answer.question.questionType)}
                         </Badge>
                         <span className="text-sm text-muted-foreground">
-                          {parseFloat(answer.score || '0')} / {parseFloat(answer.maxScore || '0')} points
+                          {t('grading.points', [parseFloat(answer.score || '0'), parseFloat(answer.maxScore || '0')])}
                         </span>
                       </div>
                       <h4 className="font-medium mb-2">{answer.question.questionText}</h4>
@@ -1097,9 +1098,9 @@ function SubmissionGrading({ submissionId, isHomeworkGrading }: { submissionId: 
                   <div className="text-sm">
                     {answer.question.questionType === 'multiple_choice' ? (
                       <>
-                        <span className="text-muted-foreground">Selected: </span>
+                        <span className="text-muted-foreground">{t('grading.selectedLabel')}</span>
                         <span className="font-medium">{answer.selectedOption}</span>
-                        <span className="text-muted-foreground"> | Correct: </span>
+                        <span className="text-muted-foreground">{t('grading.correctLabel')}</span>
                         <span className="font-medium">{answer.question.correctAnswer}</span>
                       </>
                     ) : answer.question.questionType === 'matching' ? (
@@ -1125,7 +1126,7 @@ function SubmissionGrading({ submissionId, isHomeworkGrading }: { submissionId: 
                             }
                             
                             return questionPairs.map((pair: any, index: number) => {
-                              const studentSelection = studentAnswer[index] || 'No answer';
+                              const studentSelection = studentAnswer[index] || t('grading.noAnswer');
                               return (
                                 <div key={index} className="flex items-center gap-2 text-xs">
                                   <span className="font-medium">{pair.left}</span>
@@ -1135,19 +1136,19 @@ function SubmissionGrading({ submissionId, isHomeworkGrading }: { submissionId: 
                                   </span>
                                   {studentSelection !== pair.right && (
                                     <span className="text-muted-foreground">
-                                      (✓ {pair.right})
+                                      {t('grading.correctAnswer', [pair.right])}
                                     </span>
                                   )}
                                 </div>
                               );
                             });
                           } catch (error) {
-                            return <span className="text-red-600">Error parsing answer</span>;
+                            return <span className="text-red-600">{t('grading.errorParsing')}</span>;
                           }
                         })()}
                       </div>
                     ) : (
-                      <span className="text-muted-foreground">Auto-graded</span>
+                      <span className="text-muted-foreground">{t('grading.autoGraded')}</span>
                     )}
                   </div>
                 </div>
@@ -1162,7 +1163,7 @@ function SubmissionGrading({ submissionId, isHomeworkGrading }: { submissionId: 
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Award className="h-5 w-5 text-orange-600" />
-            Questions Requiring Manual Grading ({subjectiveAnswers.length})
+            {t('grading.manualGradingRequired', [subjectiveAnswers.length])}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -1176,7 +1177,7 @@ function SubmissionGrading({ submissionId, isHomeworkGrading }: { submissionId: 
                         {formatQuestionType(answer.question.questionType)}
                       </Badge>
                       <span className="text-sm text-muted-foreground">
-                        Max: {parseFloat(answer.maxScore || '0')} points
+                        {t('grading.maxPoints', [parseFloat(answer.maxScore || '0')])}
                       </span>
                     </div>
                     <h4 className="font-medium mb-3">{answer.question.questionText}</h4>
@@ -1185,7 +1186,7 @@ function SubmissionGrading({ submissionId, isHomeworkGrading }: { submissionId: 
 
                 {/* Student Answer */}
                 <div className="mb-4">
-                  <h5 className="font-medium text-foreground mb-2">Student Answer:</h5>
+                  <h5 className="font-medium text-foreground mb-2">{t('grading.studentAnswer')}</h5>
                   
                   {/* Text Answer */}
                   {answer.answerText && (
@@ -1213,7 +1214,7 @@ function SubmissionGrading({ submissionId, isHomeworkGrading }: { submissionId: 
                               }
                               
                               return questionPairs.map((pair: any, index: number) => {
-                                const studentSelection = studentAnswer[index] || 'No answer';
+                                const studentSelection = studentAnswer[index] || t('grading.noAnswer');
                                 return (
                                   <div key={index} className="flex items-center justify-between p-2 bg-card rounded border">
                                     <span className="font-medium">{pair.left}</span>
@@ -1223,7 +1224,7 @@ function SubmissionGrading({ submissionId, isHomeworkGrading }: { submissionId: 
                                     </span>
                                     {studentSelection !== pair.right && (
                                       <span className="text-sm text-muted-foreground">
-                                        (Correct: {pair.right})
+                                        {t('grading.correctAnswer', [pair.right])}
                                       </span>
                                     )}
                                   </div>
@@ -1233,7 +1234,7 @@ function SubmissionGrading({ submissionId, isHomeworkGrading }: { submissionId: 
                               console.error('Error parsing matching answer:', error);
                               return (
                                 <p className="whitespace-pre-wrap text-red-600">
-                                  Error displaying matching answer: {answer.answerText}
+                                  {t('grading.errorDisplayingMatching', [answer.answerText])}
                                 </p>
                               );
                             }
@@ -1244,7 +1245,7 @@ function SubmissionGrading({ submissionId, isHomeworkGrading }: { submissionId: 
                           {(() => {
                             try {
                               if (!answer.answerText) {
-                                return <span className="text-muted-foreground">No answer provided</span>;
+                                return <span className="text-muted-foreground">{t('grading.noAnswerProvided')}</span>;
                               }
                               
                               const studentAnswer = typeof answer.answerText === 'string' 
@@ -1255,7 +1256,7 @@ function SubmissionGrading({ submissionId, isHomeworkGrading }: { submissionId: 
                               if (studentAnswer.zones && Array.isArray(studentAnswer.zones)) {
                                 return studentAnswer.zones.map((zone: any, index: number) => (
                                   <div key={index} className="text-sm">
-                                    <span className="font-medium">{zone.zone}:</span> {zone.items?.join(', ') || 'No items'}
+                                    <span className="font-medium">{zone.zone}:</span> {zone.items?.join(', ') || t('grading.noItems')}
                                   </div>
                                 ));
                               } else if (typeof studentAnswer === 'object') {
@@ -1266,14 +1267,14 @@ function SubmissionGrading({ submissionId, isHomeworkGrading }: { submissionId: 
                                     ? JSON.parse(answer.question.correctAnswer) 
                                     : answer.question?.correctAnswer;
                                   if (correctAnswer?.zones) {
-                                    zoneNames = correctAnswer.zones.map((zone: any) => zone.zone || zone.name || `Zone ${zone.index || ''}`);
+                                    zoneNames = correctAnswer.zones.map((zone: any) => zone.zone || zone.name || t('grading.zone', [zone.index || '']));
                                   }
                                 } catch (error) {
                                   console.error('Error parsing correct answer for zone names:', error);
                                 }
                                 
                                 return Object.entries(studentAnswer).map(([zoneIndex, item]: [string, any], index: number) => {
-                                  const zoneName = zoneNames[parseInt(zoneIndex)] || `Zone ${zoneIndex}`;
+                                  const zoneName = zoneNames[parseInt(zoneIndex)] || t('grading.zone', [zoneIndex]);
                                   return (
                                     <div key={index} className="text-sm">
                                       <span className="font-medium">{zoneName}:</span> {item}
@@ -1285,7 +1286,7 @@ function SubmissionGrading({ submissionId, isHomeworkGrading }: { submissionId: 
                               }
                             } catch (error) {
                               console.error('Error parsing drag-drop answer:', error);
-                              return <span className="text-red-600">Error displaying answer</span>;
+                              return <span className="text-red-600">{t('grading.errorDisplaying')}</span>;
                             }
                           })()}
                         </div>
@@ -1302,7 +1303,7 @@ function SubmissionGrading({ submissionId, isHomeworkGrading }: { submissionId: 
                     <div className="bg-blue-100 dark:bg-blue-900/20 p-3 rounded border mb-3">
                       <div className="flex items-center gap-2">
                         <Paperclip className="h-4 w-4 text-blue-600" />
-                        <span className="text-sm font-medium text-blue-800 dark:text-blue-200">File Attachment:</span>
+                        <span className="text-sm font-medium text-blue-800 dark:text-blue-200">{t('grading.fileAttachment')}</span>
                       </div>
                       <div className="mt-2">
                         <Button
@@ -1317,7 +1318,7 @@ function SubmissionGrading({ submissionId, isHomeworkGrading }: { submissionId: 
                             rel="noopener noreferrer"
                           >
                             <ExternalLink className="h-4 w-4" />
-                            View Attachment
+                            {t('grading.viewAttachment')}
                           </a>
                         </Button>
                       </div>
@@ -1327,28 +1328,28 @@ function SubmissionGrading({ submissionId, isHomeworkGrading }: { submissionId: 
 
                 {/* Grading Section */}
                 <div className="border-t pt-4">
-                  <h5 className="font-medium text-foreground mb-3">Grade This Answer:</h5>
+                  <h5 className="font-medium text-foreground mb-3">{t('grading.gradeThisAnswer')}</h5>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-foreground mb-1">
-                        Score (out of {parseFloat(answer.maxScore || '0')})
+                        {t('grading.scoreOutOf', [parseFloat(answer.maxScore || '0')])}
                       </label>
                       <Input
                         type="number"
                         min="0"
                         max={parseFloat(answer.maxScore || '0')}
                         step="0.5"
-                        placeholder="Enter score"
+                        placeholder={t('grading.enterScore')}
                         value={gradingData[answer.id]?.score || ''}
                         onChange={(e) => handleScoreChange(answer.id, e.target.value)}
                       />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-foreground mb-1">
-                        Feedback
+                        {t('grading.feedback')}
                       </label>
                       <Textarea
-                        placeholder="Provide feedback for the student"
+                        placeholder={t('grading.provideFeedback')}
                         value={gradingData[answer.id]?.feedback || ''}
                         onChange={(e) => handleFeedbackChange(answer.id, e.target.value)}
                         rows={3}
@@ -1362,7 +1363,7 @@ function SubmissionGrading({ submissionId, isHomeworkGrading }: { submissionId: 
                       className="flex items-center gap-2"
                     >
                       <Save className="h-4 w-4" />
-                      Save Grade
+                      {t('grading.saveGrade')}
                     </Button>
                     
                     {/* Auto-save status indicator */}
@@ -1370,19 +1371,19 @@ function SubmissionGrading({ submissionId, isHomeworkGrading }: { submissionId: 
                       {saveStatuses[answer.id] === 'saving' && (
                         <div className="flex items-center gap-1 text-blue-600">
                           <CloudUpload className="h-4 w-4 animate-pulse" />
-                          <span>Saving...</span>
+                          <span>{t('grading.saving')}</span>
                         </div>
                       )}
                       {saveStatuses[answer.id] === 'saved' && (
                         <div className="flex items-center gap-1 text-green-600">
                           <CheckCircle className="h-4 w-4" />
-                          <span>Auto-saved</span>
+                          <span>{t('grading.autoSaved')}</span>
                         </div>
                       )}
                       {saveStatuses[answer.id] === 'error' && (
                         <div className="flex items-center gap-1 text-red-600">
                           <span className="h-4 w-4">⚠️</span>
-                          <span>Save failed</span>
+                          <span>{t('grading.saveFailed')}</span>
                         </div>
                       )}
                     </div>
@@ -1399,7 +1400,7 @@ function SubmissionGrading({ submissionId, isHomeworkGrading }: { submissionId: 
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Award className="h-5 w-5 text-yellow-600" />
-            Extra Credit Management
+            {t('grading.extraCreditManagement')}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -1408,13 +1409,13 @@ function SubmissionGrading({ submissionId, isHomeworkGrading }: { submissionId: 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm font-medium text-foreground mb-1">
-                  Points
+                  {t('grading.pointsLabel')}
                 </label>
                 <Input
                   type="number"
                   min="0"
                   step="0.1"
-                  placeholder="Extra points"
+                  placeholder={t('grading.extraPoints')}
                   value={extraCreditForm.points}
                   onChange={(e) => setExtraCreditForm(prev => ({ ...prev, points: e.target.value }))}
                   data-testid="input-ec-amount-submission"
@@ -1422,10 +1423,10 @@ function SubmissionGrading({ submissionId, isHomeworkGrading }: { submissionId: 
               </div>
               <div>
                 <label className="block text-sm font-medium text-foreground mb-1">
-                  Reason
+                  {t('grading.reasonLabel')}
                 </label>
                 <Input
-                  placeholder="Reason for extra credit"
+                  placeholder={t('grading.reasonPlaceholder')}
                   value={extraCreditForm.reason}
                   onChange={(e) => setExtraCreditForm(prev => ({ ...prev, reason: e.target.value }))}
                   data-testid="input-ec-reason-submission"
@@ -1448,7 +1449,7 @@ function SubmissionGrading({ submissionId, isHomeworkGrading }: { submissionId: 
                   data-testid="button-add-ec-submission"
                 >
                   <Award className="h-4 w-4 mr-2" />
-                  Add Extra Credit
+                  {t('grading.addExtraCredit')}
                 </Button>
               </div>
             </div>
@@ -1456,7 +1457,7 @@ function SubmissionGrading({ submissionId, isHomeworkGrading }: { submissionId: 
             {/* Existing Extra Credits List */}
             {extraCredits && extraCredits.length > 0 && (
               <div className="mt-6">
-                <h4 className="text-sm font-medium text-foreground mb-3">Existing Extra Credits</h4>
+                <h4 className="text-sm font-medium text-foreground mb-3">{t('grading.existingExtraCredits')}</h4>
                 <div className="space-y-2">
                   {extraCredits.map((credit: any) => (
                     <div 
@@ -1467,11 +1468,11 @@ function SubmissionGrading({ submissionId, isHomeworkGrading }: { submissionId: 
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
                           <Award className="h-4 w-4 text-yellow-600" />
-                          <span className="font-medium">+{parseFloat(credit.points).toFixed(1)} points</span>
+                          <span className="font-medium">{t('grading.extraCreditPoints', [parseFloat(credit.points).toFixed(1)])}</span>
                         </div>
                         <p className="text-sm text-muted-foreground mt-1">{credit.reason}</p>
                         <p className="text-xs text-muted-foreground mt-1">
-                          Added by {credit.grantedBy} on {new Date(credit.grantedAt).toLocaleDateString()}
+                          {t('grading.addedBy', [credit.grantedBy, new Date(credit.grantedAt).toLocaleDateString()])}
                         </p>
                       </div>
                       <Button
@@ -1482,7 +1483,7 @@ function SubmissionGrading({ submissionId, isHomeworkGrading }: { submissionId: 
                         className="text-destructive hover:text-destructive-foreground"
                         data-testid={`button-delete-ec-${credit.id}`}
                       >
-                        Remove
+                        {t('grading.remove')}
                       </Button>
                     </div>
                   ))}
@@ -1498,9 +1499,9 @@ function SubmissionGrading({ submissionId, isHomeworkGrading }: { submissionId: 
         <CardContent className="pt-6">
           <div className="flex justify-between items-center">
             <div>
-              <h3 className="font-medium">Ready to finalize?</h3>
+              <h3 className="font-medium">{t('grading.readyToFinalize')}</h3>
               <p className="text-sm text-muted-foreground">
-                Once finalized, grades will be published to the student and cannot be changed.
+                {t('grading.finalizeWarning')}
               </p>
             </div>
             <Button
@@ -1509,7 +1510,7 @@ function SubmissionGrading({ submissionId, isHomeworkGrading }: { submissionId: 
               className="bg-green-600 hover:bg-green-700 text-white"
             >
               <Award className="h-4 w-4 mr-2" />
-              Finalize Grades
+              {t('grading.finalizeGrades')}
             </Button>
           </div>
         </CardContent>
@@ -1579,8 +1580,8 @@ function ExtraCreditsManagement() {
     onError: (error: Error) => {
       if (isUnauthorizedError(error)) {
         toast({
-          title: "Unauthorized",
-          description: "You are logged out. Logging in again...",
+          title: t('auth.unauthorized'),
+          description: t('auth.loggedOut'),
           variant: "destructive",
         });
         setTimeout(() => {
@@ -1589,7 +1590,7 @@ function ExtraCreditsManagement() {
         return;
       }
       toast({
-        title: "Error",
+        title: t('common.error'),
         description: t('extraCredits.failedToAdd'),
         variant: "destructive",
       });
@@ -1613,8 +1614,8 @@ function ExtraCreditsManagement() {
     onError: (error: Error) => {
       if (isUnauthorizedError(error)) {
         toast({
-          title: "Unauthorized",
-          description: "You are logged out. Logging in again...",
+          title: t('auth.unauthorized'),
+          description: t('auth.loggedOut'),
           variant: "destructive",
         });
         setTimeout(() => {
@@ -1623,7 +1624,7 @@ function ExtraCreditsManagement() {
         return;
       }
       toast({
-        title: "Error",
+        title: t('common.error'),
         description: t('extraCredits.failedToDelete'),
         variant: "destructive",
       });
@@ -1633,8 +1634,8 @@ function ExtraCreditsManagement() {
   const handleAddExtraCredit = () => {
     if (!selectedStudent || !selectedSubject || !points || !reason) {
       toast({
-        title: "Validation Error",
-        description: "Please fill in all fields",
+        title: t('grading.validationError'),
+        description: t('grading.fillAllFields'),
         variant: "destructive",
       });
       return;
@@ -1643,8 +1644,8 @@ function ExtraCreditsManagement() {
     const pointsValue = parseFloat(points);
     if (isNaN(pointsValue) || pointsValue <= 0) {
       toast({
-        title: "Validation Error", 
-        description: "Points must be a positive number",
+        title: t('grading.validationError'), 
+        description: t('grading.positivePoints'),
         variant: "destructive",
       });
       return;
@@ -1843,7 +1844,7 @@ function ExtraCreditsManagement() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t('grading.cancel')}</AlertDialogCancel>
             <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
               {t('extraCredits.delete')}
             </AlertDialogAction>
@@ -1869,8 +1870,8 @@ export default function GradingPage() {
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
       toast({
-        title: "Unauthorized",
-        description: "You are logged out. Logging in again...",
+        title: t('auth.unauthorized'),
+        description: t('auth.loggedOut'),
         variant: "destructive",
       });
       setTimeout(() => {
@@ -1878,14 +1879,14 @@ export default function GradingPage() {
       }, 500);
       return;
     }
-  }, [isAuthenticated, authLoading, toast]);
+  }, [isAuthenticated, authLoading, toast, t]);
 
   if (authLoading || !isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading...</p>
+          <p className="text-muted-foreground">{t('common.loading')}</p>
         </div>
       </div>
     );

@@ -74,8 +74,8 @@ export default function AdminQuestionManagement() {
   useEffect(() => {
     if (!isLoading && (!isAuthenticated || user?.role !== 'admin')) {
       toast({
-        title: "Unauthorized",
-        description: "Admin access required.",
+        title: t('admin.accessDenied'),
+        description: t('admin.accessRequired'),
         variant: "destructive",
       });
       setTimeout(() => {
@@ -83,7 +83,7 @@ export default function AdminQuestionManagement() {
       }, 500);
       return;
     }
-  }, [isAuthenticated, isLoading, user, toast]);
+  }, [isAuthenticated, isLoading, user, toast, t]);
 
   // Fetch subjects
   const { data: subjects = [] } = useQuery<any[]>({
@@ -248,7 +248,7 @@ export default function AdminQuestionManagement() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading...</p>
+          <p className="text-muted-foreground">{t('admin.loading')}</p>
         </div>
       </div>
     );
@@ -258,8 +258,8 @@ export default function AdminQuestionManagement() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">Access Denied</h1>
-          <p className="text-muted-foreground">Admin access required</p>
+          <h1 className="text-2xl font-bold mb-4">{t('admin.accessDenied')}</h1>
+          <p className="text-muted-foreground">{t('admin.accessRequired')}</p>
         </div>
       </div>
     );
@@ -273,9 +273,9 @@ export default function AdminQuestionManagement() {
         <main className="flex-1 overflow-y-auto">
           <div className="p-6 max-w-7xl mx-auto">
             <div className="mb-6">
-              <h1 className="text-2xl md:text-3xl font-bold mb-2">Admin Question Management</h1>
+              <h1 className="text-2xl md:text-3xl font-bold mb-2">{t('admin.questionManagement')}</h1>
               <p className="text-gray-600 dark:text-gray-400">
-                Manage all questions in the system - view, edit, delete, and control sharing permissions
+                {t('admin.questionManagementDescription')}
               </p>
             </div>
 
@@ -287,7 +287,7 @@ export default function AdminQuestionManagement() {
                 data-testid="button-create-question"
               >
                 <Plus className="h-4 w-4 mr-2" />
-                Create Question
+                {t('admin.createQuestion')}
               </Button>
               <Button 
                 variant="outline"
@@ -295,7 +295,7 @@ export default function AdminQuestionManagement() {
                 data-testid="button-import-questions"
               >
                 <Upload className="h-4 w-4 mr-2" />
-                Import Questions
+                {t('admin.importQuestions')}
               </Button>
             </div>
 
@@ -304,18 +304,18 @@ export default function AdminQuestionManagement() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Filter className="h-5 w-5" />
-                  Filters
+                  {t('admin.filters')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-4">
                   <div>
-                    <Label htmlFor="search">Search</Label>
+                    <Label htmlFor="search">{t('admin.search')}</Label>
                     <div className="relative">
                       <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                       <Input
                         id="search"
-                        placeholder="Search questions..."
+                        placeholder={t('admin.searchPlaceholder')}
                         value={filters.search}
                         onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
                         className="pl-10"
@@ -325,16 +325,16 @@ export default function AdminQuestionManagement() {
                   </div>
 
                   <div>
-                    <Label htmlFor="subject">Subject</Label>
+                    <Label htmlFor="subject">{t('admin.subject')}</Label>
                     <Select
                       value={filters.subjectId}
                       onValueChange={(value) => setFilters(prev => ({ ...prev, subjectId: value }))}
                     >
                       <SelectTrigger id="subject">
-                        <SelectValue placeholder="All Subjects" />
+                        <SelectValue placeholder={t('admin.allSubjects')} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="all">All Subjects</SelectItem>
+                        <SelectItem value="all">{t('admin.allSubjects')}</SelectItem>
                         {subjects.map((subject: any) => (
                           <SelectItem key={subject.id} value={subject.id.toString()}>
                             {subject.name}
@@ -345,74 +345,74 @@ export default function AdminQuestionManagement() {
                   </div>
 
                   <div>
-                    <Label htmlFor="category">Category</Label>
+                    <Label htmlFor="category">{t('admin.category')}</Label>
                     <Select
                       value={filters.category}
                       onValueChange={(value) => setFilters(prev => ({ ...prev, category: value }))}
                     >
                       <SelectTrigger id="category">
-                        <SelectValue placeholder="All Categories" />
+                        <SelectValue placeholder={t('admin.allCategories')} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="all">All Categories</SelectItem>
-                        <SelectItem value="exam">Exam Questions</SelectItem>
-                        <SelectItem value="homework">Homework Questions</SelectItem>
+                        <SelectItem value="all">{t('admin.allCategories')}</SelectItem>
+                        <SelectItem value="exam">{t('admin.examQuestions')}</SelectItem>
+                        <SelectItem value="homework">{t('admin.homeworkQuestions')}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
 
                   <div>
-                    <Label htmlFor="questionType">Question Type</Label>
+                    <Label htmlFor="questionType">{t('admin.questionType')}</Label>
                     <Select
                       value={filters.questionType}
                       onValueChange={(value) => setFilters(prev => ({ ...prev, questionType: value }))}
                     >
                       <SelectTrigger id="questionType">
-                        <SelectValue placeholder="All Types" />
+                        <SelectValue placeholder={t('admin.allTypes')} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="all">All Types</SelectItem>
-                        <SelectItem value="multiple_choice">Multiple Choice</SelectItem>
-                        <SelectItem value="short_answer">Short Answer</SelectItem>
-                        <SelectItem value="essay">Essay</SelectItem>
-                        <SelectItem value="fill_blank">Fill in the Blank</SelectItem>
-                        <SelectItem value="matching">Matching</SelectItem>
-                        <SelectItem value="ranking">Ranking</SelectItem>
-                        <SelectItem value="drag_drop">Drag & Drop</SelectItem>
+                        <SelectItem value="all">{t('admin.allTypes')}</SelectItem>
+                        <SelectItem value="multiple_choice">{t('admin.multipleChoice')}</SelectItem>
+                        <SelectItem value="short_answer">{t('admin.shortAnswer')}</SelectItem>
+                        <SelectItem value="essay">{t('admin.essay')}</SelectItem>
+                        <SelectItem value="fill_blank">{t('admin.fillInTheBlank')}</SelectItem>
+                        <SelectItem value="matching">{t('admin.matching')}</SelectItem>
+                        <SelectItem value="ranking">{t('admin.ranking')}</SelectItem>
+                        <SelectItem value="drag_drop">{t('admin.dragAndDrop')}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
 
                   <div>
-                    <Label htmlFor="createdBy">Created By</Label>
+                    <Label htmlFor="createdBy">{t('admin.createdBy')}</Label>
                     <Select
                       value={filters.createdBy}
                       onValueChange={(value) => setFilters(prev => ({ ...prev, createdBy: value }))}
                     >
                       <SelectTrigger id="createdBy">
-                        <SelectValue placeholder="All Creators" />
+                        <SelectValue placeholder={t('admin.allCreators')} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="all">All Creators</SelectItem>
-                        <SelectItem value="admins">Admin Created</SelectItem>
-                        <SelectItem value="instructors">Instructor Created</SelectItem>
+                        <SelectItem value="all">{t('admin.allCreators')}</SelectItem>
+                        <SelectItem value="admins">{t('admin.adminCreated')}</SelectItem>
+                        <SelectItem value="instructors">{t('admin.instructorCreated')}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
 
                   <div>
-                    <Label htmlFor="visibility">Visibility</Label>
+                    <Label htmlFor="visibility">{t('admin.visibility')}</Label>
                     <Select
                       value={filters.visibilityType}
                       onValueChange={(value) => setFilters(prev => ({ ...prev, visibilityType: value }))}
                     >
                       <SelectTrigger id="visibility">
-                        <SelectValue placeholder="All Visibility" />
+                        <SelectValue placeholder={t('admin.allVisibility')} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="all">All Visibility</SelectItem>
-                        <SelectItem value="all_instructors">All Instructors</SelectItem>
-                        <SelectItem value="specific_instructors">Specific Only</SelectItem>
+                        <SelectItem value="all">{t('admin.allVisibility')}</SelectItem>
+                        <SelectItem value="all_instructors">{t('admin.allInstructors')}</SelectItem>
+                        <SelectItem value="specific_instructors">{t('admin.specificOnly')}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -426,11 +426,11 @@ export default function AdminQuestionManagement() {
                 <div className="flex justify-between items-center">
                   <CardTitle className="flex items-center gap-2">
                     <BookOpen className="h-5 w-5" />
-                    All Questions ({totalQuestions})
+                    {t('admin.allQuestions', [totalQuestions])}
                   </CardTitle>
                   <div className="flex items-center gap-2">
                     <span className="text-sm text-gray-600">
-                      Page {currentPage} of {totalPages}
+                      {t('admin.pageOf', [currentPage, totalPages])}
                     </span>
                   </div>
                 </div>
@@ -445,8 +445,8 @@ export default function AdminQuestionManagement() {
                 ) : questions.length === 0 ? (
                   <div className="text-center py-12">
                     <BookOpen className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                    <p className="text-gray-500 mb-2">No questions found</p>
-                    <p className="text-sm text-gray-400">Try adjusting your filters or create a new question</p>
+                    <p className="text-gray-500 mb-2">{t('admin.noQuestionsFound')}</p>
+                    <p className="text-sm text-gray-400">{t('admin.adjustFilters')}</p>
                   </div>
                 ) : (
                   <div className="space-y-4">
@@ -459,7 +459,7 @@ export default function AdminQuestionManagement() {
                           <div className="flex-1 pr-4">
                             <div className="flex flex-wrap items-center gap-2 mb-3">
                               <h3 className="font-semibold text-gray-900 dark:text-gray-100">
-                                {question.title || `Question ${question.id}`}
+                                {question.title || t('admin.questionId', [question.id])}
                               </h3>
                               <Badge variant="outline" className="capitalize">
                                 {question.category}
@@ -486,13 +486,13 @@ export default function AdminQuestionManagement() {
                             </div>
                             
                             <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
-                              <span>Subject: {question.subject?.name || 'Unknown'}</span>
-                              <span>Difficulty: {question.difficulty}</span>
-                              <span>Points: {question.points}</span>
-                              <span>Used: {question.usageCount} times</span>
-                              <span>Created: {formatSubmissionTime(question.createdAt)}</span>
+                              <span>{t('admin.subjectLabel', [question.subject?.name || 'Unknown'])}</span>
+                              <span>{t('admin.difficultyLabel', [question.difficulty])}</span>
+                              <span>{t('admin.pointsLabel', [question.points])}</span>
+                              <span>{t('admin.usedLabel', [question.usageCount])}</span>
+                              <span>{t('admin.createdLabel', [formatSubmissionTime(question.createdAt)])}</span>
                               {question.instructorName && (
-                                <span>By: {question.instructorName}</span>
+                                <span>{t('admin.byLabel', [question.instructorName])}</span>
                               )}
                             </div>
                           </div>
@@ -571,19 +571,18 @@ export default function AdminQuestionManagement() {
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Question</AlertDialogTitle>
+            <AlertDialogTitle>{t('admin.deleteQuestion')}</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete this question? This action cannot be undone.
-              This will also remove the question from any exams or homework assignments that use it.
+              {t('admin.deleteQuestionWarning')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t('admin.cancel')}</AlertDialogCancel>
             <AlertDialogAction 
               onClick={confirmDelete}
               className="bg-red-600 hover:bg-red-700"
             >
-              Delete Question
+              {t('admin.deleteQuestion')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -624,6 +623,7 @@ function SharingDialog({
   onUpdate: (visibilityType: string, authorizedInstructorIds?: string[]) => void;
   isLoading: boolean;
 }) {
+  const { t } = useTranslation();
   const [visibilityType, setVisibilityType] = useState('all_instructors');
   const [selectedInstructors, setSelectedInstructors] = useState<string[]>([]);
 
@@ -653,29 +653,29 @@ function SharingDialog({
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent className="max-w-md">
         <AlertDialogHeader>
-          <AlertDialogTitle>Share Question</AlertDialogTitle>
+          <AlertDialogTitle>{t('admin.shareQuestion')}</AlertDialogTitle>
           <AlertDialogDescription>
-            Configure who can use this question in their exams and homework.
+            {t('admin.shareQuestionDescription')}
           </AlertDialogDescription>
         </AlertDialogHeader>
 
         <div className="space-y-4">
           <div>
-            <Label>Visibility</Label>
+            <Label>{t('admin.visibility')}</Label>
             <Select value={visibilityType} onValueChange={setVisibilityType}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all_instructors">All Instructors</SelectItem>
-                <SelectItem value="specific_instructors">Specific Instructors Only</SelectItem>
+                <SelectItem value="all_instructors">{t('admin.allInstructors')}</SelectItem>
+                <SelectItem value="specific_instructors">{t('admin.specificInstructorsOnly')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           {visibilityType === 'specific_instructors' && (
             <div>
-              <Label>Authorized Instructors</Label>
+              <Label>{t('admin.authorizedInstructors')}</Label>
               <div className="max-h-40 overflow-y-auto border rounded-md p-2 space-y-2">
                 {instructors.map((instructor: any) => (
                   <div key={instructor.id} className="flex items-center space-x-2">
@@ -697,9 +697,9 @@ function SharingDialog({
         </div>
 
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogCancel>{t('admin.cancel')}</AlertDialogCancel>
           <AlertDialogAction onClick={handleSave} disabled={isLoading}>
-            {isLoading ? "Updating..." : "Update Sharing"}
+            {isLoading ? t('admin.updating') : t('admin.updateSharing')}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
