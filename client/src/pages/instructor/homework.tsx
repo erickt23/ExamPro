@@ -38,6 +38,7 @@ import {
 import { BookOpen, Plus, Search, Clock, Users, Eye, Edit, CheckCircle, X, Filter, ChevronDown, ChevronRight, ChevronLeft, MoreVertical, FileText, Archive, Trash2 } from "lucide-react";
 import { QuestionsPagination } from "@/components/ui/questions-pagination";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import StudentSelector from "@/components/student-selector";
 
 interface HomeworkAssignment {
   id: number;
@@ -1058,6 +1059,17 @@ export default function InstructorHomeworkPage() {
                           )}
                         </div>
                       </div>
+                    </div>
+                    
+                    {/* Student Assignment Section */}
+                    <div className="mt-6">
+                      <StudentSelector
+                        assignmentId={selectedHomework?.id || null}
+                        assignmentType="homework"
+                        onAssignmentsChange={() => {
+                          queryClient.invalidateQueries({ queryKey: ["/api/homework", selectedHomework?.id, "assigned-students"] });
+                        }}
+                      />
                     </div>
                     
                     <div className="flex justify-end gap-2 pt-4 border-t">
