@@ -40,6 +40,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Plus, Search, X } from "lucide-react";
 import CreateSubjectModal from "./create-subject-modal";
+import StudentSelector from "@/components/student-selector";
 
 const createExamSchema = z.object({
   title: z.string().min(1, "Title is required").max(200),
@@ -72,6 +73,8 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
   const { toast } = useToast();
   const { t } = useTranslation();
   const [showCreateSubjectModal, setShowCreateSubjectModal] = useState(false);
+  const [createdExamId, setCreatedExamId] = useState<number | null>(null);
+  const [showStudentAssignment, setShowStudentAssignment] = useState(false);
   
   // Fetch subjects
   const { data: subjects = [] } = useQuery<any[]>({
@@ -189,11 +192,11 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
         availableUntil: data.availableUntil ? new Date(data.availableUntil).toISOString() : null,
       });
       
+      const examData = await examResponse.json();
+      
       // Add questions to exam based on selection method
       const questionsToAdd = selectionMethod === 'manual' ? selectedQuestions : randomQuestions;
       if (questionsToAdd.length > 0) {
-        const examData = await examResponse.json();
-        
         for (let i = 0; i < questionsToAdd.length; i++) {
           const question = questionsToAdd[i];
           await apiRequest("POST", `/api/exams/${examData.id}/questions`, {
@@ -203,24 +206,17 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
           });
         }
       }
+      
+      return examData;
     },
-    onSuccess: () => {
+    onSuccess: (examData) => {
       queryClient.invalidateQueries({ queryKey: ["/api/exams"] });
       toast({
         title: "Success",
-        description: "Exam created successfully",
+        description: "Exam created successfully. You can now assign students.",
       });
-      form.reset();
-      setSelectedQuestions([]);
-      setRandomQuestions([]);
-      setQuestionSearch("");
-      setFilterSubject("all");
-      setFilterType("all");
-      setFilterDifficulty("all");
-      setFilterBloomsTaxonomy("all");
-      setRandomQuestionCount(10);
-      setShowFilters(false);
-      onOpenChange(false);
+      setCreatedExamId(examData.id);
+      setShowStudentAssignment(true);
     },
     onError: (error: Error) => {
       if (isUnauthorizedError(error)) {
@@ -286,13 +282,32 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
     return subject ? subject.name : `Subject ${subjectId}`;
   };
 
+  const handleClose = () => {
+    form.reset();
+    setSelectedQuestions([]);
+    setRandomQuestions([]);
+    setQuestionSearch("");
+    setFilterSubject("all");
+    setFilterType("all");
+    setFilterDifficulty("all");
+    setFilterBloomsTaxonomy("all");
+    setRandomQuestionCount(10);
+    setShowFilters(false);
+    setCreatedExamId(null);
+    setShowStudentAssignment(false);
+    onOpenChange(false);
+  };
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{t('createExamModal.createNewExam')}</DialogTitle>
+          <DialogTitle>
+            {showStudentAssignment ? 'Assign Students to Exam' : t('createExamModal.createNewExam')}
+          </DialogTitle>
         </DialogHeader>
 
+        {!showStudentAssignment ? (
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <Accordion type="multiple" defaultValue={["section1"]} className="w-full">
@@ -1114,7 +1129,7 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
               <Button 
                 type="button" 
                 variant="outline" 
-                onClick={() => onOpenChange(false)}
+                onClick={handleClose}
               >
                 {t('common.cancel')}
               </Button>
@@ -1136,6 +1151,32 @@ export default function CreateExamModal({ open, onOpenChange }: CreateExamModalP
             </DialogFooter>
           </form>
         </Form>
+        ) : (
+          <div className="space-y-6">
+            <div className="text-sm text-muted-foreground">
+              Exam created successfully! You can now assign students to this exam, or click "Done" to finish.
+            </div>
+            
+            <StudentSelector
+              assignmentId={createdExamId!}
+              assignmentType="exam"
+              onAssignmentsChange={() => {
+                queryClient.invalidateQueries({ queryKey: ["/api/exams", createdExamId, "assigned-students"] });
+              }}
+            />
+
+            <DialogFooter>
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={handleClose}
+                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+              >
+                Done
+              </Button>
+            </DialogFooter>
+          </div>
+        )}
       </DialogContent>
       
       <CreateSubjectModal
