@@ -80,13 +80,13 @@ export default function StudentSelector({ assignmentId, assignmentType, onAssign
       refetchAssigned();
       onAssignmentsChange?.();
       toast({
-        title: t.common.success,
+        title: t('common.success'),
         description: "Students assigned successfully",
       });
     },
     onError: (error: any) => {
       toast({
-        title: t.common.error,
+        title: t('common.error'),
         description: error.message || "Failed to assign students",
         variant: "destructive",
       });
@@ -107,13 +107,13 @@ export default function StudentSelector({ assignmentId, assignmentType, onAssign
       refetchAssigned();
       onAssignmentsChange?.();
       toast({
-        title: t.common.success,
+        title: t('common.success'),
         description: "Students removed successfully",
       });
     },
     onError: (error: any) => {
       toast({
-        title: t.common.error,
+        title: t('common.error'),
         description: error.message || "Failed to remove students",
         variant: "destructive",
       });
@@ -204,10 +204,10 @@ export default function StudentSelector({ assignmentId, assignmentType, onAssign
         <CardHeader>
           <CardTitle className="text-foreground dark:text-foreground flex items-center gap-2">
             <Users className="h-5 w-5" />
-            {t.instructor?.assignStudents || "Assign Students"}
+            {t('instructor.assignStudents')}
           </CardTitle>
           <CardDescription className="text-muted-foreground dark:text-muted-foreground">
-            {t.instructor?.saveFirstToAssign || "Save the assignment first to assign students"}
+            Save the assignment first to assign students
           </CardDescription>
         </CardHeader>
       </Card>
@@ -219,10 +219,10 @@ export default function StudentSelector({ assignmentId, assignmentType, onAssign
       <CardHeader>
         <CardTitle className="text-foreground dark:text-foreground flex items-center gap-2">
           <Users className="h-5 w-5" />
-          {t.instructor?.assignStudents || "Assign Students"}
+          {t('instructor.assignStudents')}
         </CardTitle>
         <CardDescription className="text-muted-foreground dark:text-muted-foreground">
-          {t.instructor?.selectStudentsDescription || "Select which students can access this assignment"}
+          {t('instructor.selectStudentsToAssign')}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -230,7 +230,7 @@ export default function StudentSelector({ assignmentId, assignmentType, onAssign
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground dark:text-muted-foreground" />
           <Input
-            placeholder={t.instructor?.searchStudents || "Search students..."}
+            placeholder={t('instructor.searchStudents')}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10 bg-background dark:bg-background text-foreground dark:text-foreground border-input dark:border-input"
@@ -242,7 +242,7 @@ export default function StudentSelector({ assignmentId, assignmentType, onAssign
         {assignedStudents.length > 0 && (
           <div className="space-y-2">
             <div className="text-sm font-medium text-foreground dark:text-foreground">
-              {t.instructor.currentlyAssigned || "Currently Assigned"} ({assignedStudents.length})
+              {t('instructor.currentlyAssigned')} ({assignedStudents.length})
             </div>
             <div className="flex flex-wrap gap-2">
               {assignedStudents.map((student) => (
@@ -269,7 +269,7 @@ export default function StudentSelector({ assignmentId, assignmentType, onAssign
             className="bg-background dark:bg-background text-foreground dark:text-foreground border-input dark:border-input hover:bg-accent dark:hover:bg-accent"
             data-testid="button-select-all"
           >
-            {t.common.selectAll || "Select All"}
+            {t('common.selectAll')}
           </Button>
           <Button
             type="button"
@@ -279,7 +279,7 @@ export default function StudentSelector({ assignmentId, assignmentType, onAssign
             className="bg-background dark:bg-background text-foreground dark:text-foreground border-input dark:border-input hover:bg-accent dark:hover:bg-accent"
             data-testid="button-deselect-all"
           >
-            {t.common.deselectAll || "Deselect All"}
+            {t('common.deselectAll')}
           </Button>
         </div>
 
@@ -289,8 +289,8 @@ export default function StudentSelector({ assignmentId, assignmentType, onAssign
             {filteredStudents.length === 0 ? (
               <div className="text-center text-muted-foreground dark:text-muted-foreground py-8">
                 {searchTerm
-                  ? t.common.noStudentsFound || "No students found"
-                  : t.common.noStudentsAvailable || "No students available"}
+                  ? t('common.noStudentsFound')
+                  : t('common.noStudentsAvailable')}
               </div>
             ) : (
               filteredStudents.map((student) => (
@@ -316,7 +316,7 @@ export default function StudentSelector({ assignmentId, assignmentType, onAssign
                   </div>
                   {assignedStudentIds.has(student.id) && (
                     <Badge variant="outline" className="text-xs bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border-green-200 dark:border-green-800">
-                      {t.instructor.assigned || "Assigned"}
+                      {t('instructor.assigned')}
                     </Badge>
                   )}
                 </div>
@@ -328,11 +328,11 @@ export default function StudentSelector({ assignmentId, assignmentType, onAssign
         {/* Selection Summary */}
         <div className="flex items-center justify-between text-sm">
           <span className="text-muted-foreground dark:text-muted-foreground">
-            {selectedStudents.length} {t.common.selected || "selected"}
+            {selectedStudents.length} {t('common.selected')}
           </span>
           {hasChanges() && (
             <Badge variant="secondary" className="bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300">
-              {t.common.unsavedChanges || "Unsaved changes"}
+              {t('common.unsavedChanges')}
             </Badge>
           )}
         </div>
@@ -347,8 +347,8 @@ export default function StudentSelector({ assignmentId, assignmentType, onAssign
         >
           <UserPlus className="mr-2 h-4 w-4" />
           {assignMutation.isPending || removeMutation.isPending
-            ? t.common.applying || "Applying..."
-            : t.common.applyChanges || "Apply Changes"}
+            ? t('common.applying')
+            : t('common.applyChanges')}
         </Button>
       </CardContent>
     </Card>
