@@ -204,10 +204,10 @@ export default function StudentSelector({ assignmentId, assignmentType, onAssign
         <CardHeader>
           <CardTitle className="text-foreground dark:text-foreground flex items-center gap-2">
             <Users className="h-5 w-5" />
-            {t.instructor.assignStudents}
+            {t.instructor?.assignStudents || "Assign Students"}
           </CardTitle>
           <CardDescription className="text-muted-foreground dark:text-muted-foreground">
-            {t.instructor.saveFirstToAssign || "Save the assignment first to assign students"}
+            {t.instructor?.saveFirstToAssign || "Save the assignment first to assign students"}
           </CardDescription>
         </CardHeader>
       </Card>
@@ -219,10 +219,10 @@ export default function StudentSelector({ assignmentId, assignmentType, onAssign
       <CardHeader>
         <CardTitle className="text-foreground dark:text-foreground flex items-center gap-2">
           <Users className="h-5 w-5" />
-          {t.instructor.assignStudents}
+          {t.instructor?.assignStudents || "Assign Students"}
         </CardTitle>
         <CardDescription className="text-muted-foreground dark:text-muted-foreground">
-          {t.instructor.selectStudentsDescription || "Select which students can access this assignment"}
+          {t.instructor?.selectStudentsDescription || "Select which students can access this assignment"}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -246,8 +246,8 @@ export default function StudentSelector({ assignmentId, assignmentType, onAssign
             </div>
             <div className="flex flex-wrap gap-2">
               {assignedStudents.map((student) => (
-                <Badge 
-                  key={student.id} 
+                <Badge
+                  key={student.id}
                   variant="secondary"
                   className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
                   data-testid={`badge-assigned-${student.id}`}
