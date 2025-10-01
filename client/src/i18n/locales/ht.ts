@@ -887,7 +887,18 @@ export const ht = {
     type: 'Tip',
     difficulty: 'Difikilte',
     timeLimit: 'Limit Tan',
-    bloomsTaxonomy: 'Taksonomi Bloom'
+    bloomsTaxonomy: 'Taksonomi Bloom',
+    selectAll: 'Chwazi Tout',
+    deselectAll: 'Pa Chwazi Okenn',
+    selected: 'chwazi',
+    applying: 'Y ap aplike...',
+    applyChanges: 'Aplike Chanjman yo',
+    unsavedChanges: 'Chanjman ki pa sove',
+    noStudentsFound: 'Pa gen elèv yo jwenn',
+    noStudentsAvailable: 'Pa gen elèv ki disponib',
+    assigned: 'Asiyen',
+    success: 'Siksè',
+    error: 'Erè'
   },
 
   // Theme

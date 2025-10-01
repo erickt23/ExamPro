@@ -887,7 +887,18 @@ export const fr = {
     type: 'Type',
     difficulty: 'Difficulté',
     timeLimit: 'Limite de Temps',
-    bloomsTaxonomy: 'Taxonomie de Bloom'
+    bloomsTaxonomy: 'Taxonomie de Bloom',
+    selectAll: 'Tout Sélectionner',
+    deselectAll: 'Tout Désélectionner',
+    selected: 'sélectionnés',
+    applying: 'Application...',
+    applyChanges: 'Appliquer les Changements',
+    unsavedChanges: 'Changements non sauvegardés',
+    noStudentsFound: 'Aucun étudiant trouvé',
+    noStudentsAvailable: 'Aucun étudiant disponible',
+    assigned: 'Assigné',
+    success: 'Succès',
+    error: 'Erreur'
   },
 
   // Theme

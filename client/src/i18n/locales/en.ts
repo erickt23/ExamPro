@@ -893,7 +893,18 @@ export const en = {
     type: 'Type',
     difficulty: 'Difficulty',
     timeLimit: 'Time Limit',
-    bloomsTaxonomy: 'Bloom\'s Taxonomy'
+    bloomsTaxonomy: 'Bloom\'s Taxonomy',
+    selectAll: 'Select All',
+    deselectAll: 'Deselect All',
+    selected: 'selected',
+    applying: 'Applying...',
+    applyChanges: 'Apply Changes',
+    unsavedChanges: 'Unsaved changes',
+    noStudentsFound: 'No students found',
+    noStudentsAvailable: 'No students available',
+    assigned: 'Assigned',
+    success: 'Success',
+    error: 'Error'
   },
 
   // Theme
