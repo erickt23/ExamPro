@@ -70,11 +70,7 @@ export default function StudentSelector({ assignmentId, assignmentType, onAssign
   const assignMutation = useMutation({
     mutationFn: async (studentIds: string[]) => {
       if (!assignmentId) throw new Error("No assignment ID");
-      return apiRequest(`/api/${assignmentType}s/${assignmentId}/assign-students`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ studentIds }),
-      });
+      return apiRequest('POST', `/api/${assignmentType}s/${assignmentId}/assign-students`, { studentIds });
     },
     onSuccess: () => {
       refetchAssigned();
@@ -97,11 +93,7 @@ export default function StudentSelector({ assignmentId, assignmentType, onAssign
   const removeMutation = useMutation({
     mutationFn: async (studentIds: string[]) => {
       if (!assignmentId) throw new Error("No assignment ID");
-      return apiRequest(`/api/${assignmentType}s/${assignmentId}/assigned-students`, {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ studentIds }),
-      });
+      return apiRequest('DELETE', `/api/${assignmentType}s/${assignmentId}/assigned-students`, { studentIds });
     },
     onSuccess: () => {
       refetchAssigned();
@@ -184,7 +176,7 @@ export default function StudentSelector({ assignmentId, assignmentType, onAssign
 
     if (currentlyAssigned.size !== newSelection.size) return true;
 
-    for (const id of currentlyAssigned) {
+    for (const id of Array.from(currentlyAssigned)) {
       if (!newSelection.has(id)) return true;
     }
 
