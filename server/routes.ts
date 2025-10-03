@@ -1102,13 +1102,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         status: 'draft' as const,
         attemptsAllowed: originalExam.attemptsAllowed,
         randomizeQuestions: originalExam.randomizeQuestions,
+        randomizeOptions: originalExam.randomizeOptions,
         showResultsImmediately: originalExam.showResultsImmediately,
-        allowReview: originalExam.allowReview,
         requirePassword: false,
         availableFrom: originalExam.availableFrom || undefined,
         availableUntil: originalExam.availableUntil || undefined,
-        instructions: originalExam.instructions,
-        passingScore: originalExam.passingScore,
+        enableProctoring: originalExam.enableProctoring,
+        proctoringWarningThreshold: originalExam.proctoringWarningThreshold,
+        proctoringAutoTerminate: originalExam.proctoringAutoTerminate,
         extraTimeMinutes: 0,
       };
 
