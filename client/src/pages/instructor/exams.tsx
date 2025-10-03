@@ -232,9 +232,46 @@ export default function InstructorExams() {
     },
   });
 
+  // Duplicate exam mutation
+  const duplicateExamMutation = useMutation({
+    mutationFn: async (examId: number) => {
+      const response = await apiRequest("POST", `/api/exams/${examId}/duplicate`, {});
+      return response;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/exams"] });
+      toast({
+        title: "Success",
+        description: "Exam duplicated successfully",
+      });
+    },
+    onError: (error: Error) => {
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
+      toast({
+        title: "Error",
+        description: "Failed to duplicate exam",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleEditExam = (examId: number) => {
     setEditingExamId(examId);
     setShowEditModal(true);
+  };
+
+  const handleDuplicateExam = (examId: number) => {
+    duplicateExamMutation.mutate(examId);
   };
 
   const handlePreviewExam = (examId: number) => {
@@ -463,7 +500,7 @@ export default function InstructorExams() {
                                           <Edit className="h-4 w-4 mr-2" />
                                           Edit Exam
                                         </DropdownMenuItem>
-                                        <DropdownMenuItem onClick={() => handleEditExam(exam.id)}>
+                                        <DropdownMenuItem onClick={() => handleDuplicateExam(exam.id)}>
                                           <Copy className="h-4 w-4 mr-2" />
                                           Duplicate Exam
                                         </DropdownMenuItem>

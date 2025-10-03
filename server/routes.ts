@@ -1092,27 +1092,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Create new exam with "[Copy]" appended to title
       const newExamData = {
-        ...originalExam,
-        id: undefined,
-        title: `${originalExam.title} [Copy]`,
         instructorId: userId,
+        title: `${originalExam.title} [Copy]`,
+        subjectId: originalExam.subjectId,
+        duration: originalExam.duration,
+        totalPoints: originalExam.totalPoints,
+        description: originalExam.description,
+        gradeLevel: originalExam.gradeLevel,
         status: 'draft' as const,
+        attemptsAllowed: originalExam.attemptsAllowed,
+        randomizeQuestions: originalExam.randomizeQuestions,
+        showResultsImmediately: originalExam.showResultsImmediately,
+        allowReview: originalExam.allowReview,
+        requirePassword: false,
+        availableFrom: originalExam.availableFrom || undefined,
+        availableUntil: originalExam.availableUntil || undefined,
+        instructions: originalExam.instructions,
+        passingScore: originalExam.passingScore,
+        extraTimeMinutes: 0,
       };
-
-      // Remove password if it exists (force instructor to set new one if needed)
-      delete newExamData.password;
-      delete newExamData.requirePassword;
 
       const duplicatedExam = await storage.createExam(newExamData);
 
       // Copy all questions to the new exam
       for (const eq of examQuestions) {
-        await storage.addQuestionToExam({
-          examId: duplicatedExam.id,
-          questionId: eq.questionId,
-          order: eq.order,
-          points: eq.points,
-        });
+        await storage.addQuestionToExam(
+          duplicatedExam.id,
+          eq.questionId,
+          eq.order,
+          eq.points
+        );
       }
 
       res.status(201).json({
