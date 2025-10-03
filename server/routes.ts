@@ -1071,6 +1071,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Duplicate exam
+  app.post('/api/exams/:id/duplicate', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const user = await storage.getUser(userId);
+      const examId = parseInt(req.params.id);
+
+      if (!hasInstructorPrivileges(user)) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const originalExam = await storage.getExamById(examId);
+      if (!originalExam || originalExam.instructorId !== userId) {
+        return res.status(404).json({ message: "Exam not found" });
+      }
+
+      // Get all questions from the original exam
+      const examQuestions = await storage.getExamQuestions(examId);
+
+      // Create new exam with "[Copy]" appended to title
+      const newExamData = {
+        ...originalExam,
+        id: undefined,
+        title: `${originalExam.title} [Copy]`,
+        instructorId: userId,
+        status: 'draft' as const,
+      };
+
+      // Remove password if it exists (force instructor to set new one if needed)
+      delete newExamData.password;
+      delete newExamData.requirePassword;
+
+      const duplicatedExam = await storage.createExam(newExamData);
+
+      // Copy all questions to the new exam
+      for (const eq of examQuestions) {
+        await storage.addQuestionToExam({
+          examId: duplicatedExam.id,
+          questionId: eq.questionId,
+          order: eq.order,
+          points: eq.points,
+        });
+      }
+
+      res.status(201).json({
+        ...duplicatedExam,
+        password: undefined
+      });
+    } catch (error) {
+      console.error("Error duplicating exam:", error);
+      res.status(500).json({ message: "Failed to duplicate exam" });
+    }
+  });
+
   // Assign students to exam
   app.post('/api/exams/:id/assign-students', isAuthenticated, async (req: any, res) => {
     try {
