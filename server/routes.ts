@@ -1071,6 +1071,70 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Duplicate exam
+  app.post('/api/exams/:id/duplicate', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const user = await storage.getUser(userId);
+      const examId = parseInt(req.params.id);
+
+      if (!hasInstructorPrivileges(user)) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const originalExam = await storage.getExamById(examId);
+      if (!originalExam || originalExam.instructorId !== userId) {
+        return res.status(404).json({ message: "Exam not found" });
+      }
+
+      // Get all questions from the original exam
+      const examQuestions = await storage.getExamQuestions(examId);
+
+      // Create new exam with "[Copy]" appended to title
+      const newExamData = {
+        instructorId: userId,
+        title: `${originalExam.title} [Copy]`,
+        subjectId: originalExam.subjectId,
+        duration: originalExam.duration,
+        totalPoints: originalExam.totalPoints,
+        description: originalExam.description,
+        gradeLevel: originalExam.gradeLevel,
+        status: 'draft' as const,
+        attemptsAllowed: originalExam.attemptsAllowed,
+        randomizeQuestions: originalExam.randomizeQuestions,
+        randomizeOptions: originalExam.randomizeOptions,
+        showResultsImmediately: originalExam.showResultsImmediately,
+        requirePassword: false,
+        availableFrom: originalExam.availableFrom || undefined,
+        availableUntil: originalExam.availableUntil || undefined,
+        enableProctoring: originalExam.enableProctoring,
+        proctoringWarningThreshold: originalExam.proctoringWarningThreshold,
+        proctoringAutoTerminate: originalExam.proctoringAutoTerminate,
+        extraTimeMinutes: 0,
+      };
+
+      const duplicatedExam = await storage.createExam(newExamData);
+
+      // Copy all questions to the new exam
+      for (const eq of examQuestions) {
+        await storage.addQuestionToExam(
+          duplicatedExam.id,
+          eq.questionId,
+          eq.order,
+          eq.points
+        );
+      }
+
+      res.status(201).json({
+        ...duplicatedExam,
+        password: undefined
+      });
+    } catch (error) {
+      console.error("Error duplicating exam:", error);
+      res.status(500).json({ message: "Failed to duplicate exam" });
+    }
+  });
+
   // Assign students to exam
   app.post('/api/exams/:id/assign-students', isAuthenticated, async (req: any, res) => {
     try {
